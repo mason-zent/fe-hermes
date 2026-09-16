@@ -1,6 +1,6 @@
 # client-brics-hub 구조 맵
 
-기준 `origin/dev` `99f4f60` (2026-09-02). `/sync`가 디렉토리·스크립트 사실을 갱신한다. 규칙은 `rules.md`, 예시 파일은 `patterns.md`, 절차는 `workflows.md`.
+기준 `origin/prd` `99f4f60` (2026-09-02). `/sync`가 디렉토리·스크립트 사실을 갱신한다. 규칙은 `rules.md`, 예시 파일은 `patterns.md`, 절차는 `workflows.md`.
 
 ## 루트
 ```

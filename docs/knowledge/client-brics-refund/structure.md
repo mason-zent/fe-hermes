@@ -1,6 +1,6 @@
 # client-brics-refund 구조 맵
 
-기준 `origin/dev` `34966dd` (2026-09-14). `/sync`가 사실 부분을 갱신한다. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `34966dd` (2026-09-14). `/sync`가 사실 부분을 갱신한다. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## 루트
 | 경로 | 역할 |

@@ -1,6 +1,6 @@
 # bznav-web 공통 지식 (앱 에이전트 6개가 공유)
 
-기준: `origin/dev` `1f158d6` 2026-09-15 (`/sync`로 갱신). 레포 경로 `repos/bznav-web`. 앱별 차이는 각 `.claude/agents/bznav-*-fe.md`.
+기준: **앱마다 운영 브랜치가 다르다** (`origin/prd-<앱>`). `packages/*`는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. `/sync`로 갱신. 레포 경로 `repos/bznav-web`. 앱별 차이는 각 `.claude/agents/bznav-*-fe.md`.
 
 ## 레포 자체 규칙 문서 — 작업 전 반드시 읽는다
 1. `.ai/basic-rule.md` — 공통 개발 규칙. `[필수]`/`[검증]`/`[권장]` 등급. **이 문서가 원문이고 아래는 요약**

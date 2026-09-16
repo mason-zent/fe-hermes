@@ -1,6 +1,6 @@
 # web-op 구조 맵
 
-기준 `origin/dev` `756d471` (2026-09-11), 파일 285개. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `756d471` (2026-09-11), 파일 285개. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## app/ 라우트
 | 경로 | 역할 | 인증 |

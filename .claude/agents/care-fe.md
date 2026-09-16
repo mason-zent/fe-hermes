@@ -18,7 +18,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - 개발 서버: `pnpm dev` (port **13001**, webpack). 포트 관례: works 13000 · care 13001 · refund 13002 · hub 13003
 - 패키지 매니저: pnpm 8.15.6, Node v24.14.1 (`.nvmrc`). 설치에 `GITHUB_TOKEN`(read:packages) 필요 (`.npmrc` GitHub Packages)
 
-> 아래는 **origin/dev 기준**(2026-09-16 sync, `1457d83` 2026-08-20). 레포의 `CLAUDE.md`는 "Next 14"라고 적혀 있지만 실제는 Next 15.5 / React 19다. `README.md`는 모노레포 시절 잔재라 신뢰하지 않는다.
+> 아래는 **origin/prd 기준**(2026-09-16 sync, `8ed10df` 2026-08-20). 레포의 `CLAUDE.md`는 "Next 14"라고 적혀 있지만 실제는 Next 15.5 / React 19다. `README.md`는 모노레포 시절 잔재라 신뢰하지 않는다.
 
 ## 기술 스택
 - Next.js 15.5 App Router (`next.config.mjs`, `withZentDevkit`, `distDir: dist`, `/pro/:slug*` rewrite), React 19, TypeScript 5.6 (strict, `noImplicitAny: false`)

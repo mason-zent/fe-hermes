@@ -23,12 +23,18 @@ const PENDING_DIR = join(SYNC_DIR, 'pending')
 const REPORT_PATH = join(SYNC_DIR, 'last-report.md')
 // 레포 목록은 hermes.config.json 이 정본. 경로는 repos/<name> 심볼릭 링크 (scripts/setup.sh 가 생성)
 const CONFIG = JSON.parse(readFileSync(join(ROOT, 'hermes.config.json'), 'utf8'))
-const REPOS = CONFIG.repos.map((repo) => ({
-  ...repo,
-  path: join(ROOT, 'repos', repo.name),
-  ref: `origin/${repo.branch ?? 'dev'}`,
-  agents: repo.agents ?? [...Object.values(repo.apps ?? {}), ...(repo.packagesAgent ? [repo.packagesAgent] : [])]
-}))
+// apps 값은 { agent, branch } 객체다 (예전 형태인 문자열도 받아준다)
+const appEntry = (value) => (typeof value === 'string' ? { agent: value, branch: null } : value)
+const REPOS = CONFIG.repos.map((repo) => {
+  const apps = Object.fromEntries(Object.entries(repo.apps ?? {}).map(([name, v]) => [name, appEntry(v)]))
+  return {
+    ...repo,
+    apps,
+    path: join(ROOT, 'repos', repo.name),
+    ref: `origin/${repo.branch ?? 'dev'}`,
+    agents: repo.agents ?? [...Object.values(apps).map((a) => a.agent), ...(repo.packagesAgent ? [repo.packagesAgent] : [])]
+  }
+})
 
 // 에이전트 md 에 영향을 주는 의존성만 추적한다 (전체 deps 는 노이즈)
 const DEP_PATTERNS = [
@@ -175,20 +181,28 @@ const buildSnapshot = (repo) => {
     snapshot.apps = {}
     snapshot.packages = {}
     for (const appName of listDirsOnly(repo, 'apps') ?? []) {
-      const pkg = readJson(repo, `apps/${appName}/package.json`)
-      const usesPages = listTree(repo, `apps/${appName}/pages`) !== null
-      const usesApp = listTree(repo, `apps/${appName}/app`) !== null || listTree(repo, `apps/${appName}/src/app`) !== null
-      const appRouterDir = listTree(repo, `apps/${appName}/app`) !== null ? `apps/${appName}/app` : listTree(repo, `apps/${appName}/src/app`) !== null ? `apps/${appName}/src/app` : null
+      const appCfg0 = repo.apps?.[appName] ?? { branch: null }
+      const appRepo0 = appCfg0.branch ? { ...repo, ref: `origin/${appCfg0.branch}` } : repo
+      const pkg = readJson(appRepo0, `apps/${appName}/package.json`)
+      const usesPages = listTree(appRepo0, `apps/${appName}/pages`) !== null
+      const usesApp = listTree(appRepo0, `apps/${appName}/app`) !== null || listTree(appRepo0, `apps/${appName}/src/app`) !== null
+      // 앱마다 기준 브랜치가 다르다 (prd-<앱>). 해당 ref 로 그 앱의 트리를 읽는다
+      const appCfg = repo.apps?.[appName] ?? { agent: null, branch: null }
+      const appRepo = appCfg.branch ? { ...repo, ref: `origin/${appCfg.branch}` } : repo
+      const appSha = git(repo.path, ['rev-parse', appRepo.ref], { allowFail: true })
+      const appRouterDir = listTree(appRepo, `apps/${appName}/app`) !== null ? `apps/${appName}/app` : listTree(appRepo, `apps/${appName}/src/app`) !== null ? `apps/${appName}/src/app` : null
       snapshot.apps[appName] = {
-        agent: repo.apps?.[appName] ?? null,
+        agent: appCfg.agent ?? null,
+        branch: appCfg.branch ? `origin/${appCfg.branch}` : repo.ref,
+        sha: appSha ? appSha.slice(0, 12) : null,
         name: pkg?.name ?? null,
         dev: pkg?.scripts?.dev ?? null,
         port: portFromScript(pkg?.scripts?.dev),
         router: usesPages && !usesApp ? 'pages' : usesApp ? 'app' : 'unknown',
         scripts: Object.keys(pkg?.scripts ?? {}).sort(),
         deps: pickDeps(pkg),
-        dirs: (listDirsOnly(repo, `apps/${appName}`) ?? []).filter((name) => !['node_modules', 'public', '.next'].includes(name)),
-        routes: appRouterDir ? (listDirsOnly(repo, appRouterDir) ?? []).filter((name) => !name.startsWith('_')) : (listDirsOnly(repo, `apps/${appName}/pages`) ?? [])
+        dirs: (listDirsOnly(appRepo, `apps/${appName}`) ?? []).filter((name) => !['node_modules', 'public', '.next'].includes(name)),
+        routes: appRouterDir ? (listDirsOnly(appRepo, appRouterDir) ?? []).filter((name) => !name.startsWith('_')) : (listDirsOnly(appRepo, `apps/${appName}/pages`) ?? [])
       }
     }
     for (const pkgName of listDirsOnly(repo, 'packages') ?? []) {
@@ -269,10 +283,11 @@ for (const repo of targets) {
   if (!existsSync(repo.path)) { report.push(`## ${repo.name} (${repo.agents.join(', ')})`, '', `⚠️ repos/${repo.name} 링크가 없다. scripts/setup.sh 를 실행하라`, ''); continue }
   let fetchNote = ''
   if (!NO_FETCH) {
-    let fetched = git(repo.path, ['fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
+    const refsToFetch = [repo.branch ?? 'dev', ...Object.values(repo.apps ?? {}).map((a) => a.branch).filter(Boolean)]
+    let fetched = git(repo.path, ['fetch', '--quiet', 'origin', ...refsToFetch], { allowFail: true })
     if (fetched === null) {
       // ssh 원격(git@github.com:)은 비대화형 셸에서 키가 없어 실패하기 쉽다 → 같은 레포를 https 로 재시도 (설정은 이 호출에만 적용)
-      fetched = git(repo.path, ['-c', 'url.https://github.com/.insteadOf=git@github.com:', 'fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
+      fetched = git(repo.path, ['-c', 'url.https://github.com/.insteadOf=git@github.com:', 'fetch', '--quiet', 'origin', ...refsToFetch], { allowFail: true })
       if (fetched === null) fetchNote = ` (fetch 실패 — ssh·https 모두, 로컬 ${repo.ref} 참조 사용)`
       else fetchNote = ' (https 로 fetch)'
     }

@@ -28,7 +28,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - **5개 앱 중 유일하게 `type-check`(tsc)와 `test:unit`(jest, `__test__/`, `__mocks__/`)이 있다.** 순수 로직·atom 변경 시 테스트 추가
 - `gen:env` 스크립트 없음(Secrets Manager 대상이라 `node scripts/generate-env.mjs --app=care-web --env=<env> --source=sm` 수동). 패키지를 가장 많이 사용(user-session·user-sign·레거시 `@zenterprise-inc/ui` 포함)
 
-## 디렉터리 (origin/dev 2026-09-16)
+## 디렉터리 (origin/prd-care 2026-09-16)
 ```
 apps/care-web/
   app/         (auth) (landing) (login) (payment) (my-info) (registry) (gateway) (external-file-download) (kakaoTalk-notification)

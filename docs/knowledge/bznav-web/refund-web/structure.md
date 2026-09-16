@@ -1,6 +1,6 @@
 # bznav-web apps/refund-web 구조 맵
 
-기준 `origin/dev` `0b713b4` (2026-09-16), 파일 625개, `pages/*.tsx` 109개. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
+기준 `origin/prd-refund` `4be90b5eb` (2026-09-16), 파일 625개, `pages/*.tsx` 109개. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
 
 ## 앱 메타 / 스크립트
 - `refund-web` v26.9.161, `"type": "module"`. `exports: { ".": "./index.ts" }`는 **존재하지 않는 파일** 참조(죽은 필드)

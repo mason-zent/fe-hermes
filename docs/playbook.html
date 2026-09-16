@@ -521,8 +521,8 @@ claude
 
         <article class="cmd wide">
           <div class="cmd-head"><kbd>/sync <span class="arg">레포 이름 (선택)</span></kbd><span class="tag">문서 갱신</span></div>
-          <p class="what">담당 레포의 <code>origin/&lt;branch&gt;</code>(대부분 dev, zent-packages는 main)를 훑어 에이전트 md, 서비스 맵, 이 플레이북을 실제 레포 상태에 맞게 고칩니다. 로컬 작업 트리는 브랜치가 제각각이라 읽지 않고, 항상 dev 트리를 봅니다. 이전 sync 이후 바뀐 부분만 찾아 반영합니다.</p>
-          <div class="flow"><span>fetch origin/dev</span><span>지문 생성</span><span class="hi">baseline 비교</span><span>변경 레포 diff 읽기</span><span class="hi">md · services · playbook 갱신</span><span>baseline 확정</span></div>
+          <p class="what">담당 레포의 <strong>운영 기준 브랜치</strong>(콘솔 prd · bznav 앱별 prd-&lt;앱&gt; · zent-packages main)를 훑어 에이전트 md, 서비스 맵, 이 플레이북을 실제 레포 상태에 맞게 고칩니다. 로컬 작업 트리는 브랜치가 제각각이라 읽지 않고, 항상 dev 트리를 봅니다. 이전 sync 이후 바뀐 부분만 찾아 반영합니다.</p>
+          <div class="flow"><span>fetch 기준 브랜치</span><span>지문 생성</span><span class="hi">baseline 비교</span><span>변경 레포 diff 읽기</span><span class="hi">md · services · playbook 갱신</span><span>baseline 확정</span></div>
           <div class="sync-cols">
             <dl>
               <dt>지문</dt><dd>package.json의 scripts와 주요 의존성 버전, dev 포트, prettier, <code>app/</code>·<code>src/</code>·<code>apps/</code> 디렉토리 구조, README·규칙 문서의 blob id</dd>
@@ -546,17 +546,17 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="baseline">
       <h2>문서 기준 커밋</h2>
-      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 커밋(<code>origin/dev</code>, zent-packages는 <code>origin/main</code>)을 읽어 만든 것입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-16 10:55(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
+      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 <strong>운영 반영분</strong> 커밋을 읽어 만든 것입니다. 콘솔 4개는 <code>origin/prd</code>, bznav-web은 앱마다 <code>origin/prd-&lt;앱&gt;</code>, zent-packages는 <code>origin/main</code>입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-16 10:55(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
       <div class="table-wrap">
         <table class="baseline">
-          <thead><tr><th>레포</th><th>에이전트</th><th>origin/dev 커밋</th><th>날짜</th><th>커밋 제목</th></tr></thead>
+          <thead><tr><th>레포</th><th>에이전트</th><th>기준 커밋</th><th>날짜</th><th>커밋 제목</th></tr></thead>
           <tbody>
-            <tr><td>client-brics-refund</td><td class="name">refund-fe</td><td class="name">34966dd</td><td>2026-09-14</td><td>Merge pull request #44 from zenterprise-inc/feature/REF-3671</td></tr>
-            <tr><td>client-brics-hub</td><td class="name">hub-fe</td><td class="name">99f4f60</td><td>2026-09-02</td><td>Merge pull request #6 from zenterprise-inc/sidebar</td></tr>
-            <tr><td>client-brics-care</td><td class="name">care-fe</td><td class="name">1457d83</td><td>2026-08-20</td><td>Merge pull request #25 from zenterprise-inc/prd</td></tr>
-            <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">0b713b4</td><td>2026-09-16</td><td>feat(care): 케어 플러스, 채널톡, SEO 개선 등 (#1904)</td></tr>
-            <tr><td>web-op</td><td class="name">op-fe</td><td class="name">756d471</td><td>2026-09-11</td><td>Merge pull request #197 from zenterprise-inc/feature/REF-3624</td></tr>
-            <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">b22d000</td><td>2026-09-16</td><td>Merge pull request #90 from zenterprise-inc/release/v.26.09.200</td></tr>
+            <tr><td>client-brics-refund</td><td class="name">refund-fe</td><td class="name">1eb6e63</td><td>2026-09-14</td><td>Merge pull request #45 from zenterprise-inc/release/v.26.0</td></tr>
+            <tr><td>client-brics-hub</td><td class="name">hub-fe</td><td class="name">fb5c7e3</td><td>2026-09-03</td><td>Merge pull request #5 from zenterprise-inc/dev</td></tr>
+            <tr><td>client-brics-care</td><td class="name">care-fe</td><td class="name">8ed10df</td><td>2026-08-20</td><td>Merge pull request #24 from zenterprise-inc/release/v26.08</td></tr>
+            <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">앱별 prd-*</td><td>2026-09-16</td><td>packages 는 dev 4be90b5</td></tr>
+            <tr><td>web-op</td><td class="name">op-fe</td><td class="name">4ac5be7</td><td>2026-09-16</td><td>Merge pull request #198 from zenterprise-inc/feature/REF-3</td></tr>
+            <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">c3a342e</td><td>2026-09-16</td><td>Merge pull request #94 from zenterprise-inc/release/v.26.0</td></tr>
           </tbody>
         </table>
       </div>
@@ -675,7 +675,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   ├── skills/                <span class="c">feature · bugfix · review · status · sync · guide</span>
 │   └── settings.json
 ├── .sync/
-│   └── snapshots/             <span class="c">레포별 origin/dev 지문 baseline (/sync 비교 기준)</span>
+│   └── snapshots/             <span class="c">레포별 기준 브랜치 지문 baseline (/sync 비교 기준)</span>
 ├── docs/
 │   ├── services.md            <span class="c">서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
 │   ├── knowledge/             <span class="c">지식 베이스 — common/(팀 공통 규칙) · &lt;레포&gt;/rules.md(레포 규칙) · structure·patterns·gotchas·workflows</span>
@@ -694,7 +694,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)</span>
     ├── mdview.py              <span class="c">터미널 마크다운 뷰어 (glow 없을 때 내장 렌더러)</span>
-    └── sync-fingerprint.mjs   <span class="c">origin/dev 지문 생성·비교</span></code></pre>
+    └── sync-fingerprint.mjs   <span class="c">기준 브랜치 지문 생성·비교</span></code></pre>
       <div class="note">
         레포 경로는 어디서나 <code>repos/&lt;레포&gt;</code>입니다. 실제 위치는 <code>scripts/setup.sh</code>가 만드는 심볼릭 링크가 가리키며, 목록은 <code>hermes.config.json</code>이 정본입니다. <code>repos/</code>는 gitignore라 팀원마다 배치가 달라도 문서는 공유됩니다.
       </div>
@@ -760,7 +760,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         </details>
         <details>
           <summary>레포가 바뀌면 에이전트 문서는 누가 고치나요?</summary>
-          <div class="a"><code>/sync</code>를 치면 헤르메스가 담당 레포의 origin/dev(zent-packages는 main)를 읽어 바뀐 사실(버전·명령·포트·구조·포맷·규칙 문서)만 골라 문서를 고칩니다. 자동으로 상시 감시하지는 않으니, 세션을 시작할 때 문서가 오래된 것 같으면 한 번 돌려주세요. 판단이 들어간 문장은 자동으로 바꾸지 않고 "확인 필요"로 알려줍니다.</div>
+          <div class="a"><code>/sync</code>를 치면 헤르메스가 담당 레포의 기준 브랜치(콘솔은 prd, bznav는 앱별 prd-&lt;앱&gt;, zent-packages는 main)를 읽어 바뀐 사실(버전·명령·포트·구조·포맷·규칙 문서)만 골라 문서를 고칩니다. 자동으로 상시 감시하지는 않으니, 세션을 시작할 때 문서가 오래된 것 같으면 한 번 돌려주세요. 판단이 들어간 문장은 자동으로 바꾸지 않고 "확인 필요"로 알려줍니다.</div>
         </details>
         <details>
           <summary>reviewer는 왜 따로 있나요?</summary>

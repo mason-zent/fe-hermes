@@ -1,6 +1,6 @@
 # client-brics-care 구조 맵
 
-기준 `origin/dev` `1457d83` (2026-08-20). 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `1457d83` (2026-08-20). 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## 루트
 | 경로 | 역할 |

@@ -1,6 +1,6 @@
 # bznav-web apps/care-web 구조 맵
 
-기준 `origin/dev` `0b713b4` (2026-09-16), 파일 2,470개. 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
+기준 `origin/prd-care` `631c155a7` (2026-09-16), 파일 2,470개. 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
 
 ## 앱 성격
 - Next 16.2.5 App Router, `output: 'standalone'`, dev 3100 `--turbo`. **모든 라우트가 동적 렌더**: `app/layout.tsx`의 `await getServerWorkingPlatform()`(sena와 같은 관례, 랜딩 SEO용 서버 HTML)

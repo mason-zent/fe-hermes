@@ -3,10 +3,10 @@
   "agents": [
     "hub-fe"
   ],
-  "branch": "origin/dev",
-  "sha": "99f4f6075a28",
-  "shaDate": "2026-09-02",
-  "subject": "Merge pull request #6 from zenterprise-inc/sidebar",
+  "branch": "origin/prd",
+  "sha": "fb5c7e3013eb",
+  "shaDate": "2026-09-03",
+  "subject": "Merge pull request #5 from zenterprise-inc/dev",
   "package": {
     "name": "brics-hub-web",
     "version": "0.1.0",

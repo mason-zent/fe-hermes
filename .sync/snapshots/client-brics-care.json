@@ -3,10 +3,10 @@
   "agents": [
     "care-fe"
   ],
-  "branch": "origin/dev",
-  "sha": "1457d837efe3",
+  "branch": "origin/prd",
+  "sha": "8ed10df9ec28",
   "shaDate": "2026-08-20",
-  "subject": "Merge pull request #25 from zenterprise-inc/prd",
+  "subject": "Merge pull request #24 from zenterprise-inc/release/v26.08.110",
   "package": {
     "name": "brics-care-web",
     "version": "2.8.18",

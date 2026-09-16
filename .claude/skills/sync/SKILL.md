@@ -1,6 +1,6 @@
 ---
 name: sync
-description: hermes.config.json 의 담당 레포 전체(origin/<branch>, 대부분 dev·zent-packages 는 main)를 훑어 에이전트 md(.claude/agents/*.md), docs/services.md, docs/playbook.html 을 실제 레포 상태에 맞게 갱신합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
+description: hermes.config.json 의 담당 레포 전체를 운영 기준 브랜치(콘솔 prd · bznav 앱별 prd-<앱> · zent-packages main)로 훑어 에이전트 md(.claude/agents/*.md), docs/services.md, docs/playbook.html 을 실제 레포 상태에 맞게 갱신합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
 argument-hint: "(선택) 레포 이름 일부 — 예: hub, bznav. 비우면 전체"
 ---
 
@@ -17,7 +17,7 @@ argument-hint: "(선택) 레포 이름 일부 — 예: hub, bznav. 비우면 전
 node scripts/sync-fingerprint.mjs            # 전체
 node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 ```
-- `origin/dev` 를 fetch 하고 레포별 지문(스택 버전, scripts, 포트, prettier, 디렉토리 구조, 규칙 문서 blob)을 `.sync/pending/` 에 저장
+- 레포별 기준 브랜치(`hermes.config.json` 의 `branch`, bznav-web 은 앱마다 `prd-<앱>`)를 fetch 하고 지문(스택 버전, scripts, 포트, prettier, 디렉토리 구조, 규칙 문서 blob)을 `.sync/pending/` 에 저장
 - 이전 baseline(`.sync/snapshots/`)과 비교한 리포트를 출력하고 `.sync/last-report.md` 에도 남긴다
 - 리포트에 "변경 없음 (동일 커밋)" 만 있으면 사용자에게 그렇게 보고하고 종료
 
@@ -27,9 +27,9 @@ node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 2. **규칙·소개 문서 변화** — README, `.ai/basic-rule.md`, `.github/agents/*.agent.md` 등이 바뀐 경우. 반드시 내용을 읽는다:
    ```bash
    git -C repos/<레포> diff <이전sha>..<새sha> -- README.md
-   git -C repos/<레포> show origin/dev:.ai/basic-rule.md
+   git -C repos/<레포> show origin/<기준브랜치>:.ai/basic-rule.md
    ```
-3. **커밋 목록** — 새 도메인/화면이 생겼는지, 라이브러리 교체가 있었는지 힌트. 의심되면 해당 경로를 `git show origin/dev:<path>` 로 확인
+3. **커밋 목록** — 새 도메인/화면이 생겼는지, 라이브러리 교체가 있었는지 힌트. 의심되면 해당 경로를 `git show origin/<기준브랜치>:<path>` 로 확인
 
 지문에 잡히지 않는 큰 구조 변화(예: 라우터 전환, 상태 라이브러리 교체)가 커밋 제목에 보이면 `git -C <레포> diff --stat <이전sha>..<새sha>` 로 범위를 확인한다.
 
@@ -59,7 +59,7 @@ node scripts/sync-fingerprint.mjs --accept
 pending 지문이 `.sync/snapshots/` 로 이동한다. **문서를 고치기 전에 accept 하지 않는다** (실패하면 다음 sync 에서 같은 diff 를 다시 봐야 한다).
 
 ### 5단계: 보고
-- 레포별: origin/dev 커밋 범위, 문서에 반영한 사실 목록(파일:항목), "확인 필요"로 남긴 항목
+- 레포별: 기준 브랜치 커밋 범위, 문서에 반영한 사실 목록(파일:항목), "확인 필요"로 남긴 항목
 - 변경 없는 레포는 한 줄로
 - 첫 실행(baseline 없음)이면: 지문 전체를 각 md 와 대조해 틀린 사실을 고친 결과를 보고하고 accept
 

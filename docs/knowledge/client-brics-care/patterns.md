@@ -1,6 +1,6 @@
 # client-brics-care 대표 패턴 파일
 
-코드에서 실제 반복되는 것만. 경로는 레포 루트 기준, `origin/dev` `1457d83`. hub·refund 패턴을 가져오지 말 것(`@/swr` 없음, nuqs 없음, 모달 매니저 없음).
+코드에서 실제 반복되는 것만. 경로는 레포 루트 기준, `origin/prd` `8ed10df`. hub·refund 패턴을 가져오지 말 것(`@/swr` 없음, nuqs 없음, 모달 매니저 없음).
 
 ## P1. 권한 가드 — 6곳 동일 형태, 단 **하위 create/edit에는 같은 페이지 가드가 없음**
 - `app/subscription/page.tsx`, `app/bmans/page.tsx`, `app/qa/layout.tsx`(유일한 layout 가드)

@@ -18,7 +18,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - 개발 서버: `pnpm dev` (port **13003**, `--turbopack`). 문제 시 `pnpm dev:webpack`. 13000은 works 콘솔 포트 (care 13001 · refund 13002 · hub 13003 관례)
 - 패키지 매니저: pnpm 8.15.6, Node v24.14.1 (`.nvmrc`)
 
-> 아래는 **origin/dev 기준**(2026-09-15 sync, `99f4f60`). 2026-09-02에 `sidebar` 브랜치가 dev에 머지되어
+> 아래는 **origin/prd 기준**(2026-09-16 sync, `fb5c7e3`). `sidebar` 브랜치가 dev 를 거쳐 prd 까지 반영되어
 > Next 15.5.22·React 19, dev 포트 13003, 메뉴 관리 `/brics-menus`, 사이드바 내재화가 모두 dev에 들어왔다.
 
 ## 기술 스택
@@ -26,7 +26,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - UI: `@zenterprise-inc/brics-fe-ui` + Tailwind 3.4 + `tailwind-merge`/`clsx`, `lucide-react`, `react-day-picker`
 - 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, `@/swr`), `lib/orval-fetcher.ts`. URL 상태: 구형 admin은 `useSearchParams` + `router.push`, 신형 `/messages`는 `useState`. **`nuqs`는 설치·마운트만 되어 있고 사용처 0건** — 관례로 쓰지 말 것
 - 폼: React Hook Form + Zod (스키마는 `_components/xxxFormSchema.ts`). 모달: `@ui/components/ui/dialog` 제어형 + `@ui/components/ConfirmModal`. **`@ebay/nice-modal-react`는 프로바이더만 있고 사용처 0건**
-- 인증: NextAuth v5 + Cognito (`@zenterprise-inc/brics-fe-zent-auth` 0.4.0), 모니터링 `brics-fe-datadog-trace` 0.3.0. 공유 패키지는 works 기준으로 **정확 버전 고정**(`brics-fe-ui` 0.2.4 등, `^` 없음)
+- 인증: NextAuth v5 + Cognito (`@zenterprise-inc/brics-fe-zent-auth` 0.5.1), 모니터링 `brics-fe-datadog-trace` 0.3.0. 공유 패키지는 works 기준으로 **정확 버전 고정**(`brics-fe-ui` 0.2.4 등, `^` 없음)
 - 테스트: Jest (ts-jest, node 환경, `*.spec.ts`). 렌더링 테스트 불가, **순수 함수 단위 테스트만** (`lib/*.spec.ts` 참고)
 
 ## 디렉토리 구조

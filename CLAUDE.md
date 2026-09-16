@@ -93,7 +93,7 @@
 | `/sync` | 담당 레포의 `origin/<branch>`를 훑어 에이전트 md·services.md·knowledge·playbook을 실제 상태에 맞게 갱신 |
 | `/guide` | 사용·확장 가이드를 터미널에 표시. `/guide pane`은 오른쪽 pane에 선택형 메뉴를 띄움(herdr/tmux), `/guide 열기`는 플레이북 HTML 열기 |
 
-에이전트 md의 스택·포트·구조는 **`origin/dev` 기준**이다. 오래된 것 같으면 `/sync`를 먼저 돌린다.
+에이전트 md와 `docs/knowledge/`의 스택·포트·구조는 **운영 반영분 기준**이다 — 콘솔 4개 `origin/prd`, bznav-web 은 앱마다 `origin/prd-<앱>`, zent-packages 는 `origin/main`(`hermes.config.json` 참조). 로컬 작업 트리가 그보다 뒤처져 있으면 문서와 코드가 다를 수 있는데 그건 문서 오류가 아니다. 오래된 것 같으면 `/sync`를 먼저 돌린다.
 
 ---
 

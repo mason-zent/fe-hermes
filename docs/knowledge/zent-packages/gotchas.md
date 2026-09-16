@@ -8,7 +8,7 @@
 - **exports가 src를 가리켜 소비 측 `transpilePackages` 필수**. `allowImportingTsExtensions`로 `.ts` 확장자 import가 있음(`platform/server.ts`) → 확장자 리졸브 미지원 설정에서 깨짐
 - **brics-fe-ui의 `cn`·`lib/*`·`hooks/*`는 public export 아님** → 소비 앱이 `cn`을 복제. bznav-fe-ui는 `cn` 정식 export(라인 차이)
 - **brics-fe-ui·zent-auth는 루트 `.` 엔트리 없음** → `import { X } from '@zenterprise-inc/brics-fe-ui'` 실패. 항상 서브패스. bznav는 반대로 루트 배럴만
-- **2026-09-16 대기 changeset 5건**: `session-sliding-fe-zent-auth.md`(**zent-auth minor breaking**: maxAge 5h→2h, updateAge 5m, `useSessionTimeout` 반환 `{session,status}`, 옵션 `sessionExtensionMs`→`extendThrottleMs`), `session-sliding-fe-ui.md`(**ui minor**, 위에 의존), `session-timeout-drop-visibilitychange.md`(patch), `cozy-parents-chew.md`(REF-3584 patch ×3), `console-auth-guard-jwks-cache.md`(be). 2026-09-04 커밋인데 09-15 Version Packages는 1개만 소비 → **다음 릴리스에 minor 2건 동시 발생, 소비 레포(refund·hub·care·works) 두 패키지 동시 업 필요**
+- **2026-09-16 세션 breaking 릴리스 완료** (`c3a342e`, v.26.09.201): 대기하던 changeset 5건이 전부 소비됐다. `brics-fe-zent-auth` 0.4.0 → **0.5.1**(breaking: 세션 `maxAge` 5h→2h, `updateAge` 5분, `useSessionTimeout` 반환이 `{session, status}`), `brics-fe-ui` 0.3.4 → **0.4.1**(위에 의존). **소비 레포(refund·hub·care·works)는 두 패키지를 함께 올려야 한다** — 한쪽만 올리면 훅 시그니처가 어긋난다. zent-auth 에 `test` 스크립트도 새로 생겼다
 - **README 버전 표**: devkit `0.2.0` 표기 vs 실제 `0.4.0`. `sync-readme-versions.mjs`가 devkit 행을 못 잡는 듯(추측). datadog-trace 설명 "RUM 초기화"도 오류(헤더 생성만)
 - **스냅샷 정리 matrix 누락 6개**(`release-dev.yml` cleanup): bznav-fe channel-talk·platform·tracking-service·ui-deprecated·user-session·user-sign → 프리릴리스 영구 누적. 보존 10개가 태그 무관 통합 카운트라 살아있는 브랜치 스냅샷이 밀릴 수 있음(`@dev` 폴백)
 - **resource-manager `fetcher.ts` 인터셉터 누적**: 호출마다 `interceptors.request.use` 등록(zent-auth는 1회 등록으로 고쳐졌으나 복제본은 방치)

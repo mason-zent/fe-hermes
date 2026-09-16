@@ -1,5 +1,5 @@
 # bznav-web apps/sena-web 구조 맵
-기준 `origin/dev` `0b713b4`, 파일 236개, 최근 180일 커밋 220건(가장 활발). 경로 `apps/sena-web/` 기준. 레포 공통 `../common.md`.
+기준 `origin/prd-sena` `67795fe08`, 파일 236개, 최근 180일 커밋 220건(가장 활발). 경로 `apps/sena-web/` 기준. 레포 공통 `../common.md`.
 
 ## app/
 | 경로 | 역할 |

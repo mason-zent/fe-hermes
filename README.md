@@ -41,7 +41,7 @@ repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, giti
 .claude/agents/           서브에이전트 12개
 .claude/rules/            언어·코드·Git·디스패치 규칙
 .claude/skills/           /feature /bugfix /review /status /sync /guide
-.sync/snapshots/          레포별 origin/dev 지문 baseline (/sync 가 비교 기준으로 사용)
+.sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/services.md          서비스 비교표
 docs/knowledge/           지식 베이스: common/(팀 공통 규칙) · <레포>/rules.md(레포 규칙) · 레포 지식 (README.md 참고)
 docs/extending.md         스킬·에이전트 추가 방법 (/guide)
@@ -55,7 +55,7 @@ scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
 scripts/guide-menu.sh     선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
-scripts/sync-fingerprint.mjs  origin/dev 지문 생성·비교 (/sync 가 호출)
+scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 호출)
 ```
 
 ## 확장하기

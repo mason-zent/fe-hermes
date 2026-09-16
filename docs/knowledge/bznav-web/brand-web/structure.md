@@ -1,5 +1,5 @@
 # bznav-web apps/brand-web 구조 맵
-기준 `origin/dev` `0b713b4`, 파일 93개, 최근 180일 커밋 24건(유지보수 단계). 경로 `apps/brand-web/` 기준. 레포 공통 `../common.md`.
+기준 `origin/prd-brand` `7f052c0c3`, 파일 93개, 최근 180일 커밋 24건(유지보수 단계). 경로 `apps/brand-web/` 기준. 레포 공통 `../common.md`.
 
 ## app/
 | 경로 | 역할 |

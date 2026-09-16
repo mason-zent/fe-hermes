@@ -1,6 +1,6 @@
 # web-op 대표 패턴 파일
 
-코드에서 실제 반복되는 것만. 경로는 레포 루트 기준, `origin/dev` `756d471`. **레이어 규칙은 도메인마다 다르게 지켜진다** — 하나로 일반화하면 틀린다.
+코드에서 실제 반복되는 것만. 경로는 레포 루트 기준, `origin/prd` `4ac5be7`. **레이어 규칙은 도메인마다 다르게 지켜진다** — 하나로 일반화하면 틀린다.
 
 ## P1. 컨테이너/컴포넌트 분리 — 도메인별로 규칙이 다르다
 - **documents(정석, 신규 기준)**: `app/documents/[key]/page.tsx` → `src/containers/documents/DocumentSubmissionContainer.tsx`(418줄, 상태·오케스트레이션) → `src/components/documents/submission/*`(15개 순수 프레젠테이션) + 같은 폴더 `copy.ts`/`documentConfig.ts`/`documentMeta.ts`/`notionGuide.ts`(순수 매핑 모듈)

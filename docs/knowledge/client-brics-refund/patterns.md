@@ -1,6 +1,6 @@
 # client-brics-refund 대표 패턴 파일
 
-코드에서 실제 반복되는 것만. 경로는 레포 루트 기준(`repos/client-brics-refund`), `origin/dev` `34966dd`. **hub 패턴을 가져오지 말 것** — 이 레포엔 nuqs·zustand·jotai가 없고(미설치), 병렬 라우트도 없다.
+코드에서 실제 반복되는 것만. 경로는 레포 루트 기준(`repos/client-brics-refund`), `origin/prd` `1eb6e63`. **hub 패턴을 가져오지 말 것** — 이 레포엔 nuqs·zustand·jotai가 없고(미설치), 병렬 라우트도 없다.
 
 ## P1. 라우트 골격 — 새 화면은 이 세트를 복사
 - **복사 원본**: `app/refund-service/partner/discount/*` (가장 표준), 읽기 전용이면 `pipe-drive/failure-record/*`

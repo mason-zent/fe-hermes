@@ -4,9 +4,9 @@
     "packages-fe"
   ],
   "branch": "origin/main",
-  "sha": "b22d00040b02",
+  "sha": "c3a342ed5b91",
   "shaDate": "2026-09-16",
-  "subject": "Merge pull request #90 from zenterprise-inc/release/v.26.09.200",
+  "subject": "Merge pull request #94 from zenterprise-inc/release/v.26.09.201",
   "package": {
     "name": "@zenterprise-inc/zent-packages",
     "version": "0.0.0",
@@ -41,7 +41,7 @@
     ]
   },
   "docs": {
-    "README.md": "98fc6ea5d662",
+    "README.md": "8101d587e9be",
     ".prettierrc": "ccd71bd3ee61",
     ".nvmrc": "a3b7a31ee830"
   },
@@ -73,7 +73,7 @@
     },
     "brics/ui": {
       "name": "@zenterprise-inc/brics-fe-ui",
-      "version": "0.3.4",
+      "version": "0.4.1",
       "scripts": [
         "build",
         "dev",
@@ -82,12 +82,13 @@
     },
     "brics/zent-auth": {
       "name": "@zenterprise-inc/brics-fe-zent-auth",
-      "version": "0.4.0",
+      "version": "0.5.1",
       "scripts": [
         "build",
         "clean",
         "dev",
-        "lint"
+        "lint",
+        "test"
       ]
     },
     "bznav/channel-talk": {

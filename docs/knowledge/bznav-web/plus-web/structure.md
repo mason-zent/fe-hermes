@@ -1,5 +1,5 @@
 # bznav-web apps/plus-web 구조 맵
-기준 `origin/dev` `0b713b4`, 파일 234개, 최근 180일 커밋 112건. 경로 `apps/plus-web/` 기준. 레포 공통 `../common.md`.
+기준 `origin/prd-plus` `edc6fe300`, 파일 234개, 최근 180일 커밋 112건. 경로 `apps/plus-web/` 기준. 레포 공통 `../common.md`.
 
 ## app/
 | 경로 | 역할 |

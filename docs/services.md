@@ -1,7 +1,7 @@
 # 서비스 맵
 
 헤르메스 팀이 담당하는 프론트엔드 레포 비교표. 상세 규칙은 각 `.claude/agents/*.md`. 레포 목록 정본은 `hermes.config.json`.
-기준: 각 레포 `origin/dev` (zent-packages는 `origin/main`). 마지막 sync 2026-09-16, `/sync`로 갱신.
+기준: 운영 반영분. 콘솔 4개는 `origin/prd`, bznav-web 은 앱마다 `origin/prd-<앱>`(packages 는 `origin/dev`), zent-packages 는 `origin/main`. 목록은 `hermes.config.json`. 마지막 sync 2026-09-16, `/sync`로 갱신.
 
 | 항목 | client-brics-refund | client-brics-hub | client-brics-care | bznav-web | web-op |
 |---|---|---|---|---|---|

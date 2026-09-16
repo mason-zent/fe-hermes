@@ -3,10 +3,10 @@
   "agents": [
     "refund-fe"
   ],
-  "branch": "origin/dev",
-  "sha": "34966ddd5326",
+  "branch": "origin/prd",
+  "sha": "1eb6e631208d",
   "shaDate": "2026-09-14",
-  "subject": "Merge pull request #44 from zenterprise-inc/feature/REF-3671",
+  "subject": "Merge pull request #45 from zenterprise-inc/release/v.26.09.150",
   "package": {
     "name": "brics-refund-web",
     "version": "25.12.200",

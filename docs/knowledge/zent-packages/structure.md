@@ -5,8 +5,8 @@
 ## 패키지 (15) 와 엔트리
 | 경로 | 패키지 | ver | exports |
 |---|---|---|---|
-| `frontend/brics/ui` | `brics-fe-ui` | 0.3.4 | `./components/*`, `./components/ui/*`, `./global.css`, `./public/*`, `./fonts/*` — **루트 `.` 없음** |
-| `frontend/brics/zent-auth` | `brics-fe-zent-auth` | 0.4.0 | `./configs/*`, `./lib/*`, `./hooks/*`, `./types/*`, `./types/enums/*` — **루트 없음** |
+| `frontend/brics/ui` | `brics-fe-ui` | 0.4.1 | `./components/*`, `./components/ui/*`, `./global.css`, `./public/*`, `./fonts/*` — **루트 `.` 없음** |
+| `frontend/brics/zent-auth` | `brics-fe-zent-auth` | 0.5.1 | `./configs/*`, `./lib/*`, `./hooks/*`, `./types/*`, `./types/enums/*` — **루트 없음** |
 | `frontend/brics/resource-manager` | `brics-fe-resource-manager` | 0.2.1 | `.`, `./utils`, `./api` (+`__generated__` 발행) |
 | `frontend/brics/datadog-trace` | `brics-fe-datadog-trace` | 0.3.0 | `.`, `./*` |
 | `frontend/brics/project-config` | `brics-fe-project-config` | 0.2.1 | 없음. `base.json`·`nextjs.json`·`react-library.json`(실사용) + `eslint/`·`typescript/`(**0바이트 빈 파일**) |

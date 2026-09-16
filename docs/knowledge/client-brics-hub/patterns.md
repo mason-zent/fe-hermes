@@ -1,6 +1,6 @@
 # client-brics-hub 대표 패턴 파일
 
-"이런 걸 만들 땐 이 파일을 보고 따라라." 경로는 레포 루트(`repos/client-brics-hub`) 기준, `origin/dev` `99f4f60`. 새 화면은 **`app/messages/**` 계열(신형)**을 따르고, `app/admin/**`은 works 이관 구형이라 참고만 한다.
+"이런 걸 만들 땐 이 파일을 보고 따라라." 경로는 레포 루트(`repos/client-brics-hub`) 기준, `origin/prd` `fb5c7e3`. 새 화면은 **`app/messages/**` 계열(신형)**을 따르고, `app/admin/**`은 works 이관 구형이라 참고만 한다.
 
 ## 0. 전제
 - `@/swr` = `__generated__/index.ts`(Orval 배럴). `swr/` 디렉터리는 없다. 그 외 별칭: `@/generated/*`, `@/components/*`(=`app/_components`), `@ui/*`(brics-fe-ui src), `@zent-auth/*`
