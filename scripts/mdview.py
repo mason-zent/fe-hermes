@@ -87,7 +87,18 @@ def render_table(rows, cols):
 
 def render(md, cols):
     out, table, fence, fence_lang = [], [], None, ""
-    for raw in md.splitlines():
+    src = md.splitlines()
+    if src and src[0].strip() == "---":  # frontmatter → 흐린 메타 블록
+        try:
+            end = next(i for i in range(1, len(src)) if src[i].strip() == "---")
+            out.append(f"{DIM}┌ frontmatter{RESET}")
+            for meta in src[1:end]:
+                out.append(f"{DIM}│ {meta}{RESET}")
+            out.append(f"{DIM}└{RESET}")
+            src = src[end + 1:]
+        except StopIteration:
+            pass
+    for raw in src:
         line = raw.rstrip("\n")
         if fence is not None:
             if line.strip().startswith("```"):
@@ -138,10 +149,15 @@ def main():
     if "--width" in sys.argv:
         cols = int(sys.argv[sys.argv.index("--width") + 1])
     else:
-        try: cols = os.get_terminal_size().columns
-        except OSError:
-            try: cols = int(os.environ.get("COLUMNS", "100"))
-            except ValueError: pass
+        cols = None
+        for probe in (lambda: os.get_terminal_size().columns,
+                      lambda: os.get_terminal_size(os.open("/dev/tty", os.O_RDONLY)).columns,
+                      lambda: int(os.environ["COLUMNS"])):
+            try:
+                cols = probe(); break
+            except (OSError, KeyError, ValueError):
+                continue
+        if not cols: cols = 100
     text = open(args[0], encoding="utf-8").read() if args else sys.stdin.read()
     if args:
         title = os.path.relpath(args[0])
