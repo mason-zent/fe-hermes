@@ -1,0 +1,17 @@
+# Claude Code 로컬 전용
+.claude/settings.local.json
+.mcp.json
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+
+# 작업계획서 (로컬 산출물)
+plans/**/*.md
+plans/**/*.html
+!plans/**/.gitkeep
+
+# sync 임시 파일 (baseline인 .sync/snapshots/ 는 유지)
+.sync/pending/
+.sync/last-report.md

@@ -1,0 +1,116 @@
+{
+  "repo": "web-op",
+  "agent": "op-fe",
+  "branch": "origin/dev",
+  "sha": "756d47102f98",
+  "shaDate": "2026-09-11",
+  "subject": "Merge pull request #197 from zenterprise-inc/feature/REF-3624",
+  "package": {
+    "name": "web-op",
+    "version": "0.0.1",
+    "packageManager": "pnpm@10.20.0",
+    "engines": {
+      "node": ">=24"
+    },
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "typecheck": "node typecheck.mjs",
+      "start": "next start",
+      "pkg:link": "node pkg-link.mjs on",
+      "pkg:unlink": "node pkg-link.mjs off",
+      "lint": "eslint \"./**/*.{ts,tsx}\" && prettier --check \"./**/*.{ts,tsx}\"",
+      "lint:fix": "eslint \"./**/*.{ts,tsx}\" --fix && prettier --write \"./**/*.{ts,tsx}\"",
+      "clean": "rm -rf node_modules && rm pnpm-lock.yaml",
+      "prepare": "husky"
+    },
+    "deps": {
+      "@zenterprise-inc/bznav-fe-project-config": "0.1.0",
+      "@zenterprise-inc/bznav-fe-ui": "0.1.0",
+      "axios": "^1.6.2",
+      "next": "16.2.9",
+      "react": "19.2.7",
+      "react-dom": "19.2.7",
+      "styled-components": "^6.1.1",
+      "tailwindcss": "3.3.1",
+      "turbo": "^1.9.3",
+      "typescript": "5.0.4",
+      "zustand": "^4.5.0"
+    }
+  },
+  "port": 3000,
+  "prettier": "module.exports = {\n  bracketSpacing: true,\n  semi: true,\n  trailingComma: \"all\",\n  printWidth: 80,\n  tabWidth: 2,\n};",
+  "nvmrc": null,
+  "dirs": {
+    "app": [
+      "api",
+      "documents",
+      "employee",
+      "sales"
+    ],
+    "app/documents": [
+      "[key]",
+      "status"
+    ],
+    "app/employee": [
+      "[key]"
+    ],
+    "app/sales": [
+      "auth",
+      "child",
+      "customers",
+      "login",
+      "mfa-setup",
+      "password-reset",
+      "salesmans",
+      "signup",
+      "upload",
+      "url"
+    ],
+    "src": [
+      "analytics",
+      "backend",
+      "components",
+      "config",
+      "containers",
+      "gateway",
+      "hooks",
+      "store",
+      "useCases",
+      "utils"
+    ],
+    "src/backend": [
+      "controller",
+      "repository",
+      "service"
+    ],
+    "src/components": [
+      "common",
+      "documents",
+      "employee",
+      "sales"
+    ],
+    "src/containers": [
+      "documents",
+      "employee",
+      "sales"
+    ],
+    "src/gateway": [
+      "documents",
+      "sales"
+    ],
+    "src/hooks": [
+      "documents",
+      "employee"
+    ]
+  },
+  "docs": {
+    "README.md": "de4091ac3f89",
+    "CLAUDE.md": "43c994c2d361",
+    "AGENTS.md": "c383c9032453",
+    "prettier.config.js": "cb8036ef4b53",
+    ".claude/rules/service-documents.md": "21785858ccda",
+    ".claude/rules/service-employee.md": "11c87418539e",
+    ".claude/rules/service-sales.md": "64dffcb146c3"
+  }
+}

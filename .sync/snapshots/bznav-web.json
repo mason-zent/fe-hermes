@@ -1,0 +1,185 @@
+{
+  "repo": "bznav-web",
+  "agent": "bznav-fe",
+  "branch": "origin/dev",
+  "sha": "df7a7566e51b",
+  "shaDate": "2026-09-14",
+  "subject": "Add SECRET_NAME argument for AWS Secrets Manager",
+  "package": {
+    "name": "bznav-web",
+    "version": null,
+    "packageManager": "pnpm@10.33.0",
+    "engines": {
+      "node": "24"
+    },
+    "scripts": {
+      "build": "turbo build",
+      "dev": "turbo dev",
+      "deploy:dev": "sh scripts/deploy-dev.sh",
+      "lint": "turbo lint",
+      "lint-staged": "turbo lint-staged --concurrency=1",
+      "prepare": "husky",
+      "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+      "gen:env": "turbo gen:env",
+      "gen:relay": "turbo gen:schema && turbo compile:relay",
+      "storybook": "FORCE_COLOR=1 turbo run storybook",
+      "build-storybook": "FORCE_COLOR=1 turbo run build-storybook",
+      "clean-install": "sh scripts/clean-install.sh"
+    },
+    "deps": {
+      "relay-compiler": "20.1.1",
+      "storybook": "10.2.10",
+      "turbo": "2.8.0",
+      "typescript": "5.9.3"
+    }
+  },
+  "port": 3000,
+  "prettier": "{\n  \"singleQuote\": true,\n  \"trailingComma\": \"none\",\n  \"useTabs\": false,\n  \"tabWidth\": 2,\n  \"semi\": true,\n  \"printWidth\": 160\n}",
+  "nvmrc": "v24.15.0",
+  "dirs": {},
+  "docs": {
+    "README.md": "8a3c874f831d",
+    "AGENTS.md": "8b830f38c748",
+    ".ai/basic-rule.md": "3222e260e03c",
+    ".prettierrc": "cb20e6ff9867",
+    ".nvmrc": "f3c88209af50",
+    ".github/agents/brand-web.agent.md": "456c8a395ed4",
+    ".github/agents/care-web.agent.md": "7714dea2a5e3",
+    ".github/agents/plus-web.agent.md": "36bf478e13c3",
+    ".github/agents/refund-web.agent.md": "4422741bf15d",
+    ".github/agents/sena-web.agent.md": "f99c61cd136e",
+    ".github/agents/shared-packages.agent.md": "2b134d6a67ff",
+    ".github/skills/create-pr/SKILL.md": "212bc173be85",
+    ".github/skills/react-component/SKILL.md": "bb6efa517ebb"
+  },
+  "apps": {
+    "brand-web": {
+      "name": "brand-web",
+      "dev": "pnpm gen:env && next dev -p 3000 --turbo",
+      "port": 3000,
+      "router": "app",
+      "deps": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@repo/common-utils": "workspace:*",
+        "@repo/platform": "workspace:*",
+        "@repo/project-config": "workspace:*",
+        "@repo/tracking-service": "workspace:*",
+        "@repo/ui": "workspace:*",
+        "jotai": "catalog:",
+        "next": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "tailwindcss": "catalog:"
+      }
+    },
+    "care-web": {
+      "name": "care-web",
+      "dev": "pnpm relay && next dev -p 3100 --turbo",
+      "port": 3100,
+      "router": "app",
+      "deps": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@repo/common-utils": "workspace:*",
+        "@repo/platform": "workspace:*",
+        "@repo/project-config": "workspace:*",
+        "@repo/tracking-service": "workspace:*",
+        "@repo/ui": "workspace:*",
+        "@repo/user-session": "workspace:*",
+        "@repo/user-sign": "workspace:*",
+        "@zenterprise-inc/ui": "workspace:*",
+        "graphql": "catalog:",
+        "jest": "29.7.0",
+        "jotai": "catalog:",
+        "next": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-hook-form": "catalog:",
+        "react-relay": "catalog:",
+        "relay-runtime": "catalog:",
+        "tailwindcss": "catalog:",
+        "yup": "catalog:"
+      }
+    },
+    "plus-web": {
+      "name": "plus-web",
+      "dev": "next dev -p 3400 --turbo",
+      "port": 3400,
+      "router": "app",
+      "deps": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@repo/common-utils": "workspace:*",
+        "@repo/platform": "workspace:*",
+        "@repo/project-config": "workspace:*",
+        "@repo/tracking-service": "workspace:*",
+        "@repo/ui": "workspace:*",
+        "jotai": "catalog:",
+        "next": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-hook-form": "catalog:",
+        "tailwindcss": "catalog:",
+        "yup": "catalog:"
+      }
+    },
+    "refund-web": {
+      "name": "refund-web",
+      "dev": "pnpm gen:env && pnpm gen:relay && next dev -p 3200 --webpack",
+      "port": 3200,
+      "router": "pages",
+      "deps": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@repo/common-utils": "workspace:*",
+        "@repo/platform": "workspace:*",
+        "@repo/project-config": "workspace:*",
+        "@repo/tracking-service": "workspace:*",
+        "@repo/ui": "workspace:*",
+        "@repo/user-session": "workspace:*",
+        "@repo/user-sign": "workspace:*",
+        "@zenterprise-inc/ui": "workspace:*",
+        "axios": "catalog:",
+        "graphql": "catalog:",
+        "jotai": "catalog:",
+        "next": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-hook-form": "catalog:",
+        "react-relay": "catalog:",
+        "relay-runtime": "catalog:",
+        "tailwindcss": "catalog:",
+        "yup": "catalog:"
+      }
+    },
+    "sena-web": {
+      "name": "sena-web",
+      "dev": "pnpm gen:env && next dev -p 3300 --turbo",
+      "port": 3300,
+      "router": "app",
+      "deps": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@repo/common-utils": "workspace:*",
+        "@repo/platform": "workspace:*",
+        "@repo/project-config": "workspace:*",
+        "@repo/tracking-service": "workspace:*",
+        "@repo/ui": "workspace:*",
+        "@repo/user-session": "workspace:*",
+        "@repo/user-sign": "workspace:*",
+        "jotai": "catalog:",
+        "next": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "tailwindcss": "catalog:"
+      }
+    }
+  },
+  "packages": {
+    "common-utils": "@repo/common-utils",
+    "platform": "@repo/platform",
+    "project-config": "@repo/project-config",
+    "tracking-service": "@repo/tracking-service",
+    "ui": "@repo/ui",
+    "ui-deprecated": "@zenterprise-inc/ui",
+    "user-session": "@repo/user-session",
+    "user-sign": "@repo/user-sign"
+  },
+  "catalogHash": "550ec958"
+}
