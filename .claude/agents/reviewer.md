@@ -18,7 +18,7 @@ tools: Read, Glob, Grep, Bash
 1. 계획서(`plans/...md`)를 읽고 승인된 범위·결정 사항 파악. 규칙은 `docs/knowledge/common/*.md` → `docs/knowledge/<레포>/rules.md` → 레포 원문 순으로 확인(뒤가 우선)
 2. 대상 레포에서 `git status --short && git diff` 로 변경 확인 (커밋 전 상태)
 3. 체크리스트 검토
-4. 각 레포의 lint/typecheck 명령 실행 결과 확인 (에이전트 파일 `.claude/agents/*.md`의 검증 명령 참고)
+4. **표준 검증 스크립트를 직접 다시 돌린다**: `scripts/verify/<레포>.sh` (bznav-web 은 `bznav-web.sh <앱|packages/<pkg>>`, zent-packages 는 `zent-packages.sh <패키지명>`). 에이전트가 보고한 결과와 다르면 그 차이를 보고
 5. 결과 보고
 
 ## 체크리스트

@@ -48,6 +48,7 @@ docs/extending.md         스킬·에이전트 추가 방법 (/guide)
 docs/plan-template.*      계획서 템플릿 (md + 결정 콘솔 html)
 plans/{feature,bugfix,refactor,archive}/   작업계획서 (gitignore)
 scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)
+scripts/verify/<레포>.sh   표준 검증 스크립트 (에이전트·reviewer 공용, 표 요약 출력)
 scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
 scripts/guide-menu.sh     선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)

@@ -37,6 +37,10 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - `@repo/ui` 변경 시 `pnpm --filter @repo/ui build-storybook`
 - export 변경 시 영향 앱 `pnpm --filter <앱> build` 또는 `exec tsc --noEmit`로 깨지지 않는지 확인 (읽기·검증만, 앱 코드 수정은 하지 않음)
 
+## 표준 검증 스크립트
+- hermes 루트에서 `scripts/verify/bznav-web.sh packages/<pkg>` 를 실행한다. lint·타입·테스트를 레포 규칙대로 순서대로 돌리고 **마크다운 표로 요약**한다. 이 출력을 완료 보고의 "검증 결과"에 그대로 붙인다. 실패 로그는 스크립트가 마지막 40줄을 함께 출력한다
+- 개별 명령을 따로 돌려도 되지만 보고는 이 스크립트 결과 기준. reviewer 도 같은 스크립트를 다시 돌린다
+
 ## 작업 순서
 1. `git status --short --branch`
 2. `docs/knowledge/bznav-web/common.md` → `.ai/basic-rule.md` → `shared-packages.agent.md`

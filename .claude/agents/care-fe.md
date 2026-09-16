@@ -63,6 +63,10 @@ __generated__/      Orval 생성물 — 직접 수정 금지. git에 커밋됨
 - 브랜치: `dev`(통합) / `prd`(운영) / `frz`(선택). dev·prd·frz 직접 push 금지. 커밋·PR은 사용자 지시가 있을 때만
 - 요청 범위 밖 정리·의존성 업그레이드·파일 이동·전역 포맷팅 금지
 
+## 표준 검증 스크립트
+- hermes 루트에서 `scripts/verify/client-brics-care.sh` 를 실행한다. lint·타입·테스트를 레포 규칙대로 순서대로 돌리고 **마크다운 표로 요약**한다. 이 출력을 완료 보고의 "검증 결과"에 그대로 붙인다. 실패 로그는 스크립트가 마지막 40줄을 함께 출력한다
+- 개별 명령을 따로 돌려도 되지만 보고는 이 스크립트 결과 기준. reviewer 도 같은 스크립트를 다시 돌린다
+
 ## 작업 순서
 1. `git status --short --branch`로 기존 변경 확인
 2. 유사 화면(예: `app/promotion-page/*`, `app/bmans/*`) 패턴 파악. 레포 `CLAUDE.md` 컨벤션 절 재확인

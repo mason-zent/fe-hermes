@@ -299,7 +299,7 @@
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
       <span>agents 12 · skills 6</span>
-      <span>last sync 2026-09-16 11:05 KST</span>
+      <span>last sync 2026-09-16 10:55 KST</span>
     </div>
   </header>
 
@@ -546,7 +546,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="baseline">
       <h2>문서 기준 커밋</h2>
-      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 커밋(<code>origin/dev</code>, zent-packages는 <code>origin/main</code>)을 읽어 만든 것입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-16(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
+      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 커밋(<code>origin/dev</code>, zent-packages는 <code>origin/main</code>)을 읽어 만든 것입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-16 10:55(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
       <div class="table-wrap">
         <table class="baseline">
           <thead><tr><th>레포</th><th>에이전트</th><th>origin/dev 커밋</th><th>날짜</th><th>커밋 제목</th></tr></thead>
@@ -687,6 +687,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   └── archive/               <span class="c">종료된 계획서 (gitignore 대상)</span>
 └── scripts/
     ├── setup.sh               <span class="c">팀원 최초 설정 — repos/ 링크 + 도구 점검</span>
+    ├── verify/&lt;레포&gt;.sh        <span class="c">표준 검증 (lint·타입·테스트 → 표 요약). 에이전트·reviewer 공용</span>
     ├── archive-plans.sh
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)</span>
