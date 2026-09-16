@@ -1,6 +1,8 @@
 {
   "repo": "client-brics-hub",
-  "agent": "hub-fe",
+  "agents": [
+    "hub-fe"
+  ],
   "branch": "origin/dev",
   "sha": "99f4f6075a28",
   "shaDate": "2026-09-02",

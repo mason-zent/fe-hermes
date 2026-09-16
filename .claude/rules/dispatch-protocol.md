@@ -10,9 +10,18 @@ Agent 도구에 `subagent_type`으로 에이전트 이름을 지정한다.
 |-----------|---------------|
 | client-brics-refund | `refund-fe` |
 | client-brics-hub | `hub-fe` |
-| bznav-web | `bznav-fe` |
+| client-brics-care | `care-fe` |
 | web-op | `op-fe` |
+| bznav-web `apps/refund-web` | `bznav-refund-fe` |
+| bznav-web `apps/care-web` | `bznav-care-fe` |
+| bznav-web `apps/brand-web` | `bznav-brand-fe` |
+| bznav-web `apps/sena-web` | `bznav-sena-fe` |
+| bznav-web `apps/plus-web` | `bznav-plus-fe` |
+| bznav-web `packages/*` | `bznav-packages-fe` |
+| zent-packages `frontend/` | `packages-fe` |
 | 교차 리뷰 (읽기 전용) | `reviewer` |
+
+bznav-web 은 한 레포지만 앱마다 에이전트가 다르다. 같은 레포의 두 앱을 동시에 디스패치할 때는 **서로 다른 파일만 만지는지**(공통 `packages/**` 는 bznav-packages-fe 단독) 계획서에서 확인한 뒤 병렬로 보낸다. 공유 패키지(zent-packages) 변경이 소비 레포 작업과 함께 필요하면 packages-fe 를 **먼저** 끝내고 changeset·스냅샷 태그를 소비 측 에이전트에 넘긴다.
 
 서로 독립적인 서비스 작업은 **한 응답에서 동시에 호출**해 병렬로 돌린다.
 

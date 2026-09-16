@@ -1,10 +1,17 @@
 {
   "repo": "bznav-web",
-  "agent": "bznav-fe",
+  "agents": [
+    "bznav-refund-fe",
+    "bznav-care-fe",
+    "bznav-brand-fe",
+    "bznav-sena-fe",
+    "bznav-plus-fe",
+    "bznav-packages-fe"
+  ],
   "branch": "origin/dev",
-  "sha": "df7a7566e51b",
-  "shaDate": "2026-09-14",
-  "subject": "Add SECRET_NAME argument for AWS Secrets Manager",
+  "sha": "1f158d662303",
+  "shaDate": "2026-09-15",
+  "subject": "chore: Merge to dev",
   "package": {
     "name": "bznav-web",
     "version": null,
@@ -54,6 +61,7 @@
   },
   "apps": {
     "brand-web": {
+      "agent": "bznav-brand-fe",
       "name": "brand-web",
       "dev": "pnpm gen:env && next dev -p 3000 --turbo",
       "port": 3000,
@@ -73,6 +81,7 @@
       }
     },
     "care-web": {
+      "agent": "bznav-care-fe",
       "name": "care-web",
       "dev": "pnpm relay && next dev -p 3100 --turbo",
       "port": 3100,
@@ -101,6 +110,7 @@
       }
     },
     "plus-web": {
+      "agent": "bznav-plus-fe",
       "name": "plus-web",
       "dev": "next dev -p 3400 --turbo",
       "port": 3400,
@@ -122,6 +132,7 @@
       }
     },
     "refund-web": {
+      "agent": "bznav-refund-fe",
       "name": "refund-web",
       "dev": "pnpm gen:env && pnpm gen:relay && next dev -p 3200 --webpack",
       "port": 3200,
@@ -150,6 +161,7 @@
       }
     },
     "sena-web": {
+      "agent": "bznav-sena-fe",
       "name": "sena-web",
       "dev": "pnpm gen:env && next dev -p 3300 --turbo",
       "port": 3300,

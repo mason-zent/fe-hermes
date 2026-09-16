@@ -1,14 +1,14 @@
 ---
 name: sync
-description: 담당 4개 레포의 origin/dev 를 훑어 에이전트 md(.claude/agents/*.md), docs/services.md, docs/playbook.html 을 실제 레포 상태에 맞게 갱신합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
+description: hermes.config.json 의 담당 레포 전체(origin/<branch>, 대부분 dev·zent-packages 는 main)를 훑어 에이전트 md(.claude/agents/*.md), docs/services.md, docs/playbook.html 을 실제 레포 상태에 맞게 갱신합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
 argument-hint: "(선택) 레포 이름 일부 — 예: hub, bznav. 비우면 전체"
 ---
 
 # 레포 ↔ 문서 동기화
 
-대상: $ARGUMENTS (비어 있으면 4개 레포 전체)
+대상: $ARGUMENTS (비어 있으면 hermes.config.json 의 레포 전체)
 
-각 레포의 `origin/dev` 를 기준으로 헤르메스 문서가 사실과 맞는지 확인하고 틀린 곳만 고친다. 로컬 작업 트리는 브랜치가 제각각이라 **읽지 않는다.** 항상 `origin/dev` 트리를 본다.
+각 레포의 `origin/<branch>`(hermes.config.json, 대부분 `dev`, zent-packages 는 `main`)를 기준으로 헤르메스 문서가 사실과 맞는지 확인하고 틀린 곳만 고친다. 로컬 작업 트리는 브랜치가 제각각이라 **읽지 않는다.** 레포 경로는 `repos/<name>` 링크다. bznav-web 은 앱별 에이전트 md 6개와 `docs/knowledge/bznav-web/common.md` 를 함께 갱신 대상으로 본다.
 
 ## 절차
 
@@ -26,8 +26,8 @@ node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 1. **지문 변화** — 버전·명령·포트·디렉토리 diff. 이건 그대로 문서에 반영할 사실이다
 2. **규칙·소개 문서 변화** — README, `.ai/basic-rule.md`, `.github/agents/*.agent.md` 등이 바뀐 경우. 반드시 내용을 읽는다:
    ```bash
-   git -C <레포경로> diff <이전sha>..<새sha> -- README.md
-   git -C <레포경로> show origin/dev:.ai/basic-rule.md
+   git -C repos/<레포> diff <이전sha>..<새sha> -- README.md
+   git -C repos/<레포> show origin/dev:.ai/basic-rule.md
    ```
 3. **커밋 목록** — 새 도메인/화면이 생겼는지, 라이브러리 교체가 있었는지 힌트. 의심되면 해당 경로를 `git show origin/dev:<path>` 로 확인
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * 담당 레포들의 origin/dev 상태를 지문(fingerprint)으로 뽑아 이전 지문과 비교한다.
- * 작업 트리는 건드리지 않고 `git show origin/dev:<path>` 로 dev 트리를 직접 읽는다.
+ * 담당 레포들의 origin/<branch> 상태를 지문(fingerprint)으로 뽑아 이전 지문과 비교한다. (레포 목록·브랜치: hermes.config.json)
+ * 작업 트리는 건드리지 않고 `git show origin/<branch>:<path>` 로 기준 트리를 직접 읽는다. 레포 경로는 repos/<name> 링크.
  *
  *   node scripts/sync-fingerprint.mjs            # fetch → 지문 생성 → .sync/pending/ 에 저장 → 리포트 출력
  *   node scripts/sync-fingerprint.mjs --no-fetch # 네트워크 없이 로컬 origin/dev 참조만 사용
@@ -21,14 +21,14 @@ const SYNC_DIR = join(ROOT, '.sync')
 const SNAP_DIR = join(SYNC_DIR, 'snapshots')
 const PENDING_DIR = join(SYNC_DIR, 'pending')
 const REPORT_PATH = join(SYNC_DIR, 'last-report.md')
-const BRANCH = 'origin/dev'
-
-const REPOS = [
-  { name: 'client-brics-refund', agent: 'refund-fe', path: '/Users/mason/mason-zent/client-brics-refund', kind: 'single', appDir: 'app' },
-  { name: 'client-brics-hub', agent: 'hub-fe', path: '/Users/mason/mason-zent/client-brics-hub', kind: 'single', appDir: 'app' },
-  { name: 'bznav-web', agent: 'bznav-fe', path: '/Users/mason/mason-zent/bznav-web', kind: 'monorepo' },
-  { name: 'web-op', agent: 'op-fe', path: '/Users/mason/mason-zent/web-op', kind: 'single', appDir: 'app', srcDir: 'src' }
-]
+// 레포 목록은 hermes.config.json 이 정본. 경로는 repos/<name> 심볼릭 링크 (scripts/setup.sh 가 생성)
+const CONFIG = JSON.parse(readFileSync(join(ROOT, 'hermes.config.json'), 'utf8'))
+const REPOS = CONFIG.repos.map((repo) => ({
+  ...repo,
+  path: join(ROOT, 'repos', repo.name),
+  ref: `origin/${repo.branch ?? 'dev'}`,
+  agents: repo.agents ?? [...Object.values(repo.apps ?? {}), ...(repo.packagesAgent ? [repo.packagesAgent] : [])]
+}))
 
 // 에이전트 md 에 영향을 주는 의존성만 추적한다 (전체 deps 는 노이즈)
 const DEP_PATTERNS = [
@@ -58,34 +58,34 @@ const git = (repoPath, gitArgs, { allowFail = false } = {}) => {
     throw error
   }
 }
-const showFile = (repoPath, filePath) => git(repoPath, ['show', `${BRANCH}:${filePath}`], { allowFail: true })
-const readJson = (repoPath, filePath) => {
-  const raw = showFile(repoPath, filePath)
+const showFile = (repo, filePath) => git(repo.path, ['show', `${repo.ref}:${filePath}`], { allowFail: true })
+const readJson = (repo, filePath) => {
+  const raw = showFile(repo, filePath)
   if (raw === null) return null
   try { return JSON.parse(raw) } catch { return { __parseError: true } }
 }
 // 디렉토리 항목 나열 (blob/tree 이름). 없으면 null
-const listTree = (repoPath, dirPath) => {
-  const out = git(repoPath, ['ls-tree', '--name-only', BRANCH, dirPath ? `${dirPath}/` : ''], { allowFail: true })
+const listTree = (repo, dirPath) => {
+  const out = git(repo.path, ['ls-tree', '--name-only', repo.ref, dirPath ? `${dirPath}/` : ''], { allowFail: true })
   if (out === null || out === '') return null
   return out.split('\n').map((line) => line.replace(/^.*\//, '')).filter(Boolean).sort()
 }
-const listDirsOnly = (repoPath, dirPath) => {
-  const out = git(repoPath, ['ls-tree', BRANCH, dirPath ? `${dirPath}/` : ''], { allowFail: true })
+const listDirsOnly = (repo, dirPath) => {
+  const out = git(repo.path, ['ls-tree', repo.ref, dirPath ? `${dirPath}/` : ''], { allowFail: true })
   if (out === null || out === '') return null
   return out.split('\n').filter((line) => line.includes(' tree ')).map((line) => line.split('\t')[1].replace(/^.*\//, '')).sort()
 }
 // 파일들의 blob id (내용 변경 감지용)
-const blobIds = (repoPath, paths) => {
+const blobIds = (repo, paths) => {
   const result = {}
   for (const filePath of paths) {
-    const out = git(repoPath, ['ls-tree', BRANCH, filePath], { allowFail: true })
+    const out = git(repo.path, ['ls-tree', repo.ref, filePath], { allowFail: true })
     if (out) result[filePath] = out.split(/\s+/)[2].slice(0, 12)
   }
   return result
 }
-const blobIdsInDir = (repoPath, dirPath) => {
-  const out = git(repoPath, ['ls-tree', '-r', BRANCH, `${dirPath}/`], { allowFail: true })
+const blobIdsInDir = (repo, dirPath) => {
+  const out = git(repo.path, ['ls-tree', '-r', repo.ref, `${dirPath}/`], { allowFail: true })
   if (!out) return {}
   const result = {}
   for (const line of out.split('\n')) {
@@ -118,56 +118,68 @@ const summarizePackage = (pkg) => pkg ? {
 } : null
 
 const buildSnapshot = (repo) => {
-  const sha = git(repo.path, ['rev-parse', BRANCH])
-  const [shaDate, subject] = git(repo.path, ['log', '-1', '--format=%cs%n%s', BRANCH]).split('\n')
-  const rootPkg = readJson(repo.path, 'package.json')
+  const sha = git(repo.path, ['rev-parse', repo.ref])
+  const [shaDate, subject] = git(repo.path, ['log', '-1', '--format=%cs%n%s', repo.ref]).split('\n')
+  const rootPkg = readJson(repo, 'package.json')
   const snapshot = {
     repo: repo.name,
-    agent: repo.agent,
-    branch: BRANCH,
+    agents: repo.agents,
+    branch: repo.ref,
     sha: sha.slice(0, 12),
     shaDate,
     subject,
     package: summarizePackage(rootPkg),
     port: portFromScript(rootPkg?.scripts?.dev),
-    prettier: showFile(repo.path, '.prettierrc') ?? showFile(repo.path, 'prettier.config.js') ?? showFile(repo.path, '.prettierrc.json') ?? null,
-    nvmrc: showFile(repo.path, '.nvmrc'),
+    prettier: showFile(repo, '.prettierrc') ?? showFile(repo, 'prettier.config.js') ?? showFile(repo, '.prettierrc.json') ?? null,
+    nvmrc: showFile(repo, '.nvmrc'),
     dirs: {},
     docs: {}
   }
 
   if (repo.kind === 'single') {
     // app/ 1단계 + 2단계 (라우트 구조)
-    const appTop = listDirsOnly(repo.path, repo.appDir)
+    const appTop = listDirsOnly(repo, repo.appDir)
     if (appTop) {
       snapshot.dirs[repo.appDir] = appTop
       for (const dirName of appTop) {
         if (dirName.startsWith('_') || dirName === 'api') continue
-        const second = listDirsOnly(repo.path, `${repo.appDir}/${dirName}`)
+        const second = listDirsOnly(repo, `${repo.appDir}/${dirName}`)
         if (second && second.length) snapshot.dirs[`${repo.appDir}/${dirName}`] = second.filter((name) => !name.startsWith('_'))
       }
     }
     if (repo.srcDir) {
-      const srcTop = listDirsOnly(repo.path, repo.srcDir)
+      const srcTop = listDirsOnly(repo, repo.srcDir)
       if (srcTop) {
         snapshot.dirs[repo.srcDir] = srcTop
         for (const dirName of srcTop) {
-          const second = listDirsOnly(repo.path, `${repo.srcDir}/${dirName}`)
+          const second = listDirsOnly(repo, `${repo.srcDir}/${dirName}`)
           if (second && second.length) snapshot.dirs[`${repo.srcDir}/${dirName}`] = second
         }
       }
     }
-    const libTop = listTree(repo.path, 'lib')
+    const libTop = listTree(repo, 'lib')
     if (libTop) snapshot.dirs.lib = libTop
+  } else if (repo.kind === 'packages') {
+    // 패키지 레포: <scope>/<group>/<pkg>/package.json 의 이름·버전·scripts 요약 (예: zent-packages 의 frontend/)
+    snapshot.packages = {}
+    for (const group of listDirsOnly(repo, repo.scope) ?? []) {
+      for (const pkgName of listDirsOnly(repo, `${repo.scope}/${group}`) ?? []) {
+        const pkg = readJson(repo, `${repo.scope}/${group}/${pkgName}/package.json`)
+        if (!pkg) continue
+        snapshot.packages[`${group}/${pkgName}`] = { name: pkg.name ?? null, version: pkg.version ?? null, scripts: Object.keys(pkg.scripts ?? {}).sort() }
+      }
+    }
+    snapshot.dirs[repo.scope] = listDirsOnly(repo, repo.scope)
   } else {
     // 모노레포: apps/* 와 packages/* 각각의 package.json 요약
     snapshot.apps = {}
     snapshot.packages = {}
-    for (const appName of listDirsOnly(repo.path, 'apps') ?? []) {
-      const pkg = readJson(repo.path, `apps/${appName}/package.json`)
-      const usesPages = listTree(repo.path, `apps/${appName}/pages`) !== null
-      const usesApp = listTree(repo.path, `apps/${appName}/app`) !== null || listTree(repo.path, `apps/${appName}/src/app`) !== null
+    for (const appName of listDirsOnly(repo, 'apps') ?? []) {
+      const pkg = readJson(repo, `apps/${appName}/package.json`)
+      const usesPages = listTree(repo, `apps/${appName}/pages`) !== null
+      const usesApp = listTree(repo, `apps/${appName}/app`) !== null || listTree(repo, `apps/${appName}/src/app`) !== null
       snapshot.apps[appName] = {
+        agent: repo.apps?.[appName] ?? null,
         name: pkg?.name ?? null,
         dev: pkg?.scripts?.dev ?? null,
         port: portFromScript(pkg?.scripts?.dev),
@@ -175,16 +187,16 @@ const buildSnapshot = (repo) => {
         deps: pickDeps(pkg)
       }
     }
-    for (const pkgName of listDirsOnly(repo.path, 'packages') ?? []) {
-      const pkg = readJson(repo.path, `packages/${pkgName}/package.json`)
+    for (const pkgName of listDirsOnly(repo, 'packages') ?? []) {
+      const pkg = readJson(repo, `packages/${pkgName}/package.json`)
       snapshot.packages[pkgName] = pkg?.name ?? null
     }
-    const workspaceYaml = showFile(repo.path, 'pnpm-workspace.yaml')
+    const workspaceYaml = showFile(repo, 'pnpm-workspace.yaml')
     snapshot.catalogHash = workspaceYaml ? hashString(workspaceYaml) : null
   }
 
-  snapshot.docs = { ...blobIds(repo.path, DOC_FILES) }
-  for (const dirPath of DOC_GLOB_DIRS) Object.assign(snapshot.docs, blobIdsInDir(repo.path, dirPath))
+  snapshot.docs = { ...blobIds(repo, DOC_FILES) }
+  for (const dirPath of DOC_GLOB_DIRS) Object.assign(snapshot.docs, blobIdsInDir(repo, dirPath))
   return snapshot
 }
 
@@ -243,25 +255,25 @@ if (ACCEPT) {
 }
 
 ensureDirs()
-const targets = REPOS.filter((repo) => !REPO_FILTER || repo.name.includes(REPO_FILTER) || repo.agent.includes(REPO_FILTER))
+const targets = REPOS.filter((repo) => !REPO_FILTER || repo.name.includes(REPO_FILTER) || repo.agents.some((agent) => agent.includes(REPO_FILTER)))
 const report = []
 const today = new Date().toISOString().slice(0, 10)
-report.push(`# Hermes sync 리포트 (${today})`, '', `기준 브랜치: \`${BRANCH}\`. 작업 트리는 읽지 않았다.`, '')
+report.push(`# Hermes sync 리포트 (${today})`, '', '기준 브랜치: 레포별 `origin/<branch>` (hermes.config.json). 작업 트리는 읽지 않았다.', '')
 
 let changedCount = 0
 for (const repo of targets) {
-  if (!existsSync(repo.path)) { report.push(`## ${repo.name} (${repo.agent})`, '', `⚠️ 경로가 없다: ${repo.path}`, ''); continue }
+  if (!existsSync(repo.path)) { report.push(`## ${repo.name} (${repo.agents.join(', ')})`, '', `⚠️ repos/${repo.name} 링크가 없다. scripts/setup.sh 를 실행하라`, ''); continue }
   let fetchNote = ''
   if (!NO_FETCH) {
-    const fetched = git(repo.path, ['fetch', '--quiet', 'origin', 'dev'], { allowFail: true })
-    if (fetched === null) fetchNote = ' (fetch 실패, 로컬 origin/dev 참조 사용)'
+    const fetched = git(repo.path, ['fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
+    if (fetched === null) fetchNote = ` (fetch 실패, 로컬 ${repo.ref} 참조 사용)`
   }
   const snapshot = buildSnapshot(repo)
   const previous = loadJson(join(SNAP_DIR, `${repo.name}.json`))
   writeFileSync(join(PENDING_DIR, `${repo.name}.json`), JSON.stringify(snapshot, null, 2))
 
-  report.push(`## ${repo.name} → \`.claude/agents/${repo.agent}.md\``, '')
-  report.push(`- origin/dev: \`${snapshot.sha}\` ${snapshot.shaDate} "${snapshot.subject}"${fetchNote}`)
+  report.push(`## ${repo.name} → ${repo.agents.map((agent) => `\`.claude/agents/${agent}.md\``).join(', ')}`, '')
+  report.push(`- ${repo.ref}: \`${snapshot.sha}\` ${snapshot.shaDate} "${snapshot.subject}"${fetchNote}`)
 
   if (!previous) {
     report.push('- **baseline 없음** — 첫 실행. 아래 지문 전체를 에이전트 md 와 대조해 틀린 사실을 고친 뒤 `--accept`.', '')
@@ -291,7 +303,7 @@ for (const repo of targets) {
   report.push(lines.length ? '```diff' : '', ...(lines.length ? lines : ['- 없음. 코드만 바뀌고 구조·스택은 동일']), lines.length ? '```' : '')
   report.push('', '### 규칙·소개 문서 변화')
   if (docChanges.length) {
-    report.push('```diff', ...docChanges.sort(), '```', '', `내용 확인: \`git -C ${repo.path} diff ${previous.sha}..${snapshot.sha} -- <파일>\``)
+    report.push('```diff', ...docChanges.sort(), '```', '', `내용 확인: \`git -C repos/${repo.name} diff ${previous.sha}..${snapshot.sha} -- <파일>\``)
   } else report.push('- 없음')
   report.push('', `### 커밋 (최근 ${Math.min(commits.length, 40)}개)`, '```', ...commits.slice(0, 40), commits.length > 40 ? `... 외 ${commits.length - 40}개` : '', '```', '')
 }

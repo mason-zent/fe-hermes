@@ -6,7 +6,7 @@ set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$HERMES_DIR"
 CLAUDE_PANE="${HERMES_CLAUDE_PANE:-}"
-REPOS=(client-brics-refund client-brics-hub bznav-web web-op)
+REPOS=( $(ls "$HERMES_DIR/repos" 2>/dev/null) )
 
 BOLD=$(tput bold 2>/dev/null || true); DIM=$(tput dim 2>/dev/null || true)
 REV=$(tput rev 2>/dev/null || true);   RESET=$(tput sgr0 2>/dev/null || true)
@@ -49,8 +49,8 @@ act_playbook()  { open docs/playbook.html && echo "브라우저에서 docs/playb
 act_status() {
   { for repo in "${REPOS[@]}"; do
       echo "${BOLD}== $repo${RESET}"
-      git -C "/Users/mason/mason-zent/$repo" status --short --branch 2>&1 | head -15
-      git -C "/Users/mason/mason-zent/$repo" log --oneline -3 2>&1; echo
+      git -C "repos/$repo" status --short --branch 2>&1 | head -15
+      git -C "repos/$repo" log --oneline -3 2>&1; echo
     done
     echo "${BOLD}== 진행 중 계획서${RESET}"
     find plans -name '*.md' -not -path 'plans/archive/*' 2>/dev/null | sort
@@ -94,7 +94,7 @@ act_new_agent() {
   cat > "$target" <<TPL
 ---
 name: $name
-description: <레포>(<서비스 설명>) 담당 프론트엔드 엔지니어. /Users/mason/mason-zent/<레포> 안의 작업에 사용한다. <어떤 화면·요청이면 이 에이전트인지 구체적으로>. (콜론+공백 금지)
+description: <레포>(<서비스 설명>) 담당 프론트엔드 엔지니어. repos/<레포> 안의 작업에 사용한다. <어떤 화면·요청이면 이 에이전트인지 구체적으로>. (콜론+공백 금지)
 tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
@@ -102,7 +102,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 헤르메스(팀리드)가 승인된 작업계획서와 함께 작업을 넘긴다. 담당 레포 밖은 수정하지 않는다.
 
 ## 기본 정보
-- 레포: /Users/mason/mason-zent/<레포>
+- 레포: repos/<레포>
 - 스택:
 - dev 포트:
 
@@ -139,7 +139,7 @@ TITLES=(
   "작업 흐름 (Plan-First)"
   "서비스 맵"
   "플레이북을 브라우저로 열기"
-  "4개 레포 git 현황 · 계획서"
+  "담당 레포 git 현황 · 계획서"
   "새 스킬 만들기"
   "새 에이전트 만들기"
   "스킬/에이전트 문서 반영 요청"
@@ -163,13 +163,13 @@ HELPS=(
   "스킬·에이전트를 추가하는 방법과 같이 갱신할 문서 목록. docs/extending.md 를 less 로 연다 (q 로 닫기)"
   "에이전트 5개의 담당 레포·서비스·스택 표와, 어떤 요청이 어느 에이전트로 가는지 라우팅 기준"
   "분석 → 계획서 → 승인 → 병렬 디스패치 → 검증 → 보고 → 정리, 헤르메스의 6단계 Plan-First 흐름"
-  "4개 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
+  "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
   "공유용 플레이북 HTML 을 기본 브라우저에서 연다. 같은 내용이 claude.ai 아티팩트로도 공유돼 있다"
-  "refund·hub·bznav·web-op 의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에"
+  "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에"
   "이름을 입력하면 .claude/skills/<이름>/SKILL.md 템플릿을 만들고 편집기를 연다. 저장하면 /<이름> 으로 바로 쓸 수 있다"
   "이름을 입력하면 .claude/agents/<이름>.md 템플릿을 만들고 편집기를 연다. description 이 라우팅 문장이니 구체적으로"
   "아래에 새 pane 을 열어 별도 헤르메스 세션을 띄우고, 방금 추가한 스킬/에이전트를 CLAUDE.md·README·playbook 에 반영해 달라고 요청한다"
-  "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /sync 를 돌린다. 4개 레포 origin/dev 를 읽어 에이전트 md·서비스 맵·플레이북을 갱신"
+  "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /sync 를 돌린다. 담당 레포 origin/<branch> 를 읽어 에이전트 md·서비스 맵·플레이북을 갱신"
   "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /status 를 돌린다. 이 세션(현재 대화)은 건드리지 않는다"
 )
 ACTIONS=(act_extending act_team act_flow act_services act_playbook act_status

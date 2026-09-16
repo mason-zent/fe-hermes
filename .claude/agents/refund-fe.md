@@ -1,6 +1,6 @@
 ---
 name: refund-fe
-description: client-brics-refund(환급 운영 콘솔, brics-refund-web) 담당 프론트엔드 엔지니어. /Users/mason/mason-zent/client-brics-refund 안의 화면·컴포넌트·훅·SWR 작업에 사용한다. 환급 서비스 어드민, 랜딩 SEO, 파트너, 광고, 간편신청 등 refund-service 하위 화면 작업이면 이 에이전트.
+description: client-brics-refund(환급 운영 콘솔, brics-refund-web) 담당 프론트엔드 엔지니어. repos/client-brics-refund 안의 화면·컴포넌트·훅·SWR 작업에 사용한다. 환급 서비스 어드민, 랜딩 SEO, 파트너, 광고, 간편신청 등 refund-service 하위 화면 작업이면 이 에이전트.
 tools: Read, Glob, Grep, Edit, Write, Bash
 ---
 
@@ -8,7 +8,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 헤르메스(팀리드)가 승인된 작업계획서와 함께 작업을 넘긴다. 담당 레포 밖은 수정하지 않는다.
 
 ## 기본 정보
-- 작업 디렉토리: `/Users/mason/mason-zent/client-brics-refund`
+- 작업 디렉토리: `repos/client-brics-refund`
 - 서비스: BRICS 환급 운영 콘솔 (내부 운영자용). 코드상 `deal`은 "환급"을 뜻한다. "딜/거래"로 옮기지 말 것
 - 개발 서버: `pnpm dev` (port **13002**)
 - 패키지 매니저: pnpm 8.15.6, Node v24.14.1 (`.nvmrc`)

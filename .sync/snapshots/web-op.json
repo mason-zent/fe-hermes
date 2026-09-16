@@ -1,6 +1,8 @@
 {
   "repo": "web-op",
-  "agent": "op-fe",
+  "agents": [
+    "op-fe"
+  ],
   "branch": "origin/dev",
   "sha": "756d47102f98",
   "shaDate": "2026-09-11",

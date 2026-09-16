@@ -1,0 +1,112 @@
+{
+  "repo": "client-brics-care",
+  "agents": [
+    "care-fe"
+  ],
+  "branch": "origin/dev",
+  "sha": "1457d837efe3",
+  "shaDate": "2026-08-20",
+  "subject": "Merge pull request #25 from zenterprise-inc/prd",
+  "package": {
+    "name": "brics-care-web",
+    "version": "2.8.18",
+    "packageManager": "pnpm@8.15.6",
+    "engines": {
+      "node": ">=24"
+    },
+    "scripts": {
+      "dev": "next dev -p 13001",
+      "build": "next build",
+      "build:pr": "next build",
+      "build:local": "dotenv -e .env.local -- pnpm build",
+      "start": "next start",
+      "lint": "eslint \"./**/*.{ts,tsx}\" --fix && prettier --write \"./**/*.{ts,tsx}\"",
+      "lint:check": "eslint \"./**/*.{ts,tsx}\" && prettier --check \"./**/*.{ts,tsx}\"",
+      "clean": "rm -rf node_modules && rm -rf __generated__",
+      "pkg:link": "zent-fe-devkit link on",
+      "pkg:unlink": "zent-fe-devkit link off",
+      "use:dev-pkgs": "zent-fe-devkit use-dev",
+      "gen:env": "node generate-env.mjs --env=dev --app=care",
+      "genapi": "rm -rf __generated__ && orval && mv generated __generated__",
+      "genapi:pr": "rm -rf __generated__ && dotenv -e .env -- orval && mv generated __generated__",
+      "genapi:local": "rm -rf __generated__ && dotenv -e .env.local -- orval && mv generated __generated__",
+      "prepare": "husky || true"
+    },
+    "deps": {
+      "@zenterprise-inc/brics-fe-ui": "0.3.1",
+      "@zenterprise-inc/brics-fe-zent-auth": "^0.3.0",
+      "@zenterprise-inc/zent-fe-devkit": "0.4.0",
+      "axios": "^1.7.7",
+      "next": "15.5.22",
+      "next-auth": "5.0.0-beta.30",
+      "orval": "6.31.0",
+      "react": "^19.2.8",
+      "react-dom": "^19.2.8",
+      "react-hook-form": "^7.73.1",
+      "styled-components": "^6.4.1",
+      "swr": "^2.2.5",
+      "tailwindcss": "^3.4.14",
+      "typescript": "^5.6.3",
+      "zod": "^3.24.1",
+      "zustand": "^5.0.12"
+    }
+  },
+  "port": 13001,
+  "prettier": "{\n  \"bracketSpacing\": true,\n  \"singleQuote\": true,\n  \"trailingComma\": \"none\",\n  \"tabWidth\": 2,\n  \"semi\": false,\n  \"printWidth\": 120\n}",
+  "nvmrc": "v24.14.1",
+  "dirs": {
+    "app": [
+      "_components",
+      "_hooks",
+      "api",
+      "bmans",
+      "logout",
+      "marketing-page",
+      "pro",
+      "promotion-page",
+      "qa",
+      "subscription",
+      "txprs",
+      "unauthorized"
+    ],
+    "app/bmans": [
+      "stores"
+    ],
+    "app/marketing-page": [
+      "create",
+      "edit",
+      "hooks"
+    ],
+    "app/pro": [],
+    "app/promotion-page": [
+      "constants",
+      "create",
+      "edit",
+      "hooks",
+      "schemas",
+      "stores",
+      "utils"
+    ],
+    "app/qa": [
+      "[userId]",
+      "utils"
+    ],
+    "app/subscription": [],
+    "app/txprs": [
+      "[txprInfrId]"
+    ],
+    "lib": [
+      "auth.ts",
+      "file.ts",
+      "formdata.ts",
+      "orval-fetcher.ts",
+      "string.ts"
+    ]
+  },
+  "docs": {
+    "README.md": "33518f13b395",
+    "CLAUDE.md": "66f897336abb",
+    ".prettierrc": "ccd71bd3ee61",
+    ".nvmrc": "a3b7a31ee830"
+  }
+}

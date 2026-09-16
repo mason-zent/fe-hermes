@@ -15,3 +15,6 @@ plans/**/*.html
 # sync 임시 파일 (baseline인 .sync/snapshots/ 는 유지)
 .sync/pending/
 .sync/last-report.md
+
+# 팀원별 로컬 레포 링크 (scripts/setup.sh 가 생성)
+repos/

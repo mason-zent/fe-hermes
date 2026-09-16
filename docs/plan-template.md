@@ -20,7 +20,7 @@
 ## 1. 개요
 - 작업 유형: feature / bugfix / refactor
 - 요청 사항: (사용자 요청 요약)
-- 대상 서비스: refund-fe / hub-fe / bznav-fe / op-fe (복수 가능)
+- 대상 서비스(에이전트): refund-fe / hub-fe / care-fe / op-fe / bznav-{refund,care,brand,sena,plus}-fe / bznav-packages-fe / packages-fe (복수 가능)
 - 사용자 결정 사항: (선택지가 갈리는 항목 — 이 목록이 `.html`의 `decisions[]`가 된다)
   - 결정 항목 1: **선택값** (옵션 후보 나열)
 

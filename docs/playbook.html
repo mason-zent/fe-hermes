@@ -296,10 +296,10 @@
     <h1>Hermes 플레이북</h1>
     <p class="lede">헤르메스는 4개 프론트엔드 서비스를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
     <div class="meta">
-      <span>path /Users/mason/mason-zent/hermes</span>
+      <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
-      <span>agents 5 · skills 6</span>
-      <span>last sync 2026-09-15 11:48 KST</span>
+      <span>agents 12 · skills 6</span>
+      <span>last sync 2026-09-16 KST</span>
     </div>
   </header>
 
@@ -320,8 +320,10 @@
   <main>
     <section id="start">
       <h2>시작하기</h2>
-      <p>hermes 폴더에서 Claude Code를 열면 그 세션이 곧 헤르메스가 됩니다. 별도 설치는 없고, 담당 레포 4개가 <code>/Users/mason/mason-zent/</code> 아래에 clone되어 있어야 합니다.</p>
-<pre><code>cd /Users/mason/mason-zent/hermes
+      <p>fe-hermes 폴더에서 Claude Code를 열면 그 세션이 곧 헤르메스가 됩니다. 처음 한 번 <code>scripts/setup.sh</code>를 돌려 담당 레포들을 <code>repos/&lt;레포&gt;</code> 링크로 연결합니다. 레포들이 fe-hermes 상위 폴더에 나란히 있으면 인자 없이, 다른 곳이면 <code>--root &lt;경로&gt;</code>를 줍니다.</p>
+<pre><code>git clone https://github.com/mason-zent/fe-hermes.git
+cd fe-hermes
+scripts/setup.sh
 claude
 
 # 그 다음 자연어로 요청하거나 슬래시 커맨드를 씁니다
@@ -334,7 +336,7 @@ claude
 
     <section id="team">
       <h2>팀 구성</h2>
-      <p>서브에이전트 5개가 <code>.claude/agents/</code>에 정의되어 있습니다. FE 에이전트 4개는 각자 레포 하나씩을 전담하고, reviewer는 읽기 전용으로 전체를 봅니다. 아래 표의 스택·포트는 각 레포 <code>origin/dev</code> 기준이며 <code>/sync</code>로 갱신됩니다.</p>
+      <p>서브에이전트 12개가 <code>.claude/agents/</code>에 정의되어 있습니다. 단일 레포는 에이전트 하나가 전담하고, bznav-web 모노레포는 <strong>앱마다 에이전트 하나</strong>(+ packages 담당), zent-packages는 <code>frontend/</code>만 맡는 에이전트가 있으며, reviewer는 읽기 전용으로 전체를 봅니다. 레포 목록 정본은 <code>hermes.config.json</code>, 경로는 <code>repos/&lt;레포&gt;</code> 링크입니다. 아래 표의 스택·포트는 각 레포 <code>origin/dev</code> 기준이며 <code>/sync</code>로 갱신됩니다.</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -356,11 +358,60 @@ claude
               <td><code>pnpm lint:check</code><br><code>pnpm typecheck</code><br><code>pnpm test</code></td>
             </tr>
             <tr>
-              <td class="name">bznav-fe</td>
-              <td>bznav-web</td>
-              <td>비즈넵 사용자향 웹 모노레포<span class="sub">refund-web, care-web, brand-web, sena-web, plus-web + packages/*</span></td>
-              <td>Next 16 · React 19 · Relay/GraphQL · Jotai · Turborepo<span class="sub">brand 3000 · care 3100 · refund 3200 · sena 3300 · plus 3400 · Node 24.15 / pnpm 10.33</span></td>
-              <td><code>pnpm --filter &lt;앱&gt; lint</code><br><code>tsc -p apps/&lt;앱&gt;</code></td>
+              <td class="name">care-fe</td>
+              <td>client-brics-care</td>
+              <td>BRICS 케어 운영 콘솔<span class="sub">구독, 결제·비즈맨, 납세자 결제, 프로모션·마케팅 페이지, 프로, QA</span></td>
+              <td>Next 15.5 App Router · React 19 · SWR + Orval (<code>@/generated</code>) · Zustand · styled-components<span class="sub">port 13001 · Node 24.14 / pnpm 8.15 · 테스트·typecheck 스크립트 없음</span></td>
+              <td><code>pnpm lint:check</code><br><code>tsc --noEmit</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-refund-fe</td>
+              <td>bznav-web <code>apps/refund-web</code></td>
+              <td>비즈넵 환급 사용자 웹 (refund.bznav.com)<span class="sub">랜딩·SEO·이벤트·UTM 파트너, 홈택스 인증, 환급 신청, 설문, TRP/TRR — 활동량 최다</span></td>
+              <td>Next 16 <strong>Pages Router</strong> · webpack · Relay · Jotai <code>lib/stores</code> · SCSS+Tailwind · xstate<span class="sub">port 3200 · PR base dev-ecs</span></td>
+              <td><code>pnpm --filter refund-web lint</code><br><code>exec tsc --noEmit</code> · <code>gen:relay</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-care-fe</td>
+              <td>bznav-web <code>apps/care-web</code></td>
+              <td>비즈넵 케어 사용자 웹<span class="sub">세무기장 구독: 부가세·종소세·연말정산·급여·결제. 경로 상수 CARE_PATHS(한글 키)</span></td>
+              <td>Next 16 App Router · Relay · Jotai(페이지별 store) · Tailwind+shadcn<span class="sub">port 3100 · PR base dev · 유일하게 type-check·jest 보유</span></td>
+              <td><code>pnpm --filter care-web lint</code><br><code>type-check</code> · <code>test:unit</code> · <code>relay</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-brand-fe</td>
+              <td>bznav-web <code>apps/brand-web</code></td>
+              <td>비즈넵 브랜드 공식 사이트<span class="sub">홈, 브랜드 리소스, 약관, 팝업. 유지보수 단계</span></td>
+              <td>Next 16 App Router · Jotai · next-sitemap<span class="sub">port 3000 · PR base dev-ecs</span></td>
+              <td><code>pnpm --filter brand-web lint</code><br><code>exec tsc --noEmit</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-sena-fe</td>
+              <td>bznav-web <code>apps/sena-web</code></td>
+              <td>비즈넵 세나 AI 상담 챗봇<span class="sub">chat, search-chat, contents, 플랜</span></td>
+              <td>Next 16 App Router · Jotai <code>lib/stores</code> · marked · SCSS+Tailwind<span class="sub">port 3300 · PR base dev-ecs</span></td>
+              <td><code>pnpm --filter sena-web lint</code><br><code>exec tsc --noEmit</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-plus-fe</td>
+              <td>bznav-web <code>apps/plus-web</code></td>
+              <td>비즈넵 플러스<span class="sub">세금 계산기(calc), 세금 진단, 세금 콘텐츠, 운세</span></td>
+              <td>Next 16 App Router · Jotai · recharts · RHF+yup · react-notion-x<span class="sub">port 3400 · PR base dev · gen:env 수동</span></td>
+              <td><code>pnpm --filter plus-web lint</code><br><code>exec tsc --noEmit</code></td>
+            </tr>
+            <tr>
+              <td class="name">bznav-packages-fe</td>
+              <td>bznav-web <code>packages/*</code></td>
+              <td>비즈넵 공통 패키지 <code>@repo/*</code><span class="sub">ui(디자인 시스템), common-utils, platform, tracking-service, user-session, user-sign, ui-deprecated, project-config. 앱 작업보다 먼저 실행</span></td>
+              <td>소스 export(빌드 없음) · Storybook/Chromatic<span class="sub">공통: Node 24.15 / pnpm 10.33 · 규칙 <code>.ai/basic-rule.md</code></span></td>
+              <td><code>pnpm --filter @repo/&lt;pkg&gt; lint</code><br><code>build-storybook</code></td>
+            </tr>
+            <tr>
+              <td class="name">packages-fe</td>
+              <td>zent-packages <code>frontend/</code></td>
+              <td>발행 공유 패키지<span class="sub"><code>@zenterprise-inc/brics-fe-*</code>(React 18, 콘솔용) · <code>bznav-fe-*</code>(React 19) · <code>zent-fe-devkit</code>. backend/ 범위 밖</span></td>
+              <td>소스 배포 · tsc 타입체크만 · Changesets → GitHub Packages<span class="sub">기준 브랜치 <strong>main</strong> · Node 24.14 / pnpm 11.8 · changeset 없으면 머지 차단</span></td>
+              <td><code>pnpm build --filter=&lt;pkg&gt;...</code><br><code>pnpm lint --filter=&lt;pkg&gt;</code> · <code>pnpm changeset</code></td>
             </tr>
             <tr>
               <td class="name">op-fe</td>
@@ -371,7 +422,7 @@ claude
             </tr>
             <tr>
               <td class="name">reviewer<span class="ro">read-only</span></td>
-              <td>위 4개 전체</td>
+              <td>위 전체 (repos/*)</td>
               <td>계획서 대비 검증, 교차 서비스 정합성<span class="sub">코드 수정 없음. diff 읽기와 lint/typecheck 실행만</span></td>
               <td>—</td>
               <td>각 레포 명령 실행 후 결과 보고</td>
@@ -386,11 +437,18 @@ claude
 
     <section id="routing">
       <h2>라우팅</h2>
-      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. 판단이 안 서면 4개 레포에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다.</p>
+      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. 판단이 안 서면 <code>repos/*</code>에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다. "케어"·"환급"만 나오면 운영 콘솔(care-fe/refund-fe)인지 사용자 웹(bznav-care-fe/bznav-refund-fe)인지 반드시 확인합니다. bznav 여러 앱과 <code>packages/**</code>가 함께 바뀌면 bznav-packages-fe를 먼저, 발행 패키지와 소비 레포가 함께 바뀌면 packages-fe를 먼저 보냅니다.</p>
       <div class="route">
         <div class="kw">환급 콘솔, refund-service, 랜딩 SEO 어드민, 파트너·광고·간편신청 관리</div><div class="to">refund-fe</div>
         <div class="kw">권한·역할·기능·메뉴 관리, 사이드바·brics-menus, 리소스 센터, 감사 로그, 접근 요청, 메시지 플랫폼, 알림톡 제어, hub</div><div class="to">hub-fe</div>
-        <div class="kw">비즈넵, bznav, 사용자 랜딩, 케어·브랜드·세나·플러스 웹, Relay, GraphQL</div><div class="to">bznav-fe</div>
+        <div class="kw">케어 콘솔·케어 운영, 구독/결제/납세자/비즈맨, 프로모션·마케팅 페이지, 케어 QA</div><div class="to">care-fe</div>
+        <div class="kw">비즈넵 환급 랜딩·SEO·이벤트·UTM·홈택스·설문·TRP (refund.bznav.com)</div><div class="to">bznav-refund-fe</div>
+        <div class="kw">비즈넵 케어 사용자 웹, 세무기장 구독, CARE_PATHS</div><div class="to">bznav-care-fe</div>
+        <div class="kw">비즈넵 브랜드 사이트, 약관, 브랜드 리소스</div><div class="to">bznav-brand-fe</div>
+        <div class="kw">세나, AI 상담, 챗</div><div class="to">bznav-sena-fe</div>
+        <div class="kw">플러스, 세금 계산기, 세금 진단, 운세</div><div class="to">bznav-plus-fe</div>
+        <div class="kw">@repo/* 공통 UI·세션·트래킹·유틸 (bznav-web packages)</div><div class="to">bznav-packages-fe</div>
+        <div class="kw">brics-fe-ui, zent-auth, bznav-fe-ui, 공유 패키지 발행·changeset·스냅샷, zent-packages</div><div class="to">packages-fe</div>
         <div class="kw">web-op, 영업(sales), 영업사원, 서류(documents), 직원(employee), 파이프드라이브</div><div class="to">op-fe</div>
       </div>
     </section>
@@ -437,7 +495,7 @@ claude
 
         <article class="cmd">
           <div class="cmd-head"><kbd>/status</kbd><span class="tag plain">인자 없음</span></div>
-          <p class="what">담당 4개 레포의 git 현황과 진행 중인 계획서를 한 번에 봅니다. 작업을 시작하기 전 어디가 어수선한지 확인하는 용도입니다.</p>
+          <p class="what">repos/에 연결된 담당 레포 전체의 git 현황과 진행 중인 계획서를 한 번에 봅니다. 작업을 시작하기 전 어디가 어수선한지 확인하는 용도입니다.</p>
           <div class="flow"><span>브랜치</span><span>미커밋 변경</span><span>최근 커밋 5개</span><span class="hi">진행 중 plans</span></div>
           <dl>
             <dt>언제</dt><dd>세션 시작 시, 또는 다른 사람이 만든 변경이 남아 있는지 볼 때</dd>
@@ -463,7 +521,7 @@ claude
 
         <article class="cmd wide">
           <div class="cmd-head"><kbd>/sync <span class="arg">레포 이름 (선택)</span></kbd><span class="tag">문서 갱신</span></div>
-          <p class="what">4개 레포의 <code>origin/dev</code>를 훑어 에이전트 md, 서비스 맵, 이 플레이북을 실제 레포 상태에 맞게 고칩니다. 로컬 작업 트리는 브랜치가 제각각이라 읽지 않고, 항상 dev 트리를 봅니다. 이전 sync 이후 바뀐 부분만 찾아 반영합니다.</p>
+          <p class="what">담당 레포의 <code>origin/&lt;branch&gt;</code>(대부분 dev, zent-packages는 main)를 훑어 에이전트 md, 서비스 맵, 이 플레이북을 실제 레포 상태에 맞게 고칩니다. 로컬 작업 트리는 브랜치가 제각각이라 읽지 않고, 항상 dev 트리를 봅니다. 이전 sync 이후 바뀐 부분만 찾아 반영합니다.</p>
           <div class="flow"><span>fetch origin/dev</span><span>지문 생성</span><span class="hi">baseline 비교</span><span>변경 레포 diff 읽기</span><span class="hi">md · services · playbook 갱신</span><span>baseline 확정</span></div>
           <div class="sync-cols">
             <dl>
@@ -477,7 +535,7 @@ claude
               <dt>결과</dt><dd>레포별 커밋 범위, 반영한 사실 목록(파일:항목), 확인 필요 항목</dd>
             </dl>
           </div>
-<pre><code>/sync            # 4개 레포 전체
+<pre><code>/sync            # 담당 레포 전체
 /sync hub        # client-brics-hub 만
 
 # 스킬 없이 리포트만 보고 싶을 때
@@ -488,15 +546,17 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="baseline">
       <h2>문서 기준 커밋</h2>
-      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 <code>origin/dev</code> 커밋을 읽어 만든 것입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-15 11:48(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
+      <p>이 문서와 에이전트 md의 스택·포트·구조 정보는 아래 커밋(<code>origin/dev</code>, zent-packages는 <code>origin/main</code>)을 읽어 만든 것입니다. 마지막 <code>/sync</code> 확정 시각은 2026-09-16(KST)입니다. 레포의 dev가 이보다 앞서 있으면 <code>/sync</code>를 돌려야 문서가 따라옵니다.</p>
       <div class="table-wrap">
         <table class="baseline">
           <thead><tr><th>레포</th><th>에이전트</th><th>origin/dev 커밋</th><th>날짜</th><th>커밋 제목</th></tr></thead>
           <tbody>
             <tr><td>client-brics-refund</td><td class="name">refund-fe</td><td class="name">34966dd</td><td>2026-09-14</td><td>Merge pull request #44 from zenterprise-inc/feature/REF-3671</td></tr>
             <tr><td>client-brics-hub</td><td class="name">hub-fe</td><td class="name">99f4f60</td><td>2026-09-02</td><td>Merge pull request #6 from zenterprise-inc/sidebar</td></tr>
-            <tr><td>bznav-web</td><td class="name">bznav-fe</td><td class="name">df7a756</td><td>2026-09-14</td><td>Add SECRET_NAME argument for AWS Secrets Manager</td></tr>
+            <tr><td>client-brics-care</td><td class="name">care-fe</td><td class="name">1457d83</td><td>2026-08-20</td><td>Merge pull request #25 from zenterprise-inc/prd</td></tr>
+            <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">1f158d6</td><td>2026-09-15</td><td>chore: Merge to dev</td></tr>
             <tr><td>web-op</td><td class="name">op-fe</td><td class="name">756d471</td><td>2026-09-11</td><td>Merge pull request #197 from zenterprise-inc/feature/REF-3624</td></tr>
+            <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">0f8d21e</td><td>2026-09-15</td><td>Merge pull request #89 from zenterprise-inc/changeset-release/main</td></tr>
           </tbody>
         </table>
       </div>
@@ -607,15 +667,18 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 <pre class="tree"><code>hermes/
 ├── CLAUDE.md                  <span class="c">헤르메스 역할 · 라우팅 기준 · 6단계 작업 흐름</span>
 ├── README.md
+├── hermes.config.json         <span class="c">담당 레포 목록 · 브랜치 · 에이전트 매핑 (정본)</span>
+├── repos/                     <span class="c">레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)</span>
 ├── .claude/
-│   ├── agents/                <span class="c">refund-fe · hub-fe · bznav-fe · op-fe · reviewer</span>
+│   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · packages-fe · reviewer</span>
 │   ├── rules/                 <span class="c">language · coding-standards · git-workflow · dispatch-protocol</span>
 │   ├── skills/                <span class="c">feature · bugfix · review · status · sync · guide</span>
 │   └── settings.json
 ├── .sync/
 │   └── snapshots/             <span class="c">레포별 origin/dev 지문 baseline (/sync 비교 기준)</span>
 ├── docs/
-│   ├── services.md            <span class="c">4개 서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
+│   ├── services.md            <span class="c">서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
+│   ├── knowledge/&lt;레포&gt;/      <span class="c">레포별 공통 지식 (bznav-web/common.md)</span>
 │   ├── extending.md           <span class="c">스킬 · 에이전트 추가 방법 (/guide 로 열람)</span>
 │   ├── plan-template.md
 │   └── plan-template.html     <span class="c">결정 콘솔 + md 렌더링 뷰</span>
@@ -623,12 +686,13 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   ├── feature/  bugfix/  refactor/
 │   └── archive/               <span class="c">종료된 계획서 (gitignore 대상)</span>
 └── scripts/
+    ├── setup.sh               <span class="c">팀원 최초 설정 — repos/ 링크 + 도구 점검</span>
     ├── archive-plans.sh
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)</span>
     └── sync-fingerprint.mjs   <span class="c">origin/dev 지문 생성·비교</span></code></pre>
       <div class="note">
-        레포 경로는 <code>/Users/mason/mason-zent/</code> 기준 절대경로로 적혀 있습니다. 다른 위치에 clone했다면 <code>CLAUDE.md</code>, <code>docs/services.md</code>, <code>.claude/agents/*.md</code>, <code>.claude/skills/status/SKILL.md</code> 네 곳의 경로를 함께 바꿔야 합니다.
+        레포 경로는 어디서나 <code>repos/&lt;레포&gt;</code>입니다. 실제 위치는 <code>scripts/setup.sh</code>가 만드는 심볼릭 링크가 가리키며, 목록은 <code>hermes.config.json</code>이 정본입니다. <code>repos/</code>는 gitignore라 팀원마다 배치가 달라도 문서는 공유됩니다.
       </div>
     </section>
 
@@ -692,7 +756,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         </details>
         <details>
           <summary>레포가 바뀌면 에이전트 문서는 누가 고치나요?</summary>
-          <div class="a"><code>/sync</code>를 치면 헤르메스가 4개 레포의 origin/dev를 읽어 바뀐 사실(버전·명령·포트·구조·포맷·규칙 문서)만 골라 문서를 고칩니다. 자동으로 상시 감시하지는 않으니, 세션을 시작할 때 문서가 오래된 것 같으면 한 번 돌려주세요. 판단이 들어간 문장은 자동으로 바꾸지 않고 "확인 필요"로 알려줍니다.</div>
+          <div class="a"><code>/sync</code>를 치면 헤르메스가 담당 레포의 origin/dev(zent-packages는 main)를 읽어 바뀐 사실(버전·명령·포트·구조·포맷·규칙 문서)만 골라 문서를 고칩니다. 자동으로 상시 감시하지는 않으니, 세션을 시작할 때 문서가 오래된 것 같으면 한 번 돌려주세요. 판단이 들어간 문장은 자동으로 바꾸지 않고 "확인 필요"로 알려줍니다.</div>
         </details>
         <details>
           <summary>reviewer는 왜 따로 있나요?</summary>
