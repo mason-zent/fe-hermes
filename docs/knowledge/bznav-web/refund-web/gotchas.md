@@ -1,0 +1,21 @@
+# bznav-web apps/refund-web 함정·이력
+
+- **Relay 아티팩트 미커밋** — `graphql/__generated__/`에 md만. clone/스키마 변경 후 `pnpm --filter refund-web gen:relay` 안 하면 import 전부 깨짐. `build`·`dev`엔 포함, `lint`/`tsc` 단독엔 없음
+- **`next.config.mjs`의 relay 블록은 실물과 어긋남**: `schemaExtensions: ['schema/schemaExtensions/']` 디렉터리 없음, `src: '.'`/`schema: 'schema/schema.graphql'`도 실제 위치(`graphql/schema/`)와 다름. **동작하는 것은 `relay.config.json`** — next.config를 근거로 경로를 바꾸지 말 것
+- **Pages Router 전용** — `app/`, `page.tsx`, `'use client'`, `next/navigation`, Route Handler 금지. `next/router`, `getLayout`, gSSP/gSP
+- **xstate·jspdf·html2canvas는 설치만**(사용 0). "xstate 상태 머신"이라고 적힌 기존 문서는 오류
+- **webpack 전용 SVGR**: `dev`가 `--webpack`으로 turbopack을 끈다. turbopack으로 돌리면 SVG 동작이 달라질 수 있음. `declaration.d.ts`의 `*.svg → any`는 `any` 금지 규칙과 충돌하지만 기존 파일이라 건드리지 말 것
+- **`gen:env`는 AWS 의존**(SSM). 자격증명 없으면 `dev` 첫 단계 실패
+- **CSP**: `NEXT_PUBLIC_FRAME_ANCESTORS` 비면 `X-Frame-Options: SAMEORIGIN`. 새 외부 스크립트는 `script-src` 화이트리스트 추가 필요
+- **CDN assetPrefix `${CDN_BASE_URL}/bznav-refund-web/${BUILD_ID}`** — 두 env 비면 `undefined`가 경로에 박혀 정적 자산 전부 404. `output: 'standalone'`
+- `package.json` `exports: { ".": "./index.ts" }`는 존재하지 않는 파일 — 앱을 패키지로 import 시도 금지
+- **루트 `pnpm gen:relay`는 no-op**(refund-web에 `compile:relay` 없음)
+- **`.mjs` 확장자 import**(`@/lib/seo-policy.mjs`, `sitemap.mjs`) — 타입 없음, TS 쪽에서 손으로 타입 맞춤
+- **cookies-next 6.x는 gSSP에서 Promise + JSON 미파싱** — `lib/content-page/server.ts`, `use-partner-main-image.ts`에 함정 주석. 새 gSSP 쿠키 읽기 주의
+- `_app.tsx` `seoHead` 우선 — 콘텐츠 페이지 외에서 `<Head><title>` 또 넣으면 메타 중복(`home/event/share` 주석)
+- **Relay는 SSR 되지 않는다** — SEO 데이터는 `lib/graphql/server-fetch.ts`로 gSSP에서. 로그인 의존 Relay는 `<Suspense>`로 격리
+- **템플릿 버전 폴더(`lookup/result/apply-possible/template/v-*`) 삭제 금지** — 과거 신청 스냅샷 재현용
+- `reactStrictMode: false`
+- **prd 검색 조건 규칙 아님(refund 콘솔과 혼동 주의)** — 이 앱은 사용자 웹
+- ⚠️ 주석은 `__generated__.md` 1건. TODO 4파일(`lib/stores/refund/result-refund-data.ts`). 대신 한국어 설명 주석이 촘촘(`lib/content-page/*`, `use-partner-main-image.ts`, `use-lookup-result-lab.ts`, `seo-policy.mjs`) — 수정 전 필독
+- **agent.md 낡음**: "SCSS·Tailwind 혼용 유지"라지만 실제 SCSS 19 vs Tailwind 218. 어드민 콘텐츠 페이지·SEO 정책·파트너 UTM·`proxy.ts` 미들웨어가 문서에 없음. `.ai/basic-rule.md` 위반 기존 코드(any, 한글 키)는 정리하지 말 것

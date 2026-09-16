@@ -13,7 +13,7 @@
 - import 순서: React/Next → 서드파티 → 내부 절대(`@/...`, `@ui/...`) → 상대
 - **직접 `fetch` 금지** → `@/generated`의 Orval SWR 훅 (별칭은 `@/generated/*`, hub의 `@/swr`는 없다)
 - 권한 체크는 layout·page **서버 컴포넌트**에서 `auth()` → `session.user.functions.includes(AuthFunction.X)` 아니면 `redirect('/unauthorized')`
-- 상태: 서버 데이터 SWR, 필터·페이지 등은 **zustand 스토어**(`stores/`). nuqs·nice-modal 없음(직접 구현 모달)
+- 상태: 서버 데이터 SWR, 필터·페이지는 bmans·promotion의 **zustand 스토어**(`stores/`) 또는 subscription·qa의 useState. URL 동기화는 없다. nuqs·nice-modal 없음(직접 구현 모달)
 
 ## API·env
 - `__generated__/`는 git에 커밋. 스펙 변경 시 `pnpm genapi:local` 후 생성물도 변경 목록에 포함

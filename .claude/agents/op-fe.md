@@ -22,7 +22,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - Next.js 16 App Router, React 19, TypeScript 5.0
 - 스타일: **styled-components 6** + Tailwind 3.3 (`@zenterprise-inc/bznav-fe-ui` 프리셋 상속)
 - 상태: **Zustand 4** (`src/store/`)
-- HTTP: axios (`src/gateway/`), 토스트 `react-hot-toast`, 분석 `mixpanel-browser` (`src/analytics/`)
+- HTTP: axios (`src/gateway/`), 토스트는 documents·employee의 `bznav-fe-ui` `useToast`와 sales의 자체 `useToastStore` (`react-hot-toast`는 설치만 됨), 분석 `mixpanel-browser` (`src/analytics/`)
 - 기타: `react-pdf`, `qrcode.react`, `react-datepicker`, `react-notion-x`, `@vercel/blob`/`kv`, `@aws-sdk/client-s3`, `jsonwebtoken`
 - 사내 패키지: `@zenterprise-inc/bznav-fe-ui`, `bznav-fe-common-utils`, `bznav-fe-project-config` (tsconfig/eslint/tailwind 상속, `transpilePackages`로 소스 직접 트랜스파일)
 
@@ -43,7 +43,7 @@ src/
   backend/      controller/ service/ repository/  ← app/api 핸들러가 사용하는 서버 레이어
   store/  analytics/  config/  utils/
 ```
-새 기능은 `containers → components`, 데이터는 `gateway → useCases/hooks`, 서버 로직은 `backend/controller → service → repository` 순으로 기존 레이어를 따른다.
+documents는 `containers → components` + hooks/gateway, sales는 components가 화면 로직을 갖고 container는 레이아웃·가드를 맡는다. `useCases`는 sales 인증 전용이다. 서버는 대부분 Route Handler → service → repository이며 controller는 내부 API 2곳에만 있다. `docs/knowledge/web-op/patterns.md`의 같은 도메인 예시를 따른다.
 
 ## 코드 스타일
 - Prettier: **`semi: true`**, **`trailingComma: all`**, **`printWidth: 80`**, 2 spaces (다른 BRICS 레포와 다르다!)

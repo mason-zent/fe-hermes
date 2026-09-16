@@ -22,9 +22,9 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 ## 기술 스택
 - Next.js 15.5 App Router (`next.config.mjs`, `withZentDevkit`, `distDir: dist`, `/pro/:slug*` rewrite), React 19, TypeScript 5.6 (strict, `noImplicitAny: false`)
-- UI: `@zenterprise-inc/brics-fe-ui` 0.3.1 (`@ui/*`) + Tailwind 3.4 + `tailwindcss-animate`, **styled-components 6** 병용, `lucide-react`
+- UI: `@zenterprise-inc/brics-fe-ui` 0.3.1 (`@ui/*`) + Tailwind 3.4 + `tailwindcss-animate`, **styled-components 6**는 `ConsoleIframeStyle.ts` 1파일만 사용, `lucide-react`
 - 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, 별칭 `@/generated/*`. hub의 `@/swr` 별칭은 없다), `lib/orval-fetcher.ts`
-- 상태: **Zustand 5** (필터 등 URL 상태도 스토어로 처리. nuqs 없음). 폼: React Hook Form + Zod. 모달: 직접 구현 (nice-modal 없음)
+- 상태: **Zustand 5** (bmans·promotion 필터) + useState(subscription·qa). 필터의 URL 동기화 없음, nuqs 없음. 폼: React Hook Form + Zod. 모달: 직접 구현 (nice-modal 없음)
 - 인증: NextAuth v5 + Cognito (`@zenterprise-inc/brics-fe-zent-auth`, `@zent-auth/*`)
 - 테스트: **없음** (jest 미도입, `test`·`typecheck` 스크립트 없음)
 
@@ -72,7 +72,7 @@ __generated__/      Orval 생성물 — 직접 수정 금지. git에 커밋됨
 ## 작업 순서
 1. `git status --short --branch`로 기존 변경 확인
 2. 유사 화면(예: `app/promotion-page/*`, `app/bmans/*`) 패턴 파악. 레포 `CLAUDE.md` 컨벤션 절 재확인
-3. 구현. 필터·페이지 상태는 기존처럼 zustand 스토어(`stores/`)로
+3. 구현. 필터·페이지 상태는 해당 도메인의 zustand 또는 useState 패턴을 따른다
 4. `pnpm lint:check` + `pnpm exec tsc --noEmit`. 실패 시 수정, 3회 반복되면 접근 재검토
 5. **커밋하지 않는다**
 

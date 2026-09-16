@@ -13,9 +13,9 @@
 | React | 19 | 19 | 19 | 19 | 19 |
 | Node / pnpm | 24.14.1 / 8.15.6 | 24.14.1 / 8.15.6 | 24.14.1 / 8.15.6 | 24.15.0 / 10.33.0 | ≥24 / 10.20.0 |
 | dev 포트 | 13002 | 13003 | 13001 | brand 3000 · care 3100 · refund 3200 · sena 3300 · plus 3400 | 3000 |
-| 데이터 | SWR + Orval (`@/swr`) | SWR + Orval (`@/swr`) | SWR + Orval (`@/generated`) | Relay + GraphQL (care·refund) | axios (`src/gateway`) |
+| 데이터 | SWR + Orval (`@/generated`) | SWR + Orval (`@/swr`) | SWR + Orval (`@/generated`) | Relay + GraphQL (care·refund) | axios (`src/gateway`) |
 | 상태 | React state, Context | useState·useSearchParams (nuqs 미사용) | Zustand | Jotai | Zustand |
-| UI | brics-fe-ui + Tailwind | brics-fe-ui + Tailwind | brics-fe-ui + Tailwind + styled-components | `@repo/ui` + Tailwind + SCSS | styled-components + Tailwind (bznav-fe-ui 프리셋) |
+| UI | brics-fe-ui + Tailwind | brics-fe-ui + Tailwind | brics-fe-ui + Tailwind (styled-components 1파일) | `@repo/ui` + Tailwind + SCSS | styled-components + Tailwind (bznav-fe-ui 프리셋) |
 | 폼 | RHF + Zod | RHF + Zod | RHF + Zod | RHF + Yup | – |
 | 인증 | NextAuth v5 + Cognito | NextAuth v5 + Cognito | NextAuth v5 + Cognito | `@repo/user-session`, `user-sign` | 자체 JWT (`jsonwebtoken`) |
 | 백엔드 | server-zent-ip (refund) | server-brics-hub | care 서버 (`NEXT_PUBLIC_API_URL`) | bznav GraphQL gateway | 자체 Route Handler + 외부 API |

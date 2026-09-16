@@ -20,7 +20,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - **Pages Router** (`pages/_app.tsx` 진입점, `_document.tsx`). App Router 패턴(`app/`, `'use client'`, 서버 컴포넌트) 임의 적용 금지
 - dev는 **webpack** (`pnpm --filter refund-web dev` = `gen:env && gen:relay && next dev -p 3200 --webpack`). `next.config.mjs`의 `webpack()`에 SVGR 커스터마이즈
 - **Relay 사용**. 스키마 `graphql/schema/schema.graphql` + `schemaExtensions/`, 아티팩트 `graphql/__generated__/`(미커밋). `pnpm --filter refund-web gen:relay` 선행 필수. 설문 타입은 `gen:survey-schema`(openapi-typescript, gitignore)
-- 상태: Jotai, **`lib/stores/` 도메인별 파일**(ads, auth, biz-message, hometax-block, payment-card, refund/* 등). 플로우 상태 머신은 **xstate**
+- 상태: Jotai, **`lib/stores/` 도메인별 파일**(ads, auth, biz-message, hometax-block, payment-card, refund/* 등). 플로우는 React state + Jotai로 처리. **xstate는 설치만 되어 있고 소스 사용처가 없다**
 - 스타일: **SCSS 19개 + Tailwind 혼용**(`lib/styles/`). 파일마다 기존 방식 유지, 한 파일에서 전환 금지
 - 레거시 `@zenterprise-inc/ui`(ui-deprecated) 사용 중. 신규 UI는 `@repo/ui`
 - SEO: `lib/sitemap.mjs`, `lib/seo-policy.mjs` 자체 구현(next-sitemap postbuild 없음). CSP는 `NEXT_PUBLIC_FRAME_ANCESTORS` 기반. CDN assetPrefix에 `NEXT_PUBLIC_BUILD_ID`

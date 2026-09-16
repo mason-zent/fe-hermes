@@ -20,8 +20,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 ## 기술 스택
 - Next.js 15 App Router, React 19, TypeScript
 - UI: `@zenterprise-inc/brics-fe-ui` (shadcn 기반 사내 패키지) + Tailwind 3.4 + `tailwind-merge`/`clsx`, 일부 SCSS
-- 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, `@/swr`), 커스텀 fetcher `lib/orval-fetcher.ts`
-- 폼: React Hook Form + Zod, 모달: `@ebay/nice-modal-react`
+- 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, 별칭 **`@/generated/*`** — hub의 `@/swr`는 없다. 엔드포인트 디렉터리명이 한글), 커스텀 fetcher `lib/orval-fetcher.ts`. 전역 스토어 없음: URL 쿼리(`useSearchParams`+`router.push`) + `useState` + SWR
+- 폼: React Hook Form + Zod(스키마는 `lib/types/<도메인>.ts`). 모달: **`useDialog().showDialog`**(`app/_components/DialogProvider.tsx`, 34파일)가 1순위, shadcn Dialog 2순위. `@ebay/nice-modal-react`는 7파일뿐 — 관례 아님
 - 인증: NextAuth v5 + AWS Cognito (`@zenterprise-inc/brics-fe-zent-auth`)
 - 기타: `date-fns`, `xlsx`, `react-dropzone`, `lucide-react`
 
@@ -60,7 +60,7 @@ __generated__/      Orval 생성물 — 직접 수정 금지
 
 ## 작업 순서
 1. `git status --short --branch`로 기존 변경 확인
-2. 계획서에 적힌 관련 파일과 유사 화면을 먼저 읽고 패턴 파악
+2. `docs/knowledge/client-brics-refund/workflows.md`에서 절차를 고르고 `patterns.md`가 가리키는 파일을 읽는다 (새 화면은 `partner/discount/*` 복사)
 3. 구현
 4. `pnpm lint:check` + `pnpm exec tsc --noEmit` 실행. 실패 시 수정, 3회 반복되면 접근 재검토
 5. **커밋하지 않는다**

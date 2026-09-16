@@ -1,0 +1,11 @@
+# bznav-web apps/plus-web 함정
+- **`gen:env`가 `dev`에 없음 — 수동** `pnpm --filter plus-web gen:env`. `SM_APPS`라 **Secrets Manager** + `--env=dev`(brand/sena는 loc). 다른 앱 감각으로 dev 돌리면 env 없이 뜬다
+- **redirect `/` → `/calc`** — 실질 루트는 `/calc`. `/`에 페이지 만들어도 도달 불가
+- **`export const dynamic = 'force-dynamic'`가 루트 layout** — `RootLayoutContent`가 `useSearchParams`를 써서 정적 프리렌더 불가, Suspense로 감싸면 CSR로 빠져 SEO 손실(주석). **정적화 시도 전에 주석 필독**
+- **sitemap 화이트리스트 수동**(`INDEXABLE_PATHS`, `exclude: ['/*']`). 새 페이지는 기본적으로 sitemap에 없음
+- devDependencies `@repo/ui`(93, 최다)·`common-utils`(26)·`next-sitemap`(postbuild) 런타임 사용. `@types/recharts` 불필요 가능(추측)
+- **`notion-client` 패키지는 직접 import 0** — `lib/api/notion-client.ts`는 동명의 자체 파일(순수 fetch). 혼동 주의
+- `any` 잔존: `analysisResultAtom<any>`, `Renderer.tsx` `recordMap: any`, 차트 `CustomLabel(props: any)`. 확산 금지
+- **`주의`가 한글 등급 키**(`grade-variants.ts`) — 경고 주석이 아니라 도메인 값. grep 혼동
+- TODO 4: `CommonTopNavigation.tsx:56`(모바일 pressed 잔상), `CalcPriceUnit.tsx:18`(임시처리), `salary-contract.ts:30`(세액표 선형 탐색, 미이행 머지), `dp-logs/user-id.ts:7`
+- agent.md "폼은 resolver 유지" → 실제 계산기는 resolver 없음(watch/setValue만), 간편인증만 yup. 코드 우선

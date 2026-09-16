@@ -361,14 +361,14 @@ claude
               <td class="name">care-fe</td>
               <td>client-brics-care</td>
               <td>BRICS 케어 운영 콘솔<span class="sub">구독, 결제·비즈맨, 납세자 결제, 프로모션·마케팅 페이지, 프로, QA</span></td>
-              <td>Next 15.5 App Router · React 19 · SWR + Orval (<code>@/generated</code>) · Zustand · styled-components<span class="sub">port 13001 · Node 24.14 / pnpm 8.15 · 테스트·typecheck 스크립트 없음</span></td>
+              <td>Next 15.5 App Router · React 19 · SWR + Orval (<code>@/generated</code>) · Zustand/useState · Tailwind (styled-components 1파일)<span class="sub">port 13001 · Node 24.14 / pnpm 8.15 · 테스트·typecheck 스크립트 없음</span></td>
               <td><code>pnpm lint:check</code><br><code>tsc --noEmit</code></td>
             </tr>
             <tr>
               <td class="name">bznav-refund-fe</td>
               <td>bznav-web <code>apps/refund-web</code></td>
               <td>비즈넵 환급 사용자 웹 (refund.bznav.com)<span class="sub">랜딩·SEO·이벤트·UTM 파트너, 홈택스 인증, 환급 신청, 설문, TRP/TRR — 활동량 최다</span></td>
-              <td>Next 16 <strong>Pages Router</strong> · webpack · Relay · Jotai <code>lib/stores</code> · SCSS+Tailwind · xstate<span class="sub">port 3200 · PR base dev-ecs</span></td>
+              <td>Next 16 <strong>Pages Router</strong> · webpack · Relay · Jotai <code>lib/stores</code> · SCSS+Tailwind (xstate 미사용)<span class="sub">port 3200 · PR base dev-ecs</span></td>
               <td><code>pnpm --filter refund-web lint</code><br><code>exec tsc --noEmit</code> · <code>gen:relay</code></td>
             </tr>
             <tr>
