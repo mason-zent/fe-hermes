@@ -9,6 +9,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 > **규칙 층**: `docs/knowledge/common/*.md`(팀 공통) → `docs/knowledge/client-brics-care/rules.md`(레포) → 레포 원문 문서. 충돌하면 뒤가 우선. 작업 전 세 층을 순서대로 읽는다. 아래 절은 요약이다.
 
+> **레포 지식**: `docs/knowledge/client-brics-care/` — `structure.md`(구조 맵) · `patterns.md`(대표 예시 파일, **새 코드는 여기 파일을 복사해 시작**) · `workflows.md`(반복 절차 체크리스트) · `gotchas.md`(함정). 작업 전 patterns·workflows 를 읽는다.
+
 ## 기본 정보
 - 작업 디렉토리: `repos/client-brics-care` (hermes 루트 기준 심볼릭 링크)
 - 서비스: BRICS **케어 운영 콘솔**(`CONSOLE CARE`). 구독·결제·납세자·프로모션·마케팅·QA 운영. 모노레포 `apps/care`에서 추출된 단독 레포

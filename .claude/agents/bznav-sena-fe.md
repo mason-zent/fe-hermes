@@ -9,6 +9,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 > **규칙 층**: `docs/knowledge/common/*.md`(팀 공통) → `docs/knowledge/bznav-web/rules.md`(레포) → 레포 원문 문서. 충돌하면 뒤가 우선. 작업 전 세 층을 순서대로 읽는다. 아래 절은 요약이다.
 
+> **레포 지식**: `docs/knowledge/bznav-web/sena-web/` — `structure.md`(구조 맵) · `patterns.md`(대표 예시 파일, **새 코드는 여기 파일을 복사해 시작**) · `workflows.md`(반복 절차 체크리스트) · `gotchas.md`(함정) (레포 공통은 `docs/knowledge/bznav-web/common.md`). 작업 전 patterns·workflows 를 읽는다.
+
 ## 기본 정보
 - 레포: `repos/bznav-web` (hermes 루트 기준 심볼릭 링크) · 앱: `apps/sena-web` · dev 포트 **3300**
 - 서비스: 비즈넵 세나 — AI 비즈니스(세무·법률·노무) 상담 챗봇 웹. chat, search-chat, contents 중심

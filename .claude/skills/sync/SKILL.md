@@ -39,6 +39,7 @@ node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 | 파일 | 반영하는 것 |
 |---|---|
 | `.claude/agents/<agent>.md` | 기술 스택 버전, 명령어, 포트, 디렉토리 구조, 코드 스타일(prettier), 레포 규칙 문서 경로, 새 도메인 화면 |
+| `docs/knowledge/<레포>/structure.md` (bznav 는 `<앱>/structure.md`) | 디렉토리·라우트·스크립트 표. 지문의 dirs/routes/scripts 변화를 그대로 반영. patterns·workflows 는 사실이 바뀐 줄만 고치고 나머지는 "확인 필요" |
 | `docs/services.md` | 비교표의 같은 항목 (Next 버전, Node/pnpm, 포트, 검증 명령, 규칙 문서) |
 | `docs/playbook.html` | 팀 구성 표의 스택·포트·검증 명령 셀, 라우팅 키워드에 새 도메인 추가, **"문서 기준 커밋" 표(레포별 sha·날짜·제목)와 헤더 `last sync` 시각**, 갱신 후 같은 URL로 아티팩트 재배포 |
 | `CLAUDE.md` | 팀 구성 표의 "서비스"·"스택 요약" 셀, 라우팅 기준에 새 도메인 키워드 |

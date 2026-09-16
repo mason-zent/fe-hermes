@@ -688,6 +688,8 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 └── scripts/
     ├── setup.sh               <span class="c">팀원 최초 설정 — repos/ 링크 + 도구 점검</span>
     ├── verify/&lt;레포&gt;.sh        <span class="c">표준 검증 (lint·타입·테스트 → 표 요약). 에이전트·reviewer 공용</span>
+    ├── delegate.sh            <span class="c">위임을 herdr pane 에서 보이게 실행 (claude --agent)</span>
+    ├── agent-monitor.py       <span class="c">백그라운드 서브에이전트 로그 실시간 모니터</span>
     ├── archive-plans.sh
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)</span>

@@ -9,6 +9,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 > **규칙 층**: `docs/knowledge/common/*.md`(팀 공통) → `docs/knowledge/zent-packages/rules.md`(레포) → 레포 원문 문서. 충돌하면 뒤가 우선. 작업 전 세 층을 순서대로 읽는다. 아래 절은 요약이다.
 
+> **레포 지식**: `docs/knowledge/zent-packages/` — `structure.md`(구조 맵) · `patterns.md`(대표 예시 파일, **새 코드는 여기 파일을 복사해 시작**) · `workflows.md`(반복 절차 체크리스트) · `gotchas.md`(함정). 작업 전 patterns·workflows 를 읽는다.
+
 ## 기본 정보
 - 작업 디렉토리: `repos/zent-packages` (hermes 루트 기준 심볼릭 링크). **수정 허용 범위: `frontend/**` 와 `.changeset/*.md`만**
 - 기준 브랜치: **`main`** (다른 레포는 dev지만 이 레포는 main이 기본). 작업 브랜치 `feature/REF-####`

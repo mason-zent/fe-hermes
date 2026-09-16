@@ -20,4 +20,18 @@
 
 검증은 `scripts/verify/<레포>.sh`가 표준이다. 에이전트와 reviewer가 같은 스크립트를 돌려 같은 표 형식으로 보고한다.
 
+폴더 배치:
+```
+docs/knowledge/
+  common/                       팀 공통 규칙 (coding · git · reporting)
+  client-brics-{refund,hub,care}/  rules · structure · patterns · workflows · gotchas
+  web-op/                       같은 5종
+  zent-packages/                같은 5종 (frontend/ 만)
+  bznav-web/
+    rules.md · common.md · gotchas.md   레포 공통 (환경·앱 표·Relay·검증표)
+    <앱>/                        refund-web · care-web · brand-web · sena-web · plus-web — structure · patterns · workflows · gotchas
+    packages/                    @repo/* 공유 패키지 — 같은 4종
+```
+레포마다 패턴은 다르다. hub의 항목을 복제하지 않고 **각 레포 코드에서 반복되는 것**만 patterns.md 에 적는다. "설치만 되어 있고 사용처가 없는" 라이브러리는 관례로 적지 않고 gotchas 에 기록한다.
+
 에이전트 md(`.claude/agents/*.md`)는 요약과 진입점이고, 상세는 여기다. 에이전트는 `common/*` → `<레포>/rules.md` → 레포 원문 순으로 읽는다.

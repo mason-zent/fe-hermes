@@ -4,7 +4,9 @@
 **작업계획서(plans/*.md)가 사용자 승인을 받은 후에만 디스패치한다.** (사용자가 명시적으로 "계획서 없이 바로"라고 한 긴급 수정만 예외)
 
 ## 방식
-Agent 도구에 `subagent_type`으로 에이전트 이름을 지정한다.
+**기본은 보이는 pane**: `scripts/delegate.sh <에이전트명> "<프롬프트>"` 로 herdr pane 에 `claude --agent <이름>` 세션을 띄운다(사용자가 진행 과정을 볼 수 있다). 여러 에이전트를 병렬로 보낼 때는 pane 을 여러 개 연다. 결과는 `herdr pane read <id>` 로 읽고, 완료 대기는 `herdr pane wait-output` 또는 사용자에게 알린다.
+
+부득이 Agent 도구(백그라운드, `subagent_type`)를 쓸 때는 `scripts/agent-monitor.py --recent` 를 pane 에 띄워 실시간 로그를 보여주고, 어느 pane 인지 사용자에게 한 줄 알린다.
 
 | 대상 레포 | subagent_type |
 |-----------|---------------|
