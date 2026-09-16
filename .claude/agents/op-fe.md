@@ -21,8 +21,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 ## 기술 스택
 - Next.js 16 App Router, React 19, TypeScript 5.0
 - 스타일: **styled-components 6** + Tailwind 3.3 (`@zenterprise-inc/bznav-fe-ui` 프리셋 상속)
-- 상태: **Zustand 4** (`src/store/`)
-- HTTP: axios (`src/gateway/`), 토스트는 documents·employee의 `bznav-fe-ui` `useToast`와 sales의 자체 `useToastStore` (`react-hot-toast`는 설치만 됨), 분석 `mixpanel-browser` (`src/analytics/`)
+- 상태: **Zustand 4** (`src/store/` 3개, 미들웨어 없음. 훅 구독보다 `useSalesAuthStore.getState()`·`.subscribe()`가 주 사용법. `useLoaderStore`는 setter가 없는 죽은 스토어)
+- HTTP: axios (`src/gateway/`). 신규 gateway는 **axios 직접**(documents 방식). ⚠️ **`BaseApiGateway` 상속 금지** — catch에서 `alert` 후 `undefined`를 반환해 에러를 삼킨다, 토스트는 documents·employee의 `bznav-fe-ui` `useToast`와 sales의 자체 `useToastStore` (`react-hot-toast`는 설치만 됨), 분석 `mixpanel-browser` (`src/analytics/`)
 - 기타: `react-pdf`, `qrcode.react`, `react-datepicker`, `react-notion-x`, `@vercel/blob`/`kv`, `@aws-sdk/client-s3`, `jsonwebtoken`
 - 사내 패키지: `@zenterprise-inc/bznav-fe-ui`, `bznav-fe-common-utils`, `bznav-fe-project-config` (tsconfig/eslint/tailwind 상속, `transpilePackages`로 소스 직접 트랜스파일)
 
@@ -46,9 +46,9 @@ src/
 documents는 `containers → components` + hooks/gateway, sales는 components가 화면 로직을 갖고 container는 레이아웃·가드를 맡는다. `useCases`는 sales 인증 전용이다. 서버는 대부분 Route Handler → service → repository이며 controller는 내부 API 2곳에만 있다. `docs/knowledge/web-op/patterns.md`의 같은 도메인 예시를 따른다.
 
 ## 코드 스타일
-- Prettier: **`semi: true`**, **`trailingComma: all`**, **`printWidth: 80`**, 2 spaces (다른 BRICS 레포와 다르다!)
+- Prettier: **`semi: true`**, **`trailingComma: all`**, **`printWidth: 80`**, **double quote**(`singleQuote` 미지정), 2 spaces — 다른 BRICS 레포와 정반대. ⚠️ 포맷 위반 파일 4개(MFA 작업 산출물)가 이미 있어 `prettier --check`가 실패할 수 있다. 그 파일을 건드리면 diff가 크게 튀니 포맷과 기능 변경을 섞지 말 것
 - ESLint flat config (`eslint.config.mjs`, `bznav-fe-project-config` 상속). `unused-imports` 플러그인 있음
-- 검증: `pnpm lint` (check), `pnpm lint:fix`, `pnpm typecheck`
+- 검증: `pnpm lint`(check), `pnpm lint:fix`, **`pnpm typecheck` 필수** — `pnpm build`는 `typescript.ignoreBuildErrors: true`라 타입 에러를 잡지 않는다
 - 작업한 파일만 `pnpm exec prettier --write <파일>`
 
 ## 규칙

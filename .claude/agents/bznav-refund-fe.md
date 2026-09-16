@@ -21,7 +21,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - dev는 **webpack** (`pnpm --filter refund-web dev` = `gen:env && gen:relay && next dev -p 3200 --webpack`). `next.config.mjs`의 `webpack()`에 SVGR 커스터마이즈
 - **Relay 사용**. 스키마 `graphql/schema/schema.graphql` + `schemaExtensions/`, 아티팩트 `graphql/__generated__/`(미커밋). `pnpm --filter refund-web gen:relay` 선행 필수. 설문 타입은 `gen:survey-schema`(openapi-typescript, gitignore)
 - 상태: Jotai, **`lib/stores/` 도메인별 파일**(ads, auth, biz-message, hometax-block, payment-card, refund/* 등). 플로우는 React state + Jotai로 처리. **xstate는 설치만 되어 있고 소스 사용처가 없다**
-- 스타일: **SCSS 19개 + Tailwind 혼용**(`lib/styles/`). 파일마다 기존 방식 유지, 한 파일에서 전환 금지
+- 스타일: **Tailwind가 기본**(218파일). SCSS 모듈은 레거시 19파일(랜딩·레이아웃·survey 공용 UI)뿐이다. 기존 파일은 그 방식을 유지하고 신규는 Tailwind. 전역은 `lib/styles/index.scss`
 - 레거시 `@zenterprise-inc/ui`(ui-deprecated) 사용 중. 신규 UI는 `@repo/ui`
 - SEO: `lib/sitemap.mjs`, `lib/seo-policy.mjs` 자체 구현(next-sitemap postbuild 없음). CSP는 `NEXT_PUBLIC_FRAME_ANCESTORS` 기반. CDN assetPrefix에 `NEXT_PUBLIC_BUILD_ID`
 - 기타: firebase, html2canvas+jspdf, bignumber.js, react-markdown, axios, `@next/bundle-analyzer`

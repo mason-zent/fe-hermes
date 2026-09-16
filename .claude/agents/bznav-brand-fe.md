@@ -18,7 +18,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 ## 이 앱의 특징
 - App Router, Turbopack dev (`pnpm --filter brand-web dev` = `gen:env && next dev -p 3000 --turbo`)
-- Relay 없음. 상태는 Jotai(`app/layout.tsx`에서 사용, 별도 store 디렉터리 없음)
+- Relay 없음. **Jotai는 `app/layout.tsx`의 Provider만 있고 atom 사용처가 0건** — 스토어 선례가 없으니 도입 전 헤르메스에 확인. 데이터는 DatoCMS GraphQL 단일 경로(`lib/utils/dato-cms.ts` + `lib/constants/graph-ql-query.ts`)
 - 스타일: Tailwind + SCSS 1개(`styles/default.scss`)
 - `postbuild`가 sitemap/robots를 지우고 `next-sitemap`으로 재생성. **라우팅·메타데이터·콘텐츠 구조 변경 시 sitemap 영향 확인**
 - `next.config.mjs`: `/` → `/home` rewrite, `/storybook/*` → Chromatic redirect, CDN assetPrefix `bznav-brand-web`, standalone

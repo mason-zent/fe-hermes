@@ -18,8 +18,10 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 ## 이 앱의 특징
 - App Router, Turbopack dev. **`dev`가 `gen:env`를 자동 실행하지 않는다** → 최초 1회 `pnpm --filter plus-web gen:env`(`--env=dev`, Secrets Manager) 수동. `deploy:dev` 없음
-- Relay 없음. 상태: Jotai, `store/auth-store.ts` 단일 파일
-- 차트 **recharts** — 수정 시 사용 방식과 데이터 shape 영향 확인. 폼은 react-hook-form + yup resolver 패턴 유지
+- Relay 없음. 상태: Jotai **`atomWithStorage` 중심**(`store/auth-store.ts`, 라우트 전용은 `app/fortune/_store/`). `JotaiProvider`를 루트에 두지 않고 기본 store를 쓴다
+- 차트 **recharts**(3파일, 색이 hex 하드코딩) — 수정 시 데이터 shape 영향 확인
+- 폼은 두 갈래다: **계산기는 RHF `watch`/`setValue`만 쓰고 resolver가 없다**, yup resolver는 간편인증(`tax-check/simple-auth`)에만. agent.md의 "resolver 패턴 유지"는 오해 소지가 있다
+- 계산기는 **3계층 규약**: `lib/hooks/calc/<name>/use-<name>-form.ts` → `use-<name>.ts`(반환 shape 통일) → `lib/utils/calc/<name>.ts`(순수 함수)
 - 노션 콘텐츠: `notion-client` + `react-notion-x`
 - 스타일: Tailwind + SCSS 3 + CSS 1 (`styles/default.scss`)
 - `next.config.mjs`: `/` → `/calc` redirect, CDN assetPrefix `bznav-plus-web`. `postbuild` next-sitemap
