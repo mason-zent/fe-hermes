@@ -15,22 +15,26 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 - **공통 규칙·환경·검증표는 `docs/knowledge/bznav-web/common.md`를 먼저 읽는다.** 그 다음 레포의 `.ai/basic-rule.md`와 `.github/agents/care-web.agent.md`(원문)
 
 ## 이 앱의 특징
-- App Router, **route group 다수**: `(auth)`, `(landing)`, `(login)`, `(payment)`, `(my-info)`, `(registry)`, `(gateway)` 등
-- **경로 상수는 `constant/paths.ts`의 `CARE_PATHS` 우선**, 새 경로도 여기에 추가. 키는 **한글** 규칙(`CARE_PATHS.수임동의`, `CARE_PATHS.홈`)
-- 인증·레이아웃 변경 시 `CareAuthGuard`와 `app/GlobalProvider.tsx`의 Provider 중첩 순서·Client 경계 확인
+- App Router, **route group 다수**: `(auth)`, `(landing)`, `(login)`, `(payment)`, `(my-info)`, `(registry)`, `(gateway)`, `(external-file-download)`, `(kakaoTalk-notification)` + 도메인 라우트 `vat`, `global-income`, `year-end-tax`, `payroll`, `pricing`, `additional-expense`, `card-expense`, `business-card`, `certificate`, `cs-center`, `user-status` 등. 2026-09 NEWCARE-633 리팩터링으로 **도메인 전용 파일은 해당 라우트 폴더 안**에 모였다
+- **경로 상수는 `constants/paths.ts`의 `CARE_PATHS`** (2026-09-16 `constant/` → `constants/`로 개명. 레포의 `.github/agents/care-web.agent.md`·`.ai/basic-rule.md`는 아직 `constant/`로 적혀 있다 — 실물이 우선). 새 경로도 여기에 추가, 키는 **한글** 규칙(`CARE_PATHS.수임동의`, `CARE_PATHS.홈`)
+- 인증·레이아웃 변경 시 `components/common/auth/CareAuthGuard.tsx`와 `app/GlobalProvider.tsx`의 Provider 중첩 순서·Client 경계 확인. 랜딩 차단·리다이렉트는 `proxy.ts`(미들웨어)
 - **Relay 사용**. 스키마 `schema/schema-care.graphql`(`gen:schema:dev`/`dev2`/`prd`), 아티팩트 `__generated__/`(미커밋). `pnpm --filter care-web relay` 선행 필수 (`dev`/`build`가 자동 실행)
-- 상태: Jotai, **페이지 옆 `store/` 디렉터리에 atom 분산 배치**(`app/**/store/*Atom.ts`) + 루트 `store/`. storage atom은 local/session 목적을 구분하고 key·초기값·serialization 명시
+- 상태: Jotai. 공용 atom은 루트 `store/`, 도메인 atom은 해당 라우트 폴더 안 `store/`(`app/**/store/*Atom.ts`). storage atom은 local/session 목적을 구분하고 key·초기값·serialization 명시
+- 공용 훅은 루트 `hooks/`, 라이브러리 어댑터는 `libs/`(channelTalk · eventLogger · hoc · imageResizer · kakao · provider · relay · social). 채널톡은 앱 네이티브 SDK 브릿지 + 웹 폴백(`libs/channelTalk`) — 공통 패키지 `@repo/ui`의 문의 버튼은 제거되어 care-web으로 이관됨
 - 스타일: Tailwind + `app/globals.css` + `@repo/ui/globals.css`, shadcn `components.json`, `theme/`. SCSS 없음
-- **5개 앱 중 유일하게 `type-check`(tsc)와 `test:unit`(jest, `__test__/unit/`, `__mocks__/`)이 있다.** 순수 로직·atom 변경 시 테스트 추가
+- SEO/AEO: 랜딩 구조화 데이터, sr-only 아웃라인, 사이트맵 lastmod(노션 수정일) 등 NEWCARE-630/637 작업이 진행 중. `/premium` 프리미엄 랜딩 존재
+- **5개 앱 중 유일하게 `type-check`(tsc)와 `test:unit`(jest, `__test__/`, `__mocks__/`)이 있다.** 순수 로직·atom 변경 시 테스트 추가
 - `gen:env` 스크립트 없음(Secrets Manager 대상이라 `node scripts/generate-env.mjs --app=care-web --env=<env> --source=sm` 수동). 패키지를 가장 많이 사용(user-session·user-sign·레거시 `@zenterprise-inc/ui` 포함)
-- 외부: radix-ui, embla-carousel, motion, socket.io-client, react-notion-x, react-pdf, html-to-image, @toss/react, @microsoft/clarity
 
-## 디렉터리
+## 디렉터리 (origin/dev 2026-09-16)
 ```
 apps/care-web/
-  app/        (auth) (landing) (login) (payment) (my-info) (registry) (gateway) ...  GlobalProvider.tsx  globals.css
-  components/ constant/(paths.ts 등) graphql/ hooks/ libs/ schema/ store/ theme/ types/ utils/
-  __test__/unit/  __mocks__/  __generated__/(미커밋)  relay.config.json  components.json
+  app/         (auth) (landing) (login) (payment) (my-info) (registry) (gateway) (external-file-download) (kakaoTalk-notification)
+               vat/ global-income/ year-end-tax/ payroll/ pricing/ additional-expense/ card-expense/ business-card/ certificate/ cs-center/ user-status/
+               GlobalProvider.tsx layout.tsx globals.css error.tsx not-found.tsx
+  components/  common/(auth/CareAuthGuard.tsx ...)   constants/(paths.ts, metadata.ts, storageKey.ts, formSchema.ts ...)
+  hooks/  store/  libs/  graphql/  schema/  theme/  types/  utils/
+  __test__/  __mocks__/  __generated__/(미커밋)  relay.config.json  components.json  proxy.ts
 ```
 
 ## 검증

@@ -178,13 +178,17 @@ const buildSnapshot = (repo) => {
       const pkg = readJson(repo, `apps/${appName}/package.json`)
       const usesPages = listTree(repo, `apps/${appName}/pages`) !== null
       const usesApp = listTree(repo, `apps/${appName}/app`) !== null || listTree(repo, `apps/${appName}/src/app`) !== null
+      const appRouterDir = listTree(repo, `apps/${appName}/app`) !== null ? `apps/${appName}/app` : listTree(repo, `apps/${appName}/src/app`) !== null ? `apps/${appName}/src/app` : null
       snapshot.apps[appName] = {
         agent: repo.apps?.[appName] ?? null,
         name: pkg?.name ?? null,
         dev: pkg?.scripts?.dev ?? null,
         port: portFromScript(pkg?.scripts?.dev),
         router: usesPages && !usesApp ? 'pages' : usesApp ? 'app' : 'unknown',
-        deps: pickDeps(pkg)
+        scripts: Object.keys(pkg?.scripts ?? {}).sort(),
+        deps: pickDeps(pkg),
+        dirs: (listDirsOnly(repo, `apps/${appName}`) ?? []).filter((name) => !['node_modules', 'public', '.next'].includes(name)),
+        routes: appRouterDir ? (listDirsOnly(repo, appRouterDir) ?? []).filter((name) => !name.startsWith('_')) : (listDirsOnly(repo, `apps/${appName}/pages`) ?? [])
       }
     }
     for (const pkgName of listDirsOnly(repo, 'packages') ?? []) {
@@ -265,8 +269,13 @@ for (const repo of targets) {
   if (!existsSync(repo.path)) { report.push(`## ${repo.name} (${repo.agents.join(', ')})`, '', `⚠️ repos/${repo.name} 링크가 없다. scripts/setup.sh 를 실행하라`, ''); continue }
   let fetchNote = ''
   if (!NO_FETCH) {
-    const fetched = git(repo.path, ['fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
-    if (fetched === null) fetchNote = ` (fetch 실패, 로컬 ${repo.ref} 참조 사용)`
+    let fetched = git(repo.path, ['fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
+    if (fetched === null) {
+      // ssh 원격(git@github.com:)은 비대화형 셸에서 키가 없어 실패하기 쉽다 → 같은 레포를 https 로 재시도 (설정은 이 호출에만 적용)
+      fetched = git(repo.path, ['-c', 'url.https://github.com/.insteadOf=git@github.com:', 'fetch', '--quiet', 'origin', repo.branch ?? 'dev'], { allowFail: true })
+      if (fetched === null) fetchNote = ` (fetch 실패 — ssh·https 모두, 로컬 ${repo.ref} 참조 사용)`
+      else fetchNote = ' (https 로 fetch)'
+    }
   }
   const snapshot = buildSnapshot(repo)
   const previous = loadJson(join(SNAP_DIR, `${repo.name}.json`))

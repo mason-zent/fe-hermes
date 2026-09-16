@@ -4,9 +4,9 @@
     "packages-fe"
   ],
   "branch": "origin/main",
-  "sha": "0f8d21e50fef",
-  "shaDate": "2026-09-15",
-  "subject": "Merge pull request #89 from zenterprise-inc/changeset-release/main",
+  "sha": "b22d00040b02",
+  "shaDate": "2026-09-16",
+  "subject": "Merge pull request #90 from zenterprise-inc/release/v.26.09.200",
   "package": {
     "name": "@zenterprise-inc/zent-packages",
     "version": "0.0.0",
