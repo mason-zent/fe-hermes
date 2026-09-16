@@ -11,7 +11,10 @@ set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 if [ $# -ge 1 ]; then
   case "$1" in /*) ABS="$1" ;; *) ABS="$HERMES_DIR/$1" ;; esac
-  CMD=(less -R "$ABS"); LABEL="가이드"
+  case "$ABS" in
+    *.md) CMD=(bash -c "python3 '$HERMES_DIR/scripts/mdview.py' '$ABS' | less -R"); LABEL="$(basename "$ABS")" ;;
+    *)    CMD=(less -R "$ABS"); LABEL="$(basename "$ABS")" ;;
+  esac
 else
   CMD=("$HERMES_DIR/scripts/guide-menu.sh"); LABEL="가이드 메뉴"
 fi

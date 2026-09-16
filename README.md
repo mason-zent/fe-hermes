@@ -51,6 +51,7 @@ scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)
 scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
 scripts/guide-menu.sh     선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)
+scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
 scripts/sync-fingerprint.mjs  origin/dev 지문 생성·비교 (/sync 가 호출)
 ```
 

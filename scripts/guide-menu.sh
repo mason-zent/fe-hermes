@@ -41,10 +41,29 @@ ask_claude() { # ask_claude <프롬프트>  — 기존 헤르메스 pane 을 건
   fi
 }
 
-act_extending() { less -R docs/extending.md; }
-act_team()      { { section CLAUDE.md '^## 팀 구성' '^## 작업 흐름'; } | less -R; }
-act_flow()      { { section CLAUDE.md '^## 작업 흐름' '^## Skills'; } | less -R; }
-act_services()  { less -R docs/services.md; }
+# 마크다운 뷰어: glow 가 있으면 glow, 없으면 내장 렌더러(scripts/mdview.py) → less
+view_md() { # view_md <파일>
+  if command -v glow >/dev/null 2>&1; then glow -p "$1"
+  else python3 "$HERMES_DIR/scripts/mdview.py" "$1" | less -R; fi
+}
+view_md_stdin() { # 표준입력의 마크다운을 렌더해 less 로
+  if command -v glow >/dev/null 2>&1; then glow -p -
+  else python3 "$HERMES_DIR/scripts/mdview.py" | less -R; fi
+}
+act_extending() { view_md docs/extending.md; }
+act_team()      { { section CLAUDE.md '^## 팀 구성' '^## 작업 흐름'; } | view_md_stdin; }
+act_flow()      { { section CLAUDE.md '^## 작업 흐름' '^## Skills'; } | view_md_stdin; }
+act_services()  { view_md docs/services.md; }
+act_pick_md() { # hermes 안의 md 파일을 번호로 골라 뷰어로 연다
+  local files=() f i
+  while IFS= read -r f; do files+=("$f"); done < <(
+    { ls CLAUDE.md README.md 2>/dev/null; find docs .claude/agents .claude/rules .claude/skills -name '*.md' 2>/dev/null | sort; } )
+  printf '%s번호를 입력하고 Enter. 빈 입력이면 메뉴로 돌아갑니다.%s\n\n' "$GRAY" "$RESET"
+  for i in "${!files[@]}"; do printf '  %s%3d%s  %s\n' "$CYAN" $((i+1)) "$RESET" "${files[$i]}"; done
+  printf '\n번호: '; read -r pick
+  [[ "$pick" =~ ^[0-9]+$ ]] && [ "$pick" -ge 1 ] && [ "$pick" -le "${#files[@]}" ] || return
+  view_md "${files[$((pick-1))]}"
+}
 act_playbook()  { open docs/playbook.html && echo "브라우저에서 docs/playbook.html 을 열었습니다."; pause; }
 act_status() {
   { for repo in "${REPOS[@]}"; do
@@ -132,13 +151,14 @@ act_ask_status()    { ask_claude "/status"; pause; }
 
 # ---------- 메뉴 ----------
 # 항목: 아이콘 | 제목 | 설명 | 동작
-ICONS=( "📘" "👥" "🔁" "🗺️ " "🌐" "📊" "✨" "🤖" "📝" "🔄" "📋" )
+ICONS=( "📘" "👥" "🔁" "🗺️ " "🌐" "📂" "📊" "✨" "🤖" "📝" "🔄" "📋" )
 TITLES=(
   "확장 가이드 보기"
   "팀 구성 · 라우팅 기준"
   "작업 흐름 (Plan-First)"
   "서비스 맵"
   "플레이북을 브라우저로 열기"
+  "md 파일 골라 보기"
   "담당 레포 git 현황 · 계획서"
   "새 스킬 만들기"
   "새 에이전트 만들기"
@@ -152,6 +172,7 @@ DESCS=(
   "CLAUDE.md"
   "docs/services.md"
   "docs/playbook.html"
+  "에이전트·규칙·문서 전체"
   "로컬 실행"
   "템플릿 생성 → 편집기"
   "템플릿 생성 → 편집기"
@@ -165,6 +186,7 @@ HELPS=(
   "분석 → 계획서 → 승인 → 병렬 디스패치 → 검증 → 보고 → 정리, 헤르메스의 6단계 Plan-First 흐름"
   "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
   "공유용 플레이북 HTML 을 기본 브라우저에서 연다. 같은 내용이 claude.ai 아티팩트로도 공유돼 있다"
+  "CLAUDE.md·README·docs·에이전트·규칙·스킬 md 를 목록에서 번호로 골라 마크다운 뷰어로 연다 (glow 있으면 glow, 없으면 내장 렌더러)"
   "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에"
   "이름을 입력하면 .claude/skills/<이름>/SKILL.md 템플릿을 만들고 편집기를 연다. 저장하면 /<이름> 으로 바로 쓸 수 있다"
   "이름을 입력하면 .claude/agents/<이름>.md 템플릿을 만들고 편집기를 연다. description 이 라우팅 문장이니 구체적으로"
@@ -172,10 +194,10 @@ HELPS=(
   "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /sync 를 돌린다. 담당 레포 origin/<branch> 를 읽어 에이전트 md·서비스 맵·플레이북을 갱신"
   "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /status 를 돌린다. 이 세션(현재 대화)은 건드리지 않는다"
 )
-ACTIONS=(act_extending act_team act_flow act_services act_playbook act_status
+ACTIONS=(act_extending act_team act_flow act_services act_playbook act_pick_md act_status
          act_new_skill act_new_agent act_ask_sync_docs act_ask_sync act_ask_status)
 # 그룹: "시작인덱스|제목"
-MENU_GROUPS=( "0|📚  문서" "5|🧰  도구" "8|🚀  헤르메스에게 (새 pane 에서 실행)" )
+MENU_GROUPS=( "0|📚  문서" "6|🧰  도구" "9|🚀  헤르메스에게 (새 pane 에서 실행)" )
 sel=0; n=${#TITLES[@]}
 ROW_OF=()   # ROW_OF[i] = i번 항목이 그려진 화면 행(1-based). 클릭 매핑에 사용
 

@@ -506,7 +506,7 @@ claude
 
         <article class="cmd wide">
           <div class="cmd-head"><kbd>/guide <span class="arg">pane · 열기 · 팀 · 흐름 (선택)</span></kbd><span class="tag plain">read-only</span></div>
-          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다. 항목을 마우스로 클릭하거나 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 문서 보기 외에 새 스킬·에이전트 템플릿 생성(편집기까지 열림), 4개 레포 git 현황, "헤르메스에게 문서 반영 요청 · /sync · /status"를 새 pane의 별도 헤르메스 세션으로 실행하는 항목이 있습니다(기존 세션은 건드리지 않음)(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을 브라우저로 엽니다.</p>
+          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다. 항목을 마우스로 클릭하거나 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, "md 파일 골라 보기"로 hermes 안의 어떤 md든 번호로 열 수 있습니다. 그 외 새 스킬·에이전트 템플릿 생성(편집기까지 열림), 4개 레포 git 현황, "헤르메스에게 문서 반영 요청 · /sync · /status"를 새 pane의 별도 헤르메스 세션으로 실행하는 항목이 있습니다(기존 세션은 건드리지 않음)(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을 브라우저로 엽니다.</p>
           <div class="flow"><span>문서 읽기</span><span class="hi">본문 그대로 출력</span><span>원본 경로 표시</span></div>
           <dl>
             <dt>언제</dt><dd>스킬이나 에이전트를 추가하려는데 절차가 기억나지 않을 때, 팀 표·작업 흐름을 다시 볼 때</dd>
@@ -690,6 +690,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── archive-plans.sh
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)</span>
+    ├── mdview.py              <span class="c">터미널 마크다운 뷰어 (glow 없을 때 내장 렌더러)</span>
     └── sync-fingerprint.mjs   <span class="c">origin/dev 지문 생성·비교</span></code></pre>
       <div class="note">
         레포 경로는 어디서나 <code>repos/&lt;레포&gt;</code>입니다. 실제 위치는 <code>scripts/setup.sh</code>가 만드는 심볼릭 링크가 가리키며, 목록은 <code>hermes.config.json</code>이 정본입니다. <code>repos/</code>는 gitignore라 팀원마다 배치가 달라도 문서는 공유됩니다.
