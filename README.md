@@ -35,7 +35,8 @@ claude
 
 ## 구조
 ```
-CLAUDE.md                 헤르메스 역할·라우팅·작업 흐름
+AGENTS.md                 **공통 규칙·지식 진입점 (도구 무관 — Codex 등도 이걸 읽는다)**
+CLAUDE.md                 @AGENTS.md import + Claude Code 전용(서브에이전트·스킬·Plan-First)
 hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (정본)
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 12개
