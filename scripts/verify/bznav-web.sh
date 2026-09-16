@@ -9,6 +9,7 @@ TARGET="${1:-}"
 [ -n "$TARGET" ] || { echo "사용: $0 <앱|packages/<pkg>>"; exit 2; }
 [ -d "$REPO_DIR" ] || { echo "repos/bznav-web 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"
+check_node_version "$REPO_DIR"
 [ -d node_modules ] || skip_step "pnpm install 확인" "node_modules 없음 — pnpm install 먼저"
 
 if [[ "$TARGET" == packages/* ]]; then
@@ -33,7 +34,11 @@ if relay_missing; then
   skip_step "타입 검증" "Relay 아티팩트 없음 — 먼저 $([ "$APP" = care-web ] && echo 'pnpm --filter care-web relay' || echo 'pnpm --filter refund-web gen:relay')"
 elif [ "$APP" = care-web ]; then
   run_step "pnpm --filter care-web type-check" pnpm --filter care-web type-check
-  run_step "pnpm --filter care-web test:unit" pnpm --filter care-web test:unit
+  if node -e "require('canvas')" >/dev/null 2>&1; then
+    run_step "pnpm --filter care-web test:unit" pnpm --filter care-web test:unit
+  else
+    skip_step "pnpm --filter care-web test:unit" "canvas 네이티브 모듈 미빌드 (jsdom 의존). 코드 문제가 아니라 환경 문제 → pnpm rebuild canvas 또는 cairo/pango 설치 필요"
+  fi
 else
   run_step "pnpm --filter $APP exec tsc --noEmit" pnpm --filter "$APP" exec tsc --noEmit
 fi

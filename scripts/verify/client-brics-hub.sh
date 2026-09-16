@@ -7,6 +7,7 @@ source "$HERMES_DIR/scripts/verify/_lib.sh"
 REPO_DIR="$HERMES_DIR/repos/client-brics-hub"
 [ -d "$REPO_DIR" ] || { echo "repos/client-brics-hub 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"
+check_node_version "$REPO_DIR"
 
 [ -d node_modules ] || skip_step "pnpm install 확인" "node_modules 없음 — pnpm install 먼저"
 run_step "pnpm lint:check" pnpm lint:check

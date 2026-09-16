@@ -6,10 +6,16 @@ REPO_DIR="$HERMES_DIR/repos/zent-packages"
 [ $# -ge 1 ] || { echo "사용: $0 <패키지명...>"; exit 2; }
 [ -d "$REPO_DIR" ] || { echo "repos/zent-packages 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"
+check_node_version "$REPO_DIR"
 [ -d node_modules ] || skip_step "pnpm install 확인" "node_modules 없음 — 루트에서 pnpm install 먼저 (GitHub Packages 토큰)"
+# CI(.github/workflows/ci.yml)가 lint 에서 제외하는 패키지 — eslint 설정이 빈 파일이라 항상 실패한다
+LINT_EXCLUDED="@zenterprise-inc/brics-fe-ui @zenterprise-inc/brics-fe-zent-auth @zenterprise-inc/brics-fe-datadog-trace"
 for PKG in "$@"; do
   run_step "pnpm build --filter=$PKG..." pnpm build --filter="$PKG..."
-  run_step "pnpm lint --filter=$PKG" pnpm lint --filter="$PKG"
+  case " $LINT_EXCLUDED " in
+    *" $PKG "*) skip_step "pnpm lint --filter=$PKG" "CI 도 제외하는 패키지 (brics eslint 프리셋이 빈 파일). prettier 만 맞출 것" ;;
+    *) run_step "pnpm lint --filter=$PKG" pnpm lint --only --filter="$PKG" ;;
+  esac
 done
 # changeset: 작업 트리에 새 .changeset/*.md 가 있어야 PR 머지 가능
 if git status --porcelain -- .changeset | grep -q '\.md$'; then

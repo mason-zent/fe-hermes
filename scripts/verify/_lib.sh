@@ -9,6 +9,16 @@ VERIFY_LOG_DIR="${VERIFY_LOG_DIR:-$(mktemp -d /tmp/hermes-verify.XXXXXX)}"
 declare -a STEP_NAMES=() STEP_RESULTS=() STEP_SECS=() STEP_LOGS=()
 VERIFY_FAILED=0
 
+check_node_version() { # check_node_version <레포경로> — .nvmrc 와 현재 node 버전이 다르면 경고 단계로 기록
+  local repo_dir="$1" want cur
+  [ -f "$repo_dir/.nvmrc" ] || return 0
+  want="$(tr -d ' \n' < "$repo_dir/.nvmrc")"; cur="$(node -v 2>/dev/null)"
+  [ -n "$want" ] || return 0
+  if [ "${want#v}" != "${cur#v}" ]; then
+    skip_step "Node 버전" "레포는 $want 를 요구하는데 현재 $cur. 네이티브 모듈·lint 결과가 달라질 수 있다 → nvm use ${want#v}"
+  fi
+}
+
 run_step() {
   local name="$1"; shift
   local log="$VERIFY_LOG_DIR/$(echo "$name" | tr ' /:' '___').log"

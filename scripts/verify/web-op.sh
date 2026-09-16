@@ -4,6 +4,7 @@ HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/v
 REPO_DIR="$HERMES_DIR/repos/web-op"
 [ -d "$REPO_DIR" ] || { echo "repos/web-op 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"
+check_node_version "$REPO_DIR"
 [ -d node_modules ] || skip_step "pnpm install 확인" "node_modules 없음 — pnpm install 먼저"
 run_step "pnpm lint" pnpm lint
 run_step "pnpm typecheck" pnpm typecheck
