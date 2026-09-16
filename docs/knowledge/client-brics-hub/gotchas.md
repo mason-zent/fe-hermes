@@ -12,3 +12,8 @@
 - **`/messages/**` 권한 코드 미정**: 로그인만 확인 중. `MESSAGES_REQUIRED_FUNCTION`(`_tabs.ts`)을 채우면 가드로 전환되는 구조
 - **admin의 메뉴 탭(`@tabs/menus`)은 제거됨**(2026-09). 메뉴 관리는 `/brics-menus`
 - **Jest는 node 환경 + ts-jest**: 컴포넌트 렌더링 테스트 불가. 공유 패키지는 `test/*Stub.ts`로 스텁된다. 테스트 가능한 건 `_helpers/`·`lib/`의 순수 함수
+- **nuqs·nice-modal-react는 "설치만"** (2026-09-16 확인): `NuqsAdapter`·`NiceModal.Provider`가 layout에 있지만 `useQueryState`·`NiceModal.show` 사용처가 0건. 문서에 "관례"로 적혀 있던 것은 오류였다. 실제 관례는 `useSearchParams`+`router.push` / `@ui` Dialog
+- **`@/swr` 배럴에서 값을 import하면 jest가 깨진다**: endpoints→fetcher→`@zent-auth/*` 런타임 의존을 끌어온다. 스키마·헬퍼는 `@/generated/models` 또는 `import type`
+- **`formdataFn`은 `undefined`를 `"undefined"` 문자열로 보낸다**: 옵셔널 필드는 키를 빼고 넘긴다 (`{ file, ...(x ? { x } : {}) }`)
+- **날짜 유틸 두 종**: `formatKst.ts`(KST 고정, 신규용) vs `lib/DateTimeFormatter.ts`(로컬 시간대, works 잔재). 섞으면 서버값과 어긋난다
+- **`TabButton`(admin) 활성 판정은 `includes`**: 경로 접두사가 겹치면 두 탭이 동시에 활성. 신형은 `MessagesTabButton` 방식

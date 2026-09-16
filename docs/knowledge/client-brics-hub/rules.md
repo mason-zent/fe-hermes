@@ -11,7 +11,9 @@
 - `app/admin/**`만 works 이관 병렬 라우트(`@tabs`, `_tabs.ts` 단일 출처). **새 도메인 화면은 `/messages/**`처럼 일반 중첩 라우트로**
 - 권한 가드: `/admin/**`는 각 탭 `page.tsx`의 `AuthFunction` 검사, `/activity-log`·`/audit/**`는 `layout.tsx`에서 `PAGE_ACCESS_LOGS`, `/messages/**`는 로그인만(권한 코드 미정). 없으면 `/unauthorized`
 - 사이드바는 hub에 **내재화**(`app/_components/sidebar/`, `lib/sidebarMenu.ts`, `GET /v1/menu/my`). 메뉴 추가는 코드가 아니라 `/brics-menus` 화면(DB). hub API는 `/v1` 접두사
-- URL 상태는 `nuqs`, 모달은 `@ebay/nice-modal-react`
+- URL 상태: admin 계열은 `useSearchParams` + `router.push`, 신형 `/messages`는 `useState`. `nuqs`는 설치만 되어 있고 사용처 0건(도입은 팀 합의 후). 모달은 `@ui` Dialog 제어형 + `ConfirmModal`. `@ebay/nice-modal-react`도 사용처 0건
+- 공용 UI는 `@ui/components/ui/<name>` 개별 경로로 import. 스키마·헬퍼에서 enum 값은 `@/generated/models`(배럴 `@/swr`는 타입만)
+- 신규 화면 날짜는 `app/messages/_helpers/formatKst.ts`(KST 고정). `lib/DateTimeFormatter.ts`는 로컬 시간대
 
 ## API
 - 전부 `@/swr` Orval 생성물. 없으면 `pnpm genapi:local`. 생성 불가 시 `lib/*Swr.ts` 패턴 임시 훅 + 보고

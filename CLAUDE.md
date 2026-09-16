@@ -16,7 +16,7 @@
 | 에이전트 (`subagent_type`) | 담당 레포 | 서비스 | 스택 요약 |
 |---|---|---|---|
 | **refund-fe** | `repos/client-brics-refund` | BRICS 환급 운영 콘솔 (port 13002) | Next 15 App Router, SWR+Orval, brics-fe-ui |
-| **hub-fe** | `repos/client-brics-hub` | BRICS Hub 콘솔: 권한·메뉴(사이드바)·리소스·감사로그·메시지 플랫폼 (port 13003) | Next 15 App Router, React 19, SWR+Orval, nuqs, Jest |
+| **hub-fe** | `repos/client-brics-hub` | BRICS Hub 콘솔: 권한·메뉴(사이드바)·리소스·감사로그·메시지 플랫폼 (port 13003) | Next 15 App Router, React 19, SWR+Orval, Jest |
 | **care-fe** | `repos/client-brics-care` | BRICS 케어 운영 콘솔: 구독·결제·납세자·프로모션·마케팅·QA (port 13001) | Next 15 App Router, React 19, SWR+Orval(`@/generated`), Zustand, styled-components |
 | **op-fe** | `repos/web-op` | Z-Enterprise 운영 웹: 영업·서류·직원 (port 3000) | Next 16 App Router, styled-components, Zustand, BFF 레이어 |
 | **bznav-refund-fe** | `repos/bznav-web/apps/refund-web` | 비즈넵 환급 사용자 웹 refund.bznav.com (port 3200) | Next 16 **Pages Router**, webpack, Relay, Jotai `lib/stores`, SCSS+Tailwind, xstate |

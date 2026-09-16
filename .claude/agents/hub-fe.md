@@ -9,6 +9,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 > **규칙 층**: `docs/knowledge/common/*.md`(팀 공통) → `docs/knowledge/client-brics-hub/rules.md`(레포) → 레포 원문 문서. 충돌하면 뒤가 우선. 작업 전 세 층을 순서대로 읽는다. 아래 절은 요약이다.
 
+> **레포 지식**: `docs/knowledge/client-brics-hub/` — `structure.md`(구조 맵) · `patterns.md`(대표 예시 파일 14종, **새 화면은 여기 파일을 복사해 시작**) · `workflows.md`(새 도메인·admin 탭·컬럼 추가 등 절차 체크리스트) · `gotchas.md`(함정). 작업 전 patterns·workflows를 읽는다.
+
 ## 기본 정보
 - 작업 디렉토리: `repos/client-brics-hub`
 - 서비스: BRICS **Hub 콘솔**. 플랫폼 공통 관리(권한·메뉴·리소스·감사로그·메시지 플랫폼). `client-brics-works`에서 분화된 클라이언트
@@ -22,8 +24,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 ## 기술 스택
 - Next.js 15.5 App Router (Turbopack 기본, `next.config.js` 최상위 `turbopack.resolveAlias`로 `process` shim), React 19, TypeScript 5.6
 - UI: `@zenterprise-inc/brics-fe-ui` + Tailwind 3.4 + `tailwind-merge`/`clsx`, `lucide-react`, `react-day-picker`
-- 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, `@/swr`), `lib/orval-fetcher.ts`. URL 상태는 `nuqs`
-- 폼: React Hook Form + Zod, 모달: `@ebay/nice-modal-react`
+- 데이터: SWR + **Orval 자동 생성 클라이언트** (`__generated__/`, `@/swr`), `lib/orval-fetcher.ts`. URL 상태: 구형 admin은 `useSearchParams` + `router.push`, 신형 `/messages`는 `useState`. **`nuqs`는 설치·마운트만 되어 있고 사용처 0건** — 관례로 쓰지 말 것
+- 폼: React Hook Form + Zod (스키마는 `_components/xxxFormSchema.ts`). 모달: `@ui/components/ui/dialog` 제어형 + `@ui/components/ConfirmModal`. **`@ebay/nice-modal-react`는 프로바이더만 있고 사용처 0건**
 - 인증: NextAuth v5 + Cognito (`@zenterprise-inc/brics-fe-zent-auth` 0.4.0), 모니터링 `brics-fe-datadog-trace` 0.3.0. 공유 패키지는 works 기준으로 **정확 버전 고정**(`brics-fe-ui` 0.2.4 등, `^` 없음)
 - 테스트: Jest (ts-jest, node 환경, `*.spec.ts`). 렌더링 테스트 불가, **순수 함수 단위 테스트만** (`lib/*.spec.ts` 참고)
 
@@ -67,7 +69,7 @@ __generated__/      Orval 생성물 — 직접 수정 금지. works 생성물 �
 
 ## 작업 순서
 1. `git status --short --branch`로 기존 변경 확인
-2. 유사 화면(예: `app/messages/*`, `app/access-requests/*`) 패턴 파악
+2. `docs/knowledge/client-brics-hub/workflows.md`에서 해당 절차를 고르고, `patterns.md`가 가리키는 파일을 읽는다 (신규 화면은 `app/messages/**` 계열 복사)
 3. 구현. 순수 로직은 `_helpers/`로 분리하고 가능하면 `*.spec.ts` 추가
 4. `pnpm lint:check` + `pnpm typecheck` + `pnpm test`. 실패 시 수정, 3회 반복되면 접근 재검토
 5. **커밋하지 않는다**
