@@ -624,7 +624,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="rules">
       <h2>규칙</h2>
-      <p><code>.claude/rules/</code>에 있는 공통 규칙입니다. 레포별 포맷·스택 규칙은 각 에이전트 파일이 우선합니다.</p>
+      <p>규칙은 세 층입니다. <strong>팀 공통</strong>(<code>docs/knowledge/common/</code>: 코드·Git·보고) → <strong>레포 규칙</strong>(<code>docs/knowledge/&lt;레포&gt;/rules.md</code>: 공통과 다른 점) → <strong>레포 원문</strong>(<code>.ai/basic-rule.md</code>, 레포 <code>CLAUDE.md</code> 등). 충돌하면 뒤가 우선합니다. 아래 <code>.claude/rules/</code>는 헤르메스 자신의 운영 규칙 요약입니다.</p>
       <div class="rules">
         <div class="rule">
           <h3>git-workflow</h3>
@@ -678,7 +678,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   └── snapshots/             <span class="c">레포별 origin/dev 지문 baseline (/sync 비교 기준)</span>
 ├── docs/
 │   ├── services.md            <span class="c">서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
-│   ├── knowledge/&lt;레포&gt;/      <span class="c">레포별 공통 지식 (bznav-web/common.md)</span>
+│   ├── knowledge/             <span class="c">지식 베이스 — common/(팀 공통 규칙) · &lt;레포&gt;/rules.md(레포 규칙) · structure·patterns·gotchas·workflows</span>
 │   ├── extending.md           <span class="c">스킬 · 에이전트 추가 방법 (/guide 로 열람)</span>
 │   ├── plan-template.md
 │   └── plan-template.html     <span class="c">결정 콘솔 + md 렌더링 뷰</span>

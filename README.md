@@ -43,7 +43,7 @@ repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, giti
 .claude/skills/           /feature /bugfix /review /status /sync /guide
 .sync/snapshots/          레포별 origin/dev 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/services.md          서비스 비교표
-docs/knowledge/<레포>/    레포별 공통 지식 (bznav-web/common.md 등)
+docs/knowledge/           지식 베이스: common/(팀 공통 규칙) · <레포>/rules.md(레포 규칙) · 레포 지식 (README.md 참고)
 docs/extending.md         스킬·에이전트 추가 방법 (/guide)
 docs/plan-template.*      계획서 템플릿 (md + 결정 콘솔 html)
 plans/{feature,bugfix,refactor,archive}/   작업계획서 (gitignore)

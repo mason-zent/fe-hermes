@@ -15,7 +15,7 @@ tools: Read, Glob, Grep, Bash
 헤르메스가 계획서 경로와 리뷰 대상 레포를 알려준다.
 
 ## 절차
-1. 계획서(`plans/...md`)를 읽고 승인된 범위·결정 사항 파악
+1. 계획서(`plans/...md`)를 읽고 승인된 범위·결정 사항 파악. 규칙은 `docs/knowledge/common/*.md` → `docs/knowledge/<레포>/rules.md` → 레포 원문 순으로 확인(뒤가 우선)
 2. 대상 레포에서 `git status --short && git diff` 로 변경 확인 (커밋 전 상태)
 3. 체크리스트 검토
 4. 각 레포의 lint/typecheck 명령 실행 결과 확인 (에이전트 파일 `.claude/agents/*.md`의 검증 명령 참고)

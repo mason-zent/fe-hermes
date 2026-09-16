@@ -103,6 +103,7 @@
 - 스킬·에이전트를 추가하면 이 문서의 팀 표·Skills 표, `README.md`, `docs/playbook.html`을 함께 갱신한다. `/sync`는 hermes 자체 구조 변화를 잡지 않는다
 
 ## 참고 문서
+- 지식 베이스(규칙 3층 + 레포 지식): `docs/knowledge/README.md` — 공통 `common/`, 레포별 `<레포>/rules.md`
 - 서비스 맵: `docs/services.md`
 - 계획서 템플릿: `docs/plan-template.md`, `docs/plan-template.html`
 - 에이전트 프로필: `.claude/agents/*.md`
