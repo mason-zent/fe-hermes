@@ -25,6 +25,11 @@
 | ⏭ 건너뜀 | 이유가 함께 표시된다. "통과"라고 쓰지 말고 건너뛴 사실과 이유를 그대로 보고 |
 
 ## 알려진 환경 이슈 (코드 문제가 아님)
-- **canvas 네이티브 모듈 미빌드** → bznav care-web `test:unit`이 전부 실패한다. `pnpm rebuild canvas` 또는 cairo/pango 설치 필요. 스크립트가 감지해 건너뛴다
+- **canvas 네이티브 바이너리 없음** → bznav care-web `test:unit`이 전부 실패한다(jsdom이 canvas를 로드하다 죽는다). 스크립트가 감지해 건너뛴다. 고치는 법:
+  ```bash
+  cd repos/bznav-web/node_modules/.pnpm/canvas@2.11.2/node_modules/canvas
+  npx node-gyp rebuild        # cairo·pango·librsvg 등은 brew 로 이미 설치돼 있어야 한다
+  ```
+  `pnpm rebuild canvas`는 전이 의존성이라 아무 일도 하지 않으니 위 경로에서 직접 빌드한다. 빌드 후 `build/Release/canvas.node`가 생기면 성공이다 (2026-09-16 확인, 테스트 78개 통과)
 - **zent-packages의 brics FE 3종**(`brics-fe-ui`, `zent-auth`, `datadog-trace`)은 eslint 프리셋이 빈 파일이라 CI도 lint를 제외한다. 스크립트도 건너뛰고 prettier만 맞춘다
 - **web-op은 `pnpm build`가 타입 에러를 무시**한다(`ignoreBuildErrors: true`). 반드시 `typecheck`를 따로 본다

@@ -34,10 +34,11 @@ if relay_missing; then
   skip_step "타입 검증" "Relay 아티팩트 없음 — 먼저 $([ "$APP" = care-web ] && echo 'pnpm --filter care-web relay' || echo 'pnpm --filter refund-web gen:relay')"
 elif [ "$APP" = care-web ]; then
   run_step "pnpm --filter care-web type-check" pnpm --filter care-web type-check
-  if node -e "require('canvas')" >/dev/null 2>&1; then
+  # jsdom 이 쓰는 canvas 네이티브 바이너리가 빌드돼 있는지 확인 (pnpm 격리 구조라 실제 경로로 본다)
+  if ls node_modules/.pnpm/canvas@*/node_modules/canvas/build/Release/canvas.node >/dev/null 2>&1; then
     run_step "pnpm --filter care-web test:unit" pnpm --filter care-web test:unit
   else
-    skip_step "pnpm --filter care-web test:unit" "canvas 네이티브 모듈 미빌드 (jsdom 의존). 코드 문제가 아니라 환경 문제 → pnpm rebuild canvas 또는 cairo/pango 설치 필요"
+    skip_step "pnpm --filter care-web test:unit" "canvas 네이티브 바이너리 없음 (jsdom 의존) — 코드 문제가 아니라 환경 문제. 고치는 법은 docs/knowledge/common/verify.md 참고"
   fi
 else
   run_step "pnpm --filter $APP exec tsc --noEmit" pnpm --filter "$APP" exec tsc --noEmit
