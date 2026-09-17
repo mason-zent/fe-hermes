@@ -2,6 +2,14 @@
 
 공통 규칙(`docs/knowledge/common/`)에 더해, 이 레포에서 다른 점과 고유 규칙. 원문: 레포 `AGENTS.md`와 `README.md`.
 
+## 필수 — 작업 크기와 무관하게 항상 적용
+
+- ⚠️ **`BaseApiGateway`를 상속하지 않는다.** catch에서 `alert` 후 `undefined`를 반환해 에러를 삼킨다. 신규 gateway는 documents 방식(axios 직접)으로 만든다
+- ⚠️ **`pnpm typecheck`를 반드시 따로 돌린다.** `pnpm build`는 `typescript.ignoreBuildErrors: true`라 타입 에러를 잡지 않는다. 빌드 통과를 타입 통과로 보고하지 않는다
+- **포맷이 다른 BRICS 레포와 정반대다** — `semi: true`, `trailingComma: all`, `printWidth: 80`, double quote. 다른 레포 습관으로 포맷하면 diff가 크게 튄다. 포맷과 기능 변경을 섞지 않는다
+- 이 레포 밖은 수정하지 않는다. 공유 패키지(`bznav-fe-ui`, `bznav-fe-common-utils`, `bznav-fe-project-config`) 변경은 **헤르메스에 보고** (`packages-fe` 담당). 로컬 링크(`pnpm pkg:link`) 상태로 커밋하지 않는다
+- **커밋하지 않는다.** `NEXT_PUBLIC_SALES_*_KEY` 등 키 값은 출력하지 않는다. 시크릿은 서버 전용 환경변수로만
+
 ## 포맷·검증
 - Prettier **`semi: true`, `trailingComma: all`, `printWidth: 80`**, 2 spaces — 다른 BRICS 레포와 다르다
 - ESLint flat config(`eslint.config.mjs`, `bznav-fe-project-config` 상속), `unused-imports` 플러그인

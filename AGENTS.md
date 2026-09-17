@@ -59,6 +59,7 @@
 
 - 5절 **작업 규칙** — 담당 범위, 커밋 금지, 시크릿 취급, 생성물 편집 금지
 - 대상 레포 `docs/knowledge/<레포>/rules.md`의 **"필수" 절** — 용어 규칙, 금지 사항, 허용 범위 예외
+- 대상 레포 `docs/knowledge/<레포>/gotchas.md` **전체** — 함정은 어느 작업에서 밟을지 미리 알 수 없다. 문구 한 줄을 고치다가 날짜 변환·인증·생성물 함정에 걸리는 일을 막기 위해 크기와 무관하게 읽는다
 - 대상 repo/app/worktree가 무엇인지 확인 (`git status --short --branch`)
 
 필수 규칙은 선택 로딩 문서 깊숙이 옮기지 않는다. `rules.md`는 짧은 진입점으로 유지하고 긴 설명·예제는 `structure`/`patterns`로 보낸다.
@@ -67,10 +68,10 @@
 
 | 작업 유형 | 추가로 읽을 것 |
 |---|---|
-| 문구·스타일 국소 수정 | 대상 파일과 인접 사용처. patterns·workflows 불필요 |
-| 새 화면·기능 | 해당 `workflows.md` 절 → `patterns.md`가 가리키는 **실제 파일** → 권한·라우팅 `gotchas` |
-| API·폼·상태 변경 | 해당 API/폼 pattern, 타입·생성 설정, 인증·오류 처리 `gotchas` |
-| 버그 수정 | 재현 근거, 관련 코드·테스트, 연관 `gotchas`. 과거 이유가 필요할 때만 History |
+| 문구·스타일 국소 수정 | 대상 파일과 인접 사용처. `patterns`·`workflows`·`structure`는 불필요 (`gotchas`는 2.2에서 이미 읽었다) |
+| 새 화면·기능 | 해당 `workflows.md` 절 → `patterns.md`가 가리키는 **실제 파일** → `structure.md`의 라우트·권한 표 |
+| API·폼·상태 변경 | 해당 API/폼 pattern, 타입·생성 설정, `rules.md` API 절 |
+| 버그 수정 | 재현 근거, 관련 코드·테스트. 과거 이유가 필요할 때만 History |
 | 구조 변경·공유 패키지 | `structure.md`와 소비처, 해당 workflow, 담당 범위·영향 규칙 |
 | 기존 작업 재개 | 해당 plan의 **Checkpoint**, 현재 diff·worktree, 다음 단계에 필요한 코드 |
 

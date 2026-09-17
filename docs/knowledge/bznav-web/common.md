@@ -1,10 +1,13 @@
 # bznav-web 공통 지식 (앱 에이전트 6개가 공유)
 
-기준: **앱마다 운영 브랜치가 다르다** (`origin/prd-<앱>`). `packages/*`는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. `/sync`로 갱신. 레포 경로 `repos/bznav-web`. 앱별 차이는 각 `.claude/agents/bznav-*-fe.md`.
+기준: **앱마다 운영 브랜치가 다르다** (`origin/prd-<앱>`). `packages/*`는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. `/sync`로 갱신. 레포 경로 `repos/bznav-web`. 앱별 구조·패턴·함정은 `docs/knowledge/bznav-web/<앱>/`에 있다.
 
-## 레포 자체 규칙 문서 — 작업 전 반드시 읽는다
-1. `.ai/basic-rule.md` — 공통 개발 규칙. `[필수]`/`[검증]`/`[권장]` 등급. **이 문서가 원문이고 아래는 요약**
-2. `.github/agents/<앱>.agent.md` — 앱별 담당 범위·특이사항 (`shared-packages.agent.md` = packages/**)
+## 레포 자체 규칙 문서 (원문)
+
+`.ai/basic-rule.md`의 **`[필수]` 등급 항목은 `rules.md`의 "필수" 절에 반영되어 있다.** 아래 원문은 작업 유형에 따라 필요할 때 읽는다 (`AGENTS.md` 2.3).
+
+1. `.ai/basic-rule.md` — 공통 개발 규칙. `[필수]`/`[검증]`/`[권장]` 등급. **이 문서가 원문이고 여기 요약보다 우선한다**
+2. `.github/agents/<앱>.agent.md` — 앱별 담당 범위·특이사항 (`shared-packages.agent.md` = packages/**). 새 화면·구조 작업 시
 3. `.github/skills/react-component/SKILL.md` — 컴포넌트 생성·추출 시
 4. `.github/skills/create-pr/SKILL.md` — PR 생성 시 (base 브랜치 추론 규칙)
 5. `AGENTS.md`의 Codex 모델 정책은 무시. 규칙 우선순위(스킬 → agent.md → basic-rule)는 그대로

@@ -2,6 +2,16 @@
 
 공통 규칙(`docs/knowledge/common/`)에 더해, 이 레포에서 다른 점과 고유 규칙. **원문: 레포 `CLAUDE.md`** (단, "Next 14" 표기·`infrastructure/care/`·`pkg-link.mjs`·Jira `BZC2-` 예시는 낡음). `README.md`는 모노레포 시절 잔재라 따르지 않는다.
 
+## 필수 — 작업 크기와 무관하게 항상 적용
+
+- **항상 arrow function** (`function` 선언 금지). 파일명: 컴포넌트 PascalCase, 유틸 camelCase, 훅 `use`+camelCase, 라우트 kebab-case
+- **직접 `fetch` 금지** → `@/generated`의 Orval SWR 훅을 쓴다 (별칭은 `@/generated/*`, hub의 `@/swr`는 없다)
+- **QA 화면(`app/qa/**`)은 운영에서 차단되어 있다** — `layout.tsx`가 `NEXT_PUBLIC_ZENV === 'prd'`면 사용 불가 안내를 띄운다. QA 화면을 고칠 때 이 차단을 없애거나 우회하지 않는다
+- `__generated__/`는 직접 편집하지 않는다. git 추적 대상이라 생성 시 diff에 함께 올라간다
+- 이 레포 밖은 수정하지 않는다. 공유 패키지(`brics-fe-ui`, `brics-fe-zent-auth`) 변경은 **헤르메스에 보고** (`packages-fe` 담당)
+- **커밋하지 않는다.** dev·prd·frz 직접 push 금지. `.env*`·토큰 내용은 출력하지 않는다
+- 비즈넵 **사용자향** 케어 웹(`bznav-web apps/care-web`)은 다른 레포다. 혼동하지 않는다
+
 ## 포맷·검증
 - Prettier `semi: false`, `singleQuote: true`, `trailingComma: none`, `printWidth: 120`, 2 spaces (hub와 동일)
 - 검증: `pnpm lint:check`. 타입은 `pnpm exec tsc --noEmit` (**typecheck·test 스크립트 없음**, jest 미도입)

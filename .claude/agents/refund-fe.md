@@ -20,7 +20,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 1. `git status --short --branch` — 기존 변경과 브랜치 확인
 2. `AGENTS.md` 5절 **작업 규칙**
-3. `docs/knowledge/client-brics-refund/rules.md`의 **"필수" 절** — 용어·금지·범위. 문구 한 줄만 고치더라도 읽는다
+3. `docs/knowledge/client-brics-refund/rules.md`의 **"필수" 절** — 용어(`deal`=환급)·금지·범위. 문구 한 줄만 고치더라도 읽는다
+4. `docs/knowledge/client-brics-refund/gotchas.md` **전체** — 시간대 변환·`axios` 미의존·생성물 삭제 같은 함정은 어느 작업에서 밟을지 미리 알 수 없다
 
 ## 그다음은 작업 유형에 따라 (기준: `AGENTS.md` 2.3)
 
@@ -29,13 +30,13 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 | 작업 유형 | 추가로 읽을 것 |
 |---|---|
 | 문구·스타일 국소 수정 | 대상 파일과 인접 사용처만 |
-| 새 도메인 화면 | `workflows.md` A → `patterns.md`가 가리키는 `app/refund-service/partner/discount/` 실제 파일 → `gotchas.md`의 권한·`AuthFunction` 항목 |
+| 새 도메인 화면 | `workflows.md` A → `patterns.md`가 가리키는 `app/refund-service/partner/discount/` 실제 파일 → `structure.md` 라우트 표(권한 코드) |
 | 목록 컬럼·필터 추가 | `workflows.md` B (빈 상태 `colSpan`·`SkeletonTableBody cols` 동반 수정이 함정) |
-| API 연동·생성물 갱신 | `rules.md` API 절 → `workflows.md` C·D → `gotchas.md`의 `__generated__`·`axios`·한글 디렉터리 항목 |
+| API 연동·생성물 갱신 | `rules.md` API 절 → `workflows.md` C·D |
 | 권한 가드 | `workflows.md` E → `structure.md` 라우트 표의 `AuthFunction` 열 |
 | 폼·모달·상태 | `rules.md` 상태·모달 절 → `patterns.md` |
-| 날짜·시간 다루기 | `gotchas.md` 시간대 항목 (도메인마다 다르다) |
-| 버그 수정 | 재현 근거 → 관련 코드 → `gotchas.md`에 같은 증상이 있는지 |
+| 날짜·시간 다루기 | 그 화면이 쓰는 방식을 먼저 본다 (도메인마다 다르다 — `gotchas.md` 시간대 항목에 이유가 있다) |
+| 버그 수정 | 재현 근거 → 관련 코드 |
 
 `structure.md`의 라우트 표에 화면 52개와 각 권한 코드가 있다. 어느 파일을 볼지 모를 때 여기서 찾는다.
 
