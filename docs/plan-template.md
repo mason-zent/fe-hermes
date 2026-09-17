@@ -9,6 +9,8 @@
   - **[B] `<script id="plan-md">`**: `.md` 본문을 그대로 붙여넣기
 - 승인 전 → `decisions[]`에 `options`만. 확정 후 → 각 결정에 `decided` 채움
 - `.md` ↔ `.html`은 **같은 턴에 함께 갱신**
+- **Checkpoint만 바뀐 경우**에도 html `plan-md`는 같은 턴에 동기화한다. 단 `decisions[]`는 **승인된 결정이 바뀔 때만** 건드린다 — 일상적인 진행 상태 갱신은 새로운 설계 승인이 아니다
+- ⚠️ html을 스크립트로 자동 치환한다면 **헤더 주석이 끝난 뒤에서만** 찾아 바꾼다. 주석 안의 블록 이름까지 매칭되면 주석 종료가 먹혀 `PLAN` 전체가 주석에 갇히고 브라우저가 빈 화면이 된다
 
 ---
 
@@ -16,6 +18,32 @@
 
 ```markdown
 # [제목]
+
+## Checkpoint
+- Updated: YYYY-MM-DD HH:mm / 작성 주체
+- Status: planned | in_progress | blocked | ready_for_review | done
+- Scope: repo / app / worktree 경로
+- Work ref: 브랜치 + 확인한 HEAD SHA, 미커밋 변경 유무
+- Sync basis: 참조한 knowledge의 기준 ref/SHA (필요할 때만)
+- Approved scope: 승인된 범위·결정 절 링크
+
+### Progress
+- [x] 완료 항목 — 변경 경로와 검증 근거
+- [ ] 진행 중 항목 — 현재 도달점
+
+### Next
+1. 다음에 수행할 구체적 행동과 대상 파일
+
+### Blocked
+- 없음 / 막힌 이유·필요한 입력·해결 조건·담당
+
+### Validation
+- 실행한 검증 / 결과 / 대상 SHA 또는 diff 상태
+- 미실행 검증과 이유
+
+### Decisions
+- 유효한 구현 결정과 이유 — 상세 절 링크
+- 폐기된 결정은 폐기 표시하고 대체 결정을 연결
 
 ## 1. 개요
 - 작업 유형: feature / bugfix / refactor
@@ -61,6 +89,14 @@
 ```
 
 ---
+
+## Checkpoint 운영 규칙
+
+- **갱신 시점**: 의미 있는 단계 완료 / 차단 상태 변화 / reviewer 반영 / 세션 종료·`/new` 직전. **매 턴 갱신하지 않는다**
+- **재개 시**: 이 계획서 하나를 읽고 repo/app/worktree와 현재 diff를 확인한 뒤, `Next`가 현재 코드에서도 유효한지 판단하고 진행한다. 바뀐 ref에서 과거 검증 결과를 현재 통과로 재사용하지 않는다
+- **"완료" 기재만으로 확정하지 않는다.** diff와 검증 근거를 함께 본다
+- 복수 에이전트가 붙으면 각자 담당 결과를 보고하고 **팀리드가 취합**해 동시 덮어쓰기를 막는다
+- 별도 `CURRENT.md`·`PROJECT.md`는 만들지 않는다. 진행 상태의 정본은 이 계획서다
 
 ## 작성 원칙
 1. **라우팅이 먼저**: 어느 서비스 작업인지, 왜 그 서비스인지 명시

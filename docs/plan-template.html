@@ -17,17 +17,22 @@
   사용법 (Team Lead):
   1) 이 파일을 plans/<유형>/YYYYMMDD-제목.html 로 복사한다 (md와 동일 파일명).
   2) 아래 두 블록만 채운다 — 스타일/스크립트(맨 아래)는 건드릴 필요 없다.
+     ⚠️ 스크립트로 자동 치환할 때는 이 헤더 주석이 끝난 뒤에서만 찾아 바꾼다.
+        주석 안의 블록 이름까지 매칭되면 주석 종료 표시가 먹혀 PLAN 전체가 주석에 갇히고
+        브라우저에서 "PLAN is not defined" 로 빈 화면이 된다. (그래서 위 [A][B] 는 태그가 아닌 script#id 표기다)
 
-     [A] <script id="plan-data"> 의 PLAN 객체
+     [A] script#plan-data 의 PLAN 객체
          - title/type/scope/mdFile/summary
          - decisions[] : .md "사용자 결정 사항"과 1:1
            · 승인 전: options[] 만 채운다 (decided 생략)
            · 확정 후: 각 결정에 decided 를 채운다
                       (택1이면 문자열, 복수면 배열) → 해당 결정이 "✅ 확정"으로 잠김
 
-     [B] <script id="plan-md" type="text/markdown"> 안에 .md 본문을 그대로 붙여넣는다
+     [B] script#plan-md 안에 .md 본문을 그대로 붙여넣는다
          - 이 텍스트가 결정 콘솔 위에 렌더링되어 "보기 좋은 계획서"가 된다.
          - .md 가 단일 소스 — 수정 시 .md 와 이 블록을 같은 턴에 함께 갱신한다.
+         - Checkpoint(Status/Progress/Next)만 바뀐 경우에도 이 블록은 동기화한다.
+           단 decisions[] 는 승인된 결정이 바뀔 때만 건드린다.
 
   지원 마크다운: 제목(#~######), 굵게(**), 인라인코드(`), 코드펜스(```),
                  표(GFM), 목록(- * 1.), 인용(>), 구분선(---), 링크. (중첩목록 제외)
