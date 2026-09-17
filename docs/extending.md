@@ -34,7 +34,11 @@ argument-hint: "인자 예시"
 
 ## 보는 방법
 - 터미널: `/guide` (이 문서를 채팅에 출력), `/guide pane` (오른쪽 pane에 **선택형 메뉴**), `/guide pane <파일>` (오른쪽 pane에 파일을 less로), `/guide 열기` (플레이북 HTML을 브라우저로)
-- 메뉴(`scripts/guide-menu.sh`): 항목을 **마우스로 클릭**하거나 ↑/↓·휠·숫자로 고르고 Enter로 실행, `q`로 종료. 문서 보기 외에 **새 스킬/에이전트 템플릿 생성 → 편집기 열기**, 4개 레포 git 현황, 그리고 "헤르메스에게 문서 반영 요청 · /sync · /status" 항목이 있다. 이 항목은 기존 Claude Code pane을 건드리지 않고 **아래에 새 pane을 열어 별도 헤르메스 세션**으로 실행한다 (herdr 안에서만 동작, 아니면 프롬프트를 화면에 표시)
-- 문서 항목은 **마크다운 뷰어**로 열린다. `glow`가 설치돼 있으면 glow, 없으면 내장 렌더러 `scripts/mdview.py`(의존성 없음, 제목·목록·표·코드·굵게 서식). "md 파일 골라 보기" 항목으로 hermes 안의 모든 md를 번호로 골라 열 수 있다
+- 메뉴(`scripts/guide-menu.sh`): 항목을 **마우스로 클릭**하거나 ↑/↓·휠·숫자로 고르고 Enter로 실행, `q`로 종료. 7개 항목이 두 그룹으로 나뉜다
+  - **⚡ 실행 · 확인** — ① **스킬 목록 · 실행** ② 에이전트 · 담당 레포 · 라우팅 ③ git 현황 · 진행 중 계획서
+  - **📘 문서** — ④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드
+- **스킬 목록**은 `.claude/skills/*/SKILL.md`의 frontmatter(`name`·`argument-hint`·`description`)를 그때그때 읽어 만든다. 스킬을 추가하면 메뉴에 자동으로 나온다. 번호를 고르면 `⏎`로 인자를 입력해 **아래에 새 pane을 열어 별도 헤르메스 세션**으로 `/<스킬>`을 실행하거나(기존 Claude Code pane은 건드리지 않는다. herdr 안에서만 동작, 아니면 프롬프트를 화면에 표시), `v`로 SKILL.md 본문을 볼 수 있다
+- **에이전트 목록**도 `.claude/agents/*.md`에서 `name`·`description`·`- 레포:`를 읽어 만들고, 그 아래에 `AGENTS.md`의 "어느 레포인지 고르기" 라우팅 기준을 붙인다
+- 문서 항목은 **마크다운 뷰어**로 열린다. `glow`가 설치돼 있으면 glow, 없으면 내장 렌더러 `scripts/mdview.py`(의존성 없음, 제목·목록·표·코드·굵게 서식). 특정 파일을 직접 보려면 `/guide pane <파일>`을 쓴다
 - 스크립트 단독: `scripts/guide-pane.sh [파일]`. `.md`를 주면 뷰어로, 그 외는 less로 띄운다. herdr 안이면 `herdr pane split`, tmux면 `split-window`, 둘 다 아니면 새 Ghostty 창으로 대체된다
 - 공유용 플레이북: https://claude.ai/artifact/NDbDm5eitYXjdA6E4mehxx#extend

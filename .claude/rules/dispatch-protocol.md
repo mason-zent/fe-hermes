@@ -6,7 +6,7 @@
 ## 방식
 **기본은 보이는 pane**: `scripts/delegate.sh <에이전트명> "<프롬프트>"` 로 herdr pane 에 `claude --agent <이름>` 세션을 띄운다(사용자가 진행 과정을 볼 수 있다). 여러 에이전트를 병렬로 보낼 때는 pane 을 여러 개 연다. 결과는 `herdr pane read <id>` 로 읽고, 완료 대기는 `herdr pane wait-output` 또는 사용자에게 알린다.
 
-부득이 Agent 도구(백그라운드, `subagent_type`)를 쓸 때는 `scripts/agent-monitor.py --recent` 를 pane 에 띄워 실시간 로그를 보여주고, 어느 pane 인지 사용자에게 한 줄 알린다.
+부득이 Agent 도구(백그라운드, `subagent_type`)를 쓸 때는 `scripts/monitor-pane.sh`(사용자는 `/monitor`) 로 실시간 로그 모니터를 pane 에 띄우고, 어느 pane 인지 사용자에게 한 줄 알린다. 이미 모니터 pane 이 있으면 새로 만들지 않고 그 pane 에서 다시 실행된다.
 
 | 대상 레포 | subagent_type |
 |-----------|---------------|

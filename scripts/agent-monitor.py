@@ -88,7 +88,7 @@ def main():
         files.sort(key=os.path.getmtime)
     else:
         files=args
-    if not files: print("모니터할 로그가 없습니다."); return
+    if not files: print("모니터할 로그가 없습니다."); return 3   # 3 = 모니터할 것 없음
     tails=[Tail(p,i) for i,p in enumerate(files)]
     print(f"{BOLD}🛰  서브에이전트 모니터{RESET} {DIM}— {len(tails)}개 로그 · q 는 없음, Ctrl+C 로 종료{RESET}\n")
     try:
@@ -103,4 +103,4 @@ def main():
     except KeyboardInterrupt:
         print(f"\n{DIM}종료. 진행 요약: " + " · ".join(f"{t.label}={t.tools}" for t in tails) + RESET)
 
-if __name__=="__main__": main()
+if __name__=="__main__": sys.exit(main() or 0)

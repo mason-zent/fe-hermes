@@ -28,8 +28,9 @@ claude
 - `/bugfix 버그 설명`
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
+- `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
 - `/sync` — 담당 레포의 `origin/<branch>`를 읽어 에이전트 md·서비스 맵·플레이북을 갱신. baseline은 `.sync/snapshots/`
-- `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide pane`은 오른쪽 pane에 선택형 메뉴(문서 보기·스킬/에이전트 템플릿 생성·새 pane에서 헤르메스 실행)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
+- `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
 
 에이전트를 직접 부를 수도 있다: "hub-fe로 메시지 큐 화면 컬럼 하나 추가해줘" (계획서 규칙은 헤르메스가 판단).
 
@@ -51,10 +52,11 @@ plans/{feature,bugfix,refactor,archive}/   작업계획서 (gitignore)
 scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)
 scripts/verify/<레포>.sh   표준 검증 스크립트 (에이전트·reviewer 공용, 표 요약 출력)
 scripts/delegate.sh       위임을 herdr pane 에서 보이게 실행 (claude --agent <이름>)
-scripts/agent-monitor.py  백그라운드 서브에이전트 로그 실시간 모니터
+scripts/agent-monitor.py  백그라운드 서브에이전트 로그 실시간 모니터 (렌더러)
+scripts/monitor-pane.sh   모니터를 pane 에 띄움·재사용 (/monitor)
 scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
-scripts/guide-menu.sh     선택형 가이드 메뉴 (클릭 또는 ↑↓ + Enter 로 실행)
+scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
 scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 호출)
 ```

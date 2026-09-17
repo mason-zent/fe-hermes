@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 헤르메스 가이드 메뉴 — ↑/↓ 또는 숫자로 고르고 Enter 로 실행. q 로 종료.
-# 외부 의존 없음(bash + tput). herdr pane 안에서 띄우면 "헤르메스에게 요청" 항목이
-# HERMES_CLAUDE_PANE 에 지정된 Claude Code pane 으로 프롬프트를 보낸다.
+# 외부 의존 없음(bash + tput + python3). herdr pane 안에서 띄우면 스킬 실행 항목이
+# 아래에 새 pane 을 열어 별도 헤르메스 세션으로 /<스킬> 을 돌린다.
 set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$HERMES_DIR"
@@ -22,9 +22,6 @@ ITEM_ROW0=3   # draw() 에서 1번 항목이 찍히는 화면 행
 pause() { printf '\n%s↩  아무 키나 누르면 메뉴로 돌아갑니다%s' "$GRAY" "$RESET"; IFS= read -rsn1 _; }
 section() { # section <파일> <시작 정규식> <끝 정규식>  → 시작~끝 직전까지 출력
   awk -v s="$2" -v e="$3" '$0 ~ s {p=1} p && $0 ~ e && !($0 ~ s) {exit} p' "$1"
-}
-open_editor() {
-  if command -v cursor >/dev/null 2>&1; then cursor "$1"; else "${EDITOR:-vim}" "$1"; fi
 }
 ask_claude() { # ask_claude <프롬프트>  — 기존 헤르메스 pane 을 건드리지 않고 **새 pane** 에 별도 Claude 세션을 띄워 실행
   if [ "${HERDR_ENV:-}" = 1 ] && command -v herdr >/dev/null 2>&1 && command -v claude >/dev/null 2>&1; then
@@ -50,21 +47,105 @@ view_md_stdin() { # 표준입력의 마크다운을 렌더해 less 로
   if command -v glow >/dev/null 2>&1; then glow -p -
   else python3 "$HERMES_DIR/scripts/mdview.py" | less -R; fi
 }
-act_extending() { view_md docs/extending.md; }
-act_team()      { { section CLAUDE.md '^## 팀 구성' '^## 작업 흐름'; } | view_md_stdin; }
-act_flow()      { { section CLAUDE.md '^## 작업 흐름' '^## Skills'; } | view_md_stdin; }
-act_services()  { view_md docs/services.md; }
-act_pick_md() { # hermes 안의 md 파일을 번호로 골라 뷰어로 연다
-  local files=() f i
-  while IFS= read -r f; do files+=("$f"); done < <(
-    { ls CLAUDE.md README.md 2>/dev/null; find docs .claude/agents .claude/rules .claude/skills -name '*.md' 2>/dev/null | sort; } )
-  printf '%s번호를 입력하고 Enter. 빈 입력이면 메뉴로 돌아갑니다.%s\n\n' "$GRAY" "$RESET"
-  for i in "${!files[@]}"; do printf '  %s%3d%s  %s\n' "$CYAN" $((i+1)) "$RESET" "${files[$i]}"; done
-  printf '\n번호: '; read -r pick
-  [[ "$pick" =~ ^[0-9]+$ ]] && [ "$pick" -ge 1 ] && [ "$pick" -le "${#files[@]}" ] || return
-  view_md "${files[$((pick-1))]}"
+
+# ---------- frontmatter 읽기 ----------
+list_skills() { # 출력: <디렉토리>\t<이름>\t<인자힌트>\t<설명>
+  python3 - "$HERMES_DIR" <<'PY'
+import sys, os, glob
+root = sys.argv[1]
+def meta_of(path):
+    meta = {}
+    with open(path, encoding='utf-8') as fp:
+        lines = fp.read().split('\n')
+    if lines and lines[0].strip() == '---':
+        for line in lines[1:]:
+            if line.strip() == '---':
+                break
+            if ':' in line:
+                key, val = line.split(':', 1)
+                meta[key.strip()] = val.strip().strip('"').strip("'")
+    return meta
+for path in sorted(glob.glob(os.path.join(root, '.claude/skills/*/SKILL.md'))):
+    dirname = os.path.basename(os.path.dirname(path))
+    meta = meta_of(path)
+    print('\t'.join([dirname, meta.get('name', dirname),
+                     meta.get('argument-hint', ''), meta.get('description', '')]))
+PY
 }
-act_playbook()  { open docs/playbook.html && echo "브라우저에서 docs/playbook.html 을 열었습니다."; pause; }
+
+# ---------- 각 항목의 동작 ----------
+act_skills() { # 스킬 목록 → 골라서 실행하거나 SKILL.md 보기
+  local dirs=() names=() hints=() descs=() dir name hint desc idx pick act args cols
+  while IFS=$'\t' read -r dir name hint desc; do
+    dirs+=("$dir"); names+=("$name"); hints+=("$hint"); descs+=("$desc")
+  done < <(list_skills)
+  if [ "${#names[@]}" -eq 0 ]; then
+    printf '%s.claude/skills 에 스킬이 없습니다.%s\n' "$YELLOW" "$RESET"; pause; return
+  fi
+  cols=$(tput cols 2>/dev/null || echo 80); [ "$cols" -lt 40 ] && cols=80
+  printf '%s번호를 고르면 실행하거나 SKILL.md 를 볼 수 있습니다. 빈 입력이면 메뉴로 돌아갑니다.%s\n\n' "$GRAY" "$RESET"
+  for idx in "${!names[@]}"; do
+    printf '  %s%2d%s  %s/%s%s' "$CYAN" $((idx+1)) "$RESET" "$BOLD" "${names[$idx]}" "$RESET"
+    [ -n "${hints[$idx]}" ] && printf '  %s%s%s' "$GRAY" "${hints[$idx]}" "$RESET"
+    printf '\n'
+    [ -n "${descs[$idx]}" ] && wrap_help $((cols - 12)) "${descs[$idx]}"
+    printf '\n'
+  done
+  printf '번호: '; read -r pick
+  [[ "$pick" =~ ^[0-9]+$ ]] && [ "$pick" -ge 1 ] && [ "$pick" -le "${#names[@]}" ] || return
+  idx=$((pick-1))
+  printf '\n  %s/%s%s   %s[⏎] 새 pane 에서 실행  ·  [v] SKILL.md 보기  ·  [q] 취소%s\n선택: ' \
+    "$BOLD" "${names[$idx]}" "$RESET" "$GRAY" "$RESET"
+  IFS= read -rsn1 act; echo
+  case "$act" in
+    v|V) view_md ".claude/skills/${dirs[$idx]}/SKILL.md" ;;
+    q|Q) return ;;
+    "")
+      if [ -n "${hints[$idx]}" ]; then
+        printf '인자 %s%s%s (없으면 Enter): ' "$GRAY" "${hints[$idx]}" "$RESET"
+      else
+        printf '인자 (없으면 Enter): '
+      fi
+      read -r args
+      ask_claude "/${names[$idx]}${args:+ $args}"
+      pause ;;
+  esac
+}
+
+act_agents() { # 에이전트 목록(.claude/agents/*.md) + AGENTS.md 라우팅 기준
+  { python3 - "$HERMES_DIR" <<'PY'
+import sys, os, glob, re
+root = sys.argv[1]
+print('# 에이전트 · 담당 레포\n')
+for path in sorted(glob.glob(os.path.join(root, '.claude/agents/*.md'))):
+    body = open(path, encoding='utf-8').read()
+    lines = body.split('\n')
+    meta = {}
+    if lines and lines[0].strip() == '---':
+        for line in lines[1:]:
+            if line.strip() == '---':
+                break
+            if ':' in line:
+                key, val = line.split(':', 1)
+                meta[key.strip()] = val.strip().strip('"').strip("'")
+    name = meta.get('name', os.path.basename(path)[:-3])
+    repo = re.search(r'^- 레포: *(.+)$', body, re.M)
+    port = re.search(r'^- dev 포트: *(.+)$', body, re.M)
+    head = f'**{name}**'
+    if repo:
+        head += f' — {repo.group(1).strip()}'          # 원문에 이미 백틱·포트가 들어 있어 그대로 쓴다
+    if port and port.group(1).strip() and '포트' not in head:
+        head += f' · dev 포트 {port.group(1).strip()}'
+    print(f'- {head}')
+    if meta.get('description'):
+        print(f'  {meta["description"]}')
+    print()
+PY
+    echo
+    section AGENTS.md '^### 어느 레포인지 고르기' '^---'
+  } | view_md_stdin
+}
+
 act_status() {
   { for repo in "${REPOS[@]}"; do
       echo "${BOLD}== $repo${RESET}"
@@ -75,129 +156,45 @@ act_status() {
     find plans -name '*.md' -not -path 'plans/archive/*' 2>/dev/null | sort
   } | less -R
 }
-act_new_skill() {
-  printf '새 스킬 이름 (소문자·숫자·하이픈, 예: deploy-check): '; read -r name
-  [[ "$name" =~ ^[a-z][a-z0-9-]{0,31}$ ]] || { echo "${YELLOW}이름 형식이 맞지 않습니다.${RESET}"; pause; return; }
-  target=".claude/skills/$name/SKILL.md"
-  [ -e "$target" ] && { echo "${YELLOW}이미 있습니다: $target${RESET}"; pause; return; }
-  mkdir -p ".claude/skills/$name"
-  cat > "$target" <<TPL
----
-name: $name
-description: 어떤 요청이면 이 스킬인지 한 문장으로. (콜론+공백 금지)
-argument-hint: "인자 예시"
----
 
-# $name
-
-요청: \$ARGUMENTS
-
-## 절차
-1.
-2.
-
-## 보고
--
-TPL
-  echo "${GREEN}✔ 생성:${RESET} $target  → /$name 으로 바로 쓸 수 있습니다."
-  open_editor "$target"
-  printf '\n문서(CLAUDE.md Skills 표 · README · playbook) 반영을 헤르메스에게 요청할까요? [y/N] '; read -rsn1 yn; echo
-  [[ "$yn" =~ ^[Yy]$ ]] && ask_claude "방금 추가한 스킬 /$name (.claude/skills/$name/SKILL.md)을 CLAUDE.md Skills 표, README.md, docs/playbook.html에 반영해줘"
-  pause
-}
-act_new_agent() {
-  printf '새 에이전트 이름 (소문자·숫자·하이픈, 예: care-fe): '; read -r name
-  [[ "$name" =~ ^[a-z][a-z0-9-]{0,31}$ ]] || { echo "${YELLOW}이름 형식이 맞지 않습니다.${RESET}"; pause; return; }
-  target=".claude/agents/$name.md"
-  [ -e "$target" ] && { echo "${YELLOW}이미 있습니다: $target${RESET}"; pause; return; }
-  cat > "$target" <<TPL
----
-name: $name
-description: <레포>(<서비스 설명>) 담당 프론트엔드 엔지니어. repos/<레포> 안의 작업에 사용한다. <어떤 화면·요청이면 이 에이전트인지 구체적으로>. (콜론+공백 금지)
-tools: Read, Glob, Grep, Edit, Write, Bash
----
-
-너는 **$name**, \`<레포>\` 전담 프론트엔드 엔지니어다.
-헤르메스(팀리드)가 승인된 작업계획서와 함께 작업을 넘긴다. 담당 레포 밖은 수정하지 않는다.
-
-## 기본 정보
-- 레포: repos/<레포>
-- 스택:
-- dev 포트:
-
-## 구조
--
-
-## 코드 규칙
-- 기존 패턴을 먼저 읽고 따른다
-
-## 검증 명령
-\`\`\`bash
-\`\`\`
-
-## 보고 형식
-- 변경 파일 목록, 검증 결과(lint/typecheck/test), 남은 위험
-- 커밋하지 않는다
-TPL
-  echo "${GREEN}✔ 생성:${RESET} $target  (기존 .claude/agents/*.md 를 참고해 채우세요)"
-  open_editor "$target"
-  printf '\n문서(CLAUDE.md 팀 표·라우팅 · README · playbook) 반영을 헤르메스에게 요청할까요? [y/N] '; read -rsn1 yn; echo
-  [[ "$yn" =~ ^[Yy]$ ]] && ask_claude "방금 추가한 에이전트 $name (.claude/agents/$name.md)을 CLAUDE.md 팀 표·라우팅 기준, README.md, docs/playbook.html에 반영해줘"
-  pause
-}
-act_ask_sync_docs() { ask_claude "방금 추가한 스킬/에이전트를 CLAUDE.md 팀 표·Skills 표, README.md, docs/playbook.html에 반영해줘"; pause; }
-act_ask_sync()      { ask_claude "/sync"; pause; }
-act_ask_status()    { ask_claude "/status"; pause; }
+act_playbook()  { open docs/playbook.html && echo "브라우저에서 docs/playbook.html 을 열었습니다."; pause; }
+act_services()  { view_md docs/services.md; }
+act_flow()      { { section CLAUDE.md '^## 작업 흐름' '^## Skills'; } | view_md_stdin; }
+act_extending() { view_md docs/extending.md; }
 
 # ---------- 메뉴 ----------
 # 항목: 아이콘 | 제목 | 설명 | 동작
-ICONS=( "📘" "👥" "🔁" "🗺️ " "🌐" "📂" "📊" "✨" "🤖" "📝" "🔄" "📋" )
+ICONS=( "⚡" "👥" "📊" "🌐" "🗺️ " "🔁" "📘" )
 TITLES=(
-  "확장 가이드 보기"
-  "팀 구성 · 라우팅 기준"
-  "작업 흐름 (Plan-First)"
-  "서비스 맵"
+  "스킬 목록 · 실행"
+  "에이전트 · 담당 레포 · 라우팅"
+  "git 현황 · 진행 중 계획서"
   "플레이북을 브라우저로 열기"
-  "md 파일 골라 보기"
-  "담당 레포 git 현황 · 계획서"
-  "새 스킬 만들기"
-  "새 에이전트 만들기"
-  "스킬/에이전트 문서 반영 요청"
-  "/sync 실행"
-  "/status 실행"
+  "서비스 맵"
+  "작업 흐름 (Plan-First)"
+  "확장 가이드"
 )
 DESCS=(
-  "docs/extending.md"
-  "CLAUDE.md"
-  "CLAUDE.md"
-  "docs/services.md"
-  "docs/playbook.html"
-  "에이전트·규칙·문서 전체"
+  ".claude/skills/*"
+  ".claude/agents/* · AGENTS.md"
   "로컬 실행"
-  "템플릿 생성 → 편집기"
-  "템플릿 생성 → 편집기"
-  "헤르메스 세션"
-  "헤르메스 세션"
-  "헤르메스 세션"
+  "docs/playbook.html"
+  "docs/services.md"
+  "CLAUDE.md"
+  "docs/extending.md"
 )
 HELPS=(
-  "스킬·에이전트를 추가하는 방법과 같이 갱신할 문서 목록. docs/extending.md 를 less 로 연다 (q 로 닫기)"
-  "에이전트 5개의 담당 레포·서비스·스택 표와, 어떤 요청이 어느 에이전트로 가는지 라우팅 기준"
-  "분석 → 계획서 → 승인 → 병렬 디스패치 → 검증 → 보고 → 정리, 헤르메스의 6단계 Plan-First 흐름"
-  "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
+  "헤르메스에게 시킬 수 있는 슬래시 커맨드 목록. 이름·인자·설명을 .claude/skills 에서 그때그때 읽어오니 스킬을 추가하면 여기에도 바로 나온다. 번호를 고르면 새 pane 에 별도 헤르메스 세션을 띄워 실행하거나(⏎) SKILL.md 본문을 볼 수 있다(v)"
+  "FE 에이전트 전원의 담당 레포·포트와 라우팅 문장을 .claude/agents 에서 읽어 보여주고, 그 아래에 AGENTS.md 의 '어느 레포인지 고르기' 기준을 붙인다. 어떤 요청이 어느 서비스인지 헷갈릴 때"
+  "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에. 로컬에서 바로 돌아 빠르다"
   "공유용 플레이북 HTML 을 기본 브라우저에서 연다. 같은 내용이 claude.ai 아티팩트로도 공유돼 있다"
-  "CLAUDE.md·README·docs·에이전트·규칙·스킬 md 를 목록에서 번호로 골라 마크다운 뷰어로 연다 (glow 있으면 glow, 없으면 내장 렌더러)"
-  "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에"
-  "이름을 입력하면 .claude/skills/<이름>/SKILL.md 템플릿을 만들고 편집기를 연다. 저장하면 /<이름> 으로 바로 쓸 수 있다"
-  "이름을 입력하면 .claude/agents/<이름>.md 템플릿을 만들고 편집기를 연다. description 이 라우팅 문장이니 구체적으로"
-  "아래에 새 pane 을 열어 별도 헤르메스 세션을 띄우고, 방금 추가한 스킬/에이전트를 CLAUDE.md·README·playbook 에 반영해 달라고 요청한다"
-  "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /sync 를 돌린다. 담당 레포 origin/<branch> 를 읽어 에이전트 md·서비스 맵·플레이북을 갱신"
-  "아래에 새 pane 을 열어 별도 헤르메스 세션으로 /status 를 돌린다. 이 세션(현재 대화)은 건드리지 않는다"
+  "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
+  "분석 → 계획서 → 승인 → 병렬 디스패치 → 검증 → 보고 → 정리, 헤르메스의 6단계 Plan-First 흐름"
+  "스킬·에이전트를 추가하는 방법과 같이 갱신할 문서 목록. docs/extending.md 를 마크다운 뷰어로 연다 (q 로 닫기)"
 )
-ACTIONS=(act_extending act_team act_flow act_services act_playbook act_pick_md act_status
-         act_new_skill act_new_agent act_ask_sync_docs act_ask_sync act_ask_status)
+ACTIONS=(act_skills act_agents act_status act_playbook act_services act_flow act_extending)
 # 그룹: "시작인덱스|제목"
-MENU_GROUPS=( "0|📚  문서" "6|🧰  도구" "9|🚀  헤르메스에게 (새 pane 에서 실행)" )
+MENU_GROUPS=( "0|⚡  실행 · 확인" "3|📘  문서" )
 sel=0; n=${#TITLES[@]}
 ROW_OF=()   # ROW_OF[i] = i번 항목이 그려진 화면 행(1-based). 클릭 매핑에 사용
 
@@ -299,7 +296,6 @@ while :; do
     down|j) sel=$(( (sel + 1) % n )) ;;
     ""|click) run_sel ;;
     [1-9])  idx=$((key-1)); [ "$idx" -lt "$n" ] && { sel=$idx; run_sel; } ;;
-    0)      [ 9 -lt "$n" ] && { sel=9; run_sel; } ;;
     q|Q) exit 0 ;;
   esac
 done
