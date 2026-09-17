@@ -14,6 +14,20 @@ fi
 OUT="$(herdr pane split --current --direction "$DIR" --ratio 0.5 --cwd "$HERMES_DIR" --no-focus)" || { echo "pane split 실패: $OUT"; exit 1; }
 PANE="$(printf '%s' "$OUT" | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"]["pane"]["pane_id"])')"
 sleep 1
-herdr pane run "$PANE" claude --agent "$AGENT" "$PROMPT" >/dev/null
+
+# `herdr pane run` 은 인자를 따옴표 없이 셸 명령줄로 이어붙인다.
+# 프롬프트를 그대로 넘기면 공백에서 단어가 쪼개지고 ( ) ! * 등이 셸에 먹혀
+# 에이전트가 엉뚱한 프롬프트를 받는다(실제로 겪음). 그래서 러너 스크립트 한 개만 넘긴다.
+PROMPT_FILE="$(mktemp -t hermes-prompt)"
+RUNNER="$(mktemp -t hermes-runner)"
+printf '%s' "$PROMPT" > "$PROMPT_FILE"
+cat > "$RUNNER" <<RUNNER_EOF
+#!/usr/bin/env bash
+cd "$HERMES_DIR" || exit 1
+trap 'rm -f "$PROMPT_FILE" "$RUNNER"' EXIT
+exec claude --agent "$AGENT" "\$(cat "$PROMPT_FILE")"
+RUNNER_EOF
+chmod +x "$RUNNER"
+herdr pane run "$PANE" "$RUNNER" >/dev/null
 herdr pane rename "$PANE" "🤖 $AGENT" >/dev/null 2>&1 || true
 echo "$PANE"

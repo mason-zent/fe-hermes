@@ -64,6 +64,12 @@
 
 필수 규칙은 선택 로딩 문서 깊숙이 옮기지 않는다. `rules.md`는 짧은 진입점으로 유지하고 긴 설명·예제는 `structure`/`patterns`로 보낸다.
 
+> **무엇이 자동으로 들어오는지는 도구마다 다르다** (2026-09-17 Claude Code 서브에이전트로 실측):
+> - 자동 주입됨 — `CLAUDE.md`, `AGENTS.md`, `.claude/rules/*.md` 4개, 에이전트 프로필 본문
+> - **자동 주입되지 않음** — `docs/knowledge/**` 전부. `rules.md`의 "필수" 절과 `gotchas.md`는 **직접 읽어야 한다**
+>
+> 그래서 팀 공통 코드 규칙(변수명·`any` 금지·성능)은 Claude Code 에서는 `.claude/rules/coding-standards.md` 로 항상 들어오지만, **그렇지 않은 도구(Codex 등)는 `docs/knowledge/common/coding.md` 를 직접 읽어야 한다.** 자동 주입을 전제하지 말고, 필요한 규칙이 실제로 눈앞에 있는지 확인한다.
+
 ### 2.3 그다음은 작업 유형에 따라 필요한 절만 읽는다
 
 | 작업 유형 | 추가로 읽을 것 |
