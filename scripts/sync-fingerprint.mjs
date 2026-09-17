@@ -211,11 +211,30 @@ const buildSnapshot = (repo) => {
     }
     const workspaceYaml = showFile(repo, 'pnpm-workspace.yaml')
     snapshot.catalogHash = workspaceYaml ? hashString(workspaceYaml) : null
+    // catalog 값 자체도 저장한다. 해시만 두면 "catalogHash 변경"만 보이고 무엇이 바뀌었는지 알 수 없다.
+    // 앱들이 next/react 를 `catalog:` 로 받으므로 실제 버전의 정본은 여기다.
+    snapshot.catalog = workspaceYaml ? parseCatalog(workspaceYaml) : null
   }
 
   snapshot.docs = { ...blobIds(repo, DOC_FILES) }
   for (const dirPath of DOC_GLOB_DIRS) Object.assign(snapshot.docs, blobIdsInDir(repo, dirPath))
   return snapshot
+}
+
+// pnpm-workspace.yaml 의 `catalog:` 블록만 뽑는다 (의존성 없이 최소 파싱).
+// 들여쓴 `이름: 버전` 줄만 읽고, 들여쓰기가 끝나면 블록도 끝난 것으로 본다.
+const parseCatalog = (yamlText) => {
+  const lines = yamlText.split('\n')
+  const start = lines.findIndex((line) => /^catalog:\s*$/.test(line))
+  if (start === -1) return null
+  const catalog = {}
+  for (const line of lines.slice(start + 1)) {
+    if (/^\s*$/.test(line)) continue
+    if (!/^\s+\S/.test(line)) break
+    const matched = line.match(/^\s+([A-Za-z0-9@._\/-]+):\s*(\S+)\s*$/)
+    if (matched) catalog[matched[1]] = matched[2]
+  }
+  return Object.keys(catalog).length ? catalog : null
 }
 
 const hashString = (text) => {

@@ -1,6 +1,6 @@
 ---
 name: sync
-description: hermes.config.json 의 담당 레포 전체를 운영 기준 브랜치(콘솔 prd · bznav 앱별 prd-<앱> · zent-packages main)로 훑어 에이전트 md(.claude/agents/*.md), docs/services.md, docs/playbook.html 을 실제 레포 상태에 맞게 갱신합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
+description: hermes.config.json 의 담당 레포 전체를 운영 기준 브랜치(콘솔 prd · bznav 앱별 prd-<앱> · zent-packages main)로 훑어 지문을 만들고, 사실마다 정한 정본 문서(knowledge · config · 지문)만 갱신한 뒤 파생 문서를 스크립트로 생성합니다. 이전 sync 이후 바뀐 부분만 찾아 고칩니다.
 argument-hint: "(선택) 레포 이름 일부 — 예: hub, bznav. 비우면 전체"
 ---
 
@@ -8,7 +8,7 @@ argument-hint: "(선택) 레포 이름 일부 — 예: hub, bznav. 비우면 전
 
 대상: $ARGUMENTS (비어 있으면 hermes.config.json 의 레포 전체)
 
-각 레포의 `origin/<branch>`(hermes.config.json, 대부분 `dev`, zent-packages 는 `main`)를 기준으로 헤르메스 문서가 사실과 맞는지 확인하고 틀린 곳만 고친다. 로컬 작업 트리는 브랜치가 제각각이라 **읽지 않는다.** 레포 경로는 `repos/<name>` 링크다. bznav-web 은 앱별 에이전트 md 6개와 `docs/knowledge/bznav-web/common.md` 를 함께 갱신 대상으로 본다.
+각 레포의 `origin/<branch>`(정본은 `hermes.config.json` — 콘솔 4개 `prd` · bznav 앱별 `prd-<앱>` · bznav `packages/*` 는 `dev` · zent-packages `main`)를 기준으로 헤르메스 문서가 사실과 맞는지 확인하고 틀린 곳만 고친다. 로컬 작업 트리는 브랜치가 제각각이라 **읽지 않는다.** 레포 경로는 `repos/<name>` 링크다. bznav-web 은 앱마다 기준 브랜치가 다르므로 `docs/knowledge/bznav-web/<앱>/` 과 공통 `common.md` 를 나눠 본다.
 
 ## 절차
 
@@ -33,30 +33,59 @@ node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 
 지문에 잡히지 않는 큰 구조 변화(예: 라우터 전환, 상태 라이브러리 교체)가 커밋 제목에 보이면 `git -C <레포> diff --stat <이전sha>..<새sha>` 로 범위를 확인한다.
 
-### 3단계: 문서 갱신
-갱신 대상과 반영 범위:
+### 3단계: 정본 갱신 (문서마다가 아니라 사실마다)
 
-| 파일 | 반영하는 것 |
-|---|---|
-| `.claude/agents/<agent>.md` | 기술 스택 버전, 명령어, 포트, 디렉토리 구조, 코드 스타일(prettier), 레포 규칙 문서 경로, 새 도메인 화면 |
-| `docs/knowledge/<레포>/structure.md` (bznav 는 `<앱>/structure.md`) | 디렉토리·라우트·스크립트 표. 지문의 dirs/routes/scripts 변화를 그대로 반영. patterns·workflows 는 사실이 바뀐 줄만 고치고 나머지는 "확인 필요" |
-| `docs/services.md` | 비교표의 같은 항목 (Next 버전, Node/pnpm, 포트, 검증 명령, 규칙 문서) |
-| `docs/playbook.html` | 팀 구성 표의 스택·포트·검증 명령 셀, 라우팅 키워드에 새 도메인 추가, **"문서 기준 커밋" 표(레포별 sha·날짜·제목)와 헤더 `last sync` 시각**, 갱신 후 같은 URL로 아티팩트 재배포 |
-| `CLAUDE.md` | 팀 구성 표의 "서비스"·"스택 요약" 셀, 라우팅 기준에 새 도메인 키워드 |
+**사실 하나에 담당 문서 하나다.** 같은 사실을 여러 문서에 따로 적어두지 않는다. 그렇게 해서 생긴 불일치가 이미 여러 건 있었다.
 
-원칙:
-- **사실만 자동 반영.** 스택·명령·포트·구조·포맷 설정은 지문대로 고친다
-- **판단이 들어간 문장은 건드리지 않고 표시한다.** 권한 가드 설명, 주의사항, 라우팅 키워드 삭제 같은 것은 바꾸지 말고 보고서에 "확인 필요"로 적는다 (새 도메인 키워드 *추가*는 해도 된다)
-- 에이전트 md 의 description(frontmatter)에 새 도메인이 생기면 추가한다. YAML 이므로 `: ` (콜론+공백)을 넣지 않는다
-- 4개 문서에 같은 사실이 있으면 **모두 같은 턴에** 고친다. 한 곳만 고쳐 어긋나게 두지 않는다
-- 레포 자체 규칙 문서(bznav-web 의 `.ai/basic-rule.md` 등)가 바뀌었으면 에이전트 md 의 "코드 스타일 요약" 절이 원문과 어긋나지 않는지 대조한다
+| 사실 | 정본 | 파생 |
+|---|---|---|
+| 레포·에이전트·기준 브랜치 매핑 | `hermes.config.json` | — |
+| 버전·포트·Node/pnpm·Prettier·검증 스크립트·기준 커밋 | **지문**(`.sync/snapshots/`) | `docs/services.md` 자동 표, `docs/playbook.html` 기준 커밋 표·last sync → **`scripts/build-derived.mjs` 가 생성** |
+| 디렉토리·라우트 맵 | `docs/knowledge/<레포>/structure.md` (bznav 는 `<앱>/`) | — |
+| 레포 규칙·필수 제약 | `docs/knowledge/<레포>/rules.md` | — |
+| 함정·문서와 코드의 불일치 | `docs/knowledge/<레포>/gotchas.md` | — |
+| 대표 예시·절차 | `patterns.md` · `workflows.md` | — |
+| 역할·담당 범위·지식 진입 경로 | `.claude/agents/<agent>.md` | — |
+
+**절차**:
+
+1. **지문에서 나오는 사실은 손으로 옮겨 적지 않는다.** 문서 갱신 대신 아래를 돌린다:
+   ```bash
+   node scripts/build-derived.mjs          # 지문 → services.md 자동 표, playbook 기준 커밋 표·last sync
+   node scripts/build-derived.mjs --check  # 쓰지 않고 차이만 확인
+   ```
+   pending 지문이 있으면 그것을 우선 읽는다(곧 확정할 값으로 문서를 만든다). 마커(`<!-- BEGIN:generated:... -->`) 안은 **직접 편집하지 않는다.**
+   이 스크립트는 마커 밖 서술이 지문과 어긋나면 경고만 낸다. 그 경고는 사람이 판단해 고친다.
+
+2. **구조가 바뀌었으면** `docs/knowledge/<레포>/structure.md`를 고친다 (지문의 `dirs`/`routes` 변화를 그대로 반영).
+
+3. **레포 규칙 문서가 바뀌었으면**(리포트의 "규칙·소개 문서 변화") 원문을 읽고 `rules.md`를 고친다. `[필수]` 등급 항목이면 `rules.md`의 **"필수" 절**에 넣는다.
+
+4. **에이전트 md 는 역할·담당 범위·지식 진입 경로가 바뀔 때만 고친다.**
+   - ⛔ 버전·포트·스택·디렉토리 트리·Prettier 설정을 **다시 넣지 않는다.** 경량화로 걷어낸 것이다
+   - ✅ 새 도메인이 생겨 라우팅 문장(frontmatter `description`)에 키워드를 추가하는 것은 한다. YAML 이므로 `: `(콜론+공백)을 쓰지 않는다
+   - ✅ 작업 유형별 진입 표가 가리키는 파일·절이 사라졌으면 경로를 고친다
+
+5. **판단이 들어간 문장은 건드리지 않고 표시한다.** 권한 가드 설명, 주의사항, 라우팅 키워드 삭제 같은 것은 보고서에 "확인 필요"로 남긴다. 지문의 버전이 바뀐 것만으로 사용 패턴이 바뀌었다고 단정하지 않는다.
+
+6. **문서가 코드와 다르면 코드가 맞다.** 어느 쪽이 맞는지 확인할 수 없으면 고치지 말고 "확인 필요"로 남긴다.
 
 ### 4단계: baseline 확정
 문서 갱신이 끝나면:
 ```bash
-node scripts/sync-fingerprint.mjs --accept
+node scripts/build-derived.mjs --check      # 파생 문서가 지문과 일치하는지 마지막 확인
+node scripts/sync-fingerprint.mjs --accept  # pending → .sync/snapshots/
 ```
-pending 지문이 `.sync/snapshots/` 로 이동한다. **문서를 고치기 전에 accept 하지 않는다** (실패하면 다음 sync 에서 같은 diff 를 다시 봐야 한다).
+
+**accept 하지 않는 경우** (하나라도 해당하면 pending 을 그대로 두고 보고한다):
+- fetch 실패·기준 ref 부재로 일부 레포를 읽지 못했다
+- 리포트에 "확인 필요"로 남긴 항목이 있는데 사용자 확인을 못 받았다
+- `build-derived.mjs --check` 가 차이를 보고했다
+- 문서 갱신을 일부만 했다
+
+`--accept` 는 **pending 전체**를 확정한다. 일부만 확정할 수 없으므로, 미완료 대상이 섞여 있으면 돌리지 않는다. (특정 레포만 다루려면 `--repo <이름>` 으로 지문을 그 레포만 만든 뒤 accept 한다.)
+
+성공으로 보고하고 accept 하는 일이 가장 위험하다. 다음 sync 에서 같은 diff 를 다시 보지 못하게 되고, 문서는 틀린 채로 남는다.
 
 ### 5단계: 보고
 - 레포별: 기준 브랜치 커밋 범위, 문서에 반영한 사실 목록(파일:항목), "확인 필요"로 남긴 항목
