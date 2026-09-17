@@ -38,6 +38,7 @@
 - 기본 `pnpm --filter <앱> lint`. 타입은 care-web만 `type-check`, 나머지는 `exec tsc --noEmit`. care-web은 `test:unit`도
 
 ## Git
-- 기준 브랜치 `dev`. PR base는 앱 계열별: `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS) / 릴리즈 `prd-<앱>`. PR은 `.github/skills/create-pr` 절차
+- **문서·지식의 기준 브랜치는 앱마다 다르다** — `origin/prd-<앱>`(운영 반영분). `packages/*` 는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. 정본은 `hermes.config.json`
+- **개발·PR 브랜치는 별개다** — PR base 는 앱 계열별로 `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS), 릴리즈 `prd-<앱>`. PR 은 `.github/skills/create-pr` 절차. 문서 기준과 PR base 를 같은 것으로 취급하지 않는다
 - 커밋 `type(scope): 설명` (예 `fix(refund): REF-3728 ...`). 응답·PR·리뷰는 한글 존댓말
 - 비커밋: `.env*`, `.aws/access-key.js`, `firebase-key.json`

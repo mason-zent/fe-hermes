@@ -7,7 +7,7 @@
 4. 메타데이터: 같은 폴더 `metadata.ts` + 서버 `layout.tsx` `export const metadata`
 5. 뷰 이벤트 `<ViewEventLogger careEvent={{category, object}}>`, 카테고리는 `constants/careEvent.ts`
 6. **전용 파일은 라우트 폴더 옆 `components/`, `hooks/`, `graphql/`, `store/`, `constants/`, `utils/`, `types/`**(NEWCARE-633 규칙). 루트 공용 폴더에 두지 말 것
-7. 검증 `scripts/verify/bznav-web.sh care-web`(relay → type-check → lint → test:unit)
+7. 검증: **Relay 아티팩트를 먼저 만든다** (`pnpm --filter care-web relay`) → `scripts/verify/bznav-web.sh care-web`. 스크립트는 **lint → (아티팩트 있으면) type-check → (canvas 빌드돼 있으면) test:unit** 순으로 돌고, **Relay 를 생성해 주지 않는다.** 아티팩트가 없으면 타입 검증을 건너뛰고 그 사실을 표에 남긴다
 
 ## B. 새 경로 상수
 1. `constants/paths.ts`에서 소속 객체 선택(`CARE_PATHS` / 도메인별 `*_PATHS`)

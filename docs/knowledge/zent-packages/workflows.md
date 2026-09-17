@@ -33,7 +33,7 @@
 ## E. 브랜치 스냅샷 → 소비 레포 PR 프리뷰
 1. 브랜치 끝 토막을 양쪽 동일하게(`feat/login-fix` ↔ `care/login-fix`)
 2. zent-packages: changeset 커밋 → Actions **Release (snapshot)** → 브랜치 선택, tag 비움 → `0.0.0-login-fix-<ts>` `@login-fix`
-3. 소비 PR에 `works-preview`/`care-preview`/`refund-preview` 라벨 → `BRICS_DEV_TAG=login-fix`로 `use:dev-pkgs`
+3. 소비 PR에 프리뷰 라벨 → `BRICS_DEV_TAG=login-fix`로 `use:dev-pkgs`. 라벨 이름은 **소비 레포마다 다르니 그 레포 워크플로를 확인한다.** `origin/prd` 확인 결과 refund·care 는 `preview` 와 `works-preview` 두 개다(`care-preview`·`refund-preview` 는 없다)
 4. 확인: 소비 Actions "🧪 PR Preview Build" → `Resolve brics snapshot tag`. 폴백 체인 `@<tag>` → `@dev` → lockfile
 5. 브랜치명 못 맞추면 소비 PR 라벨 `brics-tag:<tag>`
 

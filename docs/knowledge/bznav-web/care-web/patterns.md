@@ -1,6 +1,6 @@
 # bznav-web apps/care-web 대표 패턴 파일
 
-경로 `apps/care-web/` 기준, `origin/dev` `0b713b4`. 문서(`.github/agents/care-web.agent.md`, `.ai/basic-rule.md`)는 `constant/`라 낡았다 — **코드 우선**.
+경로 `apps/care-web/` 기준. 조사 시점 기준은 `origin/dev` `0b713b4`이고, 이 앱의 **운영 기준은 `origin/prd-care`**(`structure.md` 참고)다. 두 ref 가 다르므로 여기 경로가 운영에도 유효한지 확인이 필요한 항목은 `structure.md` 의 최신 구조와 대조한다 — 기준이 다르다는 것만으로 내용이 틀렸다고 보지는 않는다. 문서(`.github/agents/care-web.agent.md`, `.ai/basic-rule.md`)는 `constant/`라 낡았다 — **코드 우선**.
 
 ## P1. 페이지 골격 — `'use client'` + `Suspense` + `CareLayout`
 - `app/(my-info)/my-book/page.tsx`: `'use client'` → 상태 가드(`useEffect` + `replace(CARE_PATHS.홈)`) → `<Suspense fallback><AccountBook/></Suspense>`. 내부에서 Relay `useLazyLoadQuery` → 바깥 Suspense 필수

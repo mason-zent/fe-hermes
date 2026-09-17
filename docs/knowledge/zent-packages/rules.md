@@ -13,7 +13,7 @@
 - **커밋하지 않는다.** `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
 
 ## 공통과 다른 점
-- **기준 브랜치 `main`** (다른 레포는 dev). 작업 브랜치 `feature/REF-####`
+- **문서·지식의 기준 브랜치는 `origin/main`** (콘솔은 `prd`, bznav 앱은 `prd-<앱>` — 정본은 `hermes.config.json`). 작업 브랜치 `feature/REF-####`
 - pnpm **11.8.0**, Node 24.14.1. 루트에서 `pnpm install` 한 번. GitHub Packages 토큰은 `~/.npmrc`
 - Prettier `semi: false`, `singleQuote: true`, `trailingComma: none`, `printWidth: 120` (루트). bznav 라인은 자체 eslint 9 flat config(`bznav-fe-project-config`) 우선
 

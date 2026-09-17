@@ -2,7 +2,7 @@
 
 - **Relay 아티팩트 미커밋**(`.gitignore:51`) — pull 직후 `@/__generated__/*` 타입 에러는 정상. `pnpm --filter care-web relay`
 - **문서가 코드보다 낡음** — `care-web.agent.md:27`·`.ai/basic-rule.md`는 `constant/paths.ts`(실제 `constants/`). NEWCARE-633으로 도메인 파일 이동·`libs/{kakao,channelTalk,eventLogger}` 신설·`hooks/`·`store/` 루트화. 옛 import 경로 기억 버릴 것
-- **`gen:env` 스크립트 없음**(5개 앱 전부). env는 수동(Secrets Manager). 참조 `NEXT_PUBLIC_ZENV`, `NEXT_PUBLIC_RESOURCE_CENTER_URL`, `NEXT_PUBLIC_TRACKING_DEBUG_MODE`
+- **`gen:env` 스크립트 없음** — 5개 앱 중 **care-web 만** 없다(brand·sena 는 `dev` 에서 자동 실행, refund 도 `dev` 에 포함, plus 는 있지만 수동). env 는 수동(Secrets Manager): `node scripts/generate-env.mjs --app=care-web --env=<env> --source=sm`. 참조 `NEXT_PUBLIC_ZENV`, `NEXT_PUBLIC_RESOURCE_CENTER_URL`, `NEXT_PUBLIC_TRACKING_DEBUG_MODE`
 - **미들웨어 순서 = `composeMiddleware` 인자 앞이 먼저**(`reduceRight`). NEWCARE-550 `f4e06be07`이 `withLandingRedirectMiddleware`를 앞으로 + 리다이렉트 시 `url.search=''`. 추가·재배치 시 루프·쿼리 유실 확인
 - **차단된 랜딩** `BLOCKED_LANDING_PATHS`(1인사업자·미용·요식·통판·첫달무료·종소세) → `/`로 리다이렉트(NEWCARE-528). 파일이 있어도 동작 안 함. **`/premium`만 활성**
 - **`@repo/ui`에서 문의 버튼 제거**(NEWCARE-629) → `app/pricing/components/TopNavigationInquiryButton.tsx`. `@repo/ui`에서 import하면 깨짐. 채널톡 열기는 `@/libs/channelTalk`

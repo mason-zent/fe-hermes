@@ -29,7 +29,7 @@ claude
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
-- `/sync` — 담당 레포의 `origin/<branch>`를 읽어 에이전트 md·서비스 맵·플레이북을 갱신. baseline은 `.sync/snapshots/`
+- `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`
 - `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
 
 에이전트를 직접 부를 수도 있다: "hub-fe로 메시지 큐 화면 컬럼 하나 추가해줘" (계획서 규칙은 헤르메스가 판단).
@@ -65,4 +65,4 @@ scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 
 상세는 `docs/extending.md` (터미널에서 `/guide`).
 - **스킬 추가**: `.claude/skills/<이름>/SKILL.md` 하나 만들면 `/<이름>`으로 바로 뜬다. frontmatter에 `name`, `description`, 필요하면 `argument-hint`를 두고, 본문에서 `$ARGUMENTS`로 인자를 받는다. 기존 `feature/SKILL.md`를 복사해서 고치는 게 가장 빠르다.
 - **에이전트 추가**: `.claude/agents/<이름>.md`. frontmatter의 `description`이 헤르메스가 라우팅할 때 읽는 문장이니 "어떤 요청이면 이 에이전트"를 구체적으로 적는다. description 안에 콜론+공백(`: `)이 들어가면 YAML이 깨진다.
-- **같이 갱신할 곳**: 스킬이나 에이전트를 추가하면 `CLAUDE.md`의 팀 표·Skills 표, 이 README, `docs/playbook.html`도 손본다. `/sync`는 레포 쪽 변화만 반영하고 hermes 자체 구조 변화는 잡지 않으니, 헤르메스에게 "방금 추가한 스킬 문서에도 반영해줘"라고 하면 된다.
+- **같이 갱신할 곳**: 스킬이나 에이전트를 추가하면 `CLAUDE.md`의 팀 표·Skills 표, **`AGENTS.md`**, 이 README, `docs/playbook.html`도 손본다. `/sync`는 레포 쪽 변화만 반영하고 hermes 자체 구조 변화는 잡지 않으니, 헤르메스에게 "방금 추가한 스킬 문서에도 반영해줘"라고 하면 된다.
