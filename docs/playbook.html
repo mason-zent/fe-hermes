@@ -484,6 +484,19 @@ claude
         </article>
 
         <article class="cmd">
+          <div class="cmd-head"><kbd>/branch <span class="arg">티켓|이름 대상...</span></kbd><span class="tag plain">디스패치 전</span></div>
+          <p class="what">작업을 시작하기 전에 대상 레포에 <strong>작업 브랜치를 새로 만듭니다.</strong> 로컬 작업 트리는 브랜치가 제각각이라, 확인 없이 FE 에이전트를 보내면 남의 작업 브랜치 위에 얹히거나 미커밋 변경과 섞입니다. 브랜치를 딸 기준은 <code>hermes.config.json</code>의 <code>prBase</code>(개발 브랜치)이고 문서·지식의 기준(운영 반영분)과 <strong>다릅니다</strong> — 콘솔 4개와 bznav care·plus는 <code>dev</code>, bznav refund·brand·sena는 <code>dev-ecs</code>, zent-packages는 <code>main</code>입니다. 이름은 전 레포 공통 관례인 <code>feature/REF-####</code>가 기본이고, 슬래시를 직접 쓰면 그 이름을 씁니다. <strong>미커밋 변경이 있으면 그 레포는 건너뛰고 보고합니다</strong> — 남의 작업일 수 있으므로 stash 하지 않습니다. 건너뛴 레포에는 디스패치하지 않습니다. 만든 브랜치와 base SHA는 계획서 Checkpoint의 <code>Work ref</code>에 기록되어 <code>/new</code> 이후 재개에 쓰입니다.</p>
+          <div class="flow"><span>대상·이름 확정</span><span>prBase 조회</span><span class="hi">미커밋 검사</span><span>origin 최신에서 분기</span><span>Checkpoint 기록</span></div>
+          <dl>
+            <dt>언제</dt><dd>계획서 승인 직후, FE 에이전트에 디스패치하기 바로 전</dd>
+            <dt>결과</dt><dd>레포별 <code>base SHA → 새 브랜치</code> 목록. 건너뛴 레포와 사유</dd>
+          </dl>
+<pre><code>/branch REF-3820 refund hub          # 콘솔 두 곳에 feature/REF-3820
+/branch REF-3820 bznav:care-web      # bznav 는 앱을 지정
+/branch fix/qa-로그인-오류 care        # 이름 직접 지정</code></pre>
+        </article>
+
+        <article class="cmd">
           <div class="cmd-head"><kbd>/review <span class="arg">대상</span></kbd><span class="tag plain">read-only</span></div>
           <p class="what">지정 레포의 커밋 전 변경사항(uncommitted diff)을 reviewer가 검토합니다. 관련 계획서가 있으면 그 기준으로 봅니다.</p>
           <div class="flow"><span>레포 확정</span><span>계획서 찾기</span><span class="hi">reviewer</span><span>결과 보고</span><span>필요 시 재배분</span></div>

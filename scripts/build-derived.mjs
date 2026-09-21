@@ -192,6 +192,18 @@ const baselineRows = () => {
 }
 const escapeHtml = (text) => String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
+/** last sync 는 실행일이 아니라 **지문이 확정된 시각**이다.
+ *  실행일을 쓰면 문서를 안 고쳐도 날짜만 바뀌어 --check 가 실패하고,
+ *  실제 sync 없이 생성만 다시 돌려도 최신 날짜가 붙는다. */
+const lastSyncDate = () => {
+  try {
+    const state = JSON.parse(readFileSync(join(ROOT, '.sync/state.json'), 'utf8'))
+    if (state.acceptedAt) return String(state.acceptedAt).slice(0, 10)
+  } catch { /* state.json 이 없으면 지문 날짜로 폴백 */ }
+  const dates = Object.values(snaps).map((s) => s.shaDate).filter(Boolean).sort()
+  return dates.length ? dates[dates.length - 1] : '(미확정)'
+}
+
 // ---- 마커 치환 ----
 const replaceBlock = (text, name, body) => {
   const pattern = new RegExp(`(<!-- BEGIN:generated:${name}[^>]*-->)([\\s\\S]*?)(<!-- END:generated:${name} -->)`)
@@ -212,7 +224,7 @@ const targets = [
     file: 'docs/playbook.html',
     blocks: {
       'baseline-rows': baselineRows(),
-      'last-sync': `      <span>last sync ${new Date().toISOString().slice(0, 10)}</span>`
+      'last-sync': `      <span>last sync ${lastSyncDate()}</span>`
     }
   }
 ]

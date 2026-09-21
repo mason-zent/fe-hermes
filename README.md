@@ -29,6 +29,7 @@ claude
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
+- `/branch` — 작업 브랜치를 만든다. 레포별 PR base(`hermes.config.json` 의 `prBase`)에서 분기하고, 미커밋 변경이 있으면 건너뛰고 보고. 디스패치 전에 쓴다
 - `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`
 - `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
 
@@ -42,7 +43,7 @@ hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 12개
 .claude/rules/            언어·코드·Git·디스패치 규칙
-.claude/skills/           /feature /bugfix /review /status /sync /guide
+.claude/skills/           /feature /bugfix /branch /review /status /monitor /sync /guide
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/services.md          서비스 비교표
 docs/knowledge/           지식 베이스: common/(팀 공통 규칙) · <레포>/rules.md(레포 규칙) · 레포 지식 (README.md 참고)
@@ -58,6 +59,7 @@ scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
 scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
+scripts/new-branch.sh         작업 브랜치 생성 (/branch 가 호출)
 scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 호출)
 ```
 
