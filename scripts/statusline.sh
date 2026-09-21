@@ -27,7 +27,19 @@ fi
 toplevel=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || exit 0
 branch=$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)
 [ -n "$branch" ] || exit 0
-name=$(basename "$toplevel")
+
+# 워크트리 안이면 toplevel 이 워크트리 폴더명이라 어느 레포인지 알 수 없다.
+# git-common-dir 은 항상 메인 체크아웃의 .git 을 가리키므로 그 부모가 진짜 레포 이름이다.
+common=$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)
+gitdir=$(git -C "$dir" rev-parse --git-dir 2>/dev/null)
+case "$common" in /*) abs_common="$common" ;; *) abs_common="$dir/$common" ;; esac
+if [ -n "$common" ] && [ "$common" != "$gitdir" ]; then
+  is_worktree=1
+  name=$(basename "$(dirname "$abs_common")")
+else
+  is_worktree=0
+  name=$(basename "$toplevel")
+fi
 
 # ANSI 색 (Claude Code 상태바는 ANSI 를 그대로 렌더한다)
 R='\033[0m'; DIM='\033[2m'; BOLD='\033[1m'
@@ -73,8 +85,6 @@ fi
 [ "$conf" -gt 0 ] && out="${out}  ${RED}${BOLD}✗${conf}${R}"
 [ "${ahead:-0}" -gt 0 ] && out="${out}  ${CYAN}⇡${ahead}${R}"
 
-common=$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)
-gitdir=$(git -C "$dir" rev-parse --git-dir 2>/dev/null)
-[ -n "$common" ] && [ "$common" != "$gitdir" ] && out="${out}  ${MAGENTA}⧉worktree${R}"
+[ "$is_worktree" = 1 ] && out="${out}  ${MAGENTA}⧉worktree${R}"
 
 printf '%b' "$out"

@@ -492,15 +492,18 @@ claude
 
         <article class="cmd">
           <div class="cmd-head"><kbd>/branch <span class="arg">티켓|이름 대상...</span></kbd><span class="tag plain">디스패치 전</span></div>
-          <p class="what">작업을 시작하기 전에 대상 레포에 <strong>작업 브랜치를 새로 만듭니다.</strong> 로컬 작업 트리는 브랜치가 제각각이라, 확인 없이 FE 에이전트를 보내면 남의 작업 브랜치 위에 얹히거나 미커밋 변경과 섞입니다. 브랜치를 딸 기준은 <code>hermes.config.json</code>의 <code>prBase</code>(개발 브랜치)이고 문서·지식의 기준(운영 반영분)과 <strong>다릅니다</strong> — 콘솔 4개와 bznav care·plus는 <code>dev</code>, bznav refund·brand·sena는 <code>dev-ecs</code>, zent-packages는 <code>main</code>입니다. 이름은 전 레포 공통 관례인 <code>feature/REF-####</code>가 기본이고, 슬래시를 직접 쓰면 그 이름을 씁니다. <strong>미커밋 변경이 있으면 그 레포는 건너뛰고 보고합니다</strong> — 남의 작업일 수 있으므로 stash 하지 않습니다. 건너뛴 레포에는 디스패치하지 않습니다. 만든 브랜치와 base SHA는 계획서 Checkpoint의 <code>Work ref</code>에 기록되어 <code>/new</code> 이후 재개에 쓰입니다.</p>
-          <div class="flow"><span>대상·이름 확정</span><span>prBase 조회</span><span class="hi">미커밋 검사</span><span>origin 최신에서 분기</span><span>Checkpoint 기록</span></div>
+          <p class="what">작업을 시작하기 전에 <strong>작업 브랜치와 워크트리를 만듭니다.</strong> 로컬 작업 트리는 브랜치가 제각각이라, 확인 없이 FE 에이전트를 보내면 남의 작업 브랜치 위에 얹히거나 미커밋 변경과 섞입니다.</p>
+          <p class="what"><strong>기본은 워크트리입니다.</strong> 메인 체크아웃(<code>repos/&lt;레포&gt;</code>)은 그대로 두고 <code>~/orca/workspaces/&lt;레포&gt;/&lt;브랜치 슬러그&gt;</code>에 별도 작업 공간을 만듭니다. 그래서 <strong>레포에 미커밋 변경이 있거나 남이 다른 브랜치를 물고 있어도 시작할 수 있고, 한 레포에서 여러 작업을 동시에 돌릴 수 있습니다.</strong> 메인 체크아웃은 소스트리·IDE에서 보던 그대로 남습니다. 메인에서 바로 분기하려면 <code>--in-place</code>(이때는 미커밋 변경이 있으면 건너뜁니다).</p>
+          <p class="what">브랜치를 딸 기준은 <code>hermes.config.json</code>의 <code>prBase</code>(개발 브랜치)이고 문서·지식의 기준(운영 반영분)과 <strong>다릅니다</strong> — 콘솔 4개와 bznav care·plus는 <code>dev</code>, bznav refund·brand·sena는 <code>dev-ecs</code>, zent-packages는 <code>main</code>입니다. 이름은 전 레포 공통 관례인 <code>feature/REF-####</code>가 기본입니다. 만든 브랜치·base SHA·워크트리 경로는 계획서 Checkpoint의 <code>Work ref</code>에 기록되어 <code>/new</code> 이후 재개에 쓰입니다. 작업이 끝나면 <code>wt-sync</code>로 메인 체크아웃에 반영하고 <code>git worktree remove</code>로 정리합니다.</p>
+          <div class="flow"><span>대상·이름 확정</span><span>prBase 조회</span><span class="hi">워크트리 생성</span><span>origin 최신에서 분기</span><span>Checkpoint 기록</span></div>
           <dl>
             <dt>언제</dt><dd>계획서 승인 직후, FE 에이전트에 디스패치하기 바로 전</dd>
-            <dt>결과</dt><dd>레포별 <code>base SHA → 새 브랜치</code> 목록. 건너뛴 레포와 사유</dd>
+            <dt>결과</dt><dd>레포별 <code>base SHA → 새 브랜치</code>와 워크트리 경로. 건너뛴 레포와 사유</dd>
           </dl>
-<pre><code>/branch REF-3820 refund hub          # 콘솔 두 곳에 feature/REF-3820
+<pre><code>/branch REF-3820 refund hub          # 콘솔 두 곳에 워크트리 생성
 /branch REF-3820 bznav:care-web      # bznav 는 앱을 지정
-/branch fix/qa-로그인-오류 care        # 이름 직접 지정</code></pre>
+/branch fix/qa-로그인-오류 care        # 이름 직접 지정
+/branch REF-3820 refund --in-place   # 워크트리 없이 메인에서 분기</code></pre>
         </article>
 
         <article class="cmd">
