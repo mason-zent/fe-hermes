@@ -457,7 +457,14 @@ claude
 
     <section id="skills">
       <h2>슬래시 커맨드</h2>
-      <p>6개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
+      <p>8개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
+      <div class="note">
+        <strong>슬래시 커맨드는 헤르메스 세션에서만 씁니다.</strong> FE 에이전트 pane 에는 슬래시 커맨드가 아예 노출되지 않습니다(도구는 Read·Edit·Write·Bash 뿐). 라우팅·계획서·디스패치는 팀리드의 일이지 담당 엔지니어의 일이 아니기 때문입니다.
+        <br><br>
+        에이전트 pane 에서는 <strong>평문으로 그냥 지시</strong>하면 됩니다. 그 pane 은 담당 레포가 이미 고정되어 있으므로(하단 상태바에 표시됩니다) <code>refund</code> 같은 레포 접두사도 붙일 필요가 없습니다.
+<pre><code>헤르메스 세션 → /feature refund 파트너 목록에 상태 필터 추가
+에이전트 pane → 파트너 목록에 상태 필터 추가해줘</code></pre>
+      </div>
       <div class="cmds">
         <article class="cmd">
           <div class="cmd-head"><kbd>/feature <span class="arg">기능 설명</span></kbd><span class="tag">plan-first</span></div>
