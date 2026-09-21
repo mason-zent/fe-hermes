@@ -5131,7 +5131,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 982 808" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase">
+      <svg viewBox="0 0 990 818" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase">
         <title id="archify-diagram-title">헤르메스 작업 흐름</title>
         <desc id="archify-diagram-description">Plan-First 6단계 — 각 단계의 규칙은 아래 카드에 있다 (원본: CLAUDE.md)</desc>
         <!-- Definitions -->
@@ -5160,18 +5160,18 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="910" height="106" rx="10" class="c-lane" stroke-width="1"/>
         <text x="54" y="74" class="t-dim" font-size="10" font-weight="600">01 / 사용자</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="910" height="112" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="178" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
         <text x="54" y="200" class="t-dim" font-size="10" font-weight="600">02 / 헤르메스 (팀리드)</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="310" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-2-exception" x="46" y="316" width="898" height="102" rx="8" class="c-security-group" stroke-width="1"/>
-        <text x="54" y="332" class="t-security" font-size="10" font-weight="600">EX / 멈춤 · 확인 필요</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-2" x="40" y="312" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="exception-lane" data-composition-frame-id="lane-2-exception" x="46" y="318" width="898" height="102" rx="8" class="c-security-group" stroke-width="1"/>
+        <text x="54" y="334" class="t-security" font-size="10" font-weight="600">EX / 멈춤 · 확인 필요</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="444" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="54" y="466" class="t-dim" font-size="10" font-weight="600">04 / FE 에이전트</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-3" x="40" y="446" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="468" class="t-dim" font-size="10" font-weight="600">04 / FE 에이전트</text>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-4" x="40" y="578" width="910" height="106" rx="10" class="c-lane" stroke-width="1"/>
-        <text x="54" y="600" class="t-dim" font-size="10" font-weight="600">05 / 정본 · 기록</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-4" x="40" y="580" width="910" height="114" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="602" class="t-dim" font-size="10" font-weight="600">05 / 정본 · 기록</text>
 
         <!-- Phase headers -->
         <line x1="71" y1="35" x2="628.2" y2="35" class="a-default" stroke-width="1.1"/>
@@ -5185,44 +5185,55 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text x="868.2" y="39" class="t-messagebus" font-size="8" font-weight="600" text-anchor="middle">작업 · 검증</text>
 
         <!-- Workflow groups -->
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-0" x="164" y="216" width="345.2" height="70" rx="9" class="c-lane" stroke-width="1"/>
-        <text x="174" y="214" class="t-backend" font-size="7" font-weight="600">Plan-First</text>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-1" x="164" y="348" width="611.2" height="72" rx="9" class="c-security-group" stroke-width="1"/>
-        <text x="174" y="346" class="t-security" font-size="7" font-weight="600">여기서 멈추고 묻는다</text>
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-2" x="629.2" y="482" width="312" height="72" rx="9" class="c-lane" stroke-width="1"/>
-        <text x="639.2" y="480" class="t-messagebus" font-size="7" font-weight="600">워크트리 격리</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-0" x="164" y="216" width="146" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="174" y="214" class="t-muted" font-size="7" font-weight="600">라우팅</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-1" x="363.2" y="216" width="146" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="373.2" y="214" class="t-backend" font-size="7" font-weight="600">Plan-First</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-2" x="629.2" y="216" width="146" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="639.2" y="214" class="t-backend" font-size="7" font-weight="600">브랜치 · 디스패치</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-3" x="795.2" y="216" width="146" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="805.2" y="214" class="t-muted" font-size="7" font-weight="600">교차 검증</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-4" x="164" y="350" width="611.2" height="72" rx="9" class="c-security-group" stroke-width="1"/>
+        <text x="174" y="348" class="t-security" font-size="7" font-weight="600">여기서 멈추고 묻는다</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-5" x="629.2" y="484" width="312" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="639.2" y="482" class="t-messagebus" font-size="7" font-weight="600">워크트리 격리</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-6" x="509.20000000000005" y="618" width="243" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="519.2" y="616" class="t-backend" font-size="7" font-weight="600">항상 읽는다</text>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="group" data-composition-frame-id="group-7" x="795.2" y="618" width="146" height="72" rx="9" class="c-lane" stroke-width="1"/>
+        <text x="805.2" y="616" class="t-messagebus" font-size="7" font-weight="600">골라 읽는다</text>
 
         <!-- Edge paths -->
-        <path data-edge-from="req" data-edge-to="route" data-edge-key="0" data-edge-id="e1" data-composition-points="186,120;237,120;237,225" d="M 186 120 L 237 120 L 237 225" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="route" data-edge-to="plan" data-edge-label="레포 확정" data-edge-key="1" data-edge-id="e2" data-composition-points="306,251;367.2,251" d="M 306 251 L 367.2 251" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="plan" data-edge-to="approve" data-edge-label="승인 요청" data-edge-key="2" data-edge-id="e3" data-composition-points="436.2,217;436.2,120;513.2,120" d="M 436.2 217 L 436.2 120 L 513.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="approve" data-edge-to="branch" data-edge-key="3" data-edge-id="e4" data-composition-points="582.2,154;582.2,251;633.2,251" d="M 582.2 154 L 582.2 251 L 633.2 251" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="branch" data-edge-to="pane" data-edge-label="워크트리 경로" data-edge-key="4" data-edge-id="e5" data-composition-points="771.2,251;787.2,251;787.2,574;702.2,574;702.2,553" d="M 771.2 251 L 787.2 251 L 787.2 574 L 702.2 574 L 702.2 553" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="pane" data-edge-to="agent" data-edge-key="5" data-edge-id="e6" data-composition-points="771.2,519;787.2,519;787.2,428;868.2,428;868.2,485" d="M 771.2 519 L 787.2 519 L 787.2 428 L 868.2 428 L 868.2 485" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="agent" data-edge-to="review" data-edge-label="결과" data-edge-key="6" data-edge-id="e7" data-composition-points="937.2,519;963.2,519;963.2,251;937.2,251" d="M 937.2 519 L 963.2 519 L 963.2 251 L 937.2 251" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="review" data-edge-to="report" data-edge-key="7" data-edge-id="e8" data-composition-points="868.2,225;868.2,146" d="M 868.2 225 L 868.2 146" class="a-emphasis" data-animate="edge" style="--step:12" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="config" data-edge-to="route" data-edge-key="8" data-edge-id="s1" data-composition-points="168,646;20,646;20,251;168,251" d="M 168 646 L 20 646 L 20 251 L 168 251" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <path data-edge-from="plan" data-edge-to="planfile" data-edge-key="9" data-edge-id="s2" data-composition-points="436.2,285;436.2,620" d="M 436.2 285 L 436.2 620" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <path data-edge-from="rules" data-edge-to="agent" data-edge-label="항상" data-edge-key="10" data-edge-id="s3" data-composition-points="582.2,680;582.2,700;953.2,700;953.2,519;937.2,519" d="M 582.2 680 L 582.2 700 L 953.2 700 L 953.2 519 L 937.2 519" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <path data-edge-from="know" data-edge-to="agent" data-edge-label="유형별" data-edge-key="11" data-edge-id="s4" data-composition-points="868.2,620;868.2,553" d="M 868.2 620 L 868.2 553" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <path data-edge-from="route" data-edge-to="outofscope" data-edge-label="모호하면" data-edge-key="12" data-edge-id="x1" data-composition-points="237,277;237,300;322,300;322,385;306,385" d="M 237 277 L 237 300 L 322 300 L 322 385 L 306 385" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
-        <path data-edge-from="branch" data-edge-to="skipped" data-edge-label="준비 안 됨" data-edge-key="13" data-edge-id="x2" data-composition-points="633.2,251;617.2,251;617.2,440;702.2,440;702.2,411" d="M 633.2 251 L 617.2 251 L 617.2 440 L 702.2 440 L 702.2 411" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="req" data-edge-to="route" data-edge-key="0" data-edge-id="e1" data-composition-points="186,120;237,120;237,219" d="M 186 120 L 237 120 L 237 219" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="route" data-edge-to="plan" data-edge-label="레포 확정" data-edge-key="1" data-edge-id="e2" data-composition-points="306,253;367.2,253" d="M 306 253 L 367.2 253" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="plan" data-edge-to="approve" data-edge-label="승인 요청" data-edge-key="2" data-edge-id="e3" data-composition-points="436.2,219;436.2,120;513.2,120" d="M 436.2 219 L 436.2 120 L 513.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="approve" data-edge-to="branch" data-edge-key="3" data-edge-id="e4" data-composition-points="582.2,154;582.2,253;633.2,253" d="M 582.2 154 L 582.2 253 L 633.2 253" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="branch" data-edge-to="pane" data-edge-label="워크트리 경로" data-edge-key="4" data-edge-id="e5" data-composition-points="633.2,253;617.2,253;617.2,576;702.2,576;702.2,555" d="M 633.2 253 L 617.2 253 L 617.2 576 L 702.2 576 L 702.2 555" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="pane" data-edge-to="agent" data-edge-key="5" data-edge-id="e6" data-composition-points="771.2,521;787.2,521;787.2,576;868.2,576;868.2,555" d="M 771.2 521 L 787.2 521 L 787.2 576 L 868.2 576 L 868.2 555" class="a-default" data-animate="edge" style="--step:5" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="agent" data-edge-to="review" data-edge-label="결과" data-edge-key="6" data-edge-id="e7" data-composition-points="868.2,487;868.2,287" d="M 868.2 487 L 868.2 287" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="review" data-edge-to="report" data-edge-key="7" data-edge-id="e8" data-composition-points="868.2,219;868.2,154" d="M 868.2 219 L 868.2 154" class="a-emphasis" data-animate="edge" style="--step:12" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="config" data-edge-to="route" data-edge-key="8" data-edge-id="s1" data-composition-points="168,655;20,655;20,253;168,253" d="M 168 655 L 20 655 L 20 253 L 168 253" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="plan" data-edge-to="planfile" data-edge-key="9" data-edge-id="s2" data-composition-points="436.2,287;436.2,621" d="M 436.2 287 L 436.2 621" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="rules" data-edge-to="agent" data-edge-label="항상" data-edge-key="10" data-edge-id="s3" data-composition-points="651.2,655;759.7,655;759.7,571;868.2,571;868.2,555" d="M 651.2 655 L 759.7 655 L 759.7 571 L 868.2 571 L 868.2 555" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="know" data-edge-to="agent" data-edge-label="유형별" data-edge-key="11" data-edge-id="s4" data-composition-points="937.2,655;972,655;972,521;937.2,521" d="M 937.2 655 L 972 655 L 972 521 L 937.2 521" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="route" data-edge-to="outofscope" data-edge-label="모호하면" data-edge-key="12" data-edge-id="x1" data-composition-points="168,253;20,253;20,437;237,437;237,421" d="M 168 253 L 20 253 L 20 437 L 237 437 L 237 421" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
+        <path data-edge-from="branch" data-edge-to="skipped" data-edge-label="준비 안 됨" data-edge-key="13" data-edge-id="x2" data-composition-points="771.2,246;787.2,246;787.2,442;702.2,442;702.2,421" d="M 771.2 246 L 787.2 246 L 787.2 442 L 702.2 442 L 702.2 421" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
 
         <!-- Nodes -->
-        <g id="node-req" data-node-id="req" data-node-label="요청" tabindex="0" role="button" aria-label="Focus 요청, /feature · /bugfix, 사용자 › 계획 · 승인" aria-pressed="false" data-node-kind="external" data-node-sublabel="/feature · /bugfix" data-node-context="사용자 › 계획 · 승인">
-          <title>요청 · /feature · /bugfix · 사용자 › 계획 · 승인</title>
-          <rect x="48" y="94" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="48" y="94" width="138" height="52" rx="6" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(54 100) scale(0.6875)">
+        <g id="node-req" data-node-id="req" data-node-label="요청" tabindex="0" role="button" aria-label="Focus 요청, /feature · /bugfix, 사용자 › 계획 · 승인" aria-pressed="false" data-node-kind="external" data-node-sublabel="/feature · /bugfix" data-node-tag="레포가 모호하면 되묻는다" data-node-context="사용자 › 계획 · 승인">
+          <title>요청 · /feature · /bugfix · 사용자 › 계획 · 승인 · 레포가 모호하면 되묻는다</title>
+          <rect x="48" y="86" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="48" y="86" width="138" height="68" rx="6" class="c-external" data-animate="node" style="--step:0" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(54 92) scale(0.6875)">
             <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
             <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="117" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">요청</text>
-          <text data-detail="context" x="117" y="132" class="t-muted" font-size="8" text-anchor="middle">/feature · /bugfix</text>
+          <text data-node-label="" data-detail-anchor="" x="117" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">요청</text>
+          <text data-detail="context" x="117" y="124" class="t-muted" font-size="8" text-anchor="middle">/feature · /bugfix</text>
+        <text data-detail="fine" x="117" y="142" class="t-external" font-size="7" text-anchor="middle">레포가 모호하면 되묻는다</text>
         </g>
 
-        <g id="node-approve" data-node-id="approve" data-node-label="승인" tabindex="0" role="button" aria-label="Focus 승인, 결정 콘솔에서 선택, 사용자 › 계획 · 승인" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="결정 콘솔에서 선택" data-node-tag="HTML 클릭" data-node-context="사용자 › 계획 · 승인">
-          <title>승인 · 결정 콘솔에서 선택 · 사용자 › 계획 · 승인 · HTML 클릭</title>
+        <g id="node-approve" data-node-id="approve" data-node-label="승인" tabindex="0" role="button" aria-label="Focus 승인, 결정 콘솔에서 선택, 사용자 › 계획 · 승인" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="결정 콘솔에서 선택" data-node-tag="확정 전엔 디스패치 없음" data-node-context="사용자 › 계획 · 승인">
+          <title>승인 · 결정 콘솔에서 선택 · 사용자 › 계획 · 승인 · 확정 전엔 디스패치 없음</title>
           <rect x="513.2" y="86" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="513.2" y="86" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:3" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(519.2 92) scale(0.6875)">
@@ -5233,179 +5244,186 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           </g>
           <text data-node-label="" data-detail-anchor="" x="582.2" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">승인</text>
           <text data-detail="context" x="582.2" y="124" class="t-muted" font-size="8" text-anchor="middle">결정 콘솔에서 선택</text>
-        <text data-detail="fine" x="582.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">HTML 클릭</text>
+        <text data-detail="fine" x="582.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">확정 전엔 디스패치 없음</text>
         </g>
 
-        <g id="node-report" data-node-id="report" data-node-label="보고 받기" tabindex="0" role="button" aria-label="Focus 보고 받기, 커밋 여부는 사용자, 사용자 › 작업 · 검증" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="커밋 여부는 사용자" data-node-context="사용자 › 작업 · 검증">
-          <title>보고 받기 · 커밋 여부는 사용자 · 사용자 › 작업 · 검증</title>
-          <rect x="799.2" y="94" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="799.2" y="94" width="138" height="52" rx="6" class="c-frontend" data-animate="node" style="--step:9" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(805.2 100) scale(0.6875)">
+        <g id="node-report" data-node-id="report" data-node-label="보고 받기" tabindex="0" role="button" aria-label="Focus 보고 받기, 커밋 여부는 사용자, 사용자 › 작업 · 검증" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="커밋 여부는 사용자" data-node-tag="커밋·PR 은 사용자가" data-node-context="사용자 › 작업 · 검증">
+          <title>보고 받기 · 커밋 여부는 사용자 · 사용자 › 작업 · 검증 · 커밋·PR 은 사용자가</title>
+          <rect x="799.2" y="86" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="799.2" y="86" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:9" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(805.2 92) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="868.2" y="115" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">보고 받기</text>
-          <text data-detail="context" x="868.2" y="132" class="t-muted" font-size="8" text-anchor="middle">커밋 여부는 사용자</text>
+          <text data-node-label="" data-detail-anchor="" x="868.2" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">보고 받기</text>
+          <text data-detail="context" x="868.2" y="124" class="t-muted" font-size="8" text-anchor="middle">커밋 여부는 사용자</text>
+        <text data-detail="fine" x="868.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">커밋·PR 은 사용자가</text>
         </g>
 
-        <g id="node-route" data-node-id="route" data-node-label="라우팅" tabindex="0" role="button" aria-label="Focus 라우팅, 어느 레포인가, 헤르메스 (팀리드) › Plan-First › 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="어느 레포인가" data-node-context="헤르메스 (팀리드) › Plan-First › 계획 · 승인">
-          <title>라우팅 · 어느 레포인가 · 헤르메스 (팀리드) › Plan-First › 계획 · 승인</title>
-          <rect x="168" y="225" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="168" y="225" width="138" height="52" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(174 231) scale(0.6875)">
+        <g id="node-route" data-node-id="route" data-node-label="라우팅" tabindex="0" role="button" aria-label="Focus 라우팅, 어느 레포인가, 헤르메스 (팀리드) › 라우팅 › 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="어느 레포인가" data-node-tag="콘솔 ≠ 사용자 웹" data-node-context="헤르메스 (팀리드) › 라우팅 › 계획 · 승인">
+          <title>라우팅 · 어느 레포인가 · 헤르메스 (팀리드) › 라우팅 › 계획 · 승인 · 콘솔 ≠ 사용자 웹</title>
+          <rect x="168" y="219" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="168" y="219" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:1" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(174 225) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="237" y="246" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">라우팅</text>
-          <text data-detail="context" x="237" y="263" class="t-muted" font-size="8" text-anchor="middle">어느 레포인가</text>
+          <text data-node-label="" data-detail-anchor="" x="237" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">라우팅</text>
+          <text data-detail="context" x="237" y="257" class="t-muted" font-size="8" text-anchor="middle">어느 레포인가</text>
+        <text data-detail="fine" x="237" y="275" class="t-backend" font-size="7" text-anchor="middle">콘솔 ≠ 사용자 웹</text>
         </g>
 
-        <g id="node-plan" data-node-id="plan" data-node-label="작업 카드" tabindex="0" role="button" aria-label="Focus 작업 카드, md + html 한 쌍, 헤르메스 (팀리드) › Plan-First › 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="md + html 한 쌍" data-node-tag="Checkpoint" data-node-context="헤르메스 (팀리드) › Plan-First › 계획 · 승인">
-          <title>작업 카드 · md + html 한 쌍 · 헤르메스 (팀리드) › Plan-First › 계획 · 승인 · Checkpoint</title>
-          <rect x="367.2" y="217" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="367.2" y="217" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(373.2 223) scale(0.6875)">
+        <g id="node-plan" data-node-id="plan" data-node-label="작업 카드" tabindex="0" role="button" aria-label="Focus 작업 카드, md + html 한 쌍, 헤르메스 (팀리드) › Plan-First › 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="md + html 한 쌍" data-node-tag="md + html 같은 턴에" data-node-context="헤르메스 (팀리드) › Plan-First › 계획 · 승인">
+          <title>작업 카드 · md + html 한 쌍 · 헤르메스 (팀리드) › Plan-First › 계획 · 승인 · md + html 같은 턴에</title>
+          <rect x="367.2" y="219" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="367.2" y="219" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(373.2 225) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="436.2" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">작업 카드</text>
-          <text data-detail="context" x="436.2" y="255" class="t-muted" font-size="8" text-anchor="middle">md + html 한 쌍</text>
-        <text data-detail="fine" x="436.2" y="273" class="t-backend" font-size="7" text-anchor="middle">Checkpoint</text>
+          <text data-node-label="" data-detail-anchor="" x="436.2" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">작업 카드</text>
+          <text data-detail="context" x="436.2" y="257" class="t-muted" font-size="8" text-anchor="middle">md + html 한 쌍</text>
+        <text data-detail="fine" x="436.2" y="275" class="t-backend" font-size="7" text-anchor="middle">md + html 같은 턴에</text>
         </g>
 
-        <g id="node-branch" data-node-id="branch" data-node-label="/branch" tabindex="0" role="button" aria-label="Focus /branch, 브랜치 + 워크트리, 헤르메스 (팀리드) › 준비" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="브랜치 + 워크트리" data-node-tag="prBase 에서 분기" data-node-context="헤르메스 (팀리드) › 준비">
-          <title>/branch · 브랜치 + 워크트리 · 헤르메스 (팀리드) › 준비 · prBase 에서 분기</title>
-          <rect x="633.2" y="217" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="633.2" y="217" width="138" height="68" rx="6" class="c-messagebus" data-animate="node" style="--step:4" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="messagebus" class="semantic-sigil s-messagebus" transform="translate(639.2 223) scale(0.6875)">
+        <g id="node-branch" data-node-id="branch" data-node-label="/branch" tabindex="0" role="button" aria-label="Focus /branch, 브랜치 + 워크트리, 헤르메스 (팀리드) › 브랜치 · 디스패치 › 준비" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="브랜치 + 워크트리" data-node-tag="prBase 에서 · 워크트리" data-node-context="헤르메스 (팀리드) › 브랜치 · 디스패치 › 준비">
+          <title>/branch · 브랜치 + 워크트리 · 헤르메스 (팀리드) › 브랜치 · 디스패치 › 준비 · prBase 에서 · 워크트리</title>
+          <rect x="633.2" y="219" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="633.2" y="219" width="138" height="68" rx="6" class="c-messagebus" data-animate="node" style="--step:4" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="messagebus" class="semantic-sigil s-messagebus" transform="translate(639.2 225) scale(0.6875)">
             <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>
             <circle cx="5" cy="4.5" r="1" class="sigil-fill"/>
             <circle cx="10.5" cy="8" r="1" class="sigil-fill"/>
             <circle cx="7" cy="11.5" r="1" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="702.2" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">/branch</text>
-          <text data-detail="context" x="702.2" y="255" class="t-muted" font-size="8" text-anchor="middle">브랜치 + 워크트리</text>
-        <text data-detail="fine" x="702.2" y="273" class="t-messagebus" font-size="7" text-anchor="middle">prBase 에서 분기</text>
+          <text data-node-label="" data-detail-anchor="" x="702.2" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">/branch</text>
+          <text data-detail="context" x="702.2" y="257" class="t-muted" font-size="8" text-anchor="middle">브랜치 + 워크트리</text>
+        <text data-detail="fine" x="702.2" y="275" class="t-messagebus" font-size="7" text-anchor="middle">prBase 에서 · 워크트리</text>
         </g>
 
-        <g id="node-review" data-node-id="review" data-node-label="reviewer" tabindex="0" role="button" aria-label="Focus reviewer, 검증 스크립트 재실행, 헤르메스 (팀리드) › 작업 · 검증" aria-pressed="false" data-node-kind="security" data-node-sublabel="검증 스크립트 재실행" data-node-context="헤르메스 (팀리드) › 작업 · 검증">
-          <title>reviewer · 검증 스크립트 재실행 · 헤르메스 (팀리드) › 작업 · 검증</title>
-          <rect x="799.2" y="225" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="799.2" y="225" width="138" height="52" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(805.2 231) scale(0.6875)">
+        <g id="node-review" data-node-id="review" data-node-label="reviewer" tabindex="0" role="button" aria-label="Focus reviewer, 검증 스크립트 재실행, 헤르메스 (팀리드) › 교차 검증 › 작업 · 검증" aria-pressed="false" data-node-kind="security" data-node-sublabel="검증 스크립트 재실행" data-node-tag="검증 스크립트 재실행" data-node-context="헤르메스 (팀리드) › 교차 검증 › 작업 · 검증">
+          <title>reviewer · 검증 스크립트 재실행 · 헤르메스 (팀리드) › 교차 검증 › 작업 · 검증 · 검증 스크립트 재실행</title>
+          <rect x="799.2" y="219" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="799.2" y="219" width="138" height="68" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(805.2 225) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="868.2" y="246" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">reviewer</text>
-          <text data-detail="context" x="868.2" y="263" class="t-muted" font-size="8" text-anchor="middle">검증 스크립트 재실행</text>
+          <text data-node-label="" data-detail-anchor="" x="868.2" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">reviewer</text>
+          <text data-detail="context" x="868.2" y="257" class="t-muted" font-size="8" text-anchor="middle">검증 스크립트 재실행</text>
+        <text data-detail="fine" x="868.2" y="275" class="t-security" font-size="7" text-anchor="middle">검증 스크립트 재실행</text>
         </g>
 
-        <g id="node-outofscope" data-node-id="outofscope" data-node-label="범위 밖 · 모호" tabindex="0" role="button" aria-label="Focus 범위 밖 · 모호, 콘솔? 사용자 웹? 백엔드?, 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인" aria-pressed="false" data-node-kind="security" data-node-sublabel="콘솔? 사용자 웹? 백엔드?" data-node-tag="사용자에게 확인" data-node-context="멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인">
-          <title>범위 밖 · 모호 · 콘솔? 사용자 웹? 백엔드? · 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인 · 사용자에게 확인</title>
-          <rect x="168" y="351" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="168" y="351" width="138" height="68" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(174 357) scale(0.6875)">
+        <g id="node-outofscope" data-node-id="outofscope" data-node-label="범위 밖 · 모호" tabindex="0" role="button" aria-label="Focus 범위 밖 · 모호, 콘솔? 사용자 웹? 백엔드?, 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인" aria-pressed="false" data-node-kind="security" data-node-sublabel="콘솔? 사용자 웹? 백엔드?" data-node-tag="멈추고 사용자에게" data-node-context="멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인">
+          <title>범위 밖 · 모호 · 콘솔? 사용자 웹? 백엔드? · 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 계획 · 승인 · 멈추고 사용자에게</title>
+          <rect x="168" y="353" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="168" y="353" width="138" height="68" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(174 359) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="237" y="372" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">범위 밖 · 모호</text>
-          <text data-detail="context" x="237" y="389" class="t-muted" font-size="8" text-anchor="middle">콘솔? 사용자 웹? 백엔드?</text>
-        <text data-detail="fine" x="237" y="407" class="t-security" font-size="7" text-anchor="middle">사용자에게 확인</text>
+          <text data-node-label="" data-detail-anchor="" x="237" y="374" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">범위 밖 · 모호</text>
+          <text data-detail="context" x="237" y="391" class="t-muted" font-size="8" text-anchor="middle">콘솔? 사용자 웹? 백엔드?</text>
+        <text data-detail="fine" x="237" y="409" class="t-security" font-size="7" text-anchor="middle">멈추고 사용자에게</text>
         </g>
 
-        <g id="node-skipped" data-node-id="skipped" data-node-label="건너뜀" tabindex="0" role="button" aria-label="Focus 건너뜀, 브랜치 중복 · ref 없음, 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비" aria-pressed="false" data-node-kind="security" data-node-sublabel="브랜치 중복 · ref 없음" data-node-context="멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비">
-          <title>건너뜀 · 브랜치 중복 · ref 없음 · 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비</title>
-          <rect x="633.2" y="359" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="633.2" y="359" width="138" height="52" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(639.2 365) scale(0.6875)">
+        <g id="node-skipped" data-node-id="skipped" data-node-label="건너뜀" tabindex="0" role="button" aria-label="Focus 건너뜀, 브랜치 중복 · ref 없음, 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비" aria-pressed="false" data-node-kind="security" data-node-sublabel="브랜치 중복 · ref 없음" data-node-tag="여기엔 디스패치 금지" data-node-context="멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비">
+          <title>건너뜀 · 브랜치 중복 · ref 없음 · 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 준비 · 여기엔 디스패치 금지</title>
+          <rect x="633.2" y="353" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="633.2" y="353" width="138" height="68" rx="6" class="c-security" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(639.2 359) scale(0.6875)">
             <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
             <path d="m5.8 8 1.5 1.5 3-3"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="702.2" y="380" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">건너뜀</text>
-          <text data-detail="context" x="702.2" y="397" class="t-muted" font-size="8" text-anchor="middle">브랜치 중복 · ref 없음</text>
+          <text data-node-label="" data-detail-anchor="" x="702.2" y="374" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">건너뜀</text>
+          <text data-detail="context" x="702.2" y="391" class="t-muted" font-size="8" text-anchor="middle">브랜치 중복 · ref 없음</text>
+        <text data-detail="fine" x="702.2" y="409" class="t-security" font-size="7" text-anchor="middle">여기엔 디스패치 금지</text>
         </g>
 
-        <g id="node-pane" data-node-id="pane" data-node-label="에이전트 pane" tabindex="0" role="button" aria-label="Focus 에이전트 pane, 상태바에 레포·브랜치, FE 에이전트 › 워크트리 격리 › 준비" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="상태바에 레포·브랜치" data-node-tag="delegate.sh --cwd" data-node-context="FE 에이전트 › 워크트리 격리 › 준비">
-          <title>에이전트 pane · 상태바에 레포·브랜치 · FE 에이전트 › 워크트리 격리 › 준비 · delegate.sh --cwd</title>
-          <rect x="633.2" y="485" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="633.2" y="485" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:5" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(639.2 491) scale(0.6875)">
+        <g id="node-pane" data-node-id="pane" data-node-label="에이전트 pane" tabindex="0" role="button" aria-label="Focus 에이전트 pane, 상태바에 레포·브랜치, FE 에이전트 › 워크트리 격리 › 준비" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="상태바에 레포·브랜치" data-node-tag="평문으로 지시 · 슬래시 없음" data-node-context="FE 에이전트 › 워크트리 격리 › 준비">
+          <title>에이전트 pane · 상태바에 레포·브랜치 · FE 에이전트 › 워크트리 격리 › 준비 · 평문으로 지시 · 슬래시 없음</title>
+          <rect x="633.2" y="487" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="633.2" y="487" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:5" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(639.2 493) scale(0.6875)">
             <rect x="2" y="3" width="12" height="10" rx="2"/>
             <path d="M2 6.5h12"/>
             <circle cx="4.1" cy="4.8" r=".7" class="sigil-fill"/>
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="702.2" y="506" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">에이전트 pane</text>
-          <text data-detail="context" x="702.2" y="523" class="t-muted" font-size="8" text-anchor="middle">상태바에 레포·브랜치</text>
-        <text data-detail="fine" x="702.2" y="541" class="t-frontend" font-size="7" text-anchor="middle">delegate.sh --cwd</text>
+          <text data-node-label="" data-detail-anchor="" x="702.2" y="508" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">에이전트 pane</text>
+          <text data-detail="context" x="702.2" y="525" class="t-muted" font-size="8" text-anchor="middle">상태바에 레포·브랜치</text>
+        <text data-detail="fine" x="702.2" y="543" class="t-frontend" font-size="7" text-anchor="middle">평문으로 지시 · 슬래시 없음</text>
         </g>
 
-        <g id="node-agent" data-node-id="agent" data-node-label="구현 + 검증" tabindex="0" role="button" aria-label="Focus 구현 + 검증, verify 스크립트, FE 에이전트 › 워크트리 격리 › 작업 · 검증" aria-pressed="false" data-node-kind="backend" data-node-sublabel="verify 스크립트" data-node-tag="커밋 안 함" data-node-context="FE 에이전트 › 워크트리 격리 › 작업 · 검증">
-          <title>구현 + 검증 · verify 스크립트 · FE 에이전트 › 워크트리 격리 › 작업 · 검증 · 커밋 안 함</title>
-          <rect x="799.2" y="485" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="799.2" y="485" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(805.2 491) scale(0.6875)">
+        <g id="node-agent" data-node-id="agent" data-node-label="구현 + 검증" tabindex="0" role="button" aria-label="Focus 구현 + 검증, verify 스크립트, FE 에이전트 › 워크트리 격리 › 작업 · 검증" aria-pressed="false" data-node-kind="backend" data-node-sublabel="verify 스크립트" data-node-tag="커밋하지 않는다" data-node-context="FE 에이전트 › 워크트리 격리 › 작업 · 검증">
+          <title>구현 + 검증 · verify 스크립트 · FE 에이전트 › 워크트리 격리 › 작업 · 검증 · 커밋하지 않는다</title>
+          <rect x="799.2" y="487" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="799.2" y="487" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:6" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(805.2 493) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="868.2" y="506" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">구현 + 검증</text>
-          <text data-detail="context" x="868.2" y="523" class="t-muted" font-size="8" text-anchor="middle">verify 스크립트</text>
-        <text data-detail="fine" x="868.2" y="541" class="t-backend" font-size="7" text-anchor="middle">커밋 안 함</text>
+          <text data-node-label="" data-detail-anchor="" x="868.2" y="508" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">구현 + 검증</text>
+          <text data-detail="context" x="868.2" y="525" class="t-muted" font-size="8" text-anchor="middle">verify 스크립트</text>
+        <text data-detail="fine" x="868.2" y="543" class="t-backend" font-size="7" text-anchor="middle">커밋하지 않는다</text>
         </g>
 
-        <g id="node-config" data-node-id="config" data-node-label="hermes.config" tabindex="0" role="button" aria-label="Focus hermes.config, 레포·브랜치 매핑, 정본 · 기록 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="레포·브랜치 매핑" data-node-context="정본 · 기록 › 계획 · 승인">
-          <title>hermes.config · 레포·브랜치 매핑 · 정본 · 기록 › 계획 · 승인</title>
-          <rect x="168" y="620" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="168" y="620" width="138" height="52" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(174 626) scale(0.6875)">
+        <g id="node-config" data-node-id="config" data-node-label="hermes.config" tabindex="0" role="button" aria-label="Focus hermes.config, 레포·브랜치 매핑, 정본 · 기록 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="레포·브랜치 매핑" data-node-tag="레포·브랜치 매핑 정본" data-node-context="정본 · 기록 › 계획 · 승인">
+          <title>hermes.config · 레포·브랜치 매핑 · 정본 · 기록 › 계획 · 승인 · 레포·브랜치 매핑 정본</title>
+          <rect x="168" y="621" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="168" y="621" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(174 627) scale(0.6875)">
             <ellipse cx="8" cy="4" rx="5" ry="2"/>
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="237" y="641" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">hermes.config</text>
-          <text data-detail="context" x="237" y="658" class="t-muted" font-size="8" text-anchor="middle">레포·브랜치 매핑</text>
+          <text data-node-label="" data-detail-anchor="" x="237" y="642" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">hermes.config</text>
+          <text data-detail="context" x="237" y="659" class="t-muted" font-size="8" text-anchor="middle">레포·브랜치 매핑</text>
+        <text data-detail="fine" x="237" y="677" class="t-database" font-size="7" text-anchor="middle">레포·브랜치 매핑 정본</text>
         </g>
 
-        <g id="node-planfile" data-node-id="planfile" data-node-label="plans/" tabindex="0" role="button" aria-label="Focus plans/, Checkpoint · 재개 근거, 정본 · 기록 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="Checkpoint · 재개 근거" data-node-context="정본 · 기록 › 계획 · 승인">
-          <title>plans/ · Checkpoint · 재개 근거 · 정본 · 기록 › 계획 · 승인</title>
-          <rect x="367.2" y="620" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="367.2" y="620" width="138" height="52" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(373.2 626) scale(0.6875)">
+        <g id="node-planfile" data-node-id="planfile" data-node-label="plans/" tabindex="0" role="button" aria-label="Focus plans/, Checkpoint · 재개 근거, 정본 · 기록 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="Checkpoint · 재개 근거" data-node-tag="/new 이후 재개 근거" data-node-context="정본 · 기록 › 계획 · 승인">
+          <title>plans/ · Checkpoint · 재개 근거 · 정본 · 기록 › 계획 · 승인 · /new 이후 재개 근거</title>
+          <rect x="367.2" y="621" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="367.2" y="621" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(373.2 627) scale(0.6875)">
             <ellipse cx="8" cy="4" rx="5" ry="2"/>
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="436.2" y="641" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">plans/</text>
-          <text data-detail="context" x="436.2" y="658" class="t-muted" font-size="8" text-anchor="middle">Checkpoint · 재개 근거</text>
+          <text data-node-label="" data-detail-anchor="" x="436.2" y="642" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">plans/</text>
+          <text data-detail="context" x="436.2" y="659" class="t-muted" font-size="8" text-anchor="middle">Checkpoint · 재개 근거</text>
+        <text data-detail="fine" x="436.2" y="677" class="t-database" font-size="7" text-anchor="middle">/new 이후 재개 근거</text>
         </g>
 
-        <g id="node-rules" data-node-id="rules" data-node-label="rules.md 필수" tabindex="0" role="button" aria-label="Focus rules.md 필수, gotchas 도 항상, 정본 · 기록 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="gotchas 도 항상" data-node-tag="작업 크기 무관" data-node-context="정본 · 기록 › 계획 · 승인">
-          <title>rules.md 필수 · gotchas 도 항상 · 정본 · 기록 › 계획 · 승인 · 작업 크기 무관</title>
-          <rect x="513.2" y="612" width="138" height="68" rx="6" class="c-mask"/>
-          <rect x="513.2" y="612" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(519.2 618) scale(0.6875)">
+        <g id="node-rules" data-node-id="rules" data-node-label="rules.md 필수" tabindex="0" role="button" aria-label="Focus rules.md 필수, gotchas 도 항상, 정본 · 기록 › 항상 읽는다 › 계획 · 승인" aria-pressed="false" data-node-kind="database" data-node-sublabel="gotchas 도 항상" data-node-tag="작업 크기와 무관하게 항상" data-node-context="정본 · 기록 › 항상 읽는다 › 계획 · 승인">
+          <title>rules.md 필수 · gotchas 도 항상 · 정본 · 기록 › 항상 읽는다 › 계획 · 승인 · 작업 크기와 무관하게 항상</title>
+          <rect x="513.2" y="621" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="513.2" y="621" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(519.2 627) scale(0.6875)">
             <ellipse cx="8" cy="4" rx="5" ry="2"/>
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="582.2" y="633" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">rules.md 필수</text>
-          <text data-detail="context" x="582.2" y="650" class="t-muted" font-size="8" text-anchor="middle">gotchas 도 항상</text>
-        <text data-detail="fine" x="582.2" y="668" class="t-database" font-size="7" text-anchor="middle">작업 크기 무관</text>
+          <text data-node-label="" data-detail-anchor="" x="582.2" y="642" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">rules.md 필수</text>
+          <text data-detail="context" x="582.2" y="659" class="t-muted" font-size="8" text-anchor="middle">gotchas 도 항상</text>
+        <text data-detail="fine" x="582.2" y="677" class="t-database" font-size="7" text-anchor="middle">작업 크기와 무관하게 항상</text>
         </g>
 
-        <g id="node-know" data-node-id="know" data-node-label="knowledge" tabindex="0" role="button" aria-label="Focus knowledge, 작업 유형별 선택, 정본 · 기록 › 작업 · 검증" aria-pressed="false" data-node-kind="database" data-node-sublabel="작업 유형별 선택" data-node-context="정본 · 기록 › 작업 · 검증">
-          <title>knowledge · 작업 유형별 선택 · 정본 · 기록 › 작업 · 검증</title>
-          <rect x="799.2" y="620" width="138" height="52" rx="6" class="c-mask"/>
-          <rect x="799.2" y="620" width="138" height="52" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
-          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(805.2 626) scale(0.6875)">
+        <g id="node-know" data-node-id="know" data-node-label="knowledge" tabindex="0" role="button" aria-label="Focus knowledge, 작업 유형별 선택, 정본 · 기록 › 골라 읽는다 › 작업 · 검증" aria-pressed="false" data-node-kind="database" data-node-sublabel="작업 유형별 선택" data-node-tag="작업 유형에 필요한 절만" data-node-context="정본 · 기록 › 골라 읽는다 › 작업 · 검증">
+          <title>knowledge · 작업 유형별 선택 · 정본 · 기록 › 골라 읽는다 › 작업 · 검증 · 작업 유형에 필요한 절만</title>
+          <rect x="799.2" y="621" width="138" height="68" rx="6" class="c-mask"/>
+          <rect x="799.2" y="621" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(805.2 627) scale(0.6875)">
             <ellipse cx="8" cy="4" rx="5" ry="2"/>
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
-          <text data-node-label="" data-detail-anchor="" x="868.2" y="641" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">knowledge</text>
-          <text data-detail="context" x="868.2" y="658" class="t-muted" font-size="8" text-anchor="middle">작업 유형별 선택</text>
+          <text data-node-label="" data-detail-anchor="" x="868.2" y="642" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">knowledge</text>
+          <text data-detail="context" x="868.2" y="659" class="t-muted" font-size="8" text-anchor="middle">작업 유형별 선택</text>
+        <text data-detail="fine" x="868.2" y="677" class="t-database" font-size="7" text-anchor="middle">작업 유형에 필요한 절만</text>
         </g>
 
         <!-- Edge labels -->
 
         <g data-detail="context" data-edge-from="route" data-edge-to="plan" data-edge-label="레포 확정" data-edge-key="1" data-edge-id="e2">
-          <rect x="310" y="231" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
-          <text x="336.6" y="241" class="t-backend" font-size="8" text-anchor="middle">레포 확정</text>
+          <rect x="310" y="233" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
+          <text x="336.6" y="243" class="t-backend" font-size="8" text-anchor="middle">레포 확정</text>
         </g>
         <g data-detail="context" data-edge-from="plan" data-edge-to="approve" data-edge-label="승인 요청" data-edge-key="2" data-edge-id="e3">
           <rect x="448.1" y="100" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
@@ -5413,60 +5431,60 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
 
         <g data-detail="context" data-edge-from="branch" data-edge-to="pane" data-edge-label="워크트리 경로" data-edge-key="4" data-edge-id="e5">
-          <rect x="708.5" y="554" width="72.4" height="14" rx="3" class="c-mask"/>
-          <text x="744.7" y="564" class="t-backend" font-size="8" text-anchor="middle">워크트리 경로</text>
+          <rect x="623.5" y="556" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="659.7" y="566" class="t-backend" font-size="8" text-anchor="middle">워크트리 경로</text>
         </g>
 
         <g data-detail="context" data-edge-from="agent" data-edge-to="review" data-edge-label="결과" data-edge-key="6" data-edge-id="e7">
-          <rect x="935.2" y="499" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="950.2" y="509" class="t-muted" font-size="8" text-anchor="middle">결과</text>
+          <rect x="853.2" y="467" width="30" height="14" rx="3" class="c-mask"/>
+          <text x="868.2" y="477" class="t-muted" font-size="8" text-anchor="middle">결과</text>
         </g>
 
 
 
         <g data-detail="context" data-edge-from="rules" data-edge-to="agent" data-edge-label="항상" data-edge-key="10" data-edge-id="s3">
-          <rect x="752.7" y="680" width="30" height="14" rx="3" class="c-mask"/>
-          <text x="767.7" y="690" class="t-database" font-size="8" text-anchor="middle">항상</text>
+          <rect x="690.45" y="635" width="30" height="14" rx="3" class="c-mask"/>
+          <text x="705.45" y="645" class="t-database" font-size="8" text-anchor="middle">항상</text>
         </g>
         <g data-detail="context" data-edge-from="know" data-edge-to="agent" data-edge-label="유형별" data-edge-key="11" data-edge-id="s4">
-          <rect x="848.8000000000001" y="600" width="38.8" height="14" rx="3" class="c-mask"/>
-          <text x="868.2" y="610" class="t-database" font-size="8" text-anchor="middle">유형별</text>
+          <rect x="935.2" y="635" width="38.8" height="14" rx="3" class="c-mask"/>
+          <text x="954.6" y="645" class="t-database" font-size="8" text-anchor="middle">유형별</text>
         </g>
         <g data-detail="context" data-edge-from="route" data-edge-to="outofscope" data-edge-label="모호하면" data-edge-key="12" data-edge-id="x1">
-          <rect x="255.3" y="280" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="279.5" y="290" class="t-security" font-size="8" text-anchor="middle">모호하면</text>
+          <rect x="104.3" y="417" width="48.4" height="14" rx="3" class="c-mask"/>
+          <text x="128.5" y="427" class="t-security" font-size="8" text-anchor="middle">모호하면</text>
         </g>
         <g data-detail="context" data-edge-from="branch" data-edge-to="skipped" data-edge-label="준비 안 됨" data-edge-key="13" data-edge-id="x2">
-          <rect x="630.7" y="420" width="58" height="14" rx="3" class="c-mask"/>
-          <text x="659.7" y="430" class="t-security" font-size="8" text-anchor="middle">준비 안 됨</text>
+          <rect x="715.7" y="422" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="744.7" y="432" class="t-security" font-size="8" text-anchor="middle">준비 안 됨</text>
         </g>
 
         <!-- Legend -->
         <g data-legend="" data-legend-bridge="">
-          <text x="20" y="708" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="User UI" data-legend-x="20" data-legend-baseline="728" data-legend-width="74">
-            <rect x="20" y="720" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
-            <text x="42" y="728" class="t-muted" font-size="7.5" font-weight="500">User UI</text>
+          <text x="20" y="718" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="frontend" data-legend-kind="frontend" data-legend-label="User UI" data-legend-x="20" data-legend-baseline="738" data-legend-width="74">
+            <rect x="20" y="730" width="14" height="9" rx="2" class="c-frontend" stroke-width="1"/>
+            <text x="42" y="738" class="t-muted" font-size="7.5" font-weight="500">User UI</text>
           </g>
-          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent logic" data-legend-x="101" data-legend-baseline="728" data-legend-width="91">
-            <rect x="101" y="720" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
-            <text x="123" y="728" class="t-muted" font-size="7.5" font-weight="500">Agent logic</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent logic" data-legend-x="101" data-legend-baseline="738" data-legend-width="91">
+            <rect x="101" y="730" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="123" y="738" class="t-muted" font-size="7.5" font-weight="500">Agent logic</text>
           </g>
-          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Policy" data-legend-x="199" data-legend-baseline="728" data-legend-width="70">
-            <rect x="199" y="720" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
-            <text x="221" y="728" class="t-muted" font-size="7.5" font-weight="500">Policy</text>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="Policy" data-legend-x="199" data-legend-baseline="738" data-legend-width="70">
+            <rect x="199" y="730" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="221" y="738" class="t-muted" font-size="7.5" font-weight="500">Policy</text>
           </g>
-          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Tool action" data-legend-x="276" data-legend-baseline="728" data-legend-width="91">
-            <rect x="276" y="720" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
-            <text x="298" y="728" class="t-muted" font-size="7.5" font-weight="500">Tool action</text>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="Tool action" data-legend-x="276" data-legend-baseline="738" data-legend-width="91">
+            <rect x="276" y="730" width="14" height="9" rx="2" class="c-messagebus" stroke-width="1"/>
+            <text x="298" y="738" class="t-muted" font-size="7.5" font-weight="500">Tool action</text>
           </g>
-          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Context / trace" data-legend-x="374" data-legend-baseline="728" data-legend-width="109">
-            <rect x="374" y="720" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
-            <text x="396" y="728" class="t-muted" font-size="7.5" font-weight="500">Context / trace</text>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="Context / trace" data-legend-x="374" data-legend-baseline="738" data-legend-width="109">
+            <rect x="374" y="730" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="396" y="738" class="t-muted" font-size="7.5" font-weight="500">Context / trace</text>
           </g>
-          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External system" data-legend-x="490" data-legend-baseline="728" data-legend-width="109">
-            <rect x="490" y="720" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
-            <text x="512" y="728" class="t-muted" font-size="7.5" font-weight="500">External system</text>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="External system" data-legend-x="490" data-legend-baseline="738" data-legend-width="109">
+            <rect x="490" y="730" width="14" height="9" rx="2" class="c-external" stroke-width="1"/>
+            <text x="512" y="738" class="t-muted" font-size="7.5" font-weight="500">External system</text>
           </g>
         </g>
       </svg>

@@ -29,6 +29,23 @@ open docs/diagrams/hermes-flow.html
 | 멈추는 지점 | 레포가 모호하거나 브랜치를 못 만들었을 때 |
 | 무엇을 읽는가 | 필수 규칙은 항상, knowledge 는 작업 유형별 |
 
+## 노드를 클릭하면 뜨는 것 (Semantic Passport)
+
+워크플로 다이어그램의 팝업에 들어가는 값은 **네 가지뿐**이다. 자유 텍스트 필드는 없다.
+
+```js
+passport = { kind: node.type, sublabel: node.sublabel, tag: node.tag, context: "레인 › 그룹 › 페이즈" }
+```
+
+| 팝업 항목 | 어디서 오나 |
+|---|---|
+| 종류 | `node.type` |
+| 부제 | `node.sublabel` — 노드 면에도 보인다 |
+| **배지** | `node.tag` — **팝업에만 나온다.** 그 노드에서 가장 중요한 규칙 한 줄을 여기 넣는다 |
+| 맥락 | 레인 · 그룹 · 페이즈 이름을 이어 붙인 것. **그룹을 촘촘히 나누면 맥락이 좋아진다** |
+
+`sources`(파일 경로 + 줄번호)는 `architecture` 타입 전용이라 워크플로에서는 쓸 수 없다. 노드에 파일 근거를 달고 싶으면 `architecture` 다이어그램을 따로 만들어야 한다.
+
 ## 다시 만들기
 
 [Archify](https://github.com/tt-a1i/archify) 스킬로 만들었다. 레포에 포함하지 않았으므로 필요할 때 받아서 쓴다.
