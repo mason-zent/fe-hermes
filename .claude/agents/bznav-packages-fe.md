@@ -46,7 +46,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 hermes 루트에서 `scripts/verify/bznav-web.sh packages/<pkg>`를 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
-⚠️ 패키지에는 빌드 산출물·`types` 필드가 없어 **타입 오류는 앱의 build/tsc에서 터진다.** export를 바꿨으면 영향 앱에서 `exec tsc --noEmit`으로 확인한다 (읽기·검증만, 앱 코드는 고치지 않는다).
+⚠️ 패키지에는 빌드 산출물·`types` 필드가 없어 **타입 오류는 앱의 build/tsc에서 터진다.** 루트 설정(`turbo.json`·`pnpm-workspace.yaml`)을 건드렸으면 영향 앱 `build` 까지 확인한다. export를 바꿨으면 영향 앱에서 `exec tsc --noEmit`으로 확인한다 (읽기·검증만, 앱 코드는 고치지 않는다).
 
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 

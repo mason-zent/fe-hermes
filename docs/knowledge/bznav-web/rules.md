@@ -11,6 +11,34 @@
 - `@zenterprise-inc/ui`(ui-deprecated) **신규 사용 금지**. 신규 UI는 `@repo/ui`
 - **커밋하지 않는다.** 새 의존성은 `pnpm-workspace.yaml` catalog 확인이 먼저다
 
+### 코드를 쓰거나 고치면 항상
+
+원문 `.ai/basic-rule.md` 의 **`[필수]` 등급이 정본**이다. 코드를 건드리는 작업이면 그 절을 읽는다 — 선택 로딩의 예외다. 자주 걸리는 것만 여기 적는다.
+
+- **포맷**: 스페이스 2칸, 작은따옴표, 세미콜론, trailing comma 없음, `printWidth: 160`, 탭 금지. **작업한 파일만** 포맷한다
+- **파일명**: 컴포넌트·클래스 `PascalCase`, 훅·유틸·일반 모듈·디렉터리 `kebab-case`
+- **타입**: `any` 금지(`unknown` 으로 받고 narrowing), 선언은 `type` 기본, 재사용하지 않는 props 는 인라인, `as any`·불필요한 non-null assertion 금지, 미사용 import·변수 금지
+- **React**: `React.FC` 금지, 함수·이벤트 핸들러는 arrow function, **`export default` 는 Next 진입점만이고 기본은 named export**, 컴포넌트 내부 선언 순서(변수·state → 훅·`useMemo` → `useCallback`·핸들러 → `useEffect`)
+- **import**: 패키지 내부 파일(`packages/*/src`·`lib`·`dist`) 직접 import 금지(public export 만), 다른 패키지 상대경로 금지(`@repo/<패키지>`), 앱에서 다른 앱 import 금지
+- **`console.log`·`console.debug` 를 운영 코드에 남기지 않는다**
+- `window`·`document`·`localStorage`·`sessionStorage` 는 Client Component 또는 hook 에서만. `'use client'` 는 state·effect·핸들러·브라우저 API 가 필요한 파일에만
+- **CSS**: Stylelint 통과 필수, 새 class·id·keyframe 은 소문자로 시작. SCSS/Tailwind 는 그 앱의 기존 방식을 유지하고 한 파일에서 임의로 바꾸지 않는다
+- **한글 객체명·변수명 때문에 나는 Lint 경고는 임의로 고치지 않는다**
+- 인증이 필요한 App Router 영역은 그 앱의 AuthGuard 를 레이아웃에서 쓴다. Provider 를 추가·이동하면 기존 중첩 순서와 Client 경계를 확인한다
+- 한 번만 쓰는 코드를 의미 없이 공통 유틸·컴포넌트로 추출하지 않는다
+
+### 변경 범위별 검증 (원문 §검증 표)
+
+표준 스크립트(`scripts/verify/bznav-web.sh <앱>`)는 lint·타입·테스트만 돈다. **아래는 거기에 더해서** 해야 한다.
+
+| 변경 범위 | 추가 검증 |
+|---|---|
+| **앱 라우팅·빌드 설정·의존성 변경** | **`pnpm --filter <앱> build`** — 스크립트가 대신해 주지 않는다 |
+| Relay query·schema 변경 | 해당 Relay 생성 명령 실행 + generated diff 확인 |
+| `@repo/ui` 변경 | 필요하면 `pnpm --filter @repo/ui build-storybook` |
+| 환경 변수·생성 스크립트 변경 | 관련 생성 명령의 실행 조건과 산출물 확인 |
+| 문서·설정만 변경 | `prettier --check <변경 파일>`, `git diff --check` |
+
 ### 앱별 — 해당 앱 작업이면 항상
 - **refund-web**: **Pages Router**다(다른 앱은 App Router). `app/`·`'use client'`·서버 컴포넌트 패턴을 가져오지 않는다. dev는 webpack. Relay 생성 명령이 `gen:relay`(care-web은 `relay`)
 - **care-web**: **순수 로직·atom을 바꾸면 테스트를 추가한다**(`__test__/`). 5개 앱 중 유일하게 `type-check`·`test:unit`이 있다. storage atom은 local/session 목적을 구분하고 key·초기값·serialization을 명시한다

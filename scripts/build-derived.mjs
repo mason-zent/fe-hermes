@@ -233,19 +233,34 @@ let wrote = 0
 let drift = 0
 const missing = []
 
+// 1차: 전부 검증만 한다. 마커가 하나라도 없으면 아무것도 쓰지 않는다.
+// 일부만 쓰고 실패하면 문서가 반만 갱신된 채로 남고, 그 상태로 accept 될 수 있다.
+const planned = []
 for (const target of targets) {
   const path = join(ROOT, target.file)
   if (!existsSync(path)) { missing.push(`${target.file} (파일 없음)`); continue }
   let text = readFileSync(path, 'utf8')
   let fileChanged = false
   for (const [name, body] of Object.entries(target.blocks)) {
+    const opens = (text.match(new RegExp(`<!-- BEGIN:generated:${name}[^>]*-->`, 'g')) || []).length
+    if (opens > 1) { missing.push(`${target.file} → 마커 generated:${name} 가 ${opens}개 (중복)`); continue }
     const result = replaceBlock(text, name, body)
     if (!result.found) { missing.push(`${target.file} → 마커 generated:${name} 없음`); continue }
     text = result.text
     if (result.changed) { fileChanged = true; drift += 1; console.log(`  ${CHECK_ONLY ? '차이' : '갱신'}: ${target.file} → ${name}`) }
   }
-  if (fileChanged && !CHECK_ONLY) { writeFileSync(path, text); wrote += 1 }
+  if (fileChanged) planned.push({ path, text, file: target.file })
 }
+
+// 2차: 검증을 통과했을 때만 쓴다
+if (missing.length) {
+  console.log('')
+  console.log('❌ 마커 문제로 생성을 중단했다 (아무것도 쓰지 않았다):')
+  missing.forEach((item) => console.log(`  - ${item}`))
+  console.log('\n문서의 <!-- BEGIN:generated:... --> / <!-- END:... --> 마커를 복구한 뒤 다시 돌려라.')
+  process.exit(1)
+}
+if (!CHECK_ONLY) for (const item of planned) { writeFileSync(item.path, item.text); wrote += 1 }
 
 // ---- 마커 밖 사실 검증 (생성하지 않고 경고만) ----
 const warnings = []
@@ -268,9 +283,8 @@ if (existsSync(playbookPath)) {
 }
 
 console.log('')
-if (missing.length) { console.log('⚠️ 마커 문제:'); missing.forEach((item) => console.log(`  - ${item}`)) }
 if (warnings.length) { console.log('⚠️ 마커 밖 사실이 지문과 어긋날 수 있음 (자동 수정 안 함):'); warnings.forEach((item) => console.log(`  - ${item}`)) }
-if (!missing.length && !warnings.length) console.log('✅ 마커·마커 밖 사실 모두 이상 없음')
+if (!warnings.length) console.log('✅ 마커·마커 밖 사실 모두 이상 없음')
 
 if (CHECK_ONLY) {
   console.log(drift ? `\n차이 ${drift}곳. \`node scripts/build-derived.mjs\` 로 갱신하세요.` : '\n파생 문서가 지문과 일치합니다.')

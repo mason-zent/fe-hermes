@@ -44,6 +44,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash
 
 hermes 루트에서 `scripts/verify/bznav-web.sh plus-web`을 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
+⚠️ **라우팅·빌드 설정·의존성을 바꿨으면 `pnpm --filter plus-web build` 를 따로 돌린다.** 표준 스크립트는 lint·타입·테스트만 돌고 build 는 대신해 주지 않는다 (`rules.md` 의 변경 범위별 검증 표).
+
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 
 ## 보고

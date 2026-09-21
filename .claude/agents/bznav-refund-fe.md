@@ -46,6 +46,8 @@ hermes 루트에서 `scripts/verify/bznav-web.sh refund-web`을 실행하고, �
 
 ⚠️ Relay를 건드렸으면 `pnpm --filter refund-web gen:relay` 성공을 먼저 확인한다. 라우팅·설정을 바꿨으면 `build`까지 돌린다.
 
+⚠️ **라우팅·빌드 설정·의존성을 바꿨으면 `pnpm --filter refund-web build` 를 따로 돌린다.** 표준 스크립트는 lint·타입·테스트만 돌고 build 는 대신해 주지 않는다 (`rules.md` 의 변경 범위별 검증 표).
+
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 
 ## 보고
