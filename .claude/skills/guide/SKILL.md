@@ -1,7 +1,7 @@
 ---
 name: guide
 description: 헤르메스 사용·확장 가이드를 터미널에 보여주거나 플레이북 HTML을 브라우저로 엽니다. 스킬·에이전트 추가 방법을 다시 볼 때 사용합니다.
-argument-hint: "(없음) | pane | pane <파일> | 열기 | 스킬 | 팀 | 흐름"
+argument-hint: "(없음) | pane | pane <파일> | 열기 | 그림 | 스킬 | 팀 | 흐름"
 ---
 
 # 가이드 보기
@@ -20,6 +20,7 @@ argument-hint: "(없음) | pane | pane <파일> | 열기 | 스킬 | 팀 | 흐름
 | `스킬` / `skills` | `.claude/skills/*/SKILL.md`의 frontmatter(`name`·`argument-hint`·`description`)를 읽어 **쓸 수 있는 슬래시 커맨드 목록**을 표로 출력 |
 | `팀` / `에이전트` | `.claude/agents/*.md`의 `name`·`description`·담당 레포를 읽어 표로 출력하고, 이어서 `AGENTS.md`의 "어느 레포인지 고르기" 절을 그대로 붙인다 |
 | `흐름` | `CLAUDE.md`의 "작업 흐름 (Plan-First)" 절을 그대로 출력 |
+| `그림` / `다이어그램` | `open docs/diagrams/hermes-flow.html` 로 **인터랙티브 작업 흐름 다이어그램**을 브라우저에서 연다. 열었다는 한 줄만 답한다 |
 | 그 외 | `docs/extending.md`, `CLAUDE.md`, `docs/services.md`에서 해당 키워드가 있는 절을 찾아 출력 |
 
 ## 출력 규칙
