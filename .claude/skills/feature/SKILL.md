@@ -15,14 +15,17 @@ argument-hint: "기능 설명 (예: hub 메시지 템플릿에 미리보기 추�
 2. 대상 레포에서 관련 기존 코드를 탐색한다 (Explore 에이전트 활용). 재사용 가능한 컴포넌트/훅/API 생성물을 찾는다
 3. 백엔드·공유 패키지 변경이 필요한지 판단한다 → 있으면 "외부 의존"
 
-### 2단계: 계획서 작성
+### 2단계: 계획서 작성 (= 작업 카드)
 - `plans/feature/YYYYMMDD-제목.md` + `.html` (docs/plan-template.md 참고)
+- **개요 다음에 Checkpoint 블록**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions)을 넣는다. `/new` 이후 재개의 근거다
 - 서비스별 화면 설계, API 의존성, 공통 스펙, 작업 배분표 포함
 - 사용자에게 두 파일 경로 제시 → 승인 요청
 
-### 3단계: 승인 후 병렬 디스패치
-- 독립적인 서비스 작업은 한 응답에서 동시에 Agent 호출
-- 디스패치 프로토콜: .claude/rules/dispatch-protocol.md
+### 3단계: 승인 후 — 작업 브랜치 → 디스패치
+1. **`/branch <티켓> <대상...>` 으로 대상 레포에 작업 브랜치를 먼저 만든다.** 로컬 트리는 브랜치가 제각각이라 확인 없이 보내면 남의 브랜치나 미커밋 변경 위에 얹힌다. 미커밋 변경으로 건너뛴 레포에는 디스패치하지 않는다
+2. 만든 브랜치와 base SHA 를 계획서 Checkpoint 의 `Work ref` 에 적는다
+3. `scripts/delegate.sh <에이전트>` 로 pane 을 열고 그 안에서 작업을 지시한다. 독립적인 서비스는 pane 을 여러 개 연다. 한 번에 끝나는 일이면 두 번째 인자로 프롬프트를 실어 보낸다
+4. 디스패치 프로토콜: `.claude/rules/dispatch-protocol.md`
 
 ### 4단계: 검증
 - `reviewer` 디스패치 (계획서 경로 + 대상 레포)
