@@ -34,6 +34,8 @@
 
 ## 작업 흐름 (Plan-First)
 
+> 이 절의 내용은 `docs/diagrams/hermes-flow.html`(= `/guide 그림`, 가이드 메뉴 "작업 흐름")의 카드에도 그대로 들어 있다. **여기를 고치면 `docs/diagrams/hermes-flow.workflow.json` 의 `cards` 도 같이 고치고 HTML 을 다시 만든다** (방법: `docs/diagrams/README.md`).
+
 ### 1단계: 분석 & 계획서 작성
 - 요청을 파악하고 대상 서비스를 정한다 (복수 가능)
 - 대상 레포에서 관련 기존 코드를 탐색한다 (Explore 에이전트 또는 직접 읽기)
