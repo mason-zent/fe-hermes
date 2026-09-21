@@ -3,12 +3,13 @@
 #
 # 사용:
 #   scripts/delegate.sh <에이전트명>                      # 담당 레포 workspace 의 새 탭에 연다 (기본)
-#   scripts/delegate.sh <에이전트명> --cwd <워크트리>       # 그 워크트리에서 연다. 탭 이름도 워크트리 이름이 된다
-#   scripts/delegate.sh <에이전트명> --here                # workspace 를 옮기지 않고 지금 탭에 pane 만 쪼갠다 (단발 조사용)
+#   scripts/delegate.sh <에이전트명> --cwd <워크트리>       # 그 워크트리에서 연다
+#   scripts/delegate.sh <에이전트명> --here                # 레포 workspace 로 보내지 않고 지금 탭에 쪼갠다 (단발 조사용)
 #
-# 배치 규칙 — workspace = 레포 / tab = 작업(워크트리) / pane = 에이전트
-#   같은 레포의 다른 작업은 탭으로 갈리고, 같은 작업의 여러 에이전트는 한 탭에 나란히 붙는다.
-#   레포·브랜치·변경 개수는 하단 상태바(scripts/statusline.sh)가 보여준다.
+# 배치 규칙 — workspace = 레포 / 그 안의 한 탭에 pane 을 나란히
+#   워크트리마다 탭을 가르지 않는다. 한 화면에서 동시 작업 상황이 다 보이는 쪽이 낫다.
+#   각 pane 은 "🤖 <에이전트> · <워크트리>" 로 이름이 붙고, 하단 상태바가
+#   레포·브랜치·변경 개수를 보여준다 (scripts/statusline.sh).
 #   scripts/delegate.sh <에이전트명> "<프롬프트>"           # 프롬프트까지 넣어 바로 시작
 #   scripts/delegate.sh <에이전트명> --cwd <경로>          # 워크트리 등 다른 디렉터리에서 연다
 #   scripts/delegate.sh <에이전트명> "<프롬프트>" --down    # 오른쪽 대신 아래로 분할
@@ -39,6 +40,7 @@ if [ ! -f "$HERMES_DIR/.claude/agents/$AGENT.md" ]; then
 fi
 
 GIVEN_PROMPT="$PROMPT"
+GIVEN_CWD="$WORKDIR"
 
 # 이 에이전트의 담당 레포 경로를 config 에서 찾아 상태바(scripts/statusline.sh)에 넘긴다.
 # 매핑의 정본은 hermes.config.json 이므로 여기서 다시 적지 않는다. reviewer 처럼 전담 레포가
@@ -66,15 +68,13 @@ if [ "${HERDR_ENV:-}" != 1 ] || ! command -v herdr >/dev/null 2>&1; then
   exit 1
 fi
 
-# 배치: workspace = 레포 / tab = 작업(워크트리) / pane = 에이전트.
-# 레포 workspace 가 없으면 만들고, 같은 작업 탭이 이미 있으면 그 탭에 pane 을 덧붙인다.
+# 배치: workspace = 레포 / 그 안의 한 탭에 pane 을 나란히.
+# 작업(워크트리)마다 탭을 가르지 않는다. 한 화면에서 동시 작업 상황이 다 보이는 쪽이 낫다.
 # --here 이거나 담당 레포가 없으면(reviewer 등) 지금 탭에서 쪼갠다.
 PLACEMENT=""
 PANE=""
 if [ "$HERE" = 0 ] && [ -n "$REPO_DIR" ]; then
   REPO_NAME="$(basename "$REPO_DIR")"
-  # 탭 이름 = 작업 이름. 워크트리에서 열면 그 디렉터리 이름, 아니면 에이전트 이름
-  if [ "$WORKDIR" != "$HERMES_DIR" ]; then TAB_LABEL="$(basename "$WORKDIR")"; else TAB_LABEL="$AGENT"; fi
 
   WS="$(herdr workspace list 2>/dev/null | python3 -c "
 import sys, json
@@ -83,62 +83,52 @@ except Exception: sys.exit()
 for w in rows:
     if w.get('label') == '$REPO_NAME': print(w['workspace_id']); break
 ")"
+
   if [ -z "$WS" ]; then
-    # workspace 를 만들면 기본 탭이 하나 딸려 온다. 새 탭을 또 만들면 빈 탭이 남으므로
-    # 그 기본 탭의 이름만 바꿔 쓴다.
+    # 새로 만들면 기본 탭이 하나 딸려 온다. 그 탭을 그대로 쓴다 (빈 탭을 남기지 않는다)
     CREATED="$(herdr workspace create --label "$REPO_NAME" --cwd "$WORKDIR" --no-focus 2>/dev/null)"
     WS="$(printf '%s' "$CREATED" | python3 -c "
 import sys, json
 try: print(json.load(sys.stdin)['result']['workspace']['workspace_id'])
 except Exception: pass
 ")"
-    ROOT_TAB="$(printf '%s' "$CREATED" | python3 -c "
+    TAB="$(printf '%s' "$CREATED" | python3 -c "
 import sys, json
 try: print(json.load(sys.stdin)['result']['workspace']['active_tab_id'])
 except Exception: pass
 ")"
-    if [ -n "$WS" ] && [ -n "$ROOT_TAB" ]; then
-      herdr tab rename "$ROOT_TAB" "$TAB_LABEL" >/dev/null 2>&1 || true
+    if [ -n "$TAB" ]; then
+      herdr tab rename "$TAB" "$REPO_NAME" >/dev/null 2>&1 || true
       PANE="$(herdr pane list 2>/dev/null | python3 -c "
 import sys, json
 for p in json.load(sys.stdin)['result']['panes']:
-    if p.get('tab_id') == '$ROOT_TAB': print(p['pane_id']); break
+    if p.get('tab_id') == '$TAB': print(p['pane_id']); break
 ")"
-      PLACEMENT="새 workspace '$REPO_NAME' › 탭 '$TAB_LABEL'"
+      PLACEMENT="새 workspace '$REPO_NAME'"
     fi
   else
-    PLACEMENT="workspace '$REPO_NAME'"
-  fi
-
-  if [ -n "$WS" ] && [ -z "$PANE" ]; then
-    # 같은 작업 탭이 이미 있으면 거기에 붙인다
-    EXIST="$(herdr tab list 2>/dev/null | python3 -c "
+    # 이미 있으면 그 workspace 의 활성 탭에 pane 을 덧붙인다
+    TAB="$(herdr workspace get "$WS" 2>/dev/null | python3 -c "
 import sys, json
-try: rows = json.load(sys.stdin)['result']['tabs']
-except Exception: sys.exit()
-for t in rows:
-    if t.get('workspace_id') == '$WS' and t.get('label') == '$TAB_LABEL': print(t['tab_id']); break
+try: print(json.load(sys.stdin)['result']['workspace']['active_tab_id'])
+except Exception: pass
 ")"
-    if [ -n "$EXIST" ]; then
-      BASE="$(herdr pane list 2>/dev/null | python3 -c "
+    BASE="$(herdr pane list 2>/dev/null | python3 -c "
 import sys, json
-rows = json.load(sys.stdin)['result']['panes']
-for p in rows:
-    if p.get('tab_id') == '$EXIST': print(p['pane_id']); break
+for p in json.load(sys.stdin)['result']['panes']:
+    if p.get('tab_id') == '$TAB': print(p['pane_id']); break
 ")"
+    if [ -n "$BASE" ]; then
       PANE="$(herdr pane split "$BASE" --direction "$DIR" --ratio 0.5 --cwd "$WORKDIR" --no-focus 2>/dev/null | python3 -c "
 import sys, json
 try: print(json.load(sys.stdin)['result']['pane']['pane_id'])
 except Exception: pass
 ")"
-      [ -n "$PANE" ] && PLACEMENT="$PLACEMENT › 기존 탭 '$TAB_LABEL' 에 나란히"
-    else
-      PANE="$(herdr tab create --workspace "$WS" --label "$TAB_LABEL" --cwd "$WORKDIR" --no-focus 2>/dev/null | python3 -c "
+      COUNT="$(herdr pane list 2>/dev/null | python3 -c "
 import sys, json
-try: print(json.load(sys.stdin)['result']['root_pane']['pane_id'])
-except Exception: pass
+print(sum(1 for p in json.load(sys.stdin)['result']['panes'] if p.get('tab_id') == '$TAB'))
 ")"
-      [ -n "$PANE" ] && PLACEMENT="$PLACEMENT › 새 탭 '$TAB_LABEL'"
+      PLACEMENT="workspace '$REPO_NAME' (pane ${COUNT}개째)"
     fi
   fi
 fi
@@ -180,7 +170,17 @@ if ! herdr pane run "$PANE" "$RUNNER" >/dev/null; then
   rm -f "$PROMPT_FILE" "$RUNNER"
   echo "pane 실행 실패 (pane $PANE)"; exit 1
 fi
-herdr pane rename "$PANE" "🤖 $AGENT" >/dev/null 2>&1 || true
+# pane 이름에 실제 브랜치를 적는다. 나란히 놓였을 때 어느 작업인지 이름만 보고 알아야 한다.
+# 워크트리 폴더명이 아니라 git 이 말하는 브랜치를 쓴다 — 메인 체크아웃에서 열면
+# 폴더명은 레포 이름이라 아무것도 알려주지 않는다.
+# 브랜치는 **에이전트가 만질 레포**에서 읽는다.
+# --cwd 를 주지 않으면 cwd 가 hermes 루트라, 거기서 읽으면 hermes 의 브랜치가 나온다(엉뚱하다).
+# verify 스크립트가 hermes 루트 기준이라 cwd 자체는 그대로 두고 읽는 곳만 바꾼다.
+BRANCH_FROM="${GIVEN_CWD:-${REPO_DIR:-$WORKDIR}}"
+BRANCH_NAME="$(git -C "$BRANCH_FROM" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+PANE_TITLE="🤖 $AGENT"
+[ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ] && PANE_TITLE="$PANE_TITLE · $BRANCH_NAME"
+herdr pane rename "$PANE" "$PANE_TITLE" >/dev/null 2>&1 || true
 
 if [ -n "$GIVEN_PROMPT" ]; then
   echo "$PANE  ($AGENT — 프롬프트 전달됨 · $PLACEMENT · cwd: $WORKDIR)"
