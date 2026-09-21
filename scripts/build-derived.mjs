@@ -71,12 +71,29 @@ const pnpmVersion = (snapshot) => {
   return pm ? String(pm).replace(/^pnpm@/, '') : dash
 }
 
-/** .prettierrc 원문(JSON 또는 JS)에서 핵심 값만 읽는다 */
+/** .prettierrc 원문(JSON 또는 JS)에서 핵심 값만 읽는다.
+ *  주석 안의 값이나 overrides 블록의 값을 전역 설정으로 오인하지 않도록
+ *  주석을 먼저 제거하고 overrides 앞까지만 본다. JSON 이면 구조적으로 파싱한다. */
 const prettierSummary = (snapshot) => {
   const raw = snapshot.prettier
   if (!raw) return dash
+
+  // JSON 이면 파싱해서 정확히 읽는다
+  let parsed = null
+  try { parsed = JSON.parse(String(raw)) } catch { /* JS 설정이면 아래 정규식 */ }
+
+  let text = String(raw)
+  if (!parsed) {
+    text = text
+      .replace(/\/\*[\s\S]*?\*\//g, '')   // 블록 주석
+      .replace(/(^|[^:])\/\/.*$/gm, '$1')  // 줄 주석 (URL 의 // 는 건드리지 않는다)
+    const ov = text.search(/["']?overrides["']?\s*:/)
+    if (ov !== -1) text = text.slice(0, ov)  // overrides 는 파일별 예외라 전역 요약에 넣지 않는다
+  }
+
   const pick = (key) => {
-    const matched = String(raw).match(new RegExp(`["']?${key}["']?\\s*:\\s*("[^"]*"|'[^']*'|[A-Za-z0-9]+)`))
+    if (parsed) return parsed[key] === undefined ? null : String(parsed[key])
+    const matched = text.match(new RegExp(`["']?${key}["']?\\s*:\\s*("[^"]*"|'[^']*'|[A-Za-z0-9]+)`))
     return matched ? matched[1].replace(/['"]/g, '') : null
   }
   const parts = []
@@ -267,16 +284,27 @@ const warnings = []
 const playbookPath = join(ROOT, 'docs/playbook.html')
 if (existsSync(playbookPath)) {
   const html = readFileSync(playbookPath, 'utf8')
+  // 문서 전체에서 값을 찾으면 다른 레포의 같은 값에 가려 drift 를 놓친다.
+  // (실제로 Next 15.5 를 99.5 로 바꿔도 다른 곳의 "Next 15" 때문에 통과했다)
+  // 그래서 그 레포 이름이 들어 있는 행(<tr>) 안에서만 대조한다.
+  const rowFor = (name) => {
+    const rows = html.match(/<tr>[\s\S]*?<\/tr>/g) || []
+    return rows.filter((row) => row.includes(name)).join('\n')
+  }
   for (const [name, snapshot] of Object.entries(snaps)) {
-    const port = snapshot.apps ? null : snapshot.port
-    if (port && !html.includes(String(port))) warnings.push(`playbook.html: ${name} 포트 ${port} 가 문서에 없다 (바뀐 값일 수 있음)`)
+    const row = rowFor(name)
+    if (!row) { warnings.push(`playbook.html: ${name} 을 언급하는 행이 없다 (표에서 빠졌을 수 있음)`); continue }
+    // 패키지 레포는 dev 서버가 없어 지문의 port 가 의미 없다 (기본값이 잡힌다)
+    const kind = (config.repos.find((item) => item.name === name) || {}).kind
+    const port = (snapshot.apps || kind === 'packages') ? null : snapshot.port
+    if (port && !row.includes(String(port))) {
+      warnings.push(`playbook.html: ${name} 행의 포트가 지문(${port})과 다르다`)
+    }
     const next = snapshot.apps ? resolveDep(snapshot, 'next', Object.keys(snapshot.apps)[0]) : resolveDep(snapshot, 'next')
     if (next) {
-      // major 만 본다. 문서가 "Next 16" 처럼 덜 정밀하게 적는 것은 오류가 아니고,
-      // 15 → 16 처럼 major 가 어긋난 경우만 실제 drift 다.
       const major = next.split('.')[0]
-      if (!new RegExp(`Next\\s*${major}`).test(html)) {
-        warnings.push(`playbook.html: ${name} 의 Next major ${major} 표기가 없다 (마커 밖 서술을 손으로 고쳐야 함)`)
+      if (/Next/.test(row) && !new RegExp(`Next\\s*${major}`).test(row)) {
+        warnings.push(`playbook.html: ${name} 행의 Next major 가 지문(${major})과 다르다`)
       }
     }
   }

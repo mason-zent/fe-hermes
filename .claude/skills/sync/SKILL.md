@@ -83,7 +83,17 @@ node scripts/sync-fingerprint.mjs --accept  # pending → .sync/snapshots/
 - `build-derived.mjs --check` 가 차이를 보고했다
 - 문서 갱신을 일부만 했다
 
-`--accept` 는 **pending 전체**를 확정한다. 일부만 확정할 수 없으므로, 미완료 대상이 섞여 있으면 돌리지 않는다. (특정 레포만 다루려면 `--repo <이름>` 으로 지문을 그 레포만 만든 뒤 accept 한다.)
+**`--accept` 는 `.sync/pending/` 에 있는 것을 전부 확정한다.** 일부만 고를 수 없다.
+
+⚠️ **`--repo <이름>` 은 pending 을 격리해 주지 않는다.** 그 레포의 지문을 새로 만들 뿐이고, 이전 실행에서 남은 다른 레포의 pending 은 그대로 있다. 그 상태로 accept 하면 **검토하지 않은 레포까지 baseline 이 확정된다.**
+
+그래서 accept 하기 전에 항상 확인한다:
+
+```bash
+ls .sync/pending/          # 무엇이 확정될지 눈으로 본다
+```
+
+목록에 이번에 검토하지 않은 레포가 있으면, 그 파일을 지우고(`rm .sync/pending/<레포>.json` — 다음 sync 에서 다시 생성된다) accept 하거나, 그 레포까지 마저 검토한다.
 
 성공으로 보고하고 accept 하는 일이 가장 위험하다. 다음 sync 에서 같은 diff 를 다시 보지 못하게 되고, 문서는 틀린 채로 남는다.
 

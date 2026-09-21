@@ -222,17 +222,24 @@ const buildSnapshot = (repo) => {
 }
 
 // pnpm-workspace.yaml 의 `catalog:` 블록만 뽑는다 (의존성 없이 최소 파싱).
-// 들여쓴 `이름: 버전` 줄만 읽고, 들여쓰기가 끝나면 블록도 끝난 것으로 본다.
+// 들여쓴 `이름: 버전` 줄만 읽고, 들여쓰기가 끝나면(다음 최상위 키) 블록도 끝난 것으로 본다.
+// 키는 따옴표로 감싼 것도 받는다 — `"@types/react": 19.2.10` 처럼 스코프 패키지는 YAML 상
+// 따옴표가 필요하고, 실제 catalog 33개 중 11개가 그렇다. 이걸 놓치면 조용히 사라진다.
 const parseCatalog = (yamlText) => {
   const lines = yamlText.split('\n')
   const start = lines.findIndex((line) => /^catalog:\s*$/.test(line))
   if (start === -1) return null
   const catalog = {}
   for (const line of lines.slice(start + 1)) {
-    if (/^\s*$/.test(line)) continue
-    if (!/^\s+\S/.test(line)) break
-    const matched = line.match(/^\s+([A-Za-z0-9@._\/-]+):\s*(\S+)\s*$/)
-    if (matched) catalog[matched[1]] = matched[2]
+    if (/^\s*$/.test(line)) continue           // 블록 안 빈 줄
+    if (/^\s*#/.test(line)) continue           // 주석 줄
+    if (!/^\s+\S/.test(line)) break            // 들여쓰기가 끝나면 블록 종료
+    const matched = line.match(/^\s+(?:"([^"]+)"|'([^']+)'|([^\s:#]+))\s*:\s*(.+?)\s*$/)
+    if (!matched) continue
+    const key = matched[1] ?? matched[2] ?? matched[3]
+    let value = matched[4].replace(/\s+#.*$/, '').trim()   // 값 뒤 인라인 주석 제거
+    value = value.replace(/^["']|["']$/g, '')
+    if (key && value) catalog[key] = value
   }
   return Object.keys(catalog).length ? catalog : null
 }
