@@ -60,9 +60,26 @@ held=0
 skipped=0
 held_status=0
 
-# 계획서 본문에서 Checkpoint 의 Status 값을 읽는다. 없으면 빈 문자열.
+# 계획서 Checkpoint 의 Status 를 읽는다. 없으면 빈 문자열.
+# - `**done**` 처럼 굵게 쓴 경우를 처리한다 (계획서가 실제로 그렇게 쓴다)
+# - `done-but-blocked` 같은 접미사를 done 으로 오인하지 않도록 뒤에 단어 문자가
+#   이어지면 통째로 읽어 아래 완전 일치 검사에서 걸러지게 한다
+# - `## Checkpoint` 이후 첫 Status 만 본다. 코드 예제의 Status 줄을 집지 않는다
 read_status() {
-  sed -n 's/^[[:space:]]*-[[:space:]]*Status:[[:space:]]*\([A-Za-z_]*\).*/\1/p' "$1" 2>/dev/null | head -1
+  awk '
+    /^##[[:space:]]+Checkpoint/ { inblock = 1; next }
+    inblock && /^```/           { incode = !incode; next }
+    inblock && !incode && /^[[:space:]]*-[[:space:]]*Status:/ {
+      line = $0
+      sub(/^[[:space:]]*-[[:space:]]*Status:[[:space:]]*/, "", line)
+      gsub(/\*/, "", line)                 # 굵게 표기 제거
+      sub(/[[:space:]].*$/, "", line)      # 첫 토큰만
+      sub(/[^A-Za-z_-].*$/, "", line)      # 뒤에 붙은 기호 제거
+      print line
+      exit
+    }
+    inblock && /^##[[:space:]]/ && !/Checkpoint/ { exit }   # 다음 절로 넘어가면 끝
+  ' "$1" 2>/dev/null
 }
 
 while IFS= read -r file; do
@@ -101,22 +118,35 @@ while IFS= read -r file; do
     target="$ARCHIVE_DIR/$subdir"
   fi
 
-  html="${file%.md}.html"   # 쌍인 html 도 함께 옮긴다
+  html="${file%.md}.html"           # 쌍인 html 도 함께 옮긴다
+  html_base="$(basename "$html")"
+
+  # 목적지 충돌은 md·html 을 **옮기기 전에 둘 다** 검사한다.
+  # md 만 검사하면 목적지에 html 만 남아 있을 때 조용히 덮어쓴다.
+  conflict=""
+  [[ -e "$target/$basename" ]] && conflict="$basename"
+  [[ -f "$html" && -e "$target/$html_base" ]] && conflict="${conflict:+$conflict, }$html_base"
+  if [[ -n "$conflict" ]]; then
+    echo "건너뜀 (목적지에 같은 이름 있음: $conflict): $rel" >&2
+    held=$((held+1))
+    continue
+  fi
+
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "[DRY] 이동: $rel → archive/${subdir#.}"
     [[ -f "$html" ]] && echo "[DRY] 이동: ${html#$PLANS_DIR/} → archive/${subdir#.}"
   else
     mkdir -p "$target"
-    if [[ -e "$target/$basename" ]]; then
-      echo "건너뜀 (목적지에 같은 이름 있음): $rel" >&2
-      held=$((held+1))
-      continue
-    fi
-    mv "$file" "$target/"
-    echo "이동 완료: $rel → archive/${subdir#.}"
+    mv "$file" "$target/" || { echo "이동 실패: $rel" >&2; held=$((held+1)); continue; }
     if [[ -f "$html" ]]; then
-      mv "$html" "$target/"
-      echo "이동 완료: ${html#$PLANS_DIR/} → archive/${subdir#.}"
+      # html 이동이 실패하면 md 를 되돌려 쌍이 갈라지지 않게 한다
+      if ! mv "$html" "$target/"; then
+        mv "$target/$basename" "$file" 2>/dev/null
+        echo "이동 실패 (html), md 복구함: $rel" >&2; held=$((held+1)); continue
+      fi
+      echo "이동 완료: $rel + ${html_base} → archive/${subdir#.}"
+    else
+      echo "이동 완료: $rel → archive/${subdir#.}"
     fi
   fi
   archived=$((archived+1))

@@ -94,7 +94,7 @@
 | `/review` | 현재 변경사항 코드 리뷰 |
 | `/status` | repos/ 에 연결된 담당 레포 전체 git 현황 파악 |
 | `/monitor` | 백그라운드 서브에이전트 로그를 herdr pane 에 실시간 표시 (`/monitor 30` = 최근 30분) |
-| `/sync` | 담당 레포의 기준 브랜치를 훑어 에이전트 md·services.md·knowledge·playbook을 실제 상태에 맞게 갱신 |
+| `/sync` | 담당 레포의 운영 기준 브랜치를 훑어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서는 `node scripts/build-derived.mjs`가 생성 |
 | `/guide` | 사용·확장 가이드를 터미널에 표시. `/guide 스킬`은 쓸 수 있는 슬래시 커맨드 목록, `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 라우팅 · git 현황 · 문서), `/guide 열기`는 플레이북 HTML 열기 |
 
 ## 확장
