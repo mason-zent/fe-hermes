@@ -33,6 +33,23 @@ if [ ! -f "$HERMES_DIR/.claude/agents/$AGENT.md" ]; then
 fi
 
 GIVEN_PROMPT="$PROMPT"
+
+# 이 에이전트의 담당 레포 경로를 config 에서 찾아 상태바(scripts/statusline.sh)에 넘긴다.
+# 매핑의 정본은 hermes.config.json 이므로 여기서 다시 적지 않는다. reviewer 처럼 전담 레포가
+# 없으면 빈 값이고, 그러면 상태바가 현재 cwd 로 알아서 찾는다.
+REPO_DIR="$(python3 - "$HERMES_DIR/hermes.config.json" "$AGENT" <<'PYEOF'
+import json, sys
+cfg = json.load(open(sys.argv[1])); agent = sys.argv[2]
+for repo in cfg['repos']:
+    if agent in (repo.get('agents') or []) or agent == repo.get('packagesAgent'):
+        print(repo['name']); break
+    if any(app.get('agent') == agent for app in (repo.get('apps') or {}).values()):
+        print(repo['name']); break
+PYEOF
+)"
+[ -n "$REPO_DIR" ] && REPO_DIR="$HERMES_DIR/repos/$REPO_DIR"
+[ -n "$REPO_DIR" ] && [ ! -d "$REPO_DIR" ] && REPO_DIR=""
+
 WORKDIR="${WORKDIR:-$HERMES_DIR}"
 [ -d "$WORKDIR" ] || { echo "디렉터리가 없다: $WORKDIR"; exit 2; }
 
@@ -75,6 +92,7 @@ printf '%s' "$PROMPT" > "$PROMPT_FILE"   || { rm -f "$PROMPT_FILE" "$RUNNER"; ec
   echo "cleanup() { rm -f '$PROMPT_FILE' '$RUNNER'; }"
   echo 'trap cleanup EXIT INT TERM'
   echo "cd '$WORKDIR' || exit 1"
+  [ -n "$REPO_DIR" ] && echo "export HERMES_REPO_DIR='$REPO_DIR'"
   echo "claude --agent '$AGENT' \"\$(cat '$PROMPT_FILE')\""
   echo 'exit $?'
 } > "$RUNNER"

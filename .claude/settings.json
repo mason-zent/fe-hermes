@@ -9,5 +9,10 @@
       "Bash",
       "WebSearch"
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "$CLAUDE_PROJECT_DIR/scripts/statusline.sh",
+    "padding": 0
   }
 }
