@@ -624,6 +624,32 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
             <li>프롬프트에는 계획서 경로, 자기 담당 범위, 관련 파일, API 스펙, 다른 서비스와의 연관성, "커밋 금지·레포 밖 수정 금지" 리마인드가 들어갑니다.</li>
             <li>여러 서비스에 같은 기능을 넣을 때는 계획서의 공통 스펙(문구·동작·env 키)을 모두가 같이 봅니다.</li>
           </ul>
+
+          <h4 id="statusbar">pane 하단 상태바</h4>
+          <p>에이전트 pane 을 열면 입력창 아래에 <strong>지금 어느 레포의 어느 브랜치에 서 있고 무엇이 바뀌었는지</strong>가 항상 표시됩니다. 브랜치를 잘못 알고 작업하는 사고를 막기 위한 것이라, 스크롤로 사라지는 보고문 대신 상시 표시로 두었습니다.</p>
+<pre><code>📁 client-brics-refund  🌿 feature/REF-1234  ✎2  +1  ⇡3
+📁 client-brics-hub     ⚠️  prd                        ← 보호 브랜치는 빨갛게</code></pre>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>기호</th><th>뜻</th><th>색</th></tr></thead>
+              <tbody>
+                <tr><td>📁</td><td>레포 이름</td><td>청록</td></tr>
+                <tr><td>🌿</td><td>작업 브랜치</td><td>초록</td></tr>
+                <tr><td>⚠️</td><td><strong>보호 브랜치</strong> — <code>prd</code> <code>main</code> <code>master</code> <code>dev</code> <code>dev-ecs</code> <code>prd-*</code> <code>release/*</code>. 여기서 코드를 고치면 안 됩니다. <code>/branch</code> 로 작업 브랜치를 먼저 만드세요</td><td>빨강·굵게</td></tr>
+                <tr><td><code>✎</code></td><td>수정된 파일 수</td><td>노랑</td></tr>
+                <tr><td><code>+</code></td><td>추가된 파일 수 (신규·스테이징)</td><td>초록</td></tr>
+                <tr><td><code>-</code></td><td>삭제된 파일 수</td><td>빨강</td></tr>
+                <tr><td><code>⇄</code></td><td>이름이 바뀐 파일 수</td><td>자홍</td></tr>
+                <tr><td><code>✗</code></td><td>충돌 파일 수</td><td>빨강·굵게</td></tr>
+                <tr><td><code>⇡</code></td><td>push 하지 않은 커밋 수</td><td>청록</td></tr>
+                <tr><td><code>⧉</code></td><td>워크트리에서 작업 중 (메인 체크아웃과 구분)</td><td>자홍</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>0인 항목은 표시하지 않습니다. hermes 워크스페이스 자체는 <code>main</code> 이 정상 작업 브랜치라 보호 브랜치 경고에서 제외됩니다.</p>
+          <div class="note">
+            <strong>설정은 레포에 들어 있습니다.</strong> <code>.claude/settings.json</code> 의 <code>statusLine</code> 과 <code>scripts/statusline.sh</code> 가 함께 커밋되므로, clone 하면 바로 같은 상태바가 뜹니다. 대상 레포는 <code>scripts/delegate.sh</code> 가 <code>hermes.config.json</code> 에서 찾아 넘겨줍니다. 다만 <strong>이 프로젝트 안에서는 개인 전역 statusLine 설정을 덮습니다</strong>(orca 의 사용량 보고 훅은 체인으로 살려 두었습니다).
+          </div>
         </div>
         <div class="step" data-n="4">
           <h3>검증</h3>

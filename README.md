@@ -60,6 +60,7 @@ scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄�
 scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
 scripts/new-branch.sh         작업 브랜치 생성 (/branch 가 호출)
+scripts/statusline.sh         pane 하단 상태바 (레포·브랜치·변경 개수). 표시 규칙은 docs/playbook.html
 scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 호출)
 ```
 

@@ -1,15 +1,16 @@
 #!/bin/sh
-# Claude Code 하단 상태바. 지금 어느 레포의 어느 브랜치를 보고 있는지, 무엇이 바뀌었는지 항상 보이게 한다.
+# Claude Code 하단 상태바. 지금 어느 레포의 어느 브랜치를 보고 있는지 항상 보이게 한다.
 #
 #   📁 client-brics-refund  🌿 feature/REF-1234  ✎2 +1 -1  ⇡3  ⧉worktree
-#   📁 client-brics-hub     ⚠️ prd  ← 보호 브랜치에서 작업 중이면 빨갛게 경고
 #
-#   ✎ 수정  + 추가(신규·스테이징)  - 삭제  ✗ 충돌  ⇡ 미푸시  ⧉ 워크트리
+# **기호·색의 뜻은 docs/playbook.html 의 "작업 흐름 → pane 하단 상태바" 가 정본이다.**
+# 여기에 같은 표를 다시 적지 않는다. 표시를 바꾸면 그쪽도 같이 고친다.
 #
 # 대상 레포는 delegate.sh 가 넣어준 HERMES_REPO_DIR 을 먼저 보고, 없으면 payload 의 cwd 로 찾는다.
 # 에이전트→레포 매핑의 정본은 hermes.config.json 이며 여기서 다시 적지 않는다.
 #
 # orca 의 statusline 훅(사용량 보고)을 덮지 않도록 stdin 을 그대로 흘려보낸 뒤 우리 줄을 찍는다.
+
 payload=$(cat)
 
 orca_hook="$HOME/.orca/agent-hooks/claude-statusline.sh"
