@@ -165,15 +165,15 @@ act_extending() { view_md docs/extending.md; }
 
 # ---------- 메뉴 ----------
 # 항목: 아이콘 | 제목 | 설명 | 동작
-ICONS=( "⚡" "👥" "📊" "🌐" "🔀" "🗺️ " "🔁" "📘" )
+ICONS=( "⚡" "👥" "📊" "🌐" "🔀" "🔁" "🗺️ " "📘" )
 TITLES=(
   "스킬 목록 · 실행"
   "에이전트 · 담당 레포 · 라우팅"
   "git 현황 · 진행 중 계획서"
   "플레이북을 브라우저로 열기"
-  "작업 흐름 다이어그램 (인터랙티브)"
+  "작업 흐름 — 그림으로 보기"
+  "작업 흐름 — 문서로 읽기"
   "서비스 맵"
-  "작업 흐름 (Plan-First)"
   "확장 가이드"
 )
 DESCS=(
@@ -182,8 +182,8 @@ DESCS=(
   "로컬 실행"
   "docs/playbook.html"
   "docs/diagrams/hermes-flow.html"
-  "docs/services.md"
   "CLAUDE.md"
+  "docs/services.md"
   "docs/extending.md"
 )
 HELPS=(
@@ -191,12 +191,12 @@ HELPS=(
   "FE 에이전트 전원의 담당 레포·포트와 라우팅 문장을 .claude/agents 에서 읽어 보여주고, 그 아래에 AGENTS.md 의 '어느 레포인지 고르기' 기준을 붙인다. 어떤 요청이 어느 서비스인지 헷갈릴 때"
   "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에. 로컬에서 바로 돌아 빠르다"
   "공유용 플레이북 HTML 을 기본 브라우저에서 연다. 같은 내용이 claude.ai 아티팩트로도 공유돼 있다"
-  "요청부터 보고까지의 흐름을 인터랙티브 다이어그램으로 본다. 레인별로 사용자·헤르메스·FE 에이전트가 각각 무엇을 하는지, 어디서 멈추고 묻는지, 에이전트가 무엇을 읽는지를 3가지 뷰로 나눠 볼 수 있다. Archify 로 생성하며 원본은 docs/diagrams/hermes-flow.workflow.json"
+  "같은 흐름을 인터랙티브 다이어그램으로 본다. 레인별로 사용자·헤르메스·FE 에이전트가 각각 무엇을 하는지, 어디서 멈추고 묻는지, 에이전트가 무엇을 읽는지를 3가지 뷰로 나눠 볼 수 있다. 전체 구조를 한눈에 잡을 때 이쪽이 빠르다 (브라우저)"
+  "같은 흐름을 글로 읽는다. 각 단계에서 지켜야 할 규칙과 예외까지 CLAUDE.md 본문 그대로 보여준다. 세부 규칙을 확인할 때 이쪽 (q 로 닫기)"
   "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
-  "분석 → 계획서 → 승인 → 병렬 디스패치 → 검증 → 보고 → 정리, 헤르메스의 6단계 Plan-First 흐름"
   "스킬·에이전트를 추가하는 방법과 같이 갱신할 문서 목록. docs/extending.md 를 마크다운 뷰어로 연다 (q 로 닫기)"
 )
-ACTIONS=(act_skills act_agents act_status act_playbook act_diagram act_services act_flow act_extending)
+ACTIONS=(act_skills act_agents act_status act_playbook act_diagram act_flow act_services act_extending)
 # 그룹: "시작인덱스|제목"
 MENU_GROUPS=( "0|⚡  실행 · 확인" "3|📘  문서" )
 sel=0; n=${#TITLES[@]}
