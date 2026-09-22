@@ -15,7 +15,8 @@
         "sena-web":   { "agent": "bznav-sena-fe",   "branch": "prd-sena",   "prBase": "dev-ecs" },
         "plus-web":   { "agent": "bznav-plus-fe",   "branch": "prd-plus",   "prBase": "dev" }
       },
-      "packagesAgent": "bznav-packages-fe", "packagesPrBase": "dev" },
+      "packagesAgent": "bznav-packages-fe",
+      "$packagesNote": "packages/* 는 5개 앱이 공유하지만 PR base 는 앱 계열마다 다르다(dev = care·plus / dev-ecs = brand·refund·sena). 그래서 packagesPrBase 를 두지 않고 /branch 에서 bznav:packages@<앱> 으로 그 앱의 prBase 를 쓴다" },
     { "name": "zent-packages", "agents": ["packages-fe"], "branch": "main", "prBase": "main", "kind": "packages", "scope": "frontend" }
   ]
 }

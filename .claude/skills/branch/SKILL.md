@@ -41,13 +41,15 @@ argument-hint: "<티켓번호 또는 브랜치명> <대상...> — 예: REF-3820
 ```bash
 scripts/new-branch.sh REF-3820 refund hub          # 콘솔 두 곳
 scripts/new-branch.sh REF-3820 bznav:care-web      # bznav 는 앱을 지정
-scripts/new-branch.sh REF-3820 bznav:packages      # packages/* 작업
+scripts/new-branch.sh REF-3820 bznav:packages@care-web   # packages/* — 앱 계열 지정 필수
 scripts/new-branch.sh fix/qa-로그인-오류 care        # 이름 직접 지정
 scripts/new-branch.sh REF-3820 refund --in-place   # 워크트리 없이
 scripts/new-branch.sh REF-3820 refund --dry-run    # 먼저 확인
 ```
 
-대상은 레포 이름 일부로 매칭한다 — `refund` `hub` `care` `op` `packages`(=zent-packages) `bznav:<앱>` `bznav:packages`.
+대상은 레포 이름 일부로 매칭한다 — `refund` `hub` `care` `op` `packages`(=zent-packages) `bznav:<앱>` `bznav:packages@<앱>`.
+
+⚠️ **`bznav:packages` 는 앱 계열을 반드시 지정한다.** `packages/*` 는 5개 앱이 공유하지만 PR base 가 계열마다 다르다 — `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS). 그리고 **`dev-ecs` 가 `dev` 보다 뒤처져 있다**(확인 시점 254커밋). 계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다. 지정하지 않으면 스크립트가 계열 목록을 보여주고 멈춘다.
 
 **base 는 `hermes.config.json` 의 `prBase`** 에서 온다. 문서·지식의 기준(`branch`, 운영 반영분)과 **다르다** — 작업은 개발 브랜치에서 딴다.
 
@@ -56,7 +58,7 @@ scripts/new-branch.sh REF-3820 refund --dry-run    # 먼저 확인
 | client-brics-{refund,hub,care} · web-op | `prd` | **`dev`** |
 | bznav `care-web`·`plus-web` | `prd-care`/`prd-plus` | **`dev`** |
 | bznav `refund-web`·`brand-web`·`sena-web` | `prd-<앱>` | **`dev-ecs`** |
-| bznav `packages/*` | `dev` | **`dev`** |
+| bznav `packages/*` | `dev` | **소비 앱 계열을 지정한다** — `bznav:packages@<앱>` |
 | zent-packages | `main` | **`main`** |
 
 ### 3. 건너뛴 레포를 처리한다
