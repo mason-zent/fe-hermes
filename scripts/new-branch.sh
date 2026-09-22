@@ -57,13 +57,9 @@ for repo in cfg['repos']:
         if app.startswith('packages'):
             # bznav-web 은 모노레포다. 앱으로 딴 워크트리 안에 packages/** 가 그대로 있으니
             # packages 전용 대상을 따로 둘 이유가 없다. 같은 base·같은 브랜치가 나온다.
-            # 다만 PR base 가 앱 계열마다 다르므로(dev = care·plus / dev-ecs = brand·refund·sena)
-            # 어느 계열에 낼지는 앱으로 표현한다.
-            lines = {}
-            for name, cfgapp in (repo.get('apps') or {}).items():
-                lines.setdefault(cfgapp['prBase'], []).append(name)
-            hint = ' / '.join(f"{base}: {', '.join(sorted(apps))}" for base, apps in sorted(lines.items()))
-            print(f"ERR|packages/* 는 따로 딸 필요가 없다. bznav-web 은 모노레포라 앱으로 딴 워크트리 안에 packages/** 가 그대로 있다. 어느 앱 계열에 낼지만 정해 bznav:<앱> 으로 딴다 — 계열 {hint}")
+            # 5개 앱 모두 base 가 origin/dev 이므로 어느 앱으로 따든 같은 브랜치가 나온다.
+            apps = ', '.join(sorted((repo.get('apps') or {})))
+            print(f"ERR|packages/* 는 따로 딸 필요가 없다. bznav-web 은 모노레포라 앱으로 딴 워크트리 안에 packages/** 가 그대로 있고, 5개 앱 모두 base 가 dev 라 어느 앱으로 따든 같다. 작업하는 앱으로 딴다 — bznav:<앱> ({apps})")
             sys.exit(0)
         entry = repo.get('apps', {}).get(app)
         if not entry:

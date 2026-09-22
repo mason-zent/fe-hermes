@@ -66,6 +66,7 @@ if [ -f "$toplevel/hermes.config.json" ]; then
   protected=0
 else
   case "$branch" in
+    # dev-ecs 는 폐기된 브랜치지만, 혹시 거기 서 있으면 경고가 뜨는 편이 낫다
     prd|main|master|dev|dev-ecs|prd-*|release/*) protected=1 ;;
     *) protected=0 ;;
   esac

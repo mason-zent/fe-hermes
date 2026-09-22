@@ -9,10 +9,10 @@
     { "name": "bznav-web", "kind": "monorepo", "branch": "dev",
       "$branchNote": "앱은 각자 prd-<앱>. packages/* 는 모든 앱이 공유하므로 통합 브랜치 dev 를 기준으로 둔다",
       "apps": {
-        "refund-web": { "agent": "bznav-refund-fe", "branch": "prd-refund", "prBase": "dev-ecs" },
+        "refund-web": { "agent": "bznav-refund-fe", "branch": "prd-refund", "prBase": "dev" },
         "care-web":   { "agent": "bznav-care-fe",   "branch": "prd-care",   "prBase": "dev" },
-        "brand-web":  { "agent": "bznav-brand-fe",  "branch": "prd-brand",  "prBase": "dev-ecs" },
-        "sena-web":   { "agent": "bznav-sena-fe",   "branch": "prd-sena",   "prBase": "dev-ecs" },
+        "brand-web":  { "agent": "bznav-brand-fe",  "branch": "prd-brand",  "prBase": "dev" },
+        "sena-web":   { "agent": "bznav-sena-fe",   "branch": "prd-sena",   "prBase": "dev" },
         "plus-web":   { "agent": "bznav-plus-fe",   "branch": "prd-plus",   "prBase": "dev" }
       },
       "packagesAgent": "bznav-packages-fe",

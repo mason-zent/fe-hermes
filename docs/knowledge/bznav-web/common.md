@@ -22,10 +22,10 @@
 ## 앱 / 패키지 한눈에
 | 앱 | 포트 | 라우터 | dev 번들러 | Relay | 상태 배치 | 스타일 | typecheck / test | PR base |
 |---|---|---|---|---|---|---|---|---|
-| refund-web | 3200 | **Pages** | **webpack** | O (`graphql/__generated__`) | `lib/stores/*.ts` | SCSS 19 + Tailwind | 없음 / 없음 | `dev-ecs` |
+| refund-web | 3200 | **Pages** | **webpack** | O (`graphql/__generated__`) | `lib/stores/*.ts` | SCSS 19 + Tailwind | 없음 / 없음 | `dev` |
 | care-web | 3100 | App (route group 다수) | turbo | O (`__generated__`) | `app/**/store/*Atom.ts` 분산 | Tailwind + CSS(shadcn) | `type-check` / `test:unit`(jest) | `dev` |
-| brand-web | 3000 | App | turbo | — | 없음 | Tailwind + SCSS 1 | 없음 | `dev-ecs` |
-| sena-web | 3300 | App (`(authenticated)`,`(login)`) | turbo | — | `lib/stores/*.ts` | Tailwind + SCSS 7 | 없음 | `dev-ecs` |
+| brand-web | 3000 | App | turbo | — | 없음 | Tailwind + SCSS 1 | 없음 | `dev` |
+| sena-web | 3300 | App (`(authenticated)`,`(login)`) | turbo | — | `lib/stores/*.ts` | Tailwind + SCSS 7 | 없음 | `dev` |
 | plus-web | 3400 | App | turbo | — | `store/auth-store.ts` | Tailwind + SCSS 3 | 없음 | `dev` |
 
 `packages/*` (`@repo/*`, workspace:*): `common-utils`(최하위, 다른 내부 패키지 의존 금지) · `platform`(client/server 이중 진입점) · `tracking-service`(Datadog·Mixpanel·Airbridge) · `ui`(**현행** 디자인 시스템, Radix+Tailwind+CVA, Storybook/Chromatic) · `ui-deprecated`(`@zenterprise-inc/ui`, **레거시, 신규 사용 금지**) · `user-session` · `user-sign` · `project-config`(lint 설정만). 5개 앱 전부 platform·tracking-service·common-utils·ui 사용, care/refund/sena만 user-session·user-sign.
@@ -64,4 +64,5 @@
 - 공통 패키지 API 변경은 영향 앱과 public export를 먼저 확인. 새 의존성은 catalog 확인 먼저, 내부 패키지는 `workspace:*`
 - 요청하지 않은 의존성 업그레이드·파일 이동·공통화·전역 포맷팅 금지
 - 비출력·비커밋: `.env*`, `.aws/access-key.js`, `firebase-key.json`, 토큰·키. (`.npmrc`에 평문 토큰, `apps/sena-web/firebase-key.json`이 커밋된 상태가 확인됨 — 건드리지 말고 헤르메스에 보고)
-- 커밋하지 않는다. PR은 헤르메스/사용자 지시가 있을 때만 `.github/skills/create-pr` 절차로. base는 앱 계열에 따라 `dev`(care/plus) / `dev-ecs`(brand/refund/sena) / 릴리즈 `prd-<앱>`
+- 커밋하지 않는다. PR은 헤르메스/사용자 지시가 있을 때만 `.github/skills/create-pr` 절차로. **base 는 5개 앱 모두 `dev`**, 릴리즈는 `prd-<앱>`. `dev-ecs` 는 폐기됐다
+- 배포 인프라: **`refund-web` 만 ECS**, 나머지 4개는 EKS 로 이관됐다. 브랜치 선택과는 무관다

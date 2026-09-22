@@ -67,7 +67,9 @@
 
 ## Git
 - **문서·지식의 기준 브랜치는 앱마다 다르다** — `origin/prd-<앱>`(운영 반영분). `packages/*` 는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. 정본은 `hermes.config.json`
-- **개발·PR 브랜치는 별개다** — PR base 는 앱 계열별로 `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS), 릴리즈 `prd-<앱>`. PR 은 `.github/skills/create-pr` 절차. 문서 기준과 PR base 를 같은 것으로 취급하지 않는다
-- ⚠️ **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있다. 정할 것은 **어느 앱 계열에 PR 을 낼지**뿐 — `dev`(care·plus) / `dev-ecs`(brand·refund·sena). **`dev-ecs` 가 `dev` 보다 뒤처져 있어**(2026-09 확인 시점 254커밋, `packages/` 기준 20파일) 계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다. `/branch REF-#### bznav:<앱>`
+- **개발·PR 브랜치는 별개다** — **5개 앱 모두 PR base 는 `dev`**, 릴리즈는 `prd-<앱>`. PR 은 `.github/skills/create-pr` 절차. 문서 기준(`prd-<앱>`)과 PR base(`dev`)를 같은 것으로 취급하지 않는다
+- ⚠️ **`dev-ecs` 는 폐기됐다.** 레포에 `chore: dev-ecs 브랜치 제거에 따른 워크플로우 및 문서 정리` 커밋이 있고, 2026-09-09 이후 갱신이 없으며 `dev` 에 없는 커밋도 없다. base 로 쓰지 않는다
+- **배포 인프라는 브랜치와 별개다.** `refund-web` 만 ECS(`.github/workflows/auto-deployment.yml` = "🔁Auto deployment(ECS)", 대상 `--apps=refund-web`)이고 **나머지 4개는 EKS 로 이관됐다**. 브랜치를 고를 때 ECS/EKS 를 따지지 않는다 — PR base 는 전부 `dev` 다
+- **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있고, 5개 앱 모두 base 가 `dev` 라 어느 앱으로 따든 같다. `/branch REF-#### bznav:<앱>`
 - 커밋 `type(scope): 설명` (예 `fix(refund): REF-3728 ...`). 응답·PR·리뷰는 한글 존댓말
 - 비커밋: `.env*`, `.aws/access-key.js`, `firebase-key.json`
