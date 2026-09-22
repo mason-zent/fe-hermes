@@ -68,6 +68,6 @@
 ## Git
 - **문서·지식의 기준 브랜치는 앱마다 다르다** — `origin/prd-<앱>`(운영 반영분). `packages/*` 는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. 정본은 `hermes.config.json`
 - **개발·PR 브랜치는 별개다** — PR base 는 앱 계열별로 `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS), 릴리즈 `prd-<앱>`. PR 은 `.github/skills/create-pr` 절차. 문서 기준과 PR base 를 같은 것으로 취급하지 않는다
-- ⚠️ **`packages/*` 작업은 소비 앱 계열을 먼저 정한다.** 5개 앱이 공유하지만 PR base 가 계열마다 다르고 **`dev-ecs` 가 `dev` 보다 뒤처져 있다**(2026-09 확인 시점 254커밋 차이, `packages/` 기준 20파일 차이). 계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다. 브랜치는 `/branch REF-#### bznav:packages@<앱>` 으로 딴다
+- ⚠️ **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있다. 정할 것은 **어느 앱 계열에 PR 을 낼지**뿐 — `dev`(care·plus) / `dev-ecs`(brand·refund·sena). **`dev-ecs` 가 `dev` 보다 뒤처져 있어**(2026-09 확인 시점 254커밋, `packages/` 기준 20파일) 계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다. `/branch REF-#### bznav:<앱>`
 - 커밋 `type(scope): 설명` (예 `fix(refund): REF-3728 ...`). 응답·PR·리뷰는 한글 존댓말
 - 비커밋: `.env*`, `.aws/access-key.js`, `firebase-key.json`

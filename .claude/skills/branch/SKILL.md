@@ -41,15 +41,28 @@ argument-hint: "<티켓번호 또는 브랜치명> <대상...> — 예: REF-3820
 ```bash
 scripts/new-branch.sh REF-3820 refund hub          # 콘솔 두 곳
 scripts/new-branch.sh REF-3820 bznav:care-web      # bznav 는 앱을 지정
-scripts/new-branch.sh REF-3820 bznav:packages@care-web   # packages/* — 앱 계열 지정 필수
+# packages/* 는 따로 딸 필요 없다 — 위 워크트리 안에 packages/** 가 그대로 있다
 scripts/new-branch.sh fix/qa-로그인-오류 care        # 이름 직접 지정
 scripts/new-branch.sh REF-3820 refund --in-place   # 워크트리 없이
 scripts/new-branch.sh REF-3820 refund --dry-run    # 먼저 확인
 ```
 
-대상은 레포 이름 일부로 매칭한다 — `refund` `hub` `care` `op` `packages`(=zent-packages) `bznav:<앱>` `bznav:packages@<앱>`.
+대상은 레포 이름 일부로 매칭한다 — `refund` `hub` `care` `op` `packages`(=zent-packages) `bznav:<앱>`.
 
-⚠️ **`bznav:packages` 는 앱 계열을 반드시 지정한다.** `packages/*` 는 5개 앱이 공유하지만 PR base 가 계열마다 다르다 — `dev`(care·plus, EKS) / `dev-ecs`(brand·refund·sena, ECS). 그리고 **`dev-ecs` 가 `dev` 보다 뒤처져 있다**(확인 시점 254커밋). 계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다. 지정하지 않으면 스크립트가 계열 목록을 보여주고 멈춘다.
+### bznav `packages/*` 는 따로 따지 않는다
+
+bznav-web 은 **모노레포**다. `bznav:care-web` 으로 딴 워크트리에는 `apps/**` 와 `packages/**` 가 **함께** 들어 있어서 그 안에서 공통 패키지를 바로 고친다. 브랜치를 따로 딸 이유가 없다.
+
+정할 것은 **어느 앱 계열에 PR 을 낼지**뿐이고, 그건 앱 이름으로 표현된다.
+
+| 낼 계열 | 쓰는 대상 | base |
+|---|---|---|
+| EKS | `bznav:care-web` · `bznav:plus-web` | `origin/dev` |
+| ECS | `bznav:refund-web` · `bznav:brand-web` · `bznav:sena-web` | `origin/dev-ecs` |
+
+⚠️ **계열을 잘못 고르면 소비 앱 PR 에 다른 계열 커밋이 대량으로 딸려간다.** `dev-ecs` 가 `dev` 보다 뒤처져 있다(2026-09 확인 시점 254커밋, `packages/` 기준 20파일). packages 만 고치는 작업이어도 **어느 계열에 낼지 먼저 정한다.**
+
+`bznav:packages` 를 넘기면 스크립트가 이 안내와 계열 목록을 보여주고 멈춘다. 작업은 `bznav-packages-fe` 에이전트가 그 워크트리에서 한다.
 
 **base 는 `hermes.config.json` 의 `prBase`** 에서 온다. 문서·지식의 기준(`branch`, 운영 반영분)과 **다르다** — 작업은 개발 브랜치에서 딴다.
 
@@ -58,7 +71,7 @@ scripts/new-branch.sh REF-3820 refund --dry-run    # 먼저 확인
 | client-brics-{refund,hub,care} · web-op | `prd` | **`dev`** |
 | bznav `care-web`·`plus-web` | `prd-care`/`prd-plus` | **`dev`** |
 | bznav `refund-web`·`brand-web`·`sena-web` | `prd-<앱>` | **`dev-ecs`** |
-| bznav `packages/*` | `dev` | **소비 앱 계열을 지정한다** — `bznav:packages@<앱>` |
+| bznav `packages/*` | — | **따로 따지 않는다.** 앱으로 딴 워크트리 안에 있다 |
 | zent-packages | `main` | **`main`** |
 
 ### 3. 건너뛴 레포를 처리한다

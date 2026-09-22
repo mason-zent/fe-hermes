@@ -16,7 +16,7 @@
         "plus-web":   { "agent": "bznav-plus-fe",   "branch": "prd-plus",   "prBase": "dev" }
       },
       "packagesAgent": "bznav-packages-fe",
-      "$packagesNote": "packages/* 는 5개 앱이 공유하지만 PR base 는 앱 계열마다 다르다(dev = care·plus / dev-ecs = brand·refund·sena). 그래서 packagesPrBase 를 두지 않고 /branch 에서 bznav:packages@<앱> 으로 그 앱의 prBase 를 쓴다" },
+      "$packagesNote": "packages/* 에는 별도 prBase 를 두지 않는다. 모노레포라 앱으로 딴 워크트리에 packages/** 가 함께 들어 있어 브랜치를 따로 딸 필요가 없고, 정할 것은 어느 앱 계열에 PR 을 낼지(그 앱의 prBase)뿐이다" },
     { "name": "zent-packages", "agents": ["packages-fe"], "branch": "main", "prBase": "main", "kind": "packages", "scope": "frontend" }
   ]
 }
