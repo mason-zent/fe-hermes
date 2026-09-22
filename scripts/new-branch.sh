@@ -9,7 +9,6 @@
 # 사용:
 #   scripts/new-branch.sh REF-3820 refund hub          # 두 레포에 워크트리 생성
 #   scripts/new-branch.sh REF-3820 bznav:care-web      # bznav 는 앱으로 base 를 고른다
-#   scripts/new-branch.sh REF-3820 bznav:packages@care-web   # packages/* 는 어느 앱 계열에 낼지 지정한다
 #   scripts/new-branch.sh fix/qa-로그인 care            # 슬래시가 있으면 그 이름 그대로
 #   scripts/new-branch.sh REF-3820 refund --in-place   # 워크트리 없이 메인 체크아웃에서 분기
 #   scripts/new-branch.sh REF-3820 refund --dry-run
@@ -56,22 +55,16 @@ for repo in cfg['repos']:
         if not app:
             print('ERR|bznav-web 은 앱을 지정해야 한다: bznav:care-web 또는 bznav:packages'); sys.exit(0)
         if app.startswith('packages'):
-            # packages/* 는 모든 앱이 공유하지만 PR base 는 앱 계열마다 다르다.
-            # dev(EKS: care·plus) / dev-ecs(ECS: refund·brand·sena) 이고 dev-ecs 가 dev 보다
-            # 뒤처져 있어, 계열을 잘못 고르면 소비 앱 PR 에 수백 개 커밋이 딸려간다.
-            # 그래서 bznav:packages@<앱> 으로 계열을 반드시 지정한다.
-            target = app.split('@', 1)[1] if '@' in app else None
-            if not target:
-                lines = {}
-                for name, cfgapp in (repo.get('apps') or {}).items():
-                    lines.setdefault(cfgapp['prBase'], []).append(name)
-                hint = ' / '.join(f"{base}: {', '.join(sorted(apps))}" for base, apps in sorted(lines.items()))
-                print(f"ERR|bznav:packages 는 어느 앱 계열에 낼지 지정해야 한다 — bznav:packages@<앱>. 계열 {hint}")
-                sys.exit(0)
-            entry = (repo.get('apps') or {}).get(target)
-            if not entry:
-                print(f"ERR|{target} 은 bznav-web 의 앱이 아니다: {', '.join(repo.get('apps', {}))}"); sys.exit(0)
-            print(f"{repo['name']}|{entry['prBase']}|packages@{target}"); sys.exit(0)
+            # bznav-web 은 모노레포다. 앱으로 딴 워크트리 안에 packages/** 가 그대로 있으니
+            # packages 전용 대상을 따로 둘 이유가 없다. 같은 base·같은 브랜치가 나온다.
+            # 다만 PR base 가 앱 계열마다 다르므로(dev = care·plus / dev-ecs = brand·refund·sena)
+            # 어느 계열에 낼지는 앱으로 표현한다.
+            lines = {}
+            for name, cfgapp in (repo.get('apps') or {}).items():
+                lines.setdefault(cfgapp['prBase'], []).append(name)
+            hint = ' / '.join(f"{base}: {', '.join(sorted(apps))}" for base, apps in sorted(lines.items()))
+            print(f"ERR|packages/* 는 따로 딸 필요가 없다. bznav-web 은 모노레포라 앱으로 딴 워크트리 안에 packages/** 가 그대로 있다. 어느 앱 계열에 낼지만 정해 bznav:<앱> 으로 딴다 — 계열 {hint}")
+            sys.exit(0)
         entry = repo.get('apps', {}).get(app)
         if not entry:
             print(f"ERR|{app} 은 bznav-web 의 앱이 아니다: {', '.join(repo.get('apps', {}))}"); sys.exit(0)
