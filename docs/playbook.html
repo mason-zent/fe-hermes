@@ -493,7 +493,7 @@ claude
         <article class="cmd">
           <div class="cmd-head"><kbd>/branch <span class="arg">티켓|이름 대상...</span></kbd><span class="tag plain">디스패치 전</span></div>
           <p class="what">작업을 시작하기 전에 <strong>작업 브랜치와 워크트리를 만듭니다.</strong> 로컬 작업 트리는 브랜치가 제각각이라, 확인 없이 FE 에이전트를 보내면 남의 작업 브랜치 위에 얹히거나 미커밋 변경과 섞입니다.</p>
-          <p class="what"><strong>기본은 워크트리입니다.</strong> 메인 체크아웃(<code>repos/&lt;레포&gt;</code>)은 그대로 두고 <code>~/orca/workspaces/&lt;레포&gt;/&lt;브랜치 슬러그&gt;</code>에 별도 작업 공간을 만듭니다. 그래서 <strong>레포에 미커밋 변경이 있거나 남이 다른 브랜치를 물고 있어도 시작할 수 있고, 한 레포에서 여러 작업을 동시에 돌릴 수 있습니다.</strong> 메인 체크아웃은 소스트리·IDE에서 보던 그대로 남습니다. 메인에서 바로 분기하려면 <code>--in-place</code>(이때는 미커밋 변경이 있으면 건너뜁니다).</p>
+          <p class="what"><strong>기본은 워크트리입니다.</strong> 메인 체크아웃(<code>repos/&lt;레포&gt;</code>)은 그대로 두고 <code>.worktrees/&lt;레포&gt;/&lt;브랜치 슬러그&gt;</code>(hermes 안, gitignore)에 별도 작업 공간을 만듭니다. 그래서 <strong>레포에 미커밋 변경이 있거나 남이 다른 브랜치를 물고 있어도 시작할 수 있고, 한 레포에서 여러 작업을 동시에 돌릴 수 있습니다.</strong> 메인 체크아웃은 소스트리·IDE에서 보던 그대로 남습니다. 메인에서 바로 분기하려면 <code>--in-place</code>(이때는 미커밋 변경이 있으면 건너뜁니다).</p>
           <p class="what">브랜치를 딸 기준은 <code>hermes.config.json</code>의 <code>prBase</code>(개발 브랜치)이고 문서·지식의 기준(운영 반영분)과 <strong>다릅니다</strong> — 콘솔 4개와 bznav 5개 앱은 모두 <code>dev</code>, zent-packages는 <code>main</code>입니다. (<code>dev-ecs</code>는 폐기됐습니다.) 이름은 전 레포 공통 관례인 <code>feature/REF-####</code>가 기본입니다. 만든 브랜치·base SHA·워크트리 경로는 계획서 Checkpoint의 <code>Work ref</code>에 기록되어 <code>/new</code> 이후 재개에 쓰입니다. 작업이 끝나면 <code>wt-sync</code>로 메인 체크아웃에 반영하고 <code>git worktree remove</code>로 정리합니다.</p>
           <div class="flow"><span>대상·이름 확정</span><span>prBase 조회</span><span class="hi">워크트리 생성</span><span>origin 최신에서 분기</span><span>Checkpoint 기록</span></div>
           <dl>
@@ -659,7 +659,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           </div>
           <p>0인 항목은 표시하지 않습니다. hermes 워크스페이스 자체는 <code>main</code> 이 정상 작업 브랜치라 보호 브랜치 경고에서 제외됩니다.</p>
           <div class="note">
-            <strong>설정은 레포에 들어 있습니다.</strong> <code>.claude/settings.json</code> 의 <code>statusLine</code> 과 <code>scripts/statusline.sh</code> 가 함께 커밋되므로, clone 하면 바로 같은 상태바가 뜹니다. 대상 레포는 <code>scripts/delegate.sh</code> 가 <code>hermes.config.json</code> 에서 찾아 넘겨줍니다. 다만 <strong>이 프로젝트 안에서는 개인 전역 statusLine 설정을 덮습니다</strong>(orca 의 사용량 보고 훅은 체인으로 살려 두었습니다).
+            <strong>설정은 레포에 들어 있습니다.</strong> <code>.claude/settings.json</code> 의 <code>statusLine</code> 과 <code>scripts/statusline.sh</code> 가 함께 커밋되므로, clone 하면 바로 같은 상태바가 뜹니다. 대상 레포는 <code>scripts/delegate.sh</code> 가 <code>hermes.config.json</code> 에서 찾아 넘겨줍니다. 다만 <strong>이 프로젝트 안에서는 개인 전역 statusLine 설정을 덮습니다</strong>.
           </div>
         </div>
         <div class="step" data-n="4">

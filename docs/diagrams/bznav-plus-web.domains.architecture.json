@@ -1,0 +1,258 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav plus-web 화면 맵",
+    "subtitle": "app/ 아래 19개 · 계산기 8개가 lib/hooks/calc 8세트와 1:1 로 맞는다",
+    "output": "docs/diagrams/bznav-plus-web.domains.html",
+    "viewBox": [
+      1080,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "calc",
+        "label": "계산기 8개",
+        "focus": [
+          "bep",
+          "holiday",
+          "contract",
+          "actual",
+          "sales",
+          "penalty",
+          "simplevat",
+          "vat"
+        ],
+        "note": "각 계산기가 types·constants·utils·hooks 한 세트씩을 갖는다. 단계 수는 서로 다르다."
+      },
+      {
+        "id": "step",
+        "label": "단계가 다르다",
+        "focus": [
+          "holiday",
+          "sales",
+          "simplevat"
+        ],
+        "note": "holidaypay 2단계 · sales 3단계 · simplevat 4단계. 하나를 보고 나머지를 짐작하면 안 된다."
+      },
+      {
+        "id": "etc",
+        "label": "계산기 밖",
+        "focus": [
+          "taxcheck",
+          "content",
+          "fortune",
+          "calchome"
+        ],
+        "note": "tax-check 는 간편인증까지 붙은 진단 흐름이고, tax-content 는 Notion catch-all 이다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "계산기 8개 — lib/types·constants·utils·hooks 4계층이 각각 한 세트씩",
+      "wraps": [
+        "bep",
+        "holiday",
+        "contract",
+        "actual",
+        "sales",
+        "penalty",
+        "simplevat",
+        "vat"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "bep",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "calc/bep",
+      "sublabel": "breakeven",
+      "tag": "손익분기",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "holiday",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "calc/holidaypay",
+      "sublabel": "holiday-pay",
+      "tag": "2단계",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "contract",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "calc/salary",
+      "sublabel": "salary-contract",
+      "tag": "계약 연봉",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "actual",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "calc/salary/actual",
+      "sublabel": "salary-actual",
+      "tag": "shape 가 다르다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "sales",
+      "type": "frontend",
+      "row": 1,
+      "col": 4,
+      "label": "calc/sales",
+      "sublabel": "store-sales",
+      "tag": "3단계",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "penalty",
+      "type": "frontend",
+      "row": 2,
+      "col": 0,
+      "label": "calc/tax/penalty",
+      "sublabel": "tax-penalty",
+      "tag": "가산세",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "simplevat",
+      "type": "frontend",
+      "row": 2,
+      "col": 1,
+      "label": "calc/tax/simplevat",
+      "sublabel": "simple-vat",
+      "tag": "4단계",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "vat",
+      "type": "frontend",
+      "row": 2,
+      "col": 2,
+      "label": "calc/tax/vat",
+      "sublabel": "vat",
+      "tag": "부가세",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "calchome",
+      "type": "frontend",
+      "row": 2,
+      "col": 3,
+      "label": "calc/(home)·menu",
+      "sublabel": "2 화면",
+      "tag": "계산기 목록",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "taxcheck",
+      "type": "security",
+      "row": 2,
+      "col": 4,
+      "label": "tax-check",
+      "sublabel": "6 화면",
+      "tag": "진단 · 간편인증",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "content",
+      "type": "backend",
+      "row": 3,
+      "col": 0,
+      "label": "tax-content",
+      "sublabel": "1 화면",
+      "tag": "Notion catch-all",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "fortune",
+      "type": "backend",
+      "row": 3,
+      "col": 1,
+      "label": "fortune",
+      "sublabel": "2 화면",
+      "tag": "운세",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "계산기가 앱의 중심이다",
+      "items": [
+        "app/calc 아래 8개 계산기 화면이 lib/hooks/calc 의 8세트와 정확히 1:1 이다 — bep·holidaypay·salary·salary/actual·sales·tax/penalty·tax/simplevat·tax/vat",
+        "각 계산기는 lib/types/calc · lib/constants/calc · lib/utils/calc · lib/hooks/calc 에 한 세트씩 갖는다",
+        "새 계산기를 만드는 일은 이 네 곳에 한 세트를 더하는 일이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "똑같이 생기지 않았다",
+      "items": [
+        "단계 수가 다르다 — holidaypay 2단계(input·result), sales 3단계(revenue·cost·result), simplevat 4단계(sales·deduction·paid·result)",
+        "반환 shape 도 다르다 — salary/actual 은 sections 대신 salarySection, parsedInput 대신 monthlyGrossSalary 를 내보낸다",
+        "새로 만들 때는 가장 가까운 기존 세트를 골라 맞춘다",
+        "tax-content 는 파일 1개지만 Notion catch-all 이라 실제 페이지는 DB 행 수만큼 늘어난다"
+      ]
+    }
+  ]
+}

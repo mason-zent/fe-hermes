@@ -16,13 +16,13 @@
 # 대상은 레포 이름 일부로 매칭한다 (refund / hub / care / op / packages=zent-packages /
 # bznav:<앱> / bznav:packages).
 #
-# 워크트리 위치: ~/orca/workspaces/<레포>/<브랜치 슬러그>  (기존 관례를 따른다)
+# 워크트리 위치: <hermes>/.worktrees/<레포>/<브랜치 슬러그>  (gitignore 대상)
 # 정리: git -C repos/<레포> worktree remove <경로>
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="$ROOT/hermes.config.json"
-WT_ROOT="${HERMES_WORKTREE_ROOT:-$HOME/orca/workspaces}"
+WT_ROOT="${HERMES_WORKTREE_ROOT:-$ROOT/.worktrees}"
 DRY_RUN=0; IN_PLACE=0
 TICKET=""; TARGETS=()
 

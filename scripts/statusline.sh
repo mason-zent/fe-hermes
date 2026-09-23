@@ -8,15 +8,8 @@
 #
 # 대상 레포는 delegate.sh 가 넣어준 HERMES_REPO_DIR 을 먼저 보고, 없으면 payload 의 cwd 로 찾는다.
 # 에이전트→레포 매핑의 정본은 hermes.config.json 이며 여기서 다시 적지 않는다.
-#
-# orca 의 statusline 훅(사용량 보고)을 덮지 않도록 stdin 을 그대로 흘려보낸 뒤 우리 줄을 찍는다.
 
 payload=$(cat)
-
-orca_hook="$HOME/.orca/agent-hooks/claude-statusline.sh"
-if [ -x "$orca_hook" ]; then
-  printf '%s' "$payload" | "$orca_hook" >/dev/null 2>&1 || :
-fi
 
 dir="${HERMES_REPO_DIR:-}"
 if [ -z "$dir" ]; then

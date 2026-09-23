@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav refund-web 화면 맵",
+    "subtitle": "pages/ 아래 104개 · 5개 앱 중 유일한 Pages Router",
+    "output": "docs/diagrams/bznav-refund-web.domains.html",
+    "viewBox": [
+      1080,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "환급 본류",
+        "focus": [
+          "home",
+          "hometax",
+          "tax",
+          "followup"
+        ],
+        "note": "진입 → 홈택스 인증 → 조회·결과 → 후속 업무. 이 앱의 중심 줄기다."
+      },
+      {
+        "id": "survey",
+        "label": "설문이 가장 크다",
+        "focus": [
+          "survey",
+          "tax"
+        ],
+        "note": "survey 25개로 단일 도메인 중 가장 크다. SurveyProvider 아래 문항 페이지가 늘어난다."
+      },
+      {
+        "id": "admin",
+        "label": "어드민 콘텐츠",
+        "focus": [
+          "landing",
+          "event",
+          "home"
+        ],
+        "note": "landing·event 는 파일이 1개씩이지만 [...slug] 라 실제 페이지는 어드민이 늘린다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "인증 경로 — AuthGuard 와 홈택스 인증",
+      "wraps": [
+        "auth",
+        "hometax",
+        "simple"
+      ],
+      "pad": 14
+    },
+    {
+      "kind": "region",
+      "label": "어드민이 서빙한다 — 코드 변경 없이 페이지가 는다",
+      "wraps": [
+        "landing",
+        "event"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "home",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "home",
+      "sublabel": "7",
+      "tag": "진입 · 랜딩",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "menu",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "menu",
+      "sublabel": "6",
+      "tag": "앱 메뉴",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "landing",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "landing",
+      "sublabel": "1",
+      "tag": "어드민 콘텐츠",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "event",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "event",
+      "sublabel": "1",
+      "tag": "어드민 콘텐츠",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "row": 1,
+      "col": 4,
+      "label": "auth",
+      "sublabel": "10",
+      "tag": "로그인",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "hometax",
+      "type": "security",
+      "row": 2,
+      "col": 0,
+      "label": "hometax-auth",
+      "sublabel": "7",
+      "tag": "간편·ID·공동",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "simple",
+      "type": "security",
+      "row": 2,
+      "col": 1,
+      "label": "simple",
+      "sublabel": "3",
+      "tag": "간편신청",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "tax",
+      "type": "frontend",
+      "row": 2,
+      "col": 2,
+      "label": "tax",
+      "sublabel": "14",
+      "tag": "환급 조회·결과",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "trp",
+      "type": "frontend",
+      "row": 2,
+      "col": 3,
+      "label": "trp",
+      "sublabel": "3",
+      "tag": "알림톡 진입",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "trr",
+      "type": "frontend",
+      "row": 2,
+      "col": 4,
+      "label": "trr",
+      "sublabel": "1",
+      "tag": "알림톡 진입",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "survey",
+      "type": "frontend",
+      "row": 3,
+      "col": 0,
+      "label": "survey",
+      "sublabel": "25",
+      "tag": "가장 크다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "followup",
+      "type": "frontend",
+      "row": 3,
+      "col": 1,
+      "label": "follow-up",
+      "sublabel": "6",
+      "tag": "후속 업무",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "error",
+      "type": "backend",
+      "row": 3,
+      "col": 2,
+      "label": "error",
+      "sublabel": "15",
+      "tag": "두 번째로 크다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "help",
+      "type": "backend",
+      "row": 3,
+      "col": 3,
+      "label": "help",
+      "sublabel": "2",
+      "tag": "도움말",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "down",
+      "type": "backend",
+      "row": 3,
+      "col": 4,
+      "label": "service-down",
+      "sublabel": "1",
+      "tag": "점검",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "파일 수가 화면 수가 아니다",
+      "items": [
+        "landing·event 는 파일이 1개씩이지만 [...slug] catch-all 이다. 실제 페이지는 어드민에서 등록하는 만큼 늘어난다",
+        "그래서 '페이지를 추가한다'는 요청이 와도 대부분 코드 변경이 없다. 어느 갈래인지 먼저 가려야 한다",
+        "반대로 survey 25개와 error 15개는 실제 파일이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "인증이 세 갈래다",
+      "items": [
+        "auth 10개 — 로그인·회원가입 계열",
+        "hometax-auth 7개 — 간편인증 · ID 로그인 · 공동인증서. 개인/법인으로 먼저 갈린다",
+        "simple 3개 — 간편신청 진입",
+        "trp·trr 은 카카오 알림톡에서 들어오는 전용 진입점이다"
+      ]
+    }
+  ]
+}

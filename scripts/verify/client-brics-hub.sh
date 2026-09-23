@@ -4,7 +4,8 @@
 #       scripts/verify/client-brics-hub.sh --no-test  (jest 생략)
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$HERMES_DIR/scripts/verify/_lib.sh"
-REPO_DIR="$HERMES_DIR/repos/client-brics-hub"
+# HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
+REPO_DIR="$(resolve_repo_dir "$HERMES_DIR/repos/client-brics-hub")"
 [ -d "$REPO_DIR" ] || { echo "repos/client-brics-hub 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"
 check_node_version "$REPO_DIR"

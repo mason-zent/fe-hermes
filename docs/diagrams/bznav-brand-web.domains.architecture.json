@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav brand-web 화면 맵",
+    "subtitle": "app/ 아래 라우트 4개 — 담당 서비스 중 가장 작다. 절반이 DatoCMS 로 채워진다",
+    "output": "docs/diagrams/bznav-brand-web.domains.html",
+    "viewBox": [
+      1080,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "routes",
+        "label": "라우트 4개",
+        "focus": [
+          "home",
+          "resource",
+          "terms",
+          "popup"
+        ],
+        "note": "home 과 brand-resource 는 정적이고, terms 둘은 catch-all 이라 실제 페이지 수는 DatoCMS 가 정한다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 경로가 하나",
+        "focus": [
+          "dato",
+          "query",
+          "termsec"
+        ],
+        "note": "fetch·axios 를 직접 쓰지 않는다. requestDatoCms 하나로만 나간다."
+      },
+      {
+        "id": "shell",
+        "label": "공통 셸",
+        "focus": [
+          "shell",
+          "sidebar",
+          "errb"
+        ],
+        "note": "BrandAppContents 가 RouterProvider·EventTracking·Dialog·NiceModal 을 중첩해 감싼다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "DatoCMS 로 채워진다 — 약관 변경은 코드 작업이 아니다",
+      "wraps": [
+        "terms",
+        "popup",
+        "termsec",
+        "dato",
+        "query"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "home",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "home",
+      "sublabel": "정적",
+      "tag": "섹션 조립",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "resource",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "brand-resource",
+      "sublabel": "정적",
+      "tag": "브랜드 자산",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "terms",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "terms/[...terms]",
+      "sublabel": "catch-all",
+      "tag": "DatoCMS",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "popup",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "popup/terms/...",
+      "sublabel": "catch-all",
+      "tag": "앱 팝업용",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "security",
+      "row": 2,
+      "col": 0,
+      "label": "BrandAppContents",
+      "sublabel": "클라이언트 셸",
+      "tag": "Provider 중첩",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "sidebar",
+      "type": "frontend",
+      "row": 2,
+      "col": 1,
+      "label": "SidebarSection",
+      "sublabel": "공용 섹션",
+      "tag": "약관 목차",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "termsec",
+      "type": "frontend",
+      "row": 2,
+      "col": 2,
+      "label": "TermContentSection",
+      "sublabel": "약관 본문",
+      "tag": "버전 전환",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "errb",
+      "type": "backend",
+      "row": 2,
+      "col": 3,
+      "label": "GlobalErrorBoundary",
+      "sublabel": "오류 경계",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "dato",
+      "type": "messagebus",
+      "row": 3,
+      "col": 1,
+      "label": "requestDatoCms",
+      "sublabel": "단일 데이터 경로",
+      "tag": "fetch·axios 없음",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "query",
+      "type": "database",
+      "row": 3,
+      "col": 2,
+      "label": "graph-ql-query.ts",
+      "sublabel": "쿼리 모음",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "가장 작지만 성격이 다르다",
+      "items": [
+        "라우트가 4개뿐이다. care-web(264 화면)의 1/66 이다",
+        "home 과 brand-resource 는 정적 페이지이고 섹션 컴포넌트를 조립만 한다",
+        "terms 둘은 catch-all 이라 실제 페이지 수는 DatoCMS 의 약관 종류·버전이 정한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "이 앱에 없는 것",
+      "items": [
+        "데이터 경로가 DatoCMS 하나뿐이다. fetch·axios 를 직접 쓰지 않는다",
+        "스토어 선례가 없다(Jotai Provider 1건뿐). 폼도 없다(RHF·yup 미설치)",
+        "일반 페이지에 PageViewEventLogger 를 붙이지 않는 것이 현 관행이다",
+        "그래서 '새 기능'을 넣는 요청이 오면 이 앱에 선례가 없는 것부터 확인해야 한다"
+      ]
+    }
+  ]
+}

@@ -2,7 +2,8 @@
 # zent-packages(frontend/) 표준 검증: 패키지 타입체크(build=tsc) → lint → changeset 존재 확인
 #   scripts/verify/zent-packages.sh <패키지명...>   예: @zenterprise-inc/brics-fe-ui @zenterprise-inc/brics-fe-zent-auth
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/verify/_lib.sh"
-REPO_DIR="$HERMES_DIR/repos/zent-packages"
+# HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
+REPO_DIR="$(resolve_repo_dir "$HERMES_DIR/repos/zent-packages")"
 [ $# -ge 1 ] || { echo "사용: $0 <패키지명...>"; exit 2; }
 [ -d "$REPO_DIR" ] || { echo "repos/zent-packages 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }
 cd "$REPO_DIR"

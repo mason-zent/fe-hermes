@@ -4,7 +4,8 @@
 #   scripts/verify/bznav-web.sh packages/<pkg>  예: packages/ui  (→ pnpm --filter @repo/ui lint)
 # 규칙 출처: .ai/basic-rule.md 7장. care-web 만 type-check·test:unit 이 있고 나머지는 tsc --noEmit 로 대체.
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/verify/_lib.sh"
-REPO_DIR="$HERMES_DIR/repos/bznav-web"
+# HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
+REPO_DIR="$(resolve_repo_dir "$HERMES_DIR/repos/bznav-web")"
 TARGET="${1:-}"
 [ -n "$TARGET" ] || { echo "사용: $0 <앱|packages/<pkg>>"; exit 2; }
 [ -d "$REPO_DIR" ] || { echo "repos/bznav-web 링크가 없습니다. scripts/setup.sh 를 실행하세요."; exit 2; }

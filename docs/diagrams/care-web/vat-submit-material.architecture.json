@@ -1,0 +1,658 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "부가세 자료제출 35화면",
+    "subtitle": "app/vat/submit-material — 화면 35개를 하나도 빼지 않고 담았다",
+    "output": "vat-submit-material.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      420
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "card",
+        "label": "카드 항목",
+        "focus": [
+          "main",
+          "cardIn",
+          "cardOut",
+          "cardUp"
+        ],
+        "note": "진입 → 비밀번호 → 카드 선택 → 요약·상세 → 등록 완료. 업로드는 별도 화면이다. 7 화면."
+      },
+      {
+        "id": "estate",
+        "label": "부동산 항목",
+        "focus": [
+          "main",
+          "estateIn",
+          "estateList",
+          "estateUp"
+        ],
+        "note": "OCR 입력과 불러오기 두 갈래가 있다. 7 화면으로 카드와 같은 크기다."
+      },
+      {
+        "id": "connect",
+        "label": "계정 연결",
+        "focus": [
+          "main",
+          "connect",
+          "connected"
+        ],
+        "note": "이 앱에서 socket.io 를 쓰는 유일한 곳이다. 연결 상태를 소켓으로 받는다."
+      },
+      {
+        "id": "single",
+        "label": "단일 화면 항목",
+        "focus": [
+          "single1",
+          "single2",
+          "online",
+          "submit"
+        ],
+        "note": "매입대행·차량·현금매출·배달·중복매출·수출은 각각 화면 하나뿐이다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/vat/submit-material — 부가세 50 화면 중 35",
+      "wraps": [
+        "main",
+        "connect",
+        "connected",
+        "cardIn",
+        "estateIn",
+        "paperIn",
+        "online",
+        "cardOut",
+        "estateList",
+        "paperOut",
+        "single1",
+        "cardUp",
+        "estateUp",
+        "single2",
+        "submit"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "(category) — 항목별 27 화면",
+      "wraps": [
+        "cardIn",
+        "estateIn",
+        "paperIn",
+        "online",
+        "cardOut",
+        "estateList",
+        "paperOut",
+        "single1",
+        "cardUp",
+        "estateUp",
+        "single2"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "main",
+      "type": "frontend",
+      "label": "자료제출 진입",
+      "sublabel": "(main) · no-materials",
+      "pos": [
+        100,
+        46
+      ],
+      "size": [
+        540,
+        50
+      ],
+      "tag": "2 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(main)/page.tsx",
+          "line": 1,
+          "label": "/vat/submit-material — 항목 목록"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/no-materials/page.tsx",
+          "line": 1,
+          "label": "/no-materials — 제출할 자료 없음"
+        }
+      ]
+    },
+    {
+      "id": "connect",
+      "type": "security",
+      "label": "계정 연결",
+      "sublabel": "socket.io 로 상태를 받는다",
+      "pos": [
+        676,
+        46
+      ],
+      "size": [
+        220,
+        50
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(connection)/connect-account/page.tsx",
+          "line": 1,
+          "label": "/connect-account — 연결 시작"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(connection)/connect-account/verify/page.tsx",
+          "line": 1,
+          "label": "/verify — 인증"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(connection)/connect-account/processing/page.tsx",
+          "line": 1,
+          "label": "/processing — 진행 중"
+        }
+      ]
+    },
+    {
+      "id": "connected",
+      "type": "backend",
+      "label": "연결 완료",
+      "sublabel": "connect-complete",
+      "pos": [
+        950,
+        46
+      ],
+      "size": [
+        220,
+        50
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(connection)/connect-complete/page.tsx",
+          "line": 1,
+          "label": "/connect-complete — 연결 완료"
+        }
+      ]
+    },
+    {
+      "id": "cardIn",
+      "type": "frontend",
+      "label": "카드 · 입력",
+      "sublabel": "비밀번호 · 카드 선택",
+      "pos": [
+        100,
+        128
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/page.tsx",
+          "line": 1,
+          "label": "/card-expense — 카드 항목 진입"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/input-password/page.tsx",
+          "line": 1,
+          "label": "/input-password — 비밀번호"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/masked-cardlist/page.tsx",
+          "line": 1,
+          "label": "/masked-cardlist — 카드 선택"
+        }
+      ]
+    },
+    {
+      "id": "estateIn",
+      "type": "frontend",
+      "label": "부동산 · 입력",
+      "sublabel": "OCR · 불러오기",
+      "pos": [
+        380,
+        128
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/page.tsx",
+          "line": 1,
+          "label": "/real-estate — 부동산 진입"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/input-ocr/page.tsx",
+          "line": 1,
+          "label": "/input-ocr — OCR 입력"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/input-loaded/page.tsx",
+          "line": 1,
+          "label": "/input-loaded — 불러온 값 입력"
+        }
+      ]
+    },
+    {
+      "id": "paperIn",
+      "type": "frontend",
+      "label": "종이 세금계산서 · 입력",
+      "sublabel": "입력 · 진행",
+      "pos": [
+        660,
+        128
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/paper-tax-invoice/page.tsx",
+          "line": 1,
+          "label": "/paper-tax-invoice — 진입"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/paper-tax-invoice/input/page.tsx",
+          "line": 1,
+          "label": "/input — 직접 입력"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/paper-tax-invoice/progress/page.tsx",
+          "line": 1,
+          "label": "/progress — 처리 중"
+        }
+      ]
+    },
+    {
+      "id": "online",
+      "type": "frontend",
+      "label": "온라인 판매",
+      "sublabel": "가이드 포함",
+      "pos": [
+        940,
+        128
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "2 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/online/page.tsx",
+          "line": 1,
+          "label": "/online — 온라인 판매"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/online/guide/page.tsx",
+          "line": 1,
+          "label": "/online/guide — 연동 가이드"
+        }
+      ]
+    },
+    {
+      "id": "cardOut",
+      "type": "frontend",
+      "label": "카드 · 결과",
+      "sublabel": "요약 · 상세 · 등록완료",
+      "pos": [
+        100,
+        210
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/summary/page.tsx",
+          "line": 1,
+          "label": "/summary — 사용 요약"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/detail/page.tsx",
+          "line": 1,
+          "label": "/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/registry-complete/page.tsx",
+          "line": 1,
+          "label": "/registry-complete — 등록 완료"
+        }
+      ]
+    },
+    {
+      "id": "estateList",
+      "type": "frontend",
+      "label": "부동산 · 목록",
+      "sublabel": "선택 · 계약 목록 · 상세",
+      "pos": [
+        380,
+        210
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/select-loaded/page.tsx",
+          "line": 1,
+          "label": "/select-loaded — 불러오기 선택"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/contract-list/page.tsx",
+          "line": 1,
+          "label": "/contract-list — 계약 목록"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/detail/page.tsx",
+          "line": 1,
+          "label": "/detail — 상세"
+        }
+      ]
+    },
+    {
+      "id": "paperOut",
+      "type": "frontend",
+      "label": "종이 · 결과",
+      "sublabel": "상세 · 업로드",
+      "pos": [
+        660,
+        210
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "2 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/paper-tax-invoice/detail/page.tsx",
+          "line": 1,
+          "label": "/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/paper-tax-invoice/upload-file/page.tsx",
+          "line": 1,
+          "label": "/upload-file — 파일 업로드"
+        }
+      ]
+    },
+    {
+      "id": "single1",
+      "type": "frontend",
+      "label": "단일 항목 ①",
+      "sublabel": "매입대행 · 차량 · 현금매출",
+      "pos": [
+        940,
+        210
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/buying-agency/page.tsx",
+          "line": 1,
+          "label": "/buying-agency — 매입 대행"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/car/page.tsx",
+          "line": 1,
+          "label": "/car — 차량"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/cash-sales/page.tsx",
+          "line": 1,
+          "label": "/cash-sales — 현금 매출"
+        }
+      ]
+    },
+    {
+      "id": "cardUp",
+      "type": "frontend",
+      "label": "카드 · 업로드",
+      "sublabel": "upload-file",
+      "pos": [
+        100,
+        292
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/card-expense/upload-file/page.tsx",
+          "line": 1,
+          "label": "/upload-file — 파일 업로드"
+        }
+      ]
+    },
+    {
+      "id": "estateUp",
+      "type": "frontend",
+      "label": "부동산 · 업로드",
+      "sublabel": "upload-file",
+      "pos": [
+        380,
+        292
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/real-estate/upload-file/page.tsx",
+          "line": 1,
+          "label": "/upload-file — 파일 업로드"
+        }
+      ]
+    },
+    {
+      "id": "single2",
+      "type": "frontend",
+      "label": "단일 항목 ②",
+      "sublabel": "배달 · 중복매출 · 수출",
+      "pos": [
+        660,
+        292
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/delivery/page.tsx",
+          "line": 1,
+          "label": "/delivery — 배달"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/duplicate-sales/page.tsx",
+          "line": 1,
+          "label": "/duplicate-sales — 중복 매출"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(category)/export/page.tsx",
+          "line": 1,
+          "label": "/export — 수출"
+        }
+      ]
+    },
+    {
+      "id": "submit",
+      "type": "backend",
+      "label": "제출",
+      "sublabel": "미리보기 · 결과",
+      "pos": [
+        940,
+        292
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "tag": "2 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/preview/page.tsx",
+          "line": 1,
+          "label": "/preview — 제출 전 미리보기"
+        },
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/submit-result/page.tsx",
+          "line": 1,
+          "label": "/submit-result — 제출 결과"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "main",
+      "to": "connect",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e2",
+      "from": "connect",
+      "to": "connected",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e3",
+      "from": "main",
+      "to": "cardIn",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e4",
+      "from": "main",
+      "to": "estateIn",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e6",
+      "from": "cardIn",
+      "to": "cardOut",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e7",
+      "from": "estateIn",
+      "to": "estateList",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e8",
+      "from": "paperIn",
+      "to": "paperOut",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e9",
+      "from": "online",
+      "to": "single1",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e10",
+      "from": "cardOut",
+      "to": "cardUp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e11",
+      "from": "estateList",
+      "to": "estateUp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e12",
+      "from": "paperOut",
+      "to": "single2",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e13",
+      "from": "single1",
+      "to": "submit",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "항목마다 화면 수가 다르다",
+      "items": [
+        "card-expense 7 · real-estate 7 · paper-tax-invoice 5 · online 2 — 이 넷이 21 화면으로 대부분이다",
+        "buying-agency · car · cash-sales · delivery · duplicate-sales · export 는 각각 화면 하나뿐이다",
+        "(connection) 4 · (main)·no-materials·preview·submit-result 4 를 더해 35 다",
+        "노드를 클릭하면 그 안의 실제 page.tsx 경로가 전부 뜬다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "종소세에도 같은 항목이 따로 있다",
+      "items": [
+        "card-expense 화면 세트가 global-income 아래에도 통째로 복제돼 있다 — 공유가 아니다",
+        "컴포넌트(CardUsageList)와 훅(useGetCardListByMaterial)도 이름만 같고 파일이 다르다",
+        "쿼리도 따로다 — 부가세 vatCardList, 종소세 globalIncomeCardList",
+        "한 항목을 고치라는 요청이 오면 두 도메인을 다 봐야 한다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "계정 연결만 socket.io 다",
+      "items": [
+        "connect-account 에서 useGetSocketStatus 로 소켓을 연다. care-web 에서 소켓을 쓰는 유일한 곳이다",
+        "나머지 화면은 전부 Relay 로 데이터를 받는다",
+        "연결이 끝나면 connect-complete 로 가고, 그 뒤 항목별 자료 제출로 돌아온다"
+      ]
+    }
+  ]
+}

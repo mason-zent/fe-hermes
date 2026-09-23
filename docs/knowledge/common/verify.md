@@ -12,6 +12,7 @@
 | zent-packages | `scripts/verify/zent-packages.sh <패키지명...>` |
 
 ## 실행 전 확인
+- **워크트리 대상**: 스크립트는 기본으로 메인 체크아웃(`repos/<레포>`)을 검증한다. 워크트리를 검증하려면 `HERMES_VERIFY_DIR=<워크트리> scripts/verify/<레포>.sh`. `delegate.sh <에이전트> --cwd <워크트리>`로 띄운 pane(reviewer 포함)은 이 값이 이미 들어 있다. 다른 레포의 워크트리를 가리키면 경고를 내고 메인 체크아웃을 검증하므로, 여러 레포를 리뷰할 때는 호출마다 붙인다. 결과 표 제목의 브랜치로 어느 트리를 검증했는지 확인한다
 - **Node 버전**: 레포 `.nvmrc`와 현재 `node -v`가 같아야 한다. 스크립트가 다르면 경고 단계로 표시한다. 맞추는 법은 `nvm use <버전>`
   - BRICS 콘솔(refund·hub·care)·zent-packages는 `v24.14.1`, bznav-web은 `v24.15.0`
 - **로컬 트리 최신 여부**: `git status --short --branch`에 `behind`가 보이면 검증 실패가 내 변경 때문이 아닐 수 있다. 먼저 pull

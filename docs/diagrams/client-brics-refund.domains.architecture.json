@@ -1,0 +1,295 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "client-brics-refund 도메인 맵",
+    "subtitle": "app/refund-service 아래 도메인 14개 · 화면 49개 · layout 가드 25개",
+    "output": "docs/diagrams/client-brics-refund.domains.html",
+    "viewBox": [
+      1080,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "data",
+        "label": "환급 업무",
+        "focus": [
+          "overview",
+          "user",
+          "partner",
+          "simple",
+          "card"
+        ],
+        "note": "환급 건과 회원을 직접 다루는 화면들. 개인정보가 있어 마스킹 해제 경로가 붙는다."
+      },
+      {
+        "id": "market",
+        "label": "마케팅 · 콘텐츠",
+        "focus": [
+          "ad",
+          "content",
+          "research"
+        ],
+        "note": "advertisement 가 13 화면으로 가장 크다. 랜딩 SEO·광고 슬롯·제휴가 여기 있다."
+      },
+      {
+        "id": "ops",
+        "label": "알림 · 운영",
+        "focus": [
+          "bizmsg",
+          "qa",
+          "emergency",
+          "hometax",
+          "pipe",
+          "bznavapp"
+        ],
+        "note": "business-message 가 10 화면이다. 점검·긴급 공지·외부 연동이 함께 있다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "환급 업무",
+      "wraps": [
+        "overview",
+        "user",
+        "partner",
+        "simple",
+        "card"
+      ],
+      "pad": 14
+    },
+    {
+      "kind": "security-group",
+      "label": "모든 도메인이 layout 에서 권한을 검사한다 (25개)",
+      "wraps": [
+        "ad",
+        "content",
+        "research",
+        "bizmsg",
+        "qa",
+        "emergency",
+        "hometax",
+        "pipe",
+        "bznavapp"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "overview",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "refund-overview",
+      "sublabel": "2 화면",
+      "tag": "OVERVIEW",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "user",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "user",
+      "sublabel": "1 화면",
+      "tag": "ALL_USER",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "partner",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "partner",
+      "sublabel": "3 화면",
+      "tag": "PARTNER_DISCOUNT",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "simple",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "simple-apply",
+      "sublabel": "1 화면",
+      "tag": "SIMPLE_APPLY_LINK",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "card",
+      "type": "frontend",
+      "row": 1,
+      "col": 4,
+      "label": "card-register",
+      "sublabel": "2 화면",
+      "tag": "CARD_CRITERIA",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "ad",
+      "type": "frontend",
+      "row": 2,
+      "col": 0,
+      "label": "advertisement",
+      "sublabel": "13 화면",
+      "tag": "가장 크다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "row": 2,
+      "col": 1,
+      "label": "content",
+      "sublabel": "4 화면",
+      "tag": "CONTENT_TERMS",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "research",
+      "type": "frontend",
+      "row": 2,
+      "col": 2,
+      "label": "research",
+      "sublabel": "2 화면",
+      "tag": "RESEARCH",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "bizmsg",
+      "type": "frontend",
+      "row": 2,
+      "col": 3,
+      "label": "business-message",
+      "sublabel": "10 화면",
+      "tag": "두 번째로 크다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "qa",
+      "type": "frontend",
+      "row": 2,
+      "col": 4,
+      "label": "qa",
+      "sublabel": "4 화면",
+      "tag": "QA_ALIMTALK 등",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "emergency",
+      "type": "backend",
+      "row": 3,
+      "col": 0,
+      "label": "emergency",
+      "sublabel": "2 화면",
+      "tag": "MAINTENANCE",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "hometax",
+      "type": "backend",
+      "row": 3,
+      "col": 1,
+      "label": "hometax-block",
+      "sublabel": "3 화면",
+      "tag": "HOMETAX_BLOCK",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "pipe",
+      "type": "backend",
+      "row": 3,
+      "col": 2,
+      "label": "pipe-drive",
+      "sublabel": "1 화면",
+      "tag": "PIPE_DRIVE_FAILURE",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "bznavapp",
+      "type": "backend",
+      "row": 3,
+      "col": 3,
+      "label": "bznav-app",
+      "sublabel": "1 화면",
+      "tag": "APP_VERSION",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "크기가 고르지 않다",
+      "items": [
+        "advertisement 13 화면 · business-message 10 화면 두 도메인이 전체 49 화면의 절반 가까이다",
+        "user · simple-apply · pipe-drive · bznav-app 은 각 1 화면뿐이다",
+        "화면 수가 곧 작업량은 아니지만, 어디가 복잡한지는 이 분포가 알려준다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "권한은 도메인마다 다르다",
+      "items": [
+        "layout 25개가 전부 auth() 를 부른다. 다만 전부 functions.includes 검사는 아니다 — landing-seo 는 로그인만 본다",
+        "권한 코드는 도메인마다 따로다(PAGE_REFUND_OVERVIEW · ALL_USER · PARTNER_DISCOUNT …)",
+        "AuthFunction enum 에 코드가 없으면 이 레포에서 만들 수 없다 → packages-fe 선행"
+      ]
+    }
+  ]
+}

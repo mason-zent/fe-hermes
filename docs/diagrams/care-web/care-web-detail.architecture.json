@@ -1,0 +1,1051 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "care-web 상세 아키텍처",
+    "subtitle": "진입 → 셸 → 가드 → 화면군 → 훅 → 데이터 관문. 관문이 넷이다",
+    "output": "care-web-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      760
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "gate",
+        "label": "진입과 게이트",
+        "focus": [
+          "clients",
+          "proxy",
+          "firebase",
+          "shell",
+          "guard"
+        ],
+        "note": "미들웨어 7종이 순서대로 합성된다. 렌더를 막는 인증 경계는 layout 14개의 CareAuthGuard 뿐이다."
+      },
+      {
+        "id": "domain",
+        "label": "신고 3종",
+        "focus": [
+          "gincome",
+          "vat",
+          "payroll",
+          "gihooks",
+          "vathooks",
+          "payhooks"
+        ],
+        "note": "이름이 비슷해도 query·atom·오류 타입이 도메인마다 따로다. 공통 도메인이 아니다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 관문 넷",
+        "focus": [
+          "relay",
+          "rest",
+          "socket",
+          "nextapi",
+          "careapi"
+        ],
+        "note": "Relay 말고도 REST·파일, socket.io, Next Route Handler 7개가 따로 있다."
+      },
+      {
+        "id": "track",
+        "label": "추적",
+        "focus": [
+          "trackp",
+          "analytics"
+        ],
+        "note": "ViewEventLogger 는 Mixpanel·Datadog 만 명시한다. 설정된 SDK 전부로 보내지 않는다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "care-web (Next.js App Router)",
+      "wraps": [
+        "proxy",
+        "shell",
+        "authp",
+        "signp",
+        "userp",
+        "trackp",
+        "guard",
+        "gincome",
+        "vat",
+        "payroll",
+        "onboard",
+        "etcscreen",
+        "gihooks",
+        "vathooks",
+        "payhooks",
+        "bookhooks",
+        "stores",
+        "relay",
+        "rest",
+        "socket",
+        "nextapi"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "인증 경계 · layout 14개",
+      "wraps": [
+        "guard",
+        "gincome",
+        "vat",
+        "payroll",
+        "onboard"
+      ],
+      "pad": 10
+    },
+    {
+      "kind": "region",
+      "label": "신고 3종 — 공통 도메인이 아니다",
+      "wraps": [
+        "gincome",
+        "vat",
+        "payroll",
+        "gihooks",
+        "vathooks",
+        "payhooks"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "데이터 관문 4종",
+      "wraps": [
+        "relay",
+        "rest",
+        "socket",
+        "nextapi"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "사용자 채널",
+      "sublabel": "웹 · BZNAV 앱 웹뷰",
+      "pos": [
+        60,
+        6
+      ],
+      "size": [
+        1260,
+        40
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "Next Proxy",
+      "sublabel": "미들웨어 7종을 순서대로 합성",
+      "pos": [
+        60,
+        76
+      ],
+      "size": [
+        810,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/proxy.ts",
+          "line": 20,
+          "end_line": 28,
+          "label": "composeMiddleware — 미들웨어 7종 합성 순서"
+        },
+        {
+          "path": "apps/care-web/libs/hoc/withServiceMaintenanceMiddleware.ts",
+          "line": 30,
+          "label": "withServiceMaintenanceMiddleware — 점검 판정"
+        },
+        {
+          "path": "apps/care-web/libs/hoc/withSafeReturnUrlMiddleware.ts",
+          "line": 1,
+          "label": "withSafeReturnUrlMiddleware — returnUrl 검사"
+        }
+      ]
+    },
+    {
+      "id": "firebase",
+      "type": "cloud",
+      "label": "Firebase 운영 설정",
+      "sublabel": "점검 · A/B 분기",
+      "pos": [
+        900,
+        76
+      ],
+      "size": [
+        420,
+        56
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "루트 셸 · Provider 14겹",
+      "sublabel": "순서가 의미 있다",
+      "pos": [
+        60,
+        162
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 39,
+          "end_line": 60,
+          "label": "Provider 14겹 중첩 — 순서가 의미 있다"
+        },
+        {
+          "path": "apps/care-web/app/layout.tsx",
+          "line": 57,
+          "label": "RootLayout — Toaster · Registry 장착"
+        },
+        {
+          "path": "apps/care-web/libs/provider/GlobalAtomProvider.tsx",
+          "line": 6,
+          "label": "GlobalAtomProvider — 전역 atom 스코프"
+        }
+      ]
+    },
+    {
+      "id": "authp",
+      "type": "security",
+      "label": "CareAuthProvider",
+      "sublabel": "세션 · 토큰",
+      "pos": [
+        60,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareAuthProvider.tsx",
+          "line": 35,
+          "label": "CareAuthProvider — 세션·토큰 컨텍스트"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareAuthSignProvider.tsx",
+          "line": 6,
+          "label": "CareAuthSignProvider — 인증 연동"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareUserInfoProvider.tsx",
+          "line": 35,
+          "label": "CareUserInfoProvider — 사용자 정보"
+        }
+      ]
+    },
+    {
+      "id": "signp",
+      "type": "security",
+      "label": "CareAuthSignProvider",
+      "sublabel": "인증 연동",
+      "pos": [
+        380,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareAuthSignProvider.tsx",
+          "line": 6,
+          "label": "Sign 연동"
+        }
+      ]
+    },
+    {
+      "id": "userp",
+      "type": "frontend",
+      "label": "CareUserInfoProvider",
+      "sublabel": "사용자 정보",
+      "pos": [
+        700,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareUserInfoProvider.tsx",
+          "line": 35,
+          "label": "사용자 컨텍스트"
+        }
+      ]
+    },
+    {
+      "id": "trackp",
+      "type": "messagebus",
+      "label": "CareEventTracking",
+      "sublabel": "Mixpanel · Datadog",
+      "pos": [
+        1020,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareEventTrackingProvider.tsx",
+          "line": 45,
+          "label": "CareEventTrackingProvider — 전송 대상 설정"
+        },
+        {
+          "path": "apps/care-web/libs/eventLogger/useCareEventLogger.ts",
+          "line": 19,
+          "label": "useCareEventLogger — 업무 이벤트"
+        },
+        {
+          "path": "apps/care-web/libs/eventLogger/eventLogger.ts",
+          "line": 1,
+          "label": "eventLogger — 전송 구현"
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "CareAuthGuard",
+      "sublabel": "layout 14개에만 걸린다",
+      "pos": [
+        60,
+        320
+      ],
+      "size": [
+        1260,
+        40
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/components/common/auth/CareAuthGuard.tsx",
+          "line": 9,
+          "end_line": 27,
+          "label": "CareAuthGuard — AuthGuard 래핑"
+        },
+        {
+          "path": "apps/care-web/components/common/auth/CareAuthGuard.tsx",
+          "line": 20,
+          "end_line": 22,
+          "label": "saveReturnUrl — 현재 경로 저장"
+        },
+        {
+          "path": "apps/care-web/components/common/auth/CareAuthGuard.tsx",
+          "line": 26,
+          "label": "logoutPagePath — 로그인 경로에 query 를 붙인다"
+        }
+      ]
+    },
+    {
+      "id": "gincome",
+      "type": "frontend",
+      "label": "종소세 56 화면",
+      "sublabel": "/global-income · (auth) 55 · 자료제출 43",
+      "pos": [
+        60,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/flowstatus/page.tsx",
+          "line": 17,
+          "label": "/global-income/flowstatus — 단계 화면"
+        },
+        {
+          "path": "apps/care-web/app/global-income/layout.tsx",
+          "line": 1,
+          "label": "layout — CareAuthGuard 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/hooks/useCreatePaymentLink.ts",
+          "line": 11,
+          "label": "useCreatePaymentLink — 결제 링크 생성"
+        }
+      ]
+    },
+    {
+      "id": "vat",
+      "type": "frontend",
+      "label": "부가세 50 화면",
+      "sublabel": "/vat · submit-material 35",
+      "pos": [
+        316,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/(status)/org-status/page.tsx",
+          "line": 19,
+          "label": "/vat/org-status — 사업장 상태"
+        },
+        {
+          "path": "apps/care-web/app/vat/layout.tsx",
+          "line": 12,
+          "label": "VatAtomProvider — 도메인 atom 스코프"
+        },
+        {
+          "path": "apps/care-web/app/vat/provider/VatOrgProvider.tsx",
+          "line": 38,
+          "label": "VatOrgProvider — 선택 사업장 컨텍스트"
+        }
+      ]
+    },
+    {
+      "id": "payroll",
+      "type": "frontend",
+      "label": "급여 28 화면",
+      "sublabel": "/payroll · submit 10 · part-time 10",
+      "pos": [
+        572,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/input/page.tsx",
+          "line": 46,
+          "label": "/payroll/input — 급여 입력"
+        },
+        {
+          "path": "apps/care-web/app/payroll/hooks/useGetPreviousPayroll.ts",
+          "line": 16,
+          "label": "useGetPreviousPayroll — 전월 급여 조회"
+        },
+        {
+          "path": "apps/care-web/app/payroll/hooks/usePreviousPayrollIConfirmation.ts",
+          "line": 39,
+          "label": "usePreviousPayrollIConfirmation — 확정 확인"
+        }
+      ]
+    },
+    {
+      "id": "onboard",
+      "type": "frontend",
+      "label": "(auth) 30 화면",
+      "sublabel": "/(auth) 30 · 온보딩 · 구독 결제",
+      "pos": [
+        828,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/layout.tsx",
+          "line": 12,
+          "label": "layout — CareAuthGuard 진입"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/store/flowAtom.ts",
+          "line": 1,
+          "label": "flowAtom — 온보딩 흐름 상태"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/store/referrerAtom.ts",
+          "line": 1,
+          "label": "referrerAtom — 유입 경로"
+        }
+      ]
+    },
+    {
+      "id": "etcscreen",
+      "type": "frontend",
+      "label": "마이 · 그 외 100여",
+      "sublabel": "/my-book · /certificate · /cs-center 등",
+      "pos": [
+        1084,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/page.tsx",
+          "line": 31,
+          "label": "/my-book — 장부 (대표 화면)"
+        },
+        {
+          "path": "apps/care-web/app/cs-center/lib/get-notion-record-map.ts",
+          "line": 25,
+          "label": "getNotionRecordMap — 도움말 콘텐츠"
+        },
+        {
+          "path": "apps/care-web/app/certificate/store/certificateOutputAtom.ts",
+          "line": 1,
+          "label": "certificateOutputAtom — 증명서 출력 상태"
+        }
+      ]
+    },
+    {
+      "id": "gihooks",
+      "type": "messagebus",
+      "label": "종소세 훅 · graphql",
+      "sublabel": "도메인 전용",
+      "pos": [
+        60,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/hooks/useIncomeFileUploadMutation.ts",
+          "line": 8,
+          "label": "useIncomeFileUploadMutation — 자료 업로드"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/hooks/useGlobalIncomeKakaoState.ts",
+          "line": 5,
+          "label": "useGlobalIncomeKakaoState — 카카오 상태"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/hooks/useGlobalIncomeEvent.ts",
+          "line": 9,
+          "label": "useGlobalIncomeEvent — 도메인 이벤트"
+        }
+      ]
+    },
+    {
+      "id": "vathooks",
+      "type": "messagebus",
+      "label": "부가세 훅 · Provider",
+      "sublabel": "VatOrgProvider · VatAtomProvider",
+      "pos": [
+        316,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/hooks/useIssueTmpCrdtlsCer.ts",
+          "line": 8,
+          "label": "useIssueTmpCrdtlsCer — 임시 자격증명 발급"
+        },
+        {
+          "path": "apps/care-web/app/vat/hooks/useAccountRefund.ts",
+          "line": 18,
+          "label": "useAccountRefund — 환급 계좌"
+        },
+        {
+          "path": "apps/care-web/app/vat/hooks/useLinkDeliveryAccount.ts",
+          "line": 8,
+          "label": "useLinkDeliveryAccount — 배달 계정 연결"
+        }
+      ]
+    },
+    {
+      "id": "payhooks",
+      "type": "messagebus",
+      "label": "급여 훅 · graphql",
+      "sublabel": "월별 조회 · 계산",
+      "pos": [
+        572,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/hooks/useSelectedConfirmationDetail.ts",
+          "line": 5,
+          "label": "useSelectedConfirmationDetail — 확정 상세"
+        },
+        {
+          "path": "apps/care-web/app/payroll/hooks/useResetEmployeeInfo.ts",
+          "line": 5,
+          "label": "useResetEmployeeInfo — 직원 정보 초기화"
+        },
+        {
+          "path": "apps/care-web/app/payroll/store/newEmployeeAtom.ts",
+          "line": 1,
+          "label": "newEmployeeAtom — 신규 직원 입력 상태"
+        }
+      ]
+    },
+    {
+      "id": "bookhooks",
+      "type": "messagebus",
+      "label": "장부 · 업무 훅",
+      "sublabel": "ledger 등",
+      "pos": [
+        828,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/graphql/ledger.ts",
+          "line": 3,
+          "label": "ledgerQuery — 장부 조회"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/hooks/useGetAccountBook.ts",
+          "line": 28,
+          "label": "useGetAccountBook — useLazyLoadQuery"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/hooks/useMyBookFilters.ts",
+          "line": 1,
+          "label": "useMyBookFilters — 거래·공제 필터"
+        }
+      ]
+    },
+    {
+      "id": "stores",
+      "type": "database",
+      "label": "상태 저장소",
+      "sublabel": "GlobalAtom · 도메인 atom · 브라우저",
+      "pos": [
+        1084,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/store/userInfoAtom.ts",
+          "line": 1,
+          "label": "userInfoAtom — 사용자 정보"
+        },
+        {
+          "path": "apps/care-web/store/orgListAtom.ts",
+          "line": 1,
+          "label": "orgListAtom — 사업장 목록"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/store/selectedMonthAtom.ts",
+          "line": 24,
+          "label": "selectedMonthAtom — localStorage 직접 동기화"
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "type": "backend",
+      "label": "Relay 환경",
+      "sublabel": "fetchGraphQL 전송",
+      "pos": [
+        60,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/relay/relayEnvironment.ts",
+          "line": 21,
+          "label": "initEnvironment — Relay 환경 구성"
+        },
+        {
+          "path": "apps/care-web/libs/relay/relayEnvironment.ts",
+          "line": 43,
+          "label": "useEnvironment — 토큰·세션 주입"
+        },
+        {
+          "path": "apps/care-web/libs/relay/fetchGraphQLFactory.ts",
+          "line": 32,
+          "label": "fetchGraphQL — 전송 · uploadables 지원"
+        }
+      ]
+    },
+    {
+      "id": "rest",
+      "type": "backend",
+      "label": "REST · 파일",
+      "sublabel": "증명서 · 외부 다운로드",
+      "pos": [
+        700,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/certificate/utils/requestCertificates.ts",
+          "line": 23,
+          "label": "requestCertificates — 증명서 발급"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/hooks/useFileDownloadExternalBase.ts",
+          "line": 59,
+          "label": "useFileDownloadExternalBase — 임시 자격증명"
+        },
+        {
+          "path": "apps/care-web/app/payroll/hooks/useDownloadPayroll.ts",
+          "line": 1,
+          "label": "useDownloadPayroll — 급여 파일 내려받기"
+        }
+      ]
+    },
+    {
+      "id": "socket",
+      "type": "messagebus",
+      "label": "socket.io",
+      "sublabel": "부가세 계정연결 전용",
+      "pos": [
+        380,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-account/hooks/useGetSocketStatus.ts",
+          "line": 89,
+          "label": "useGetSocketStatus — socket.io 연결 상태"
+        },
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-account/hooks/useSocketMessage.ts",
+          "line": 1,
+          "label": "useSocketMessage — 메시지 수신"
+        },
+        {
+          "path": "apps/care-web/app/vat/constants/socket.ts",
+          "line": 1,
+          "label": "SOCKET_TIMEOUT_MS — 타임아웃 상수"
+        }
+      ]
+    },
+    {
+      "id": "nextapi",
+      "type": "backend",
+      "label": "Next Route Handler 7개",
+      "sublabel": "/api/* 7개 · PG 콜백 · 설정 조회",
+      "pos": [
+        1020,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/api/partner-list/route.tsx",
+          "line": 6,
+          "label": "GET /api/partner-list — 제휴사 목록"
+        },
+        {
+          "path": "apps/care-web/app/api/service-maintenance-banner/route.tsx",
+          "line": 1,
+          "label": "GET /api/service-maintenance-banner — 점검 배너"
+        },
+        {
+          "path": "apps/care-web/app/api/my-account-result/success/route.ts",
+          "line": 5,
+          "label": "GET /api/my-account-result/success — PG 콜백"
+        }
+      ]
+    },
+    {
+      "id": "careapi",
+      "type": "cloud",
+      "label": "Care GraphQL API",
+      "sublabel": "쿼리·뮤테이션 236건",
+      "pos": [
+        60,
+        644
+      ],
+      "size": [
+        620,
+        48
+      ]
+    },
+    {
+      "id": "sso",
+      "type": "cloud",
+      "label": "SSO · CI",
+      "sublabel": "로그인 · 본인확인",
+      "pos": [
+        710,
+        644
+      ],
+      "size": [
+        280,
+        48
+      ]
+    },
+    {
+      "id": "analytics",
+      "type": "cloud",
+      "label": "분석 도구",
+      "sublabel": "Mixpanel · Datadog · GA · 픽셀",
+      "pos": [
+        1020,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/eventLogger/useCareEventLogger.ts",
+          "line": 19,
+          "label": "이벤트 전송"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "clients",
+      "to": "proxy",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c2",
+      "from": "proxy",
+      "to": "firebase",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "c3",
+      "from": "proxy",
+      "to": "shell",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c4",
+      "from": "shell",
+      "to": "authp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c5",
+      "from": "shell",
+      "to": "trackp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c6",
+      "from": "authp",
+      "to": "guard",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c7",
+      "from": "guard",
+      "to": "gincome",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c8",
+      "from": "guard",
+      "to": "vat",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c9",
+      "from": "guard",
+      "to": "payroll",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c10",
+      "from": "guard",
+      "to": "onboard",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c11",
+      "from": "gincome",
+      "to": "gihooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c12",
+      "from": "vat",
+      "to": "vathooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c13",
+      "from": "payroll",
+      "to": "payhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c14",
+      "from": "onboard",
+      "to": "bookhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c15",
+      "from": "etcscreen",
+      "to": "stores",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c16",
+      "from": "gihooks",
+      "to": "relay",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c17",
+      "from": "vathooks",
+      "to": "socket",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c18",
+      "from": "bookhooks",
+      "to": "rest",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c19",
+      "from": "stores",
+      "to": "nextapi",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c20",
+      "from": "relay",
+      "to": "careapi",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c21",
+      "from": "socket",
+      "to": "careapi",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c22",
+      "from": "rest",
+      "to": "sso",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c23",
+      "from": "nextapi",
+      "to": "analytics",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "경계가 두 겹이고 성격이 다르다",
+      "items": [
+        "proxy.ts 가 미들웨어 7종을 composeMiddleware 로 순서대로 합성한다 — 점검 → 랜딩 리다이렉트 → 플랫폼 → returnUrl → A/B → vat → pricing",
+        "GlobalProvider 는 14겹이다. RelayProvider 가 CareAuthProvider 안에 있어야 토큰이 실린다",
+        "렌더를 실제로 막는 인증 경계는 layout 14개의 CareAuthGuard 뿐이다. 전역 Provider 가 모든 페이지를 보호하는 것이 아니다",
+        "(landing) · (login) · (payment) · (external-file-download) · cs-center · user-status 에는 가드가 없다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "신고 3종은 공통 도메인이 아니다",
+      "items": [
+        "이름이 비슷한 카드·자료·예상세액도 query·atom·오류 타입이 도메인마다 따로다 — 종소세 globalIncomeCardList, 부가세 vatCardList",
+        "card-expense 화면 세트(detail·input-password·masked-cardlist·summary·upload-file)가 두 도메인에 각각 복제돼 있다. 한 항목을 고치면 두 곳을 봐야 한다",
+        "폴더 이름 규칙도 다르다 — vat 는 constants·types·utils(복수), payroll 은 constant·type·util(단수)",
+        "graphql 디렉터리가 라우트 옆에 흩어져 있다. 전체 236건이고 그중 루트가 6건이다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "데이터 관문이 넷이다",
+      "items": [
+        "Relay — 주 경로. libs/relay/fetchGraphQLFactory 로 전송한다",
+        "REST · 파일 — 증명서 발급과 외부 다운로드는 임시 자격증명을 받아 따로 처리한다",
+        "socket.io — 부가세 계정연결 화면 전용이다. 다른 곳에는 없다",
+        "Next Route Handler 7개 — 설정 조회(점검 배너·제휴사 목록 등)와 PG 콜백. cs-center 는 Notion 을 읽는다"
+      ]
+    }
+  ]
+}

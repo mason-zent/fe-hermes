@@ -1,0 +1,707 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "종소세 자료제출 43화면",
+    "subtitle": "app/global-income/(auth)/(submit-material) — 화면 43개를 하나도 빼지 않고 담았다",
+    "output": "global-income-submit-material.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1300,
+      440
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "card",
+        "label": "카드 항목",
+        "focus": [
+          "intro",
+          "cardIn",
+          "cardOut",
+          "cardEnd"
+        ],
+        "note": "부가세의 card-expense 와 이름이 같지만 파일이 전부 다르다. org-overview 는 종소세에만 있다. 8 화면."
+      },
+      {
+        "id": "dep",
+        "label": "부양가족 공제",
+        "focus": [
+          "depAuth",
+          "depList",
+          "depEdit",
+          "etcDed"
+        ],
+        "note": "간편인증 2단계를 거쳐 가족 목록을 만들고 추가·수정한다. 장애 여부는 별도 화면이다."
+      },
+      {
+        "id": "simpleauth",
+        "label": "간편인증이 두 곳",
+        "focus": [
+          "depAuth",
+          "localAuth"
+        ],
+        "note": "부양가족과 지방세가 각각 (simpleAuth) 하위에 user-info·정보 입력 두 화면을 갖는다."
+      },
+      {
+        "id": "sme",
+        "label": "중소기업 감면",
+        "focus": [
+          "smeSurvey",
+          "smeResult",
+          "smeHistory"
+        ],
+        "note": "설문 → 결과(요약·완료·비대상) → 환급 이력. 8 화면으로 카드와 같은 크기다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "종소세 자료제출 — 56 화면 중 43",
+      "wraps": [
+        "intro",
+        "cardIn",
+        "cardOut",
+        "cardEnd",
+        "depAuth",
+        "depList",
+        "depEdit",
+        "feeIn",
+        "feeDetail",
+        "docs",
+        "localAuth",
+        "localOut",
+        "etcDed",
+        "smeSurvey",
+        "smeResult",
+        "smeHistory"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "intro",
+      "type": "frontend",
+      "label": "자료제출 진입",
+      "sublabel": "intro · main",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        1160,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/intro/page.tsx",
+          "line": 1,
+          "label": "/intro — 안내"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/main/page.tsx",
+          "line": 1,
+          "label": "/main — 항목 목록"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "cardIn",
+      "type": "frontend",
+      "label": "카드 · 입력",
+      "sublabel": "비밀번호 · 카드 선택",
+      "pos": [
+        96,
+        122
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/page.tsx",
+          "line": 1,
+          "label": "/card-expense — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/input-password/page.tsx",
+          "line": 1,
+          "label": "/input-password — 비밀번호"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/masked-cardlist/page.tsx",
+          "line": 1,
+          "label": "/masked-cardlist — 카드 선택"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "cardOut",
+      "type": "frontend",
+      "label": "카드 · 결과",
+      "sublabel": "요약 · 상세 · 사업장",
+      "pos": [
+        96,
+        204
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/summary/page.tsx",
+          "line": 1,
+          "label": "/summary — 사용 요약"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/detail/page.tsx",
+          "line": 1,
+          "label": "/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/org-overview/page.tsx",
+          "line": 1,
+          "label": "/org-overview — 사업장 개요"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "cardEnd",
+      "type": "frontend",
+      "label": "카드 · 완료",
+      "sublabel": "등록완료 · 업로드",
+      "pos": [
+        96,
+        286
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/registry-complete/page.tsx",
+          "line": 1,
+          "label": "/registry-complete — 등록 완료"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/card-expense/upload-file/page.tsx",
+          "line": 1,
+          "label": "/upload-file — 파일 업로드"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "depAuth",
+      "type": "frontend",
+      "label": "부양가족 · 인증",
+      "sublabel": "간편인증 2단계",
+      "pos": [
+        332,
+        122
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/page.tsx",
+          "line": 1,
+          "label": "/deductions-dependents — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/(simpleAuth)/user-info/page.tsx",
+          "line": 1,
+          "label": "/user-info — 본인 정보"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/(simpleAuth)/dependents-info/page.tsx",
+          "line": 1,
+          "label": "/dependents-info — 가족 정보"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "depList",
+      "type": "frontend",
+      "label": "부양가족 · 등록",
+      "sublabel": "목록 · 추가",
+      "pos": [
+        332,
+        204
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/dependents-list/page.tsx",
+          "line": 1,
+          "label": "/dependents-list — 목록"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/registration/page.tsx",
+          "line": 1,
+          "label": "/registration — 등록"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/registration/add-dependents/page.tsx",
+          "line": 1,
+          "label": "/add-dependents — 추가"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "depEdit",
+      "type": "frontend",
+      "label": "부양가족 · 수정",
+      "sublabel": "수정 · 장애 선택",
+      "pos": [
+        332,
+        286
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/registration/modify-dependents/page.tsx",
+          "line": 1,
+          "label": "/modify-dependents — 수정"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-dependents/select-disability/page.tsx",
+          "line": 1,
+          "label": "/select-disability — 장애 여부"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "feeIn",
+      "type": "frontend",
+      "label": "카드수수료 · 입력",
+      "sublabel": "방식 선택",
+      "pos": [
+        568,
+        122
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/page.tsx",
+          "line": 1,
+          "label": "/expenses-card-fees — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/method/page.tsx",
+          "line": 1,
+          "label": "/method — 수집 방식"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/input/page.tsx",
+          "line": 1,
+          "label": "/input — 입력"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "feeDetail",
+      "type": "frontend",
+      "label": "카드수수료 · 상세",
+      "sublabel": "여신협회 · 정산계좌",
+      "pos": [
+        568,
+        204
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/input/crefia-id/page.tsx",
+          "line": 1,
+          "label": "/crefia-id — 여신협회 ID"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/input/settlement-account/page.tsx",
+          "line": 1,
+          "label": "/settlement-account — 정산 계좌"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-card-fees/collect-complete/page.tsx",
+          "line": 1,
+          "label": "/collect-complete — 수집 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "docs",
+      "type": "frontend",
+      "label": "증빙 서류",
+      "sublabel": "서류 제출",
+      "pos": [
+        568,
+        286
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-documents/page.tsx",
+          "line": 1,
+          "label": "/expenses-documents — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-documents/all-documents/page.tsx",
+          "line": 1,
+          "label": "/all-documents — 전체 서류"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/expenses-documents/submit-material/page.tsx",
+          "line": 1,
+          "label": "/submit-material — 자료 제출"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "localAuth",
+      "type": "frontend",
+      "label": "지방세 · 인증",
+      "sublabel": "간편인증 2단계",
+      "pos": [
+        804,
+        122
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/local-tax-expense/page.tsx",
+          "line": 1,
+          "label": "/local-tax-expense — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/local-tax-expense/(simpleAuth)/user-info/page.tsx",
+          "line": 1,
+          "label": "/user-info — 본인 정보"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/local-tax-expense/(simpleAuth)/address-info/page.tsx",
+          "line": 1,
+          "label": "/address-info — 주소 정보"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "localOut",
+      "type": "frontend",
+      "label": "지방세 · 결과",
+      "sublabel": "스크래핑 결과",
+      "pos": [
+        804,
+        204
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/local-tax-expense/scraping-complete/page.tsx",
+          "line": 1,
+          "label": "/scraping-complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/local-tax-expense/scraping-none/page.tsx",
+          "line": 1,
+          "label": "/scraping-none — 대상 없음"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "etcDed",
+      "type": "frontend",
+      "label": "그 외 공제",
+      "sublabel": "추가 · 개인",
+      "pos": [
+        804,
+        286
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-additional/page.tsx",
+          "line": 1,
+          "label": "/deductions-additional — 추가 공제"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-additional/collection-complete/page.tsx",
+          "line": 1,
+          "label": "/collection-complete — 수집 완료"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/deductions-personal/page.tsx",
+          "line": 1,
+          "label": "/deductions-personal — 개인 공제"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "smeSurvey",
+      "type": "frontend",
+      "label": "중소기업 감면 · 설문",
+      "sublabel": "사업장 · 병역",
+      "pos": [
+        1040,
+        122
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/page.tsx",
+          "line": 1,
+          "label": "/reductions-sme — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/org-survey/page.tsx",
+          "line": 1,
+          "label": "/org-survey — 사업장 설문"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/military-duration/page.tsx",
+          "line": 1,
+          "label": "/military-duration — 병역 기간"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "smeResult",
+      "type": "frontend",
+      "label": "감면 · 설문 결과",
+      "sublabel": "요약 · 완료 · 비대상",
+      "pos": [
+        1040,
+        204
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/survey-summary/page.tsx",
+          "line": 1,
+          "label": "/survey-summary — 요약"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/survey-complete/page.tsx",
+          "line": 1,
+          "label": "/survey-complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/survey-no-target/page.tsx",
+          "line": 1,
+          "label": "/survey-no-target — 비대상"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "smeHistory",
+      "type": "frontend",
+      "label": "감면 · 환급 이력",
+      "sublabel": "입력 · 완료",
+      "pos": [
+        1040,
+        286
+      ],
+      "size": [
+        216,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/refund-history/input/page.tsx",
+          "line": 1,
+          "label": "/refund-history/input — 입력"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/(submit-material)/reductions-sme/refund-history/complete/page.tsx",
+          "line": 1,
+          "label": "/refund-history/complete — 완료"
+        }
+      ],
+      "tag": "2 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "a0",
+      "from": "intro",
+      "to": "cardIn",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "a1",
+      "from": "intro",
+      "to": "depAuth",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "a2",
+      "from": "intro",
+      "to": "feeIn",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "a3",
+      "from": "intro",
+      "to": "localAuth",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "a4",
+      "from": "intro",
+      "to": "smeSurvey",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "cardIn-cardOut",
+      "from": "cardIn",
+      "to": "cardOut",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "cardOut-cardEnd",
+      "from": "cardOut",
+      "to": "cardEnd",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "depAuth-depList",
+      "from": "depAuth",
+      "to": "depList",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "depList-depEdit",
+      "from": "depList",
+      "to": "depEdit",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "feeIn-feeDetail",
+      "from": "feeIn",
+      "to": "feeDetail",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "feeDetail-docs",
+      "from": "feeDetail",
+      "to": "docs",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "localAuth-localOut",
+      "from": "localAuth",
+      "to": "localOut",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "smeSurvey-smeResult",
+      "from": "smeSurvey",
+      "to": "smeResult",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "smeResult-smeHistory",
+      "from": "smeResult",
+      "to": "smeHistory",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "항목이 여섯이다",
+      "items": [
+        "카드 8 · 부양가족 8 · 중소기업 감면 8 — 이 셋이 24 화면으로 절반을 넘는다",
+        "카드수수료 6 · 증빙서류 3 · 지방세 5 · 그 외 공제 3 · 진입 2 를 더해 43 이다",
+        "노드를 클릭하면 그 안의 실제 page.tsx 경로가 전부 뜬다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "부가세와 이름만 같다",
+      "items": [
+        "card-expense 세트가 부가세에도 있지만 파일이 전부 다르다. 공유가 아니라 복제다",
+        "종소세에만 org-overview(사업장 개요)가 있고, 부가세에만 upload-file 이 별도 갈래로 있다",
+        "쿼리도 따로다 — 종소세 globalIncomeCardList, 부가세 vatCardList",
+        "한 항목을 고치라는 요청이 오면 두 도메인을 다 봐야 한다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "간편인증이 두 군데 있다",
+      "items": [
+        "부양가족 공제와 지방세 경비가 각각 (simpleAuth) route group 을 갖는다",
+        "둘 다 user-info 화면이 있지만 서로 다른 파일이다",
+        "지방세는 인증 뒤 스크래핑 결과가 완료·대상없음 두 갈래로 갈린다"
+      ]
+    }
+  ]
+}

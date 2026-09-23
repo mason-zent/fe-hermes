@@ -35,14 +35,12 @@ open docs/diagrams/index.html
 이 원칙은 교차 검증에서 오류가 무더기로 나온 뒤에 세운 것이다 — 처음에는 지식 문서 요약으로 일반화해 그렸다가
 20건 넘게 틀렸다.
 
-### 레포를 가로지르는 구조
+### 서비스 전체를 가로지르는 것
 
-한 레포 안에서는 보이지 않는 것들이다. 영향 범위와 디스패치 순서가 여기서 나온다.
+한 레포 안에서는 보이지 않는 것이다.
 
 | 다이어그램 | 무엇을 보나 | 원본 |
 |---|---|---|
-| bznav packages 의존 층 | `@repo/*` 8개가 쌓인 순서. `project-config` 가 바닥, `user-sign` 이 꼭대기 | `bznav-packages.architecture.json` |
-| zent-packages 발행처 | 무엇을 발행하고 누가 실제로 쓰는가. bznav 계열은 `web-op` 하나만 쓴다 | `zent-packages.architecture.json` |
 | 데이터 출처 지도 | 출처 → 관문 → 서비스. 계열마다 관문이 완전히 다르다 | `data-sources.dataflow.json` |
 
 **`workflow`(작업 절차)는 걷어냈다.** `workflows.md` 텍스트가 더 정확하고 정보량도 많았다.

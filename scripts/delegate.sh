@@ -150,17 +150,34 @@ PROMPT_FILE="$(mktemp -t hermes-prompt)" || { echo "mktemp 실패"; exit 1; }
 RUNNER="$(mktemp -t hermes-runner)"      || { rm -f "$PROMPT_FILE"; echo "mktemp 실패"; exit 1; }
 printf '%s' "$PROMPT" > "$PROMPT_FILE"   || { rm -f "$PROMPT_FILE" "$RUNNER"; echo "프롬프트 쓰기 실패"; exit 1; }
 
+# 워크트리는 별도 git 레포라 Claude Code 가 hermes 의 .claude/agents·rules·AGENTS.md 를 못 찾는다
+# (2026-09-23 실측 — `--agent '<이름>' not found`). hermes 밖 git 레포에서 띄울 때는
+# 정의·공통 규칙을 직접 넘기고, 상태바·검증 스크립트가 메인 체크아웃 대신 워크트리를 보게 한다.
+WORK_TOP="$(git -C "$WORKDIR" rev-parse --show-toplevel 2>/dev/null)"
+HERMES_REAL="$(cd "$HERMES_DIR" && pwd -P)"
+CLAUDE_ARGS="--agent '$AGENT'"
+EXTRA_FILES=""
+if [ -n "$WORK_TOP" ] && [ "$(cd "$WORK_TOP" && pwd -P)" != "$HERMES_REAL" ]; then
+  AGENTS_JSON="$(mktemp -t hermes-agents)" && CONTEXT_FILE="$(mktemp -t hermes-context)" && SETTINGS_FILE="$(mktemp -t hermes-settings)" \
+    && python3 "$HERMES_DIR/scripts/agent-context.py" "$AGENT" "$HERMES_DIR" "$WORK_TOP" "$AGENTS_JSON" "$CONTEXT_FILE" "$SETTINGS_FILE" \
+    || { rm -f "$PROMPT_FILE" "$RUNNER" "${AGENTS_JSON:-}" "${CONTEXT_FILE:-}" "${SETTINGS_FILE:-}"; echo "에이전트 컨텍스트 생성 실패"; exit 1; }
+  EXTRA_FILES="'$AGENTS_JSON' '$CONTEXT_FILE' '$SETTINGS_FILE'"
+  CLAUDE_ARGS="--agents \"\$(cat '$AGENTS_JSON')\" $CLAUDE_ARGS --add-dir '$HERMES_DIR' --append-system-prompt-file '$CONTEXT_FILE' --settings '$SETTINGS_FILE'"
+  REPO_DIR="$WORK_TOP"
+fi
+
 # exec 를 쓰지 않는다. exec 는 셸을 교체해 EXIT trap 이 돌지 않아 임시 파일이 남는다.
 {
   echo '#!/usr/bin/env bash'
-  echo "cleanup() { rm -f '$PROMPT_FILE' '$RUNNER'; }"
+  echo "cleanup() { rm -f '$PROMPT_FILE' '$RUNNER' $EXTRA_FILES; }"
   echo 'trap cleanup EXIT INT TERM'
   echo "cd '$WORKDIR' || exit 1"
   [ -n "$REPO_DIR" ] && echo "export HERMES_REPO_DIR='$REPO_DIR'"
+  [ -n "$EXTRA_FILES" ] && echo "export HERMES_VERIFY_DIR='$WORK_TOP'"
   if [ -n "$PROMPT" ]; then
-    echo "claude --agent '$AGENT' \"\$(cat '$PROMPT_FILE')\""
+    echo "claude $CLAUDE_ARGS \"\$(cat '$PROMPT_FILE')\""
   else
-    echo "claude --agent '$AGENT'"
+    echo "claude $CLAUDE_ARGS"
   fi
   echo 'exit $?'
 } > "$RUNNER"

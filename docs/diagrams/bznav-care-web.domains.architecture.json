@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav care-web 화면 맵",
+    "subtitle": "app/ 아래 page.tsx 264개 · 최상위 22개 — 담당 서비스 중 가장 크다",
+    "output": "docs/diagrams/bznav-care-web.domains.html",
+    "viewBox": [
+      1180,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "tax",
+        "label": "세금 신고가 절반이다",
+        "focus": [
+          "gincome",
+          "vat",
+          "payroll",
+          "yearend",
+          "addexp"
+        ],
+        "note": "종소세 56 · 부가세 50 · 급여 28 — 이 셋만 134 화면으로 전체의 절반이다."
+      },
+      {
+        "id": "auth",
+        "label": "계정 · 마이",
+        "focus": [
+          "auth",
+          "login",
+          "myinfo",
+          "status",
+          "card"
+        ],
+        "note": "(auth) 30개는 온보딩과 신고 진입을 함께 담는다. 인증 경계는 layout 의 CareAuthGuard 다."
+      },
+      {
+        "id": "gate",
+        "label": "바깥에서 들어오는 길",
+        "focus": [
+          "gateway",
+          "download",
+          "landing",
+          "pricing"
+        ],
+        "note": "(gateway) 16개와 (external-file-download) 11개는 앱 밖에서 들어오는 전용 경로다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "세금 신고 — 150 화면. 전체의 절반이 넘는다",
+      "wraps": [
+        "gincome",
+        "vat",
+        "payroll",
+        "yearend",
+        "addexp"
+      ],
+      "pad": 14
+    },
+    {
+      "kind": "security-group",
+      "label": "CareAuthGuard 가 걸린 layout 14개",
+      "wraps": [
+        "auth",
+        "login",
+        "myinfo",
+        "status",
+        "card"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "gincome",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "global-income",
+      "sublabel": "56",
+      "tag": "가장 크다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "vat",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "vat",
+      "sublabel": "50",
+      "tag": "두 번째",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "payroll",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "payroll",
+      "sublabel": "28",
+      "tag": "세 번째",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "yearend",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "year-end-tax",
+      "sublabel": "8",
+      "tag": "연말정산",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "addexp",
+      "type": "frontend",
+      "row": 1,
+      "col": 4,
+      "label": "additional-expense",
+      "sublabel": "8",
+      "tag": "추가 경비",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "row": 2,
+      "col": 0,
+      "label": "(auth)",
+      "sublabel": "30",
+      "tag": "온보딩·신고",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "login",
+      "type": "security",
+      "row": 2,
+      "col": 1,
+      "label": "(login)",
+      "sublabel": "4",
+      "tag": "로그인",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "myinfo",
+      "type": "frontend",
+      "row": 2,
+      "col": 2,
+      "label": "(my-info)",
+      "sublabel": "10",
+      "tag": "마이페이지",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "status",
+      "type": "frontend",
+      "row": 2,
+      "col": 3,
+      "label": "user-status",
+      "sublabel": "7",
+      "tag": "이용 상태",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "card",
+      "type": "frontend",
+      "row": 2,
+      "col": 4,
+      "label": "business-card",
+      "sublabel": "4",
+      "tag": "명함",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "landing",
+      "type": "frontend",
+      "row": 3,
+      "col": 0,
+      "label": "(landing)",
+      "sublabel": "8",
+      "tag": "랜딩",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "pricing",
+      "type": "frontend",
+      "row": 3,
+      "col": 1,
+      "label": "pricing",
+      "sublabel": "7",
+      "tag": "요금제",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "gateway",
+      "type": "backend",
+      "row": 3,
+      "col": 2,
+      "label": "(gateway)",
+      "sublabel": "16",
+      "tag": "외부 진입",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "download",
+      "type": "backend",
+      "row": 3,
+      "col": 3,
+      "label": "(file-download)",
+      "sublabel": "11 · 외부 다운로드",
+      "tag": "파일 다운로드",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "etc",
+      "type": "backend",
+      "row": 3,
+      "col": 4,
+      "label": "그 외 8개",
+      "sublabel": "14",
+      "tag": "certificate 등",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "담당 서비스 중 가장 크다",
+      "items": [
+        "page.tsx 264개로 브랜드 웹(4개)의 66배다. 같은 모노레포 안이라도 규모가 완전히 다르다",
+        "global-income 56 · vat 50 · payroll 28 — 신고 3종만 134 화면으로 절반이다",
+        "화면 하나를 고치라는 요청이 와도 어느 신고 도메인인지 먼저 가려야 한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "괄호는 route group 이다",
+      "items": [
+        "(auth) · (login) · (my-info) · (landing) · (gateway) · (external-file-download) 는 URL 에 나타나지 않는 묶음이다",
+        "인증 경계는 이 group 들의 layout 에 있는 CareAuthGuard 다 — 14개 layout 이 쓴다",
+        "전용 파일은 라우트 폴더 옆 components·hooks·graphql·store 에 둔다(NEWCARE-633). 루트 공용 폴더에 두지 않는다"
+      ]
+    }
+  ]
+}

@@ -47,7 +47,7 @@
   <div class="wrap">
     <h1>헤르메스 다이어그램</h1>
     <p class="lead">작업 흐름과 담당 레포를 인터랙티브 HTML 로 본다. 서비스마다 보는 각도를 나눠 두었다.</p>
-    <p class="note"><b>구조</b>는 무엇으로 이루어져 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가, <b>화면 상태</b>는 어디서 갈라지고 멈추는가를 본다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
+    <p class="note"><b>구조</b>는 어떤 부품으로 이루어져 있는가, <b>화면 맵</b>은 실제로 어떤 화면이 몇 개씩 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가, <b>화면 상태</b>는 어디서 갈라지고 멈추는가를 본다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
     <h2>작업 흐름</h2>
     <div class="grid">
       <div class="card">
@@ -57,20 +57,17 @@
         <div class="pills"><a class="pill" href="hermes-flow.html">열기</a></div>
       </div>
     </div>
-    <h2>레포를 가로지르는 구조</h2>
+    <h2>서비스 심층 (탭 번들)</h2>
     <div class="grid">
       <div class="card">
-        <div class="t">bznav packages 의존 층</div>
-        <div class="s">@repo/* 8개</div>
-        <div class="d">project-config 가 바닥이고 user-sign 이 꼭대기다. 아래를 고치면 위가 전부 영향을 받는다.</div>
-        <div class="pills"><a class="pill" href="bznav-packages.html">열기</a></div>
+        <div class="t">bznav care-web 심층</div>
+        <div class="s">탭 3장 · 화면 78개 전수</div>
+        <div class="d">상세 아키텍처(노드 26 · 근거 60) + 부가세 자료제출 35화면 + 종소세 자료제출 43화면. 노드를 클릭하면 실제 page.tsx 경로가 전부 뜬다.</div>
+        <div class="pills"><a class="pill" href="care-web/care-web-architecture.html">열기</a></div>
       </div>
-      <div class="card">
-        <div class="t">zent-packages 발행처</div>
-        <div class="s">발행 → 소비</div>
-        <div class="d">brics 계열은 콘솔 3개가 쓰고, bznav 계열은 web-op 하나만 쓴다. bznav 앱은 발행본을 안 쓴다.</div>
-        <div class="pills"><a class="pill" href="zent-packages.html">열기</a></div>
-      </div>
+    </div>
+    <h2>서비스 전체를 가로지르는 것</h2>
+    <div class="grid">
       <div class="card">
         <div class="t">데이터 출처 지도</div>
         <div class="s">출처 · 관문 · 서비스</div>
@@ -84,7 +81,7 @@
         <div class="t">client-brics-refund</div>
         <div class="s">환급 운영 콘솔 · 13002</div>
         <div class="d">layout 권한 가드 25개 · Orval 생성물(태그명 한글) · lib/swr 임시 훅 · 모달 3방식</div>
-        <div class="pills"><a class="pill" href="client-brics-refund.html">구조</a><a class="pill" href="client-brics-refund.sequence.html">요청 흐름</a><a class="pill" href="client-brics-refund.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="client-brics-refund.html">구조</a><a class="pill" href="client-brics-refund.domains.html">화면 맵</a><a class="pill" href="client-brics-refund.sequence.html">요청 흐름</a><a class="pill" href="client-brics-refund.lifecycle.html">화면 상태</a></div>
       </div>
       <div class="card">
         <div class="t">client-brics-hub</div>
@@ -111,31 +108,31 @@
         <div class="t">bznav refund-web</div>
         <div class="s">비즈넵 환급 · 3200</div>
         <div class="d">5개 앱 중 유일한 Pages Router · webpack · Relay · 자체 sitemap</div>
-        <div class="pills"><a class="pill" href="bznav-refund-web.html">구조</a><a class="pill" href="bznav-refund-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-refund-web.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="bznav-refund-web.html">구조</a><a class="pill" href="bznav-refund-web.domains.html">화면 맵</a><a class="pill" href="bznav-refund-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-refund-web.lifecycle.html">화면 상태</a></div>
       </div>
       <div class="card">
         <div class="t">bznav care-web</div>
         <div class="s">비즈넵 케어 · 3100</div>
         <div class="d">route group · CARE_PATHS 한글 키 · CareAuthGuard · 유일하게 type-check·test:unit 보유</div>
-        <div class="pills"><a class="pill" href="bznav-care-web.html">구조</a><a class="pill" href="bznav-care-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-care-web.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="bznav-care-web.html">구조</a><a class="pill" href="bznav-care-web.domains.html">화면 맵</a><a class="pill" href="bznav-care-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-care-web.lifecycle.html">화면 상태</a></div>
       </div>
       <div class="card">
         <div class="t">bznav brand-web</div>
         <div class="s">비즈넵 브랜드 · 3000</div>
         <div class="d">DatoCMS GraphQL 단일 경로 · next-sitemap postbuild · Jotai 사용처 0건</div>
-        <div class="pills"><a class="pill" href="bznav-brand-web.html">구조</a><a class="pill" href="bznav-brand-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-brand-web.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="bznav-brand-web.html">구조</a><a class="pill" href="bznav-brand-web.domains.html">화면 맵</a><a class="pill" href="bznav-brand-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-brand-web.lifecycle.html">화면 상태</a></div>
       </div>
       <div class="card">
         <div class="t">bznav sena-web</div>
         <div class="s">비즈넵 세나 · 3300</div>
         <div class="d">AI 챗 상태 흐름 · route group · marked 렌더 · firebase-key.json 주의</div>
-        <div class="pills"><a class="pill" href="bznav-sena-web.html">구조</a><a class="pill" href="bznav-sena-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-sena-web.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="bznav-sena-web.html">구조</a><a class="pill" href="bznav-sena-web.domains.html">화면 맵</a><a class="pill" href="bznav-sena-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-sena-web.lifecycle.html">화면 상태</a></div>
       </div>
       <div class="card">
         <div class="t">bznav plus-web</div>
         <div class="s">비즈넵 플러스 · 3400</div>
         <div class="d">계산기 3계층 · recharts · 노션 렌더 · gen:env 수동</div>
-        <div class="pills"><a class="pill" href="bznav-plus-web.html">구조</a><a class="pill" href="bznav-plus-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-plus-web.lifecycle.html">화면 상태</a></div>
+        <div class="pills"><a class="pill" href="bznav-plus-web.html">구조</a><a class="pill" href="bznav-plus-web.domains.html">화면 맵</a><a class="pill" href="bznav-plus-web.sequence.html">요청 흐름</a><a class="pill" href="bznav-plus-web.lifecycle.html">화면 상태</a></div>
       </div>
     </div>
     <footer>

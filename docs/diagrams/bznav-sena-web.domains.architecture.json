@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav sena-web 화면 맵",
+    "subtitle": "app/ 아래 20개 · route group 으로 인증 경계를 나눈다",
+    "output": "docs/diagrams/bznav-sena-web.domains.html",
+    "viewBox": [
+      1080,
+      560
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "chat",
+        "label": "챗이 중심이다",
+        "focus": [
+          "chat",
+          "search",
+          "root"
+        ],
+        "note": "화면 수는 적지만 chat 한 화면에 스트림·복구·리마운트 경계가 모여 있다."
+      },
+      {
+        "id": "login",
+        "label": "로그인 플로우",
+        "focus": [
+          "signin",
+          "signup",
+          "ci",
+          "dup"
+        ],
+        "note": "(login) 6 화면. 본인확인(CI)이 따로 있고 중복 계정 처리도 별도 화면이다."
+      },
+      {
+        "id": "guard",
+        "label": "인증 경계",
+        "focus": [
+          "my",
+          "maint",
+          "contents"
+        ],
+        "note": "(authenticated) layout 이 AuthGuard 로 감싼다. 점검은 proxy.ts 가 리다이렉트한다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "(authenticated) — layout 이 AuthGuard 로 감싼다",
+      "wraps": [
+        "my"
+      ],
+      "pad": 12
+    },
+    {
+      "kind": "region",
+      "label": "(login) — 로그인 플로우 6 화면",
+      "wraps": [
+        "signin",
+        "signup",
+        "ci",
+        "dup"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "chat",
+      "type": "frontend",
+      "row": 1,
+      "col": 0,
+      "label": "chat/[[...chatId]]",
+      "sublabel": "1 화면",
+      "tag": "앱의 중심",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "search",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "search-chat",
+      "sublabel": "1 화면",
+      "tag": "검색 챗",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "root",
+      "type": "frontend",
+      "row": 1,
+      "col": 2,
+      "label": "(루트)",
+      "sublabel": "1 화면",
+      "tag": "홈",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "about",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "about",
+      "sublabel": "1 화면",
+      "tag": "소개",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "menu",
+      "type": "frontend",
+      "row": 1,
+      "col": 4,
+      "label": "app-menu",
+      "sublabel": "1 화면",
+      "tag": "앱 메뉴",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "signin",
+      "type": "security",
+      "row": 2,
+      "col": 0,
+      "label": "(login)/signin",
+      "sublabel": "로그인",
+      "tag": "CiGuard 앞",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "signup",
+      "type": "security",
+      "row": 2,
+      "col": 1,
+      "label": "(login)/signup",
+      "sublabel": "2 화면",
+      "tag": "input · terms",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "ci",
+      "type": "security",
+      "row": 2,
+      "col": 2,
+      "label": "(login)/ci-*",
+      "sublabel": "2 화면",
+      "tag": "본인확인",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "dup",
+      "type": "security",
+      "row": 2,
+      "col": 3,
+      "label": "(login)/duplicate",
+      "sublabel": "1 화면",
+      "tag": "중복 계정",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "my",
+      "type": "security",
+      "row": 2,
+      "col": 4,
+      "label": "(authenticated)/my",
+      "sublabel": "6 화면",
+      "tag": "AuthGuard 자동",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "contents",
+      "type": "backend",
+      "row": 3,
+      "col": 0,
+      "label": "contents",
+      "sublabel": "2 화면",
+      "tag": "(conversion) · gone",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "maint",
+      "type": "backend",
+      "row": 3,
+      "col": 1,
+      "label": "system-maintenance",
+      "sublabel": "1 화면",
+      "tag": "점검 화면",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 수와 복잡도가 다르다",
+      "items": [
+        "page.tsx 는 20개뿐이지만 chat/[[...chatId]] 한 화면에 스트림 생성·SSE 수신·재연결·복구가 전부 들어 있다",
+        "화면을 세는 것으로 이 앱의 작업량을 가늠하면 틀린다",
+        "클라이언트 파일이 94개다 — 서버 컴포넌트는 page.tsx·layout.tsx 얕은 층뿐이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "route group 이 경계다",
+      "items": [
+        "(authenticated) 아래는 layout 이 AuthGuard 로 감싼다 — 새 화면을 여기 두면 인증이 자동으로 걸린다",
+        "(login) 은 로그인 플로우 6 화면이다. 본인확인(ci-request·ci-authentication)이 별도 화면이다",
+        "system-maintenance 와 contents/gone 은 proxy.ts 의 판정으로 들어온다. 새 경로가 그 판정에 걸리는지 확인한다"
+      ]
+    }
+  ]
+}

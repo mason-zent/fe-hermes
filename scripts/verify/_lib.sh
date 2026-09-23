@@ -9,6 +9,21 @@ VERIFY_LOG_DIR="${VERIFY_LOG_DIR:-$(mktemp -d /tmp/hermes-verify.XXXXXX)}"
 declare -a STEP_NAMES=() STEP_RESULTS=() STEP_SECS=() STEP_LOGS=()
 VERIFY_FAILED=0
 
+resolve_repo_dir() { # resolve_repo_dir <메인 체크아웃> — 검증할 트리 경로를 출력한다
+  # HERMES_VERIFY_DIR(워크트리)가 **같은 레포**의 워크트리일 때만 그쪽을 쓴다.
+  # 다른 레포 워크트리를 가리키면 엉뚱한 트리를 검증하게 되므로 무시하고 메인 체크아웃을 쓴다.
+  local main_dir="$1" target="${HERMES_VERIFY_DIR:-}" main_common target_common
+  if [ -z "$target" ]; then echo "$main_dir"; return; fi
+  main_common="$(cd "$main_dir" 2>/dev/null && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)"
+  target_common="$(cd "$target" 2>/dev/null && cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)"
+  if [ -n "$main_common" ] && [ "$main_common" = "$target_common" ]; then
+    git -C "$target" rev-parse --show-toplevel
+  else
+    echo "⚠️ HERMES_VERIFY_DIR($target)는 $(basename "$main_dir") 의 워크트리가 아니다 — 메인 체크아웃을 검증한다" >&2
+    echo "$main_dir"
+  fi
+}
+
 check_node_version() { # check_node_version <레포경로> — .nvmrc 와 현재 node 버전이 다르면 경고 단계로 기록
   local repo_dir="$1" want cur
   [ -f "$repo_dir/.nvmrc" ] || return 0
