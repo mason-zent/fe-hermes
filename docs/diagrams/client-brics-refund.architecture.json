@@ -1,0 +1,411 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "client-brics-refund 구조",
+    "subtitle": "BRICS 환급 운영 콘솔 · Next 15 App Router · port 13002",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "output": "docs/diagrams/client-brics-refund.html",
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/client-brics-refund",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "34966ddd5326ae18e5cbf8831b1bb80f7ba9fac0"
+    },
+    "views": [
+      {
+        "id": "screen",
+        "label": "화면이 그려지는 길",
+        "focus": [
+          "browser",
+          "guard",
+          "page",
+          "containers",
+          "table",
+          "form"
+        ],
+        "note": "라우트 하나가 가드 → 페이지 → 컨테이너 → 표·폼으로 이어진다."
+      },
+      {
+        "id": "data",
+        "label": "데이터가 오는 길",
+        "focus": [
+          "containers",
+          "orval",
+          "swr",
+          "fetcher",
+          "api"
+        ],
+        "note": "생성물 훅이 기본이고, 없을 때만 lib/swr 임시 훅을 쓴다."
+      },
+      {
+        "id": "outside",
+        "label": "이 레포 밖",
+        "focus": [
+          "guard",
+          "zentauth",
+          "ui",
+          "hub"
+        ],
+        "note": "권한 코드와 사이드바 메뉴는 여기서 만들 수 없다. 멈추고 보고한다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 7,
+    "cellW": 128,
+    "cellH": 70,
+    "gapX": 44,
+    "gapY": 52
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "운영자",
+      "sublabel": "내부 사용자",
+      "row": 1,
+      "col": 0,
+      "size": [
+        128,
+        62
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "layout.tsx",
+      "sublabel": "권한 가드 25개",
+      "tag": "page 엔 0개",
+      "row": 1,
+      "col": 1,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "app/refund-service/partner/discount/layout.tsx",
+          "label": "복사 원본"
+        }
+      ]
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "searchParams",
+      "row": 1,
+      "col": 2,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "app/refund-service/partner/discount/page.tsx",
+          "label": "표준 목록"
+        }
+      ]
+    },
+    {
+      "id": "containers",
+      "type": "frontend",
+      "label": "Containers",
+      "sublabel": "List·Create·Edit",
+      "row": 1,
+      "col": 3,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "app/refund-service/partner/discount/_components/Containers.tsx"
+        }
+      ]
+    },
+    {
+      "id": "orval",
+      "type": "database",
+      "label": "__generated__",
+      "sublabel": "Orval · @/generated",
+      "tag": "태그명 한글",
+      "row": 1,
+      "col": 4,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "__generated__/index.ts",
+          "label": "생성물 진입"
+        },
+        {
+          "path": "orval.config.ts"
+        }
+      ]
+    },
+    {
+      "id": "fetcher",
+      "type": "backend",
+      "label": "orval-fetcher",
+      "sublabel": "axios hoisted",
+      "tag": "import 금지",
+      "row": 1,
+      "col": 5,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "lib/orval-fetcher.ts"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "cloud",
+      "label": "server-zent-ip",
+      "sublabel": "환급 API",
+      "row": 1,
+      "col": 6,
+      "size": [
+        128,
+        62
+      ]
+    },
+    {
+      "id": "zentauth",
+      "type": "security",
+      "label": "@zent-auth",
+      "sublabel": "NextAuth + Cognito",
+      "row": 0,
+      "col": 1,
+      "size": [
+        128,
+        62
+      ]
+    },
+    {
+      "id": "table",
+      "type": "frontend",
+      "label": "ListTable",
+      "sublabel": "colSpan 하드코딩",
+      "row": 0,
+      "col": 3,
+      "size": [
+        128,
+        62
+      ]
+    },
+    {
+      "id": "form",
+      "type": "frontend",
+      "label": "EditForm",
+      "sublabel": "RHF + zod",
+      "row": 2,
+      "col": 3,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "lib/types/partner.ts",
+          "label": "zod 스키마"
+        }
+      ]
+    },
+    {
+      "id": "swr",
+      "type": "messagebus",
+      "label": "lib/swr",
+      "sublabel": "임시 훅",
+      "row": 2,
+      "col": 4,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "lib/swr/crmListUpload.ts",
+          "label": "틀"
+        }
+      ]
+    },
+    {
+      "id": "dialog",
+      "type": "frontend",
+      "label": "useDialog",
+      "sublabel": "모달 1순위",
+      "row": 3,
+      "col": 3,
+      "size": [
+        128,
+        62
+      ],
+      "sources": [
+        {
+          "path": "app/_components/DialogProvider.tsx"
+        }
+      ]
+    },
+    {
+      "id": "hub",
+      "type": "external",
+      "label": "hub 메뉴",
+      "sublabel": "DB 행",
+      "row": 3,
+      "col": 1,
+      "size": [
+        128,
+        62
+      ]
+    },
+    {
+      "id": "ui",
+      "type": "cloud",
+      "label": "brics-fe-ui",
+      "sublabel": "배럴 import",
+      "row": 3,
+      "col": 5,
+      "size": [
+        128,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "client-brics-refund — 박스 밖은 이 레포에서 바꿀 수 없다",
+      "wraps": [
+        "guard",
+        "page",
+        "containers",
+        "orval",
+        "fetcher",
+        "table",
+        "form",
+        "swr",
+        "dialog"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "browser",
+      "to": "guard",
+      "label": "요청",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "guard",
+      "to": "page",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c3",
+      "from": "page",
+      "to": "containers"
+    },
+    {
+      "id": "c4",
+      "from": "containers",
+      "to": "orval",
+      "label": "SWR",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c5",
+      "from": "orval",
+      "to": "fetcher"
+    },
+    {
+      "id": "c6",
+      "from": "fetcher",
+      "to": "api",
+      "label": "HTTP"
+    },
+    {
+      "id": "c7",
+      "from": "guard",
+      "to": "zentauth",
+      "label": "AuthFunction",
+      "variant": "security",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c8",
+      "from": "containers",
+      "to": "table",
+      "label": "목록",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c9",
+      "from": "containers",
+      "to": "form",
+      "label": "생성·수정",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 24
+    },
+    {
+      "id": "c10",
+      "from": "form",
+      "to": "dialog",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c11",
+      "from": "swr",
+      "to": "fetcher",
+      "label": "생성물에 없으면",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "새 도메인 화면을 만들 때",
+      "items": [
+        "partner/discount/ 를 복사해 시작한다 — layout · page · create · edit · Containers · ListTable · EditForm",
+        "zod 스키마는 lib/types/<도메인>.ts, 상수는 lib/constants/<도메인>.ts",
+        "검증은 scripts/verify/client-brics-refund.sh (lint:check + tsc). typecheck·test 스크립트가 없다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "자주 밟는 함정",
+      "items": [
+        "컬럼을 추가하면 빈 상태 행 colSpan 과 SkeletonTableBody cols 도 같이 고친다 — 둘 다 하드코딩",
+        "__generated__ 는 커밋 대상인데 gen:api:local 이 rm -rf 로 시작한다. 실패하면 git checkout -- __generated__",
+        "axios 가 직접 의존성에 없다(hoisted). import axios 를 추가하지 않는다",
+        "모달은 도메인의 기존 방식을 따른다 — useDialog 34 · shadcn 15 · nice-modal 7",
+        "deal 은 '환급' 이다. 딜·거래로 옮기지 않는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이 레포 밖에서 정해지는 것",
+      "items": [
+        "AuthFunction enum — @zent-auth. 새 권한 코드는 packages-fe 선행",
+        "사이드바 메뉴 — hub 의 /brics-menus (DB 행). 보고에 '메뉴 등록 필요' 를 적는다",
+        "brics-fe-ui 수정은 packages-fe 담당"
+      ]
+    }
+  ]
+}

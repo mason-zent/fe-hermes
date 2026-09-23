@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "refund-web 구조",
+    "subtitle": "환급 사용자 웹 · Pages Router · port 3200 · dev webpack",
+    "quality_profile": "showcase",
+    "visual_preset": "signal-flow",
+    "output": "docs/diagrams/bznav-refund-web.html",
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "4be90b5eb088e6d5609556d27c9b779cf7ea5b38"
+    },
+    "views": [
+      {
+        "id": "screen",
+        "label": "화면 경로",
+        "focus": ["visitor", "shell", "pages", "relay"],
+        "note": "Pages Router에서 화면을 조립한다. App Router 패턴을 가져오지 않는다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 경로",
+        "focus": ["relay", "network", "api"],
+        "note": "Relay는 클라이언트, SEO 데이터는 서버 fetch로 분리한다."
+      },
+      {
+        "id": "outside",
+        "label": "이 앱 밖",
+        "focus": ["api", "ui", "session"],
+        "note": "공유 패키지와 API 변경은 담당 범위를 나눠 진행한다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 6,
+    "cellW": 128,
+    "cellH": 70,
+    "gapX": 44,
+    "gapY": 52
+  },
+  "components": [
+    {
+      "id": "visitor",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "웹 · 앱 웹뷰",
+      "row": 1,
+      "col": 0,
+      "size": [128, 62]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "_app.tsx",
+      "sublabel": "Provider · SEO",
+      "row": 1,
+      "col": 1,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/_app.tsx"
+        }
+      ]
+    },
+    {
+      "id": "pages",
+      "type": "frontend",
+      "label": "pages",
+      "sublabel": "조회 · 신청 · 설문",
+      "row": 1,
+      "col": 2,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/index.tsx"
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "type": "database",
+      "label": "Relay",
+      "sublabel": "클라이언트 조회",
+      "row": 1,
+      "col": 3,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/relay.config.json"
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "type": "backend",
+      "label": "Relay 환경",
+      "sublabel": "요청 관문",
+      "row": 1,
+      "col": 4,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/relay/relay-environment.ts"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "cloud",
+      "label": "GraphQL API",
+      "sublabel": "환급 데이터",
+      "row": 1,
+      "col": 5,
+      "size": [128, 62]
+    },
+    {
+      "id": "webpack",
+      "type": "backend",
+      "label": "webpack",
+      "sublabel": "SVGR 설정",
+      "row": 0,
+      "col": 1,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/next.config.mjs"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "type": "backend",
+      "label": "콘텐츠 SSR",
+      "sublabel": "gSSP 팩토리",
+      "row": 0,
+      "col": 2,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/content-page/server.ts"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "messagebus",
+      "label": "Jotai",
+      "sublabel": "lib/stores",
+      "row": 0,
+      "col": 3,
+      "size": [128, 62]
+    },
+    {
+      "id": "schema",
+      "type": "database",
+      "label": "GraphQL 스키마",
+      "sublabel": "생성물 직접 수정 금지",
+      "row": 0,
+      "col": 4,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/graphql/schema/schema.graphql"
+        }
+      ]
+    },
+    {
+      "id": "seo",
+      "type": "backend",
+      "label": "자체 sitemap",
+      "sublabel": "API Route",
+      "row": 2,
+      "col": 1,
+      "size": [128, 62],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/api/sitemap.ts"
+        }
+      ]
+    },
+    {
+      "id": "templates",
+      "type": "frontend",
+      "label": "결과 템플릿",
+      "sublabel": "버전별 스냅샷",
+      "row": 2,
+      "col": 2,
+      "size": [128, 62]
+    },
+    {
+      "id": "ui",
+      "type": "external",
+      "label": "@repo/ui",
+      "sublabel": "공유 UI",
+      "row": 3,
+      "col": 1,
+      "size": [128, 62]
+    },
+    {
+      "id": "session",
+      "type": "external",
+      "label": "공유 인증",
+      "sublabel": "user-session/sign",
+      "row": 3,
+      "col": 4,
+      "size": [128, 62]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "apps/refund-web — 박스 밖은 이 앱에서 바꿀 수 없다",
+      "wraps": [
+        "shell",
+        "pages",
+        "relay",
+        "network",
+        "webpack",
+        "content",
+        "state",
+        "schema",
+        "seo",
+        "templates"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "visitor",
+      "to": "shell"
+    },
+    {
+      "id": "c2",
+      "from": "shell",
+      "to": "pages"
+    },
+    {
+      "id": "c3",
+      "from": "pages",
+      "to": "relay"
+    },
+    {
+      "id": "c4",
+      "from": "relay",
+      "to": "network"
+    },
+    {
+      "id": "c5",
+      "from": "network",
+      "to": "api"
+    },
+    {
+      "id": "c6",
+      "from": "shell",
+      "to": "webpack",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c7",
+      "from": "pages",
+      "to": "content",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c8",
+      "from": "relay",
+      "to": "state",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c9",
+      "from": "network",
+      "to": "schema",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "c10",
+      "from": "shell",
+      "to": "seo",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c11",
+      "from": "pages",
+      "to": "templates",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "새 화면·기능을 만들 때",
+      "items": [
+        "pages/와 getLayout을 따른다. 라우팅은 next/router를 쓴다.",
+        "SEO 데이터는 gSSP의 server-fetch.ts로 읽는다. Relay는 SSR되지 않는다.",
+        "Relay 변경 뒤 pnpm --filter refund-web gen:relay를 실행한다."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "자주 밟는 함정",
+      "items": [
+        "dev는 webpack이다. turbopack으로 바꾸면 SVG 동작이 달라질 수 있다.",
+        "Relay 설정은 relay.config.json이 기준이다. 아티팩트는 미커밋이다.",
+        "결과 화면의 template/v-*는 과거 신청 재현용이다. 삭제하지 않는다.",
+        "sitemap·robots는 자체 API다. next-sitemap 패턴을 가져오지 않는다."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이 앱 밖에서 정해지는 것",
+      "items": [
+        "@repo/ui·platform·user-session·user-sign은 공유 패키지다.",
+        "GraphQL 스키마와 환급 데이터는 API 서버에서 정한다.",
+        "환경 생성은 AWS SSM 자격증명이 필요하다."
+      ]
+    }
+  ]
+}
