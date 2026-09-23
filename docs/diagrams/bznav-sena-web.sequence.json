@@ -44,7 +44,7 @@
           "api",
           "sse"
         ],
-        "note": "sessionStorage 에 남긴 보류 스트림으로 다시 붙는다. 복귀하면 loading 으로 되돌린다."
+        "note": "requestUuid 를 받아 둔 스트림만 복구된다. 새로고침 복원과 탭 복귀는 서로 다른 phase 로 시작한다."
       }
     ]
   },
@@ -142,20 +142,21 @@
       "y": 335,
       "label": "sendMessage",
       "variant": "emphasis",
-      "note": "이미 /chat 이면 이어서 보내고, 아니면 새 대화를 시작한다"
+      "note": "이미 /chat 이면 이어서 보내고 아니면 새 대화를 시작한다. 같은 방에 진행 중인 스트림이 있으면 보내지 않는다"
     },
     {
       "from": "msg",
       "to": "atoms",
       "y": 380,
       "label": "스트림 생성 · loading",
-      "note": "streamId 별 AbortController 를 모듈 스코프 Map 에 넣는다"
+      "note": "streamId 별 AbortController 를 모듈 스코프 Map 에 넣는다. 만든 직후 점검 상태면 스트림을 지우고 점검 화면으로 보낸다"
     },
     {
       "from": "msg",
       "to": "storage",
       "y": 425,
-      "label": "보류 스트림 저장"
+      "label": "requestUuid 받은 뒤 저장",
+      "note": "생성 직후에는 requestUuid 가 없어 저장 대상이 아니다. 서버 meta 프레임으로 requestUuid 를 받아야 복구용으로 저장된다"
     },
     {
       "from": "msg",
@@ -174,9 +175,9 @@
       "from": "sse",
       "to": "msg",
       "y": 600,
-      "label": "첫 프레임",
+      "label": "첫 청크",
       "variant": "return",
-      "note": "여기서 phase 가 streaming 으로 바뀐다"
+      "note": "최초 요청은 첫 바이트 청크를 받은 시점에 streaming 으로 바뀐다. JSON 프레임이 완성되기 전이다"
     },
     {
       "from": "sse",
@@ -198,7 +199,7 @@
       "y": 735,
       "label": "재연결",
       "variant": "dashed",
-      "note": "phase 를 reconnecting 으로 바꾸고 다시 붙는다. 복귀 시에는 loading 으로 되돌린다"
+      "note": "requestUuid 가 없이 끊기면 재연결하지 못하고 오류로 끝난다. 새로고침 복원은 loading, 탭 복귀는 reconnecting 으로 두고 /status 를 먼저 확인해 이미 끝났으면 /live 없이 종료한다"
     },
     {
       "from": "sse",
@@ -226,11 +227,12 @@
     },
     {
       "dot": "amber",
-      "title": "끊겨도 이어 붙는다",
+      "title": "복구되는 조건이 있다",
       "items": [
-        "보류 스트림을 sessionStorage 에 적어 둔다. 화면을 떠났다 돌아와도 다시 붙을 수 있다",
-        "phase 는 loading → streaming → (끊기면) reconnecting 셋뿐이다",
-        "복귀해서 재연결할 때는 phase 를 loading 으로 되돌린 뒤 다시 받는다",
+        "requestUuid 가 있어야 복구 대상이다 — 서버 meta 프레임으로 받기 전에는 sessionStorage 에 저장되지 않는다",
+        "phase 는 loading → streaming → (끊기면) reconnecting 셋뿐이다. 최초 요청은 첫 바이트 청크에서 streaming 으로 바뀐다",
+        "새로고침으로 복원하면 loading 부터, 탭 복귀는 reconnecting 으로 시작해 /status 를 먼저 본다. 이미 끝난 응답이면 /live 없이 종료한다",
+        "보안 채팅의 저장 복원에는 30분 제한이 있다",
         "app/chat/layout.tsx 와 ChatContent.tsx 의 리마운트 경계가 이 복구와 맞물린다"
       ]
     }

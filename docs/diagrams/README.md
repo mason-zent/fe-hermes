@@ -29,7 +29,7 @@ open docs/diagrams/index.html
 | bznav care-web | ✅ | ✅ | ✅ | ✅ | `app/(my-info)/my-book` |
 | bznav brand-web | ✅ | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
 | bznav sena-web | ✅ | ✅ | ✅ | ✅ | 챗 스트림 |
-| bznav plus-web | ✅ | ✅ | ✅ | ✅ | `app/calc/<경로>` 계산기 |
+| bznav plus-web | ✅ | ✅ | ✅ | ✅ | `app/calc/holiday-pay` (계산기마다 단계가 다르다) |
 
 ⚠️ **workflow·sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
 다르게 동작한다(care 콘솔의 promotion 과 bmans, hub 의 messages 와 admin 이 그렇다). 일반화해서 옮기지 않는다.

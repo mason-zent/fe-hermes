@@ -3,7 +3,7 @@
   "diagram_type": "sequence",
   "meta": {
     "title": "bznav plus-web 요청 흐름",
-    "subtitle": "대표 화면 app/calc/<경로> · layout 은 SEO, page 는 UI, 계산은 순수 함수",
+    "subtitle": "대표 화면 app/calc/holiday-pay · layout 은 SEO, page 는 UI, 계산은 순수 함수",
     "viewBox": [
       1040,
       900
@@ -148,7 +148,7 @@
       "to": "form",
       "y": 385,
       "label": "setters 로 반영",
-      "note": "handleSubmit·resolver 를 쓰지 않는다. watch/setValue/reset 만 쓴다"
+      "note": "계산기 폼 훅의 관례다 — handleSubmit·resolver 를 쓰지 않고 watch/setValue/reset 만 쓴다. 앱 전체에는 yup resolver 를 쓰는 폼도 있다"
     },
     {
       "from": "form",
@@ -191,7 +191,7 @@
       "y": 680,
       "label": "result",
       "variant": "emphasis",
-      "note": "step 이 result-step 일 때만 계산한다"
+      "note": "최종 result 는 step 이 result-step 일 때만 만든다. 다만 계산기에 따라 중간 계산·미리보기는 입력 중에도 돈다"
     },
     {
       "from": "page",
@@ -227,10 +227,10 @@
       "dot": "amber",
       "title": "계산은 React 밖에서",
       "items": [
-        "폼 훅은 watch/setValue/reset 만 쓴다. handleSubmit 과 resolver 를 쓰지 않는 것이 이 앱의 관례다",
-        "step 이 result-step 일 때만 순수 함수를 불러 결과를 만든다. 입력 중에는 계산하지 않는다",
+        "대표는 app/calc/holiday-pay 다. 계산기 폼 훅은 watch/setValue/reset 만 쓰고 handleSubmit 과 resolver 를 쓰지 않는다 — 앱 전체 규칙은 아니다",
+        "최종 result 는 결과 단계에서만 만든다. 다만 store-sales 의 중간 계산이나 simple-vat 의 공제 미리보기처럼 입력 중에도 도는 계산이 있다",
         "계산 함수는 lib/utils/calc/ 에 React 와 무관하게 두고 요율·공식 근거를 JSDoc 에 적는다",
-        "훅의 반환 shape 은 7세트가 모두 같다 — { form, setters, parsedInput, validation, result, sections, actions }"
+        "계산기는 8세트이고 반환 shape 이 대체로 비슷하지만 똑같지는 않다 — salary-actual 처럼 필드 이름이 다른 것도 있다"
       ]
     }
   ]

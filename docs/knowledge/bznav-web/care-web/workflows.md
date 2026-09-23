@@ -2,12 +2,12 @@
 
 ## A. 새 화면 (route group 안)
 1. 소속 결정: 로그인 온보딩 `app/(auth)/`, 마이페이지 `app/(my-info)/`, 랜딩 `app/(landing)/`(퍼포먼스는 `(performance-landing)/`), 도메인 서비스 `app/{vat,global-income,payroll,…}/`
-2. `page.tsx`(`'use client'`, 내부 컴포넌트를 `<Suspense>`로, Relay 훅은 안쪽) + `CareLayout` + `@repo/ui` `BaseTopNavigation`/`BackButtonTopNavigation`
+2. Relay 로 데이터를 받는 화면이면 `page.tsx`(`'use client'`, 내부 컴포넌트를 `<Suspense>`로, Relay 훅은 안쪽). **모든 화면이 그렇지는 않다** — 도움말센터(`app/cs-center/page.tsx`)처럼 비동기 서버 페이지인 화면도 있다 + `CareLayout` + `@repo/ui` `BaseTopNavigation`/`BackButtonTopNavigation`
 3. 인증: 상위 layout이 `CareAuthGuard`로 감싸는지 확인. 새 최상위 도메인이면 `layout.tsx`에 추가
 4. 메타데이터: 같은 폴더 `metadata.ts` + 서버 `layout.tsx` `export const metadata`
 5. 뷰 이벤트 `<ViewEventLogger careEvent={{category, object}}>`, 카테고리는 `constants/careEvent.ts`
 6. **전용 파일은 라우트 폴더 옆 `components/`, `hooks/`, `graphql/`, `store/`, `constants/`, `utils/`, `types/`**(NEWCARE-633 규칙). 루트 공용 폴더에 두지 말 것
-7. 검증: **Relay 아티팩트를 먼저 만든다** (`pnpm --filter care-web relay`) → `scripts/verify/bznav-web.sh care-web`. 스크립트는 **lint → (아티팩트 있으면) type-check → (canvas 빌드돼 있으면) test:unit** 순으로 돌고, **Relay 를 생성해 주지 않는다.** 아티팩트가 없으면 타입 검증을 건너뛰고 그 사실을 표에 남긴다
+7. 검증: **Relay 아티팩트를 먼저 만든다** (`pnpm --filter care-web relay`) → `scripts/verify/bznav-web.sh care-web`. 스크립트는 **lint(항상) → 아티팩트가 있을 때만 type-check, 그리고 같은 분기 안에서 canvas 까지 있으면 test:unit** 순으로 돌고. ⚠️ 아티팩트가 없으면 canvas 가 있어도 `test:unit` 까지 통째로 건너뛴다, **Relay 를 생성해 주지 않는다.** 아티팩트가 없으면 타입 검증을 건너뛰고 그 사실을 표에 남긴다
 
 ## B. 새 경로 상수
 1. `constants/paths.ts`에서 소속 객체 선택(`CARE_PATHS` / 도메인별 `*_PATHS`)

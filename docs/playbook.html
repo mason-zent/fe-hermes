@@ -294,7 +294,7 @@
   <header>
     <div class="eyebrow">Frontend Agent Team · Claude Code Workspace</div>
     <h1>Hermes 플레이북</h1>
-    <p class="lede">헤르메스는 4개 프론트엔드 서비스를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
+    <p class="lede">헤르메스는 프론트엔드 레포 6개 — 운영 콘솔·내부 4개, 비즈넵 사용자 웹 모노레포(앱 5개), 공유 패키지 — 를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
@@ -542,8 +542,8 @@ claude
         </article>
 
         <article class="cmd wide">
-          <div class="cmd-head"><kbd>/guide <span class="arg">스킬 · pane · 열기 · 팀 · 흐름 (선택)</span></kbd><span class="tag plain">read-only</span></div>
-          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>스킬</code>을 붙이면 <strong>지금 쓸 수 있는 슬래시 커맨드 목록</strong>(이름·인자·설명)을 <code>.claude/skills</code>에서 읽어 보여줍니다. <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다 — 마우스 클릭 또는 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 항목은 <strong>⚡ 실행·확인</strong>(① 스킬 목록·실행 ② 에이전트·담당 레포·라우팅 ③ git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드) 두 그룹입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>의 frontmatter를 그때그때 읽으므로 스킬을 추가하면 메뉴에 자동으로 나오고, 번호를 고른 뒤 <kbd>⏎</kbd>로 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 <code>/&lt;스킬&gt;</code>을 실행합니다(기존 세션은 건드리지 않음). <kbd>v</kbd>는 SKILL.md 본문 보기입니다. 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, 특정 파일은 <code>/guide pane &lt;파일&gt;</code>으로 직접 띄웁니다(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을 브라우저로 엽니다.</p>
+          <div class="cmd-head"><kbd>/guide <span class="arg">스킬 · pane · 열기 · 그림 · 팀 · 흐름 (선택)</span></kbd><span class="tag plain">read-only</span></div>
+          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>스킬</code>을 붙이면 <strong>지금 쓸 수 있는 슬래시 커맨드 목록</strong>(이름·인자·설명)을 <code>.claude/skills</code>에서 읽어 보여줍니다. <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다 — 마우스 클릭 또는 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 항목은 <strong>⚡ 실행·확인</strong>(① 스킬 목록·실행 ② 에이전트·담당 레포·라우팅 ③ git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드) 두 그룹입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>의 frontmatter를 그때그때 읽으므로 스킬을 추가하면 메뉴에 자동으로 나오고, 번호를 고른 뒤 <kbd>⏎</kbd>로 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 <code>/&lt;스킬&gt;</code>을 실행합니다(기존 세션은 건드리지 않음). <kbd>v</kbd>는 SKILL.md 본문 보기입니다. 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, 특정 파일은 <code>/guide pane &lt;파일&gt;</code>으로 직접 띄웁니다(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을, <code>그림</code>은 <strong>다이어그램 목록</strong>을 브라우저로 엽니다 — 담당 서비스 9개를 <strong>구조 · 작업 절차 · 요청 흐름 · 화면 상태</strong> 네 각도로 그린 인터랙티브 HTML이고, 헤르메스 작업 흐름도 같이 있습니다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지가 붙은 노드는 실제 파일을 가리킵니다. 각 그림은 <strong>대표 화면 하나를 정해 그 코드만</strong> 그린 것이라 같은 앱의 다른 화면에 그대로 옮기면 안 됩니다.</p>
           <div class="flow"><span>스킬 · 문서 읽기</span><span class="hi">본문 그대로 출력</span><span>원본 경로 표시</span></div>
           <dl>
             <dt>언제</dt><dd>헤르메스에게 뭘 시킬 수 있는지 훑을 때, 어느 레포 작업인지 헷갈릴 때, 스킬·에이전트 추가 절차가 기억나지 않을 때</dd>
@@ -554,6 +554,7 @@ claude
 /guide pane      # 오른쪽 pane 에 선택형 메뉴 (herdr/tmux)
 /guide pane CLAUDE.md # 메뉴 대신 파일을 less 로
 /guide 열기      # docs/playbook.html 을 브라우저로
+/guide 그림      # 다이어그램 목록 (서비스 9개 × 4종)
 /guide 팀        # 에이전트 · 담당 레포 · 라우팅 기준</code></pre>
         </article>
 

@@ -4,7 +4,7 @@
 2. `layout.tsx`에서 `Layouts.tsx` 3종 중 선택 + 플래그. 헤더는 `await checkShowHeader()` → `isUseHeader`
 3. 경로 상수 **`lib/constants/paths.ts`의 `PATHS`**(하드코딩 거의 없음)
 4. `page.tsx` 말미 `<PageViewEventLogger pageName="…"/>`
-5. 색인 제외는 `public/robots.txt` Disallow(sitemap은 API 서버 생성)
+5. 크롤링 제한은 `public/robots.txt` Disallow (sitemap 은 API 서버 생성). ⚠️ **Disallow 는 크롤링을 막는 것이지 색인 제외를 보장하지 않는다** — 색인에서 빼려면 해당 페이지에 `noindex` 를 넣어야 한다
 6. `proxy.ts`의 점검 리다이렉트·콘텐츠 gone 판정에 걸리는 경로인지 확인
 ## 스토어 — `lib/stores/<도메인>.ts`에 `atom` + 파생 atom. 비직렬 공유 상태(AbortController)는 atom 아닌 **모듈 스코프 Map** 관례
 ## 챗 흐름 수정 순서

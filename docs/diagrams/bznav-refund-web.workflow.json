@@ -159,9 +159,9 @@
       "col": 4,
       "type": "security",
       "label": "sitemap · OG",
-      "sublabel": "BE 가 자동으로 넣는다",
+      "sublabel": "BE 목록 + 정적 목록",
       "width": 140,
-      "tag": "seoHead 로 붙는다"
+      "tag": "FE 가 병합해 XML 을 만든다"
     },
     {
       "id": "verify",
@@ -200,7 +200,7 @@
       "type": "security",
       "label": "sitemap 등재",
       "sublabel": "lib/seo-policy.mjs",
-      "tag": "형식 틀리면 조용히 드롭",
+      "tag": "형식 틀리면 lastmod 만 빠진다",
       "width": 140
     },
     {
@@ -314,10 +314,10 @@
       "dot": "cyan",
       "title": "A. 어드민 콘텐츠 — 기본 갈래",
       "items": [
-        "어드민에 path(예 /event/foo)·이미지·CTA·meta 를 등록하면 pages/event/[...slug].tsx 가 서빙한다. 코드 변경이 없다",
+        "어드민에 path(예 /event/foo)·이미지·CTA·meta 를 등록하면 pages/event/[...slug].tsx 가 서빙한다. 기존 catch-all 범위이고 prefix 포함 최대 3단계다 — 초과하거나 빈 세그먼트면 BE 조회 전에 404 다",
         "새 prefix 가 필요할 때만 pages/<prefix>/[...slug].tsx 골격을 복제하고 resolveContentPath('<prefix>', params?.slug) 만 바꾼다",
         "정적 라우트와 경로가 겹치지 않는지 확인한다. resolveContentPath 가 null 을 주면 404 다",
-        "sitemap 은 BE 가 만들고 OG·canonical 은 seoHead 로 자동이다"
+        "sitemap 은 BE 가 콘텐츠 목록을 주고 FE(pages/api/sitemap.ts)가 정적 목록과 병합·중복 제거해 XML 을 만든다. BE 조회가 실패하면 정적 목록만 쓴다. OG·canonical 은 seoHead 로 자동이다"
       ]
     },
     {
@@ -326,7 +326,7 @@
       "items": [
         "components/landing/ 에 LandingLayout + ImagesReadyGate + SectionScrollModelProvider 로 조립한다",
         "SEO 텍스트는 lib/constants/*-seo.ts 상수로 두고 sr-only 로 렌더한다",
-        "색인 대상이면 lib/seo-policy.mjs 의 SITEMAP_PUBLIC_ENTRIES 에 넣는다 — lastmod 가 YYYY-MM-DD 형식이 아니면 조용히 빠진다",
+        "색인 대상이면 lib/seo-policy.mjs 의 SITEMAP_PUBLIC_ENTRIES 에 넣는다. lastmod 는 날짜(YYYY-MM-DD)와 시간대 포함 datetime 을 모두 받고, 형식이 맞지 않으면 URL 은 남고 lastmod 만 빠진다",
         "OG 가 기본과 다르면 OgMetaHead 의 ogContent 와 getOgMetaData 에 분기를 넣는다"
       ]
     },

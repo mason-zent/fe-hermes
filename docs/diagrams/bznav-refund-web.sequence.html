@@ -5645,7 +5645,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>서버에서 다 조립된다</h3>
         </div>
         <ul>
-          <li>&bull; pages/event/[...slug].tsx · landing · home · 메인이 같은 createContentPageServerSideProps 를 쓴다. 다른 것은 resolveContentPath 의 prefix 뿐이다</li>
+          <li>&bull; pages/event/[...slug].tsx · landing · home · 메인이 모두 createContentPageServerSideProps 를 쓴다. 다만 메인은 resolvePath 가 () =&gt; &#39;&#39; 이고 fallbackNotFoundToMain 을 켜며 파트너 이미지를 따로 조회해 넘긴다</li>
           <li>&bull; resolveContentPath 가 null 을 주면 404 다. 메인 라우트만 빈 문자열을 돌려준다</li>
           <li>&bull; variant 쿠키의 labId 를 실어 보내고, 응답의 variant.assigned 가 참이면 쿠키에 저장한다</li>
           <li>&bull; canonical 과 OG 는 seoHead 로 서버에서 만들어 붙인다</li>
@@ -5659,7 +5659,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </div>
         <ul>
           <li>&bull; BE 장애·5xx·네트워크 오류면 예외를 잡아 모든 랜딩을 MainLanding 으로 돌린다(fallbackToMain)</li>
-          <li>&bull; 정상 &#39;없음&#39; 응답(result:false)은 event·landing 이면 404, 메인 라우트면 메인 랜딩 fallback 이다</li>
+          <li>&bull; 정상 응답이라도 result 가 false 이거나 base·variant 가 없으면 같은 분기다 — event·landing 은 404, 메인 라우트만 메인 랜딩 fallback 이다</li>
           <li>&bull; cookies-next 6.x 의 getCookie 는 gSSP 컨텍스트에서 Promise 를 돌려준다. await 를 빼먹으면 조용히 어긋난다</li>
         </ul>
       </div>

@@ -189,9 +189,9 @@
       "lane": "stop",
       "col": 2,
       "type": "messagebus",
-      "label": "색인 제외",
-      "sublabel": "public/robots.txt",
-      "tag": "sitemap 은 API 서버",
+      "label": "크롤링 제한",
+      "sublabel": "public/robots.txt Disallow",
+      "tag": "색인 제외는 아니다",
       "width": 140
     },
     {
@@ -336,7 +336,7 @@
       "dot": "rose",
       "title": "주의",
       "items": [
-        "sitemap 은 API 서버가 만든다. 색인에서 빼려면 public/robots.txt 의 Disallow 에 넣는다",
+        "sitemap 은 API 서버가 만든다. public/robots.txt 의 Disallow 는 **크롤링을 막는 것**이지 색인 제외를 보장하지 않는다",
         "proxy.ts 에 점검 리다이렉트와 콘텐츠 gone 판정이 있다. 새 경로가 걸리는지 확인한다",
         "비직렬 공유 상태(AbortController 등)는 atom 이 아니라 모듈 스코프 Map 에 두는 것이 이 앱의 관례다"
       ]

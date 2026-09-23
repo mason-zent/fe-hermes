@@ -42,7 +42,7 @@
           "page",
           "nf"
         ],
-        "note": "term 이 비면 notFound() 로 404 를 낸다. 요청 실패는 그보다 앞에서 throw 된다."
+        "note": "term 이 비면 404 다. 요청 실패도 catch 되어 term:null 이 되므로 결국 같은 404 로 합쳐진다."
       }
     ]
   },
@@ -139,7 +139,8 @@
       "from": "detail",
       "to": "dato",
       "y": 375,
-      "label": "쿼리 + 변수"
+      "label": "버전 확인 → 상세",
+      "note": "URL 에 버전이 없으면 시행 버전 조회를 먼저 하고 상세를 조회한다 — 요청이 두 번이다. 버전이 있으면 상세만 조회한다"
     },
     {
       "from": "dato",
@@ -161,7 +162,7 @@
       "y": 495,
       "label": "data",
       "variant": "return",
-      "note": "응답이 ok 가 아니면 본문을 그대로 throw 한다"
+      "note": "요청이 실패하면 getTermsDetail 의 catch 가 잡아 term:null 로 바꾼다 — 예외가 페이지까지 올라오지 않는다"
     },
     {
       "from": "detail",
@@ -208,8 +209,9 @@
       "from": "section",
       "to": "user",
       "y": 808,
-      "label": "버전 전환",
-      "variant": "dashed"
+      "label": "router.push",
+      "variant": "dashed",
+      "note": "섹션 안에서 데이터를 바꾸는 것이 아니라 /terms/<종류>/<버전> 으로 이동해 서버 조회 흐름에 다시 들어간다"
     }
   ],
   "cards": [
@@ -224,11 +226,12 @@
     },
     {
       "dot": "amber",
-      "title": "404 와 반영 지연",
+      "title": "실패는 결국 404 하나로 모인다",
       "items": [
-        "term 이 비면 notFound() 를 부른다. 요청 자체가 실패한 경우는 그보다 앞에서 throw 되어 다른 길이다",
-        "페이지에 revalidate = 3600 이 걸려 있어 DatoCMS 에서 약관을 고쳐도 최대 1시간 뒤에 반영된다",
-        "약관 변경은 코드 작업이 아니다 — 데이터를 고치는 일이다"
+        "requestDatoCms 는 응답이 ok 가 아니면 throw 하지만, getTermsDetail 이 try/catch 로 잡아 { term: null, versions: [] } 를 돌려준다",
+        "그래서 대표 약관 화면에서는 요청 실패도 term 없음과 같은 notFound() 로 끝난다. 빌드 시점의 getTermsPaths 조회만 별도 흐름이다",
+        "페이지에 revalidate = 3600 선언이 있지만 루트 레이아웃이 쿠키를 읽어 동적 렌더된다 — \"최대 1시간 안에 반영\"이 보장되지는 않는다",
+        "약관 변경은 코드 작업이 아니라 DatoCMS 데이터 작업이다"
       ]
     }
   ]

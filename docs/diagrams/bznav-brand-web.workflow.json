@@ -189,9 +189,9 @@
       "lane": "stop",
       "col": 2,
       "type": "messagebus",
-      "label": "색인 제외",
+      "label": "sitemap 제외",
       "sublabel": "EXCLUDE_ROUTES",
-      "tag": "동적 세그먼트는 자동 제외",
+      "tag": "noindex 가 아니다",
       "width": 140
     },
     {
@@ -231,8 +231,8 @@
       "col": 3,
       "type": "frontend",
       "label": "반영 지연",
-      "sublabel": "revalidate = 3600",
-      "tag": "즉시 바뀌지 않는다",
+      "sublabel": "revalidate = 3600 선언",
+      "tag": "루트가 동적 렌더라 보장 아님",
       "width": 140,
       "yOffset": 90
     }
@@ -326,7 +326,7 @@
       "title": "SEO 와 외부 링크",
       "items": [
         "sitemap 은 next-sitemap.config.mjs 가 manifest 에서 자동 수집한다 — 따로 등록하지 않는다",
-        "동적 세그먼트는 자동으로 빠지고, 색인에서 빼려면 EXCLUDE_ROUTES 에 넣는다",
+        "동적 세그먼트는 자동으로 빠지고, EXCLUDE_ROUTES 는 **sitemap 에서 빼는** 설정이다 — 그 페이지에 noindex 가 붙지는 않는다",
         "/ rewrite 와 경로가 겹치지 않는지 확인한다",
         "외부 서비스로 보내는 링크는 lib/constants/common.ts 의 SERVICE_LINKS(UTM 포함) + useWindowOpen() 을 쓴다"
       ]

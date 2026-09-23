@@ -153,7 +153,7 @@
       "label": "훅 2개",
       "sublabel": "use-<name>-form → use-<name>",
       "width": 140,
-      "tag": "반환 shape 통일"
+      "tag": "계산기마다 조금씩 다르다"
     },
     {
       "id": "guard",
@@ -229,9 +229,9 @@
       "lane": "make",
       "col": 3,
       "type": "frontend",
-      "label": "반영 지연",
-      "sublabel": "revalidate = 1800",
-      "tag": "새 블록은 Renderer",
+      "label": "반영 시점",
+      "sublabel": "revalidate 선언은 있다",
+      "tag": "루트가 force-dynamic",
       "width": 140,
       "yOffset": 90
     }
@@ -317,7 +317,8 @@
         "1) lib/types/calc/<name>.ts 에 Form·Input·Result·Step 타입, 2) lib/constants/calc/<name>.ts 에 FIELD_LIMITS 와 요율표",
         "3) lib/utils/calc/<name>.ts 에 React 와 무관한 순수 함수. 요율·공식의 근거는 JSDoc 에 적는다",
         "4) 훅 둘 — use-<name>-form.ts 는 watch/setValue/reset 만 쓰고(handleSubmit·resolver 를 쓰지 않는다), use-<name>.ts 가 step·result·actions 를 묶는다",
-        "반환은 { form, setters, parsedInput, validation, result, sections, actions } 로 통일한다 — 7세트가 모두 같다"
+        "4) 훅 둘 — use-<name>-form.ts 는 watch/setValue/reset 만 쓰고(계산기 폼 훅의 관례다. 앱 전체에는 yup resolver 를 쓰는 간편인증 폼도 있다), use-<name>.ts 가 step·result·actions 를 묶는다",
+        "계산기는 8세트다. 반환은 대체로 { form, setters, parsedInput, validation, result, sections, actions } 이지만 똑같지는 않다 — salary-actual 은 sections 대신 salarySection, parsedInput 대신 monthlyGrossSalary 를 내보낸다. 새로 만들 때는 가장 가까운 기존 세트를 보고 맞춘다"
       ]
     },
     {
@@ -336,7 +337,7 @@
       "items": [
         "원칙은 코드 변경 없이 Notion DB 행만 추가하는 것이다(generateStaticParams 가 읽는다)",
         "env 는 NOTION_TOKEN · NOTION_PAGE_ID · NOTION_DATABASE_NAME, DB 컬럼명은 name/title/icon/color/step/creationDate 로 고정이다",
-        "revalidate = 1800 이라 최대 30분 지연된다. 새 블록 타입이 나오면 Renderer.tsx 를 고쳐야 한다"
+        "tax-content 페이지에 revalidate = 1800 선언이 있지만 루트 레이아웃이 force-dynamic 이다 — 이 값만으로 \"최대 30분 지연\"이라고 말할 수 없다. 새 블록 타입이 나오면 Renderer.tsx 를 고쳐야 한다"
       ]
     }
   ]

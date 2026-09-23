@@ -42,7 +42,7 @@
           "streaming",
           "reconnect"
         ],
-        "note": "보류 스트림을 sessionStorage 에 남겨 두고, 끊기면 reconnecting 으로 바꿔 다시 붙는다."
+        "note": "requestUuid 를 받아 둔 스트림만 복구된다. 새로고침 복원은 loading, 탭 복귀는 reconnecting 으로 시작한다."
       }
     ]
   },
@@ -84,7 +84,7 @@
       "lane": "main",
       "col": 2,
       "step": "03",
-      "tag": "AbortController 를 Map 에"
+      "tag": "첫 청크에서 streaming 으로"
     },
     {
       "id": "streaming",
@@ -108,11 +108,11 @@
     {
       "id": "saved",
       "type": "neutral",
-      "label": "보류 스트림 저장",
-      "sublabel": "sessionStorage",
+      "label": "복구용 저장",
+      "sublabel": "requestUuid 받은 뒤",
       "lane": "side",
       "col": 0,
-      "tag": "복귀 재연결에 쓴다"
+      "tag": "없으면 저장 안 된다"
     },
     {
       "id": "reconnect",
@@ -121,7 +121,7 @@
       "sublabel": "phase: reconnecting",
       "lane": "side",
       "col": 1,
-      "tag": "복귀 시 loading 으로"
+      "tag": "복귀 방식마다 다르다"
     }
   ],
   "transitions": [
@@ -178,16 +178,18 @@
       "title": "phase 는 셋뿐이다",
       "items": [
         "ChatStreamPhase = loading | streaming | reconnecting. 그 밖의 상태는 없다",
-        "스트림을 만들면 loading 이고, 첫 프레임이 오면 streaming 으로 바뀐다",
-        "streamId 별 AbortController 는 atom 이 아니라 모듈 스코프 Map 에 둔다 — 직렬화할 수 없는 값이라서다"
+        "스트림을 만들면 loading 이고, 최초 요청은 첫 바이트 청크를 받은 시점에 streaming 으로 바뀐다(JSON 프레임 완성 전이다)",
+        "streamId 별 AbortController 는 atom 이 아니라 모듈 스코프 Map 에 둔다 — 직렬화할 수 없는 값이라서다",
+        "화면의 오류·취소·완료는 phase 가 아니다 — 스트림을 목록에서 지우고 답변 상태를 바꾸는 방식으로 표현한다"
       ]
     },
     {
       "dot": "amber",
       "title": "끊김과 복귀",
       "items": [
-        "보류 스트림을 sessionStorage 에 적어 둔다. 연결이 끊기면 phase 를 reconnecting 으로 바꾸고 다시 붙는다",
-        "화면을 떠났다 돌아와 복구할 때는 phase 를 loading 으로 되돌린 뒤 다시 받는다",
+        "requestUuid 가 있어야 sessionStorage 에 저장된다. 서버 meta 프레임으로 받기 전에 끊기면 재연결하지 못하고 오류로 끝난다",
+        "새로고침 복원은 loading 부터 시작하고, 탭 복귀는 reconnecting 으로 두고 /status 를 먼저 본다. 이미 끝났으면 /live 없이 종료한다",
+        "보안 채팅의 저장 복원에는 30분 제한이 있다",
         "끝나면 보류 목록에서 지운다. app/chat/layout.tsx 와 ChatContent.tsx 의 리마운트 경계가 여기에 맞물린다"
       ]
     }

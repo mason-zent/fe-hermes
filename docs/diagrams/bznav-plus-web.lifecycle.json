@@ -3,7 +3,7 @@
   "diagram_type": "lifecycle",
   "meta": {
     "title": "bznav plus-web 화면 상태",
-    "subtitle": "대표 화면 app/calc/<경로> · step 은 input-step 과 result-step 둘뿐이다",
+    "subtitle": "대표 화면 app/calc/holiday-pay · 단계가 둘인 가장 단순한 계산기",
     "output": "docs/diagrams/bznav-plus-web.lifecycle.html",
     "viewBox": [
       1030,
@@ -22,7 +22,7 @@
           "result",
           "sections"
         ],
-        "note": "입력이 유효해야 계산 버튼이 살아나고, result-step 이 되어야 순수 함수가 돈다."
+        "note": "holiday-pay 기준이다. 입력이 유효해야 계산 버튼이 살아나고 result-step 이 되어야 결과가 나온다."
       },
       {
         "id": "gate",
@@ -41,7 +41,7 @@
           "result",
           "reset"
         ],
-        "note": "reset 은 step 을 input-step 으로 되돌리고 폼도 초기화한다."
+        "note": "holiday-pay 의 reset 은 input-step 으로 되돌린다. 계산기마다 복귀 단계가 다르다."
       }
     ]
   },
@@ -60,7 +60,7 @@
       "id": "enter",
       "type": "start",
       "label": "진입",
-      "sublabel": "app/calc/<경로>",
+      "sublabel": "app/calc/holiday-pay",
       "lane": "main",
       "col": 0,
       "step": "01"
@@ -82,7 +82,8 @@
       "sublabel": "validation.isInputValid",
       "lane": "main",
       "col": 2,
-      "step": "03"
+      "step": "03",
+      "tag": "이름은 계산기마다 다르다"
     },
     {
       "id": "result",
@@ -92,7 +93,7 @@
       "lane": "main",
       "col": 3,
       "step": "04",
-      "tag": "여기서만 계산한다"
+      "tag": "최종 결과는 여기서만"
     },
     {
       "id": "sections",
@@ -118,7 +119,7 @@
       "sublabel": "step 을 input-step 으로",
       "lane": "side",
       "col": 1,
-      "tag": "폼도 초기화한다"
+      "tag": "이 계산기는 input-step 으로"
     }
   ],
   "transitions": [
@@ -172,11 +173,12 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "step 은 둘뿐이다",
+      "title": "이 계산기는 단계가 둘이다",
       "items": [
-        "Step = 'input-step' | 'result-step'. 그 사이 상태가 없다",
-        "result 는 step 이 result-step 일 때만 계산한다. 입력하는 동안에는 계산하지 않는다",
-        "계산 버튼(calculate)이 step 을 바꾸고, reset 이 input-step 으로 되돌리면서 폼도 초기화한다"
+        "holiday-pay 의 Step 은 'input-step' | 'result-step' 둘뿐이다",
+        "⚠️ 계산기마다 다르다 — store-sales 는 revenue·cost·result 세 단계, simple-vat 은 sales·deduction·paid·result 네 단계다. 이 그림을 그대로 옮기지 않는다",
+        "최종 result 는 결과 단계에서만 만든다. 다만 계산기에 따라 중간 계산이나 공제 미리보기는 입력 중에도 돈다",
+        "reset 은 이 계산기에서 input-step 으로 되돌리며 폼도 초기화한다. store-sales·simple-vat 은 화면 크기나 시기에 따라 다른 단계로 돌아간다"
       ]
     },
     {
@@ -185,7 +187,7 @@
       "items": [
         "RHF 를 쓰지만 handleSubmit 과 resolver 를 쓰지 않는다. watch 와 setValue, 그리고 createFormSetter 로 만든 setters 만 쓴다",
         "값은 FIELD_LIMITS 로 자르고 parseInteger 로 숫자로 바꿔 parsedInput 에 담는다",
-        "validation.isInputValid 가 거짓이면 계산 버튼이 비활성이다",
+        "holiday-pay 는 validation.isInputValid 를 쓴다. 이름은 계산기마다 다르다 — salary-actual 은 isSalaryValid, simple-vat 은 isSalesValid·isDeductionValid 처럼 단계별 검증을 쓴다",
         "결과가 나오면 useCalculatorDpLog 로 계산 로그를 남긴다"
       ]
     }

@@ -10,7 +10,7 @@
 1. `components/landing/`에 컴포넌트(`LandingLayout` + `ImagesReadyGate` + `SectionScrollModelProvider`)
 2. SEO 텍스트는 `lib/constants/*-seo.ts` 상수 + sr-only 렌더
 3. `pages/...` + `Page.getLayout`, `lib/constants/paths.ts` 경로 상수
-4. 색인 대상이면 `lib/seo-policy.mjs` `SITEMAP_PUBLIC_ENTRIES`(`lastmod` `YYYY-MM-DD`, 형식 틀리면 조용히 드롭)
+4. 색인 대상이면 `lib/seo-policy.mjs` `SITEMAP_PUBLIC_ENTRIES`. `lastmod` 는 날짜(`YYYY-MM-DD`)와 **시간대 포함 datetime 을 모두 받고**, 형식이 맞지 않으면 URL 은 남고 **`lastmod` 만 빠진다**(URL 이 통째로 드롭되는 것이 아니다 — `lib/sitemap.mjs`). sitemap XML 자체는 BE 콘텐츠 목록과 정적 목록을 **FE(`pages/api/sitemap.ts`)가 병합·중복 제거해** 만든다. BE 조회가 실패하면 정적 목록만 쓴다
 5. OG가 다르면 `components/layout/OgMetaHead.tsx` `ogContent` + `getOgMetaData` 분기
 
 ## B. 새 Relay 쿼리

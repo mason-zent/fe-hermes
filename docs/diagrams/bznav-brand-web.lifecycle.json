@@ -31,7 +31,7 @@
           "fetch",
           "notfound"
         ],
-        "note": "term 이 비면 notFound() 로 404 다. 요청 실패는 그보다 앞에서 throw 되어 다른 길로 간다."
+        "note": "term 이 비면 404 다. 요청 실패도 catch 되어 term:null 이 되므로 같은 404 로 합쳐진다."
       },
       {
         "id": "stale",
@@ -40,7 +40,7 @@
           "version",
           "stale"
         ],
-        "note": "revalidate 가 3600 이라 DatoCMS 를 고쳐도 최대 1시간 지연된다."
+        "note": "revalidate 선언은 있지만 루트가 쿠키를 읽어 동적 렌더된다. 반영 상한이 보장되지 않는다."
       }
     ]
   },
@@ -81,7 +81,7 @@
       "lane": "main",
       "col": 2,
       "step": "03",
-      "tag": "실패는 throw 로 빠진다"
+      "tag": "실패도 catch 되어 term:null"
     },
     {
       "id": "shown",
@@ -105,7 +105,7 @@
       "id": "notfound",
       "type": "failure",
       "label": "404",
-      "sublabel": "term 이 비면",
+      "sublabel": "term 이 비거나 실패하면",
       "lane": "side",
       "col": 0,
       "tag": "notFound()"
@@ -121,11 +121,11 @@
     {
       "id": "stale",
       "type": "waiting",
-      "label": "반영 지연",
-      "sublabel": "revalidate = 3600",
+      "label": "반영 시점",
+      "sublabel": "revalidate 선언은 있다",
       "lane": "side",
       "col": 2,
-      "tag": "최대 1시간"
+      "tag": "루트가 동적 렌더"
     }
   ],
   "transitions": [
@@ -192,16 +192,17 @@
       "items": [
         "generateStaticParams 가 getTermsPaths 로 약관 경로를 미리 만든다",
         "page.tsx 는 서버 컴포넌트다. getTermsDetail 로 term 과 versions 를 받아 그대로 조립한다",
-        "클라이언트 코드는 섹션 컴포넌트 쪽에만 있다"
+        "페이지에 revalidate = 3600 선언이 있지만 루트 레이아웃이 쿠키를 읽어 동적 렌더된다 — 반영 상한을 이 값으로 단정할 수 없다"
       ]
     },
     {
       "dot": "amber",
-      "title": "두 가지 실패는 다르다",
+      "title": "실패가 한 곳으로 모인다",
       "items": [
-        "term 이 비면 notFound() 로 404 를 낸다",
-        "요청 자체가 실패하면(응답 ok 아님) requestDatoCms 가 본문을 throw 한다 — 404 가 아니다",
-        "revalidate = 3600 이라 데이터를 고쳐도 최대 1시간 뒤에 반영된다. 약관 변경은 코드가 아니라 DatoCMS 작업이다"
+        "requestDatoCms 는 throw 하지만 getTermsDetail 이 catch 해 { term: null, versions: [] } 로 바꾼다",
+        "그래서 term 없음과 요청 실패가 모두 notFound() 로 끝난다. 빌드 시점의 getTermsPaths 만 별도 흐름이다",
+        "URL 에 버전이 없으면 시행 버전을 먼저 조회한 뒤 상세를 조회한다 — 요청이 두 번이다",
+        "버전 전환은 화면 안 교체가 아니라 /terms/<종류>/<버전> 으로 router.push 해 조회 흐름에 다시 들어가는 것이다"
       ]
     }
   ]

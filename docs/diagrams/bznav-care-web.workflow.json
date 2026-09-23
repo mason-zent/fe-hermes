@@ -133,7 +133,7 @@
       "label": "페이지 골격",
       "sublabel": "'use client' + Suspense",
       "width": 140,
-      "tag": "Relay 훅은 안쪽에"
+      "tag": "Relay 화면일 때"
     },
     {
       "id": "files",
@@ -315,7 +315,7 @@
       "title": "A. 새 화면",
       "items": [
         "1) 소속을 정한다 — 로그인 온보딩 app/(auth)/, 마이페이지 app/(my-info)/, 랜딩 app/(landing)/, 도메인은 app/{vat,global-income,payroll,…}/",
-        "2) page.tsx 는 'use client' 로 두고 내부 컴포넌트를 <Suspense> 로 감싼다. Relay 훅(useLazyLoadQuery)은 반드시 Suspense 안쪽에 둔다",
+        "2) Relay 로 데이터를 받는 화면이면 page.tsx 를 'use client' 로 두고 내부를 <Suspense> 로 감싼다. 모든 화면이 그런 것은 아니다 — 도움말센터처럼 비동기 서버 페이지인 화면도 있다",
         "3) 셸은 CareLayout + @repo/ui 의 BaseTopNavigation·BackButtonTopNavigation 이다",
         "4) 전용 파일은 라우트 폴더 옆 components·hooks·graphql·store·constants·utils·types 에 둔다(NEWCARE-633). 루트 공용 폴더에 두지 않는다"
       ]
@@ -325,7 +325,7 @@
       "title": "같이 해야 하는 것",
       "items": [
         "page 가 'use client' 면 metadata 를 못 쓴다. 같은 폴더 metadata.ts 를 만들고 서버 layout.tsx 에서 export const metadata 로 내보낸다",
-        "인증은 상위 layout 이 CareAuthGuard 로 감싸는지 확인한다. 새 최상위 도메인이면 그 layout.tsx 에 직접 추가한다",
+        "인증이 필요한 도메인이면 상위 layout 이 CareAuthGuard 로 감싸는지 확인하고, 새 최상위 도메인이면 그 layout.tsx 에 직접 추가한다. 공개 화면까지 인증 대상으로 만들지 않는다",
         "뷰 이벤트는 <ViewEventLogger careEvent={{category, object}}> 로 붙이고 카테고리는 constants/careEvent.ts 에서 고른다",
         "경로 상수는 constants/paths.ts 의 소속 객체에 한글 키로 넣는다. 숫자로 시작하면 따옴표, 동적이면 함수형이다"
       ]
@@ -335,7 +335,7 @@
       "title": "검증 — 순서가 있다",
       "items": [
         "Relay 아티팩트를 먼저 만든다: pnpm --filter care-web relay",
-        "그다음 scripts/verify/bznav-web.sh care-web — lint → (아티팩트 있으면) type-check → (canvas 빌드됐으면) test:unit 순이다",
+        "그다음 scripts/verify/bznav-web.sh care-web — lint 는 항상 돌고, type-check 와 test:unit 은 **둘 다 Relay 아티팩트가 있을 때만** 돈다(test:unit 은 canvas 까지 있어야 한다)",
         "⚠️ 검증 스크립트는 Relay 를 생성해 주지 않는다. 아티팩트가 없으면 타입 검증을 건너뛰고, 그 사실을 보고 표에 남겨야 한다"
       ]
     }
