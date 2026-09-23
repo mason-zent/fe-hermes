@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "web-op 요청 흐름",
+    "subtitle": "화면이 데이터를 받을 때 무엇이 오가는가 · Route Handler 를 거치는 경로",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/web-op.sequence.html",
+    "views": [
+      {
+        "id": "read",
+        "label": "데이터를 받을 때",
+        "focus": [
+          "user",
+          "page",
+          "container",
+          "hook",
+          "gateway"
+        ],
+        "note": "page 는 껍데기, Container 가 상태와 오케스트레이션을 갖는다."
+      },
+      {
+        "id": "api",
+        "label": "Route Handler 를 지날 때",
+        "focus": [
+          "gateway",
+          "route",
+          "service",
+          "ext"
+        ],
+        "note": "route → Service → gateway 순서를 지킨다. route 가 repository 를 직접 부르지 않는다."
+      },
+      {
+        "id": "error",
+        "label": "오류가 났을 때",
+        "focus": [
+          "service",
+          "route",
+          "hook",
+          "container",
+          "toast"
+        ],
+        "note": "CommonException 을 throw 하고 route 가 { message } 와 status 로 바꿔 돌려준다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "서버 껍데기"
+    },
+    {
+      "id": "container",
+      "type": "frontend",
+      "label": "Container",
+      "sublabel": "'use client'"
+    },
+    {
+      "id": "hook",
+      "type": "messagebus",
+      "label": "useXxx",
+      "sublabel": "도메인 훅"
+    },
+    {
+      "id": "gateway",
+      "type": "backend",
+      "label": "Gateway",
+      "sublabel": "axios · B계통"
+    },
+    {
+      "id": "route",
+      "type": "backend",
+      "label": "route.ts",
+      "sublabel": "app/api"
+    },
+    {
+      "id": "service",
+      "type": "backend",
+      "label": "Service",
+      "sublabel": "src/backend"
+    },
+    {
+      "id": "ext",
+      "type": "cloud",
+      "label": "외부 API",
+      "sublabel": "또는 Redis"
+    },
+    {
+      "id": "toast",
+      "type": "frontend",
+      "label": "useToast",
+      "sublabel": "bznav-fe-ui"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "진입"
+    },
+    {
+      "from": 316,
+      "to": 600,
+      "label": "데이터 조회"
+    },
+    {
+      "from": 616,
+      "to": 830,
+      "label": "결과 · 오류"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "page",
+      "y": 180,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "container",
+      "y": 230,
+      "label": "서버 → 클라이언트",
+      "note": "page 는 껍데기, 상태는 Container 가 갖는다"
+    },
+    {
+      "from": "container",
+      "to": "hook",
+      "y": 290,
+      "label": "조회 요청",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hook",
+      "to": "gateway",
+      "y": 340,
+      "label": "gateway 호출",
+      "note": "신규는 B계통 axios 직접. BaseApiGateway 상속은 하지 않는다"
+    },
+    {
+      "from": "gateway",
+      "to": "route",
+      "y": 390,
+      "label": "/api/... 호출"
+    },
+    {
+      "from": "route",
+      "to": "service",
+      "y": 440,
+      "label": "Service 위임",
+      "variant": "security",
+      "note": "route 에서 repository 를 직접 부르지 않는다"
+    },
+    {
+      "from": "service",
+      "to": "ext",
+      "y": 490,
+      "label": "외부 호출 · Redis"
+    },
+    {
+      "from": "ext",
+      "to": "service",
+      "y": 540,
+      "label": "응답",
+      "variant": "return"
+    },
+    {
+      "from": "service",
+      "to": "route",
+      "y": 580,
+      "label": "결과 또는 CommonException",
+      "variant": "return"
+    },
+    {
+      "from": "route",
+      "to": "hook",
+      "y": 630,
+      "label": "{ message } + status",
+      "variant": "return",
+      "note": "status 는 error.httpStatus ?? error.status"
+    },
+    {
+      "from": "hook",
+      "to": "container",
+      "y": 680,
+      "label": "데이터 · 오류",
+      "variant": "emphasis"
+    },
+    {
+      "from": "container",
+      "to": "toast",
+      "y": 730,
+      "label": "실패면 토스트",
+      "variant": "dashed",
+      "note": "layout.tsx 에 DialogProvider 와 Toaster 가 있어야 동작한다"
+    },
+    {
+      "from": "container",
+      "to": "user",
+      "y": 780,
+      "label": "화면 갱신",
+      "variant": "emphasis"
+    },
+    {
+      "from": "user",
+      "to": "toast",
+      "y": 810,
+      "label": "확인"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 쪽",
+      "items": [
+        "app/<domain>/<route>/page.tsx 는 서버 껍데기다. 상태·오케스트레이션은 src/containers 의 Container 가 갖는다",
+        "데이터는 src/hooks/<domain>/useXxx.ts 를 거쳐 gateway 로 간다. 신규는 B계통(axios 직접)이고 BaseApiGateway 상속은 하지 않는다",
+        "토스트·다이얼로그는 bznav-fe-ui 의 useToast·useDialog 다. 라우트 layout.tsx 에 DialogProvider 와 Toaster 가 있어야 뜬다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "서버 쪽 (app/api)",
+      "items": [
+        "route.ts 는 얇게 두고 로직은 src/backend/service/XxxService.ts 클래스에 둔다",
+        "외부 호출은 repository/external/XxxApiGateway.ts, 저장은 RedisRepository. route 에서 repository 를 직접 부르지 않는다",
+        "에러는 CommonException 팩토리를 throw 하고, route catch 에서 { message } 와 status: error.httpStatus ?? error.status 로 바꾼다",
+        "동적 세그먼트는 context.params 가 Promise 라 await 해야 한다 (Next 16)"
+      ]
+    }
+  ]
+}

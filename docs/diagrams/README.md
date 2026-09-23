@@ -10,14 +10,25 @@ open docs/diagrams/index.html
 
 `index.html` 이 목록이고 거기서 골라 들어간다. 각 다이어그램은 **독립 실행 HTML** 이라 의존성 없이 열린다(장당 약 800KB).
 
-| 다이어그램 | 타입 | 원본 |
+서비스마다 **보는 각도를 넷으로 나눴다.**
+
+| 타입 | 무엇을 보나 | 파일 |
 |---|---|---|
-| 작업 흐름 (Plan-First 6단계) | workflow | `hermes-flow.workflow.json` |
-| client-brics-refund | architecture | `client-brics-refund.architecture.json` |
-| client-brics-hub | architecture | `client-brics-hub.architecture.json` |
-| client-brics-care | architecture | `client-brics-care.architecture.json` |
-| web-op | architecture | `web-op.architecture.json` |
-| bznav refund-web · care-web · brand-web · sena-web · plus-web | architecture | `bznav-*.architecture.json` |
+| architecture | 무엇으로 이루어져 있는가 (파일 근거 포함) | `<서비스>.architecture.json` → `<서비스>.html` |
+| workflow | 새 화면을 어떤 순서로 만드는가 · 어디서 막히는가 | `<서비스>.workflow.json` |
+| sequence | 한 화면이 뜰 때 무엇이 오가는가 | `<서비스>.sequence.json` |
+| lifecycle | 상태가 어디서 갈라지고 멈추는가 | `<서비스>.lifecycle.json` |
+
+| 서비스 | architecture | workflow | sequence | lifecycle |
+|---|:--:|:--:|:--:|:--:|
+| client-brics-refund | ✅ | ✅ | ✅ | ✅ |
+| client-brics-hub | ✅ | ✅ | ✅ | ✅ |
+| client-brics-care | ✅ | ✅ | ✅ | ✅ |
+| web-op | ✅ | ✅ | ✅ | ✅ |
+| bznav refund-web | ✅ | — | — | ✅ |
+| bznav care-web · brand-web · sena-web · plus-web | ✅ | — | — | — |
+
+그 밖에 `hermes-flow.workflow.json` (헤르메스 Plan-First 작업 흐름) 이 있다.
 
 아직 없는 것: bznav `packages/*`, `zent-packages`. 화면이 없는 패키지 레포라 성격이 달라 뒤로 미뤘다.
 
@@ -79,7 +90,7 @@ node $A/bin/archify.mjs deliver  architecture docs/diagrams/client-brics-refund.
   docs/diagrams/client-brics-refund.html --quality showcase --repo-root repos/client-brics-refund --json
 ```
 
-다이어그램을 추가하면 `index.html` 의 `ITEMS` 에도 한 줄 넣는다.
+다이어그램을 추가하면 **`node scripts/build-diagram-index.mjs`** 를 돌린다. `index.html` 은 실제 파일 목록에서 생성되므로 손으로 카드를 늘리지 않는다.
 
 **`validate` 가 9개 검사를 모두 통과해야 showcase 합격이다.** 4개만 나오면 기본 검증이지 합격이 아니다. `deliver` 가 0 이 아닌 종료 코드를 내면 실패이며, 이전 HTML 이 그대로 남는다.
 
@@ -104,3 +115,25 @@ workflow 보다 검사가 빡빡하다. 아래를 지키면 대부분 한 번에
 - `sources` 를 쓰려면 `meta.repository`(url·provider·link_mode·**40자 전체 SHA**)가 필요하고, `validate`·`deliver` 에 `--repo-root <레포>` 를 넘겨야 한다. 비공개 레포라 `link_mode: "local-only"` 를 쓴다
 - **`sources` 의 `path` 는 실제 파일이어야 한다.** 디렉터리(`app/foo/`)는 거부된다. `git -C <레포> cat-file -e <SHA>:<경로>` 로 미리 확인한다
 - `meta.views[].focus` 에 없는 id 를 쓰면 `unknown semantic id` 로 떨어진다
+
+### sequence 에서 걸렸던 것
+
+가로축이 참여자, 세로축이 시간이다. 좌표를 직접 잡는 타입이라 아래 두 가지만 지키면 된다.
+
+- **`meta.viewBox[0]` 이 참여자 수를 감당해야 한다.** 참여자 9명이면 1040 은 되어야 한다. 좁으면 오른쪽 참여자가 잘린다
+- **참여자 `label` 은 박스(86px)를 넘지 않게 짧게** 쓴다. `server-zent-ip` 같은 건 `zent-ip` 로 줄인다. 넘치면 `composition/label-route-clearance` 로 떨어진다
+- 메시지 `y` 는 읽히는 띠 안에 있어야 한다. `viewBox[1]` 이 900 이면 **180 ~ 810** 사이에 둔다. 마지막 메시지를 바닥까지 내리면 걸린다
+- 참여자는 **호출 순서대로 왼쪽에서 오른쪽**으로 놓는다. 되돌아가는 화살표가 많아지면 읽기 어려워진다
+
+### lifecycle 에서 걸렸던 것
+
+가장 까다롭다. **레인 이름과 열 좌표가 렌더러에 박혀 있어서**, 그걸 모르면 진단이 수백 개 나온다.
+
+- **레인 id `main` 과 `terminal` 은 예약어다.** `main` = 위쪽 단계 밴드, `terminal` = 아래쪽 종료 밴드, **그 외 레인은 전부 가운데 밴드 하나를 나눠 쓴다**(`yOffset` 으로만 분리). `main` 레인이 없으면 레이아웃이 통째로 깨진다
+- **x 좌표는 밴드마다 고정이다.** 단계 밴드는 5열 `94 · 248 · 402 · 556 · 710`, 가운데·종료 밴드는 3열 `402 · 556 · 710`. 즉 **단계 col 2·3·4 만 아래 밴드와 x 가 맞는다.** 수직 전이는 x 가 맞는 열끼리만 깨끗하게 떨어진다
+- y 는 단계 126, 가운데 278, 종료 450 (높이 58~62). 그릴 수 있는 바닥은 `viewBox[1] - 122`
+- **노드 사이 네 간격(153~189 · 307~343 · 461~497 · 615~651)은 단계 전이가 전부 점유한다.** 밴드를 가로지르는 우회로를 이 사이로 내리면 반드시 `composition/proper-crossing` 이 난다. 우회는 **노드 바깥(x > 769)** 으로 돌린다
+- **`via` 의 첫 점은 출발 노드 중심의 x 와 같아야 한다.** 앵커가 중심에 고정이라 x 를 달리 주면 대각선이 생겨 `artifact/orthogonal-arrows` 로 떨어진다
+- `states[].step` 은 **문자열**(`"01"`), `type` 에 `terminal` 은 없다(`success`/`failure` 를 쓴다), `lanes` 는 `id`·`label` 만 받는다
+- `meta` 에 `repository` 나 `locale: "ko"` 를 넣으면 스키마에서 거부된다 (architecture 와 다르다)
+- `route` 는 `auto · straight · drop · bottom-channel · top-channel · right-channel · left-channel`

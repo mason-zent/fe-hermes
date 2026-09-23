@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "web-op 화면 상태",
+    "subtitle": "화면이 진입부터 제출까지 지나는 상태와 갈라지는 곳",
+    "output": "docs/diagrams/web-op.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "enter",
+          "mount",
+          "fetch",
+          "shown",
+          "submit"
+        ],
+        "note": "page 는 껍데기, Container 가 상태를 갖는다. documents 계열이 신규 기준이다."
+      },
+      {
+        "id": "branch",
+        "label": "갈라지는 곳",
+        "focus": [
+          "fetch",
+          "route",
+          "loading",
+          "confirmSave"
+        ],
+        "note": "자체 API 가 필요하면 Route Handler 를 거쳐 Service 로 간다."
+      },
+      {
+        "id": "stop",
+        "label": "끝나는 곳",
+        "focus": [
+          "route",
+          "loading",
+          "failErr",
+          "fail500"
+        ],
+        "note": "에러는 CommonException 으로 던지고 route 에서 status 로 바꾼다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    },
+    {
+      "id": "terminal",
+      "label": "종료 상태"
+    }
+  ],
+  "states": [
+    {
+      "id": "enter",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "page 서버 껍데기",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "force-dynamic 여부"
+    },
+    {
+      "id": "mount",
+      "type": "active",
+      "label": "컨테이너 마운트",
+      "sublabel": "'use client'",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "상태는 여기"
+    },
+    {
+      "id": "fetch",
+      "type": "decision",
+      "label": "조회",
+      "sublabel": "useXxx → gateway",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "신규는 B계통"
+    },
+    {
+      "id": "shown",
+      "type": "active",
+      "label": "화면 표시",
+      "sublabel": "프레젠테이션만",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "submit",
+      "type": "success",
+      "label": "제출 · 완료",
+      "sublabel": "useEventLogger",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "useRef 1회 가드"
+    },
+    {
+      "id": "route",
+      "type": "waiting",
+      "label": "Route Handler",
+      "sublabel": "app/api → Service",
+      "lane": "side",
+      "col": 0,
+      "tag": "params 는 await"
+    },
+    {
+      "id": "loading",
+      "type": "waiting",
+      "label": "로딩",
+      "sublabel": "ContainerLayout",
+      "lane": "side",
+      "col": 1
+    },
+    {
+      "id": "confirmSave",
+      "type": "waiting",
+      "label": "확인 다이얼로그",
+      "sublabel": "useDialog",
+      "lane": "side",
+      "col": 2,
+      "tag": "Provider 필요"
+    },
+    {
+      "id": "failErr",
+      "type": "failure",
+      "label": "오류 토스트",
+      "sublabel": "CommonException",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "status 매핑"
+    },
+    {
+      "id": "fail500",
+      "type": "failure",
+      "label": "500",
+      "sublabel": "시크릿 미설정",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "NEXT_PUBLIC 금지"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "enter",
+      "to": "mount",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "mount",
+      "to": "fetch",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "fetch",
+      "to": "shown",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "shown",
+      "to": "submit",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "fetch",
+      "to": "route",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "shown",
+      "to": "loading",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "submit",
+      "to": "confirmSave",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x1",
+      "from": "route",
+      "to": "failErr",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x2",
+      "from": "loading",
+      "to": "fail500",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "기본 경로",
+      "items": [
+        "app/<domain>/<route>/page.tsx 는 서버 껍데기다. 상태·오케스트레이션은 Container 가 갖는다",
+        "데이터는 src/hooks/<domain>/useXxx.ts → gateway 로 간다. 신규는 B계통 axios 직접이다",
+        "레이아웃은 ContainerLayout, 이벤트는 useEventLogger 를 useRef 로 한 번만 보낸다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "갈라지는 곳",
+      "items": [
+        "자체 API 가 필요하면 app/api/<path>/route.ts → src/backend/service/XxxService.ts 순서를 지킨다. route 에서 repository 를 직접 부르지 않는다",
+        "동적 세그먼트의 context.params 는 Promise 라 await 해야 한다 (Next 16)",
+        "에러는 CommonException 을 throw 하고 route catch 에서 { message } 와 status: error.httpStatus ?? error.status 로 바꾼다",
+        "시크릿이 없으면 500 을 반환한다. .env.example 에는 이름만 넣고 NEXT_PUBLIC_ 은 쓰지 않는다"
+      ]
+    }
+  ]
+}

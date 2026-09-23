@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "client-brics-care 요청 흐름",
+    "subtitle": "목록 화면이 그려질 때 무엇이 오가는가 · 필터 스토어와 페이지 리셋",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/client-brics-care.sequence.html",
+    "views": [
+      {
+        "id": "list",
+        "label": "목록을 그릴 때",
+        "focus": [
+          "user",
+          "page",
+          "list",
+          "hook",
+          "api"
+        ],
+        "note": "컨테이너 하나가 필터 UI·테이블·페이지네이션을 전부 갖는다."
+      },
+      {
+        "id": "filter",
+        "label": "필터가 바뀔 때",
+        "focus": [
+          "user",
+          "list",
+          "store",
+          "hook"
+        ],
+        "note": "스토어 setter 가 page 를 1 로 되돌린다. URL 에는 반영하지 않는다."
+      },
+      {
+        "id": "guard",
+        "label": "들어오기 전",
+        "focus": [
+          "user",
+          "guard",
+          "auth"
+        ],
+        "note": "가드는 page 가 아니라 layout 에 둔다. create·edit 까지 덮어야 한다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "운영자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "layout.tsx",
+      "sublabel": "도메인 가드"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "@zent-auth",
+      "sublabel": "PAGE_CARE_*"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "서버"
+    },
+    {
+      "id": "list",
+      "type": "frontend",
+      "label": "XxxList",
+      "sublabel": "'use client'"
+    },
+    {
+      "id": "store",
+      "type": "frontend",
+      "label": "zustand",
+      "sublabel": "필터 스토어"
+    },
+    {
+      "id": "hook",
+      "type": "messagebus",
+      "label": "Orval 훅",
+      "sublabel": "useFindXxx"
+    },
+    {
+      "id": "fetcher",
+      "type": "backend",
+      "label": "orval-fetcher",
+      "sublabel": "mutator"
+    },
+    {
+      "id": "api",
+      "type": "cloud",
+      "label": "care API",
+      "sublabel": "구독 · 결제"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "가드"
+    },
+    {
+      "from": 316,
+      "to": 560,
+      "label": "목록 조회"
+    },
+    {
+      "from": 576,
+      "to": 830,
+      "label": "필터 · 페이지"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "guard",
+      "y": 180,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "guard",
+      "to": "auth",
+      "y": 220,
+      "label": "auth() 세션",
+      "variant": "security"
+    },
+    {
+      "from": "auth",
+      "to": "guard",
+      "y": 260,
+      "label": "PAGE_CARE_* 확인",
+      "variant": "return",
+      "note": "layout 가드라 create·edit 까지 덮는다"
+    },
+    {
+      "from": "guard",
+      "to": "page",
+      "y": 330,
+      "label": "통과",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "list",
+      "y": 370,
+      "label": "서버 → 클라이언트"
+    },
+    {
+      "from": "list",
+      "to": "store",
+      "y": 410,
+      "label": "필터 값 읽기",
+      "note": "필터가 많을 때만 스토어를 쓴다"
+    },
+    {
+      "from": "list",
+      "to": "hook",
+      "y": 450,
+      "label": "page-1 · take · 필터",
+      "variant": "emphasis",
+      "note": "page 는 0-base 로 내려간다"
+    },
+    {
+      "from": "hook",
+      "to": "fetcher",
+      "y": 490,
+      "label": "mutator"
+    },
+    {
+      "from": "fetcher",
+      "to": "api",
+      "y": 530,
+      "label": "GET 목록"
+    },
+    {
+      "from": "api",
+      "to": "list",
+      "y": 570,
+      "label": "목록 + 총 건수",
+      "variant": "return"
+    },
+    {
+      "from": "user",
+      "to": "list",
+      "y": 630,
+      "label": "필터 변경",
+      "variant": "emphasis"
+    },
+    {
+      "from": "list",
+      "to": "store",
+      "y": 670,
+      "label": "setter 호출",
+      "variant": "dashed",
+      "note": "값이 같으면 no-op, 다르면 page 를 1 로 리셋한다"
+    },
+    {
+      "from": "store",
+      "to": "hook",
+      "y": 720,
+      "label": "파라미터 변경 → 재조회",
+      "variant": "dashed"
+    },
+    {
+      "from": "user",
+      "to": "list",
+      "y": 770,
+      "label": "페이지 · 개수 변경"
+    },
+    {
+      "from": "api",
+      "to": "list",
+      "y": 810,
+      "label": "다음 페이지",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "한 화면이 그려지기까지",
+      "items": [
+        "가드는 app/<domain>/layout.tsx 에 둔다. page 에 두면 create·edit 가 비어 있는 채로 남는다 (선례 qa/layout.tsx)",
+        "page.tsx 는 서버, 화면은 _components/XxxList.tsx 가 'use client' 로 받는다",
+        "목록 호출은 useFindXxx({ page: page - 1, take: limit, …filters }) — 화면의 1-base 를 API 의 0-base 로 바꿔 보낸다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "필터와 페이지",
+      "items": [
+        "필터가 많으면 zustand 스토어(use<Domain>Filters)를 쓴다. setter 는 값이 같으면 아무것도 하지 않고, 다르면 page 를 1 로 되돌린다",
+        "텍스트 입력은 useDebounce 를 거친다. URL 에는 반영하지 않는다 — 새 패턴을 들이지 않기로 한 레포다",
+        "유지가 필요하면 persist + sessionStorage 를 쓴다"
+      ]
+    }
+  ]
+}

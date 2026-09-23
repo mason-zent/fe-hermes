@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "client-brics-care 화면 상태",
+    "subtitle": "목록 화면이 진입부터 저장까지 지나는 상태와 갈라지는 곳",
+    "output": "docs/diagrams/client-brics-care.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "enter",
+          "filters",
+          "fetch",
+          "shown",
+          "save"
+        ],
+        "note": "가드 → 필터 → 조회 → 목록 → 저장. 가드는 layout 에 둔다."
+      },
+      {
+        "id": "branch",
+        "label": "갈라지는 곳",
+        "focus": [
+          "fetch",
+          "refilter",
+          "empty",
+          "confirmSave"
+        ],
+        "note": "필터가 바뀌면 page 가 1 로 돌아간다. URL 에는 반영하지 않는다."
+      },
+      {
+        "id": "stop",
+        "label": "끝나는 곳",
+        "focus": [
+          "refilter",
+          "empty",
+          "failErr",
+          "failAuth"
+        ],
+        "note": "권한 코드가 없으면 zent-auth 작업이 먼저다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    },
+    {
+      "id": "terminal",
+      "label": "종료 상태"
+    }
+  ],
+  "states": [
+    {
+      "id": "enter",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "layout 가드",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "create·edit 까지"
+    },
+    {
+      "id": "filters",
+      "type": "active",
+      "label": "필터 로드",
+      "sublabel": "zustand 스토어",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "많을 때만 쓴다"
+    },
+    {
+      "id": "fetch",
+      "type": "decision",
+      "label": "조회",
+      "sublabel": "useFindXxx",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "page 는 0-base"
+    },
+    {
+      "id": "shown",
+      "type": "active",
+      "label": "목록 표시",
+      "sublabel": "Table + Pagination",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "save",
+      "type": "success",
+      "label": "생성 · 수정",
+      "sublabel": "zod → toast → push",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "refilter",
+      "type": "waiting",
+      "label": "필터 변경",
+      "sublabel": "setter 호출",
+      "lane": "side",
+      "col": 0,
+      "tag": "page 를 1 로 리셋"
+    },
+    {
+      "id": "empty",
+      "type": "waiting",
+      "label": "빈 상태",
+      "sublabel": "조회 결과 없음",
+      "lane": "side",
+      "col": 1
+    },
+    {
+      "id": "confirmSave",
+      "type": "waiting",
+      "label": "저장 확인",
+      "sublabel": "다이얼로그",
+      "lane": "side",
+      "col": 2,
+      "tag": "trigger() 먼저"
+    },
+    {
+      "id": "failErr",
+      "type": "failure",
+      "label": "조회 실패",
+      "sublabel": "오류 표시",
+      "lane": "terminal",
+      "col": 0
+    },
+    {
+      "id": "failAuth",
+      "type": "failure",
+      "label": "권한 부족",
+      "sublabel": "PAGE_CARE_* 없음",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "/unauthorized"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "enter",
+      "to": "filters",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "filters",
+      "to": "fetch",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "fetch",
+      "to": "shown",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "shown",
+      "to": "save",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "fetch",
+      "to": "refilter",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "shown",
+      "to": "empty",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "save",
+      "to": "confirmSave",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x1",
+      "from": "refilter",
+      "to": "failErr",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x2",
+      "from": "empty",
+      "to": "failAuth",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "기본 경로",
+      "items": [
+        "가드는 app/<domain>/layout.tsx 에 둔다. page 에 두면 create·edit 가 비어 있는 채로 남는다",
+        "목록은 useFindXxx({ page: page - 1, take: limit }) 로 부른다. 화면은 1-base, API 는 0-base 다",
+        "저장은 zod 검증 → 확인 다이얼로그 → toast → router.push 순이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "갈라지는 곳",
+      "items": [
+        "필터 스토어의 setter 는 값이 같으면 아무것도 하지 않고, 다르면 page 를 1 로 되돌린다",
+        "텍스트 입력은 useDebounce 를 거치고 URL 에는 반영하지 않는다",
+        "AuthFunction enum 에 코드가 없으면 이 레포에서 만들 수 없다 → zent-auth(packages-fe) 선행"
+      ]
+    }
+  ]
+}

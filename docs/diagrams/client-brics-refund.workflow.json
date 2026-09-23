@@ -1,0 +1,342 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "client-brics-refund 작업 절차",
+    "subtitle": "새 도메인 화면을 만들 때 — 어떤 순서로, 어디서 막히는가",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/client-brics-refund.workflow.html",
+    "views": [
+      {
+        "id": "main",
+        "label": "새 화면 만들기",
+        "focus": [
+          "api",
+          "copy",
+          "files",
+          "schema",
+          "guard",
+          "verify"
+        ],
+        "note": "절차 A — partner/discount 를 복사해 시작하고 검증까지 간다."
+      },
+      {
+        "id": "blocked",
+        "label": "막히는 지점",
+        "focus": [
+          "api",
+          "regen",
+          "temp",
+          "authfn",
+          "menu"
+        ],
+        "note": "생성물이 없거나 권한 코드가 없으면 여기서 멈추고 보고한다."
+      },
+      {
+        "id": "column",
+        "label": "컬럼·필터 추가",
+        "focus": [
+          "files",
+          "colspan",
+          "filter",
+          "schema"
+        ],
+        "note": "절차 B — 세 곳을 같이 고쳐야 한다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "prep",
+      "label": "확인"
+    },
+    {
+      "id": "make",
+      "label": "만들기"
+    },
+    {
+      "id": "stop",
+      "label": "막힘 · 보고",
+      "variant": "exception"
+    },
+    {
+      "id": "check",
+      "label": "검증"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "준비",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "p2",
+      "label": "생성",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p3",
+      "label": "마무리",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "복사로 시작",
+      "lane": "make",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "g2",
+      "label": "여기서 멈추고 보고",
+      "lane": "stop",
+      "fromCol": 1,
+      "toCol": 4,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "api",
+    "copy",
+    "files",
+    "schema",
+    "guard",
+    "verify"
+  ],
+  "nodes": [
+    {
+      "id": "api",
+      "lane": "prep",
+      "col": 0,
+      "type": "database",
+      "label": "API 훅 확인",
+      "sublabel": "__generated__ grep",
+      "tag": "한글 태그 디렉터리",
+      "width": 140
+    },
+    {
+      "id": "copy",
+      "lane": "prep",
+      "col": 1,
+      "type": "frontend",
+      "label": "복사 원본",
+      "sublabel": "partner/discount",
+      "width": 140
+    },
+    {
+      "id": "files",
+      "lane": "make",
+      "col": 2,
+      "type": "frontend",
+      "label": "파일 생성",
+      "sublabel": "layout·page·create·edit",
+      "tag": "Containers·ListTable·EditForm",
+      "width": 140
+    },
+    {
+      "id": "schema",
+      "lane": "make",
+      "col": 3,
+      "type": "backend",
+      "label": "zod 스키마",
+      "sublabel": "lib/types/<도메인>",
+      "width": 140
+    },
+    {
+      "id": "guard",
+      "lane": "make",
+      "col": 4,
+      "type": "security",
+      "label": "권한 가드",
+      "sublabel": "layout 에 P8 블록",
+      "width": 140
+    },
+    {
+      "id": "verify",
+      "lane": "check",
+      "col": 5,
+      "type": "backend",
+      "label": "검증",
+      "sublabel": "verify 스크립트",
+      "tag": "lint:check + tsc",
+      "width": 140
+    },
+    {
+      "id": "regen",
+      "lane": "stop",
+      "col": 1,
+      "type": "messagebus",
+      "label": "생성물 갱신",
+      "sublabel": "gen:api:local",
+      "tag": "rm -rf 로 시작",
+      "width": 140
+    },
+    {
+      "id": "temp",
+      "lane": "stop",
+      "col": 2,
+      "type": "messagebus",
+      "label": "임시 훅",
+      "sublabel": "lib/swr 틀",
+      "tag": "보고에 명시",
+      "width": 140
+    },
+    {
+      "id": "authfn",
+      "lane": "stop",
+      "col": 4,
+      "type": "security",
+      "label": "AuthFunction 없음",
+      "sublabel": "이 레포에서 못 만든다",
+      "tag": "packages-fe 선행",
+      "width": 140
+    },
+    {
+      "id": "menu",
+      "lane": "stop",
+      "col": 5,
+      "type": "security",
+      "label": "메뉴 등록 필요",
+      "sublabel": "hub /brics-menus",
+      "tag": "코드 아님",
+      "width": 140
+    },
+    {
+      "id": "colspan",
+      "lane": "make",
+      "col": 2,
+      "type": "frontend",
+      "label": "colSpan · cols",
+      "sublabel": "빈 상태 · Skeleton",
+      "tag": "둘 다 하드코딩",
+      "width": 140,
+      "yOffset": 90
+    },
+    {
+      "id": "filter",
+      "lane": "make",
+      "col": 3,
+      "type": "frontend",
+      "label": "필터 키",
+      "sublabel": "URLSearchParams",
+      "tag": "hasSearchParams 도",
+      "width": 140,
+      "yOffset": 90
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "api",
+      "to": "copy",
+      "label": "있으면",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "copy",
+      "to": "files",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e3",
+      "from": "files",
+      "to": "schema"
+    },
+    {
+      "id": "e4",
+      "from": "schema",
+      "to": "guard"
+    },
+    {
+      "id": "e5",
+      "from": "guard",
+      "to": "verify",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "api",
+      "to": "regen",
+      "label": "없으면",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e7",
+      "from": "regen",
+      "to": "temp",
+      "label": "불가면",
+      "variant": "dashed"
+    },
+    {
+      "id": "e8",
+      "from": "temp",
+      "to": "files",
+      "variant": "dashed"
+    },
+    {
+      "id": "e9",
+      "from": "guard",
+      "to": "authfn",
+      "label": "코드 없음",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e10",
+      "from": "verify",
+      "to": "menu",
+      "label": "끝나면",
+      "variant": "security"
+    },
+    {
+      "id": "e11",
+      "from": "colspan",
+      "to": "filter",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "A. 새 도메인 화면",
+      "items": [
+        "1) __generated__/endpoints/<한글태그>/ 에 훅이 있는지 grep 한다",
+        "2) partner/discount/ 를 복사한다 — layout(P8 가드) · page(searchParams → pageNo) · create · edit · _components(Containers·ListTable·EditForm)",
+        "3) lib/types/<도메인>.ts 에 zod 스키마, 필요하면 lib/constants/<도메인>.ts",
+        "4) 검증 scripts/verify/client-brics-refund.sh. 타입 오류는 pnpm build 에서도 드러난다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "B. 컬럼·필터 추가 — 세 곳을 같이",
+      "items": [
+        "컬럼: ListTable 에 TableHead/TableCell 추가 + 빈 상태 행 colSpan + SkeletonTableBody cols. 뒤 둘은 하드코딩이라 빼먹기 쉽다",
+        "필터: SearchBar/FilterItems 의 URLSearchParams.set 추가 → Containers 에서 searchParams.get('x') ?? undefined 를 훅 params 에. params 가 SWR 키라 자동 재조회된다",
+        "user/all·refund-overview 처럼 prd 에서 검색이 필수인 화면은 hasSearchParams 조건에도 새 키를 넣는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "멈추고 보고해야 하는 것",
+      "items": [
+        "AuthFunction enum 에 권한 코드가 없으면 이 레포에서 만들 수 없다 → packages-fe 선행. 임시로 로그인만 검사 + TODO 는 landing-seo 선례",
+        "사이드바 메뉴는 코드가 아니라 hub 의 /brics-menus(DB 행) → 보고에 '메뉴 등록 필요'",
+        "gen:api:local 은 rm -rf __generated__ 로 시작한다. 실패하면 git checkout -- __generated__ 로 복구",
+        "Orval 에 없어 임시 훅을 만들었으면 보고에 목록을 적는다"
+      ]
+    }
+  ]
+}

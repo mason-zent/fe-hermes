@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "client-brics-hub 화면 상태",
+    "subtitle": "목록 화면이 진입부터 생성까지 지나는 상태와 갈라지는 곳",
+    "output": "docs/diagrams/client-brics-hub.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "enter",
+          "shell",
+          "fetch",
+          "shown",
+          "create"
+        ],
+        "note": "가드 → 셸 → 조회 → 목록 → 생성. 헤더는 셸에서 붙는다."
+      },
+      {
+        "id": "branch",
+        "label": "갈라지는 곳",
+        "focus": [
+          "fetch",
+          "perm",
+          "empty",
+          "confirmSave"
+        ],
+        "note": "권한과 빈 상태는 화면마다 따로 처리한다."
+      },
+      {
+        "id": "stop",
+        "label": "끝나는 곳",
+        "focus": [
+          "perm",
+          "empty",
+          "unauth",
+          "fail401"
+        ],
+        "note": "권한이 없으면 redirect, 셸 밖에서 훅을 부르면 401 이다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    },
+    {
+      "id": "terminal",
+      "label": "종료 상태"
+    }
+  ],
+  "states": [
+    {
+      "id": "enter",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "layout auth()",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "requiredFunction"
+    },
+    {
+      "id": "shell",
+      "type": "active",
+      "label": "셸 통과",
+      "sublabel": "RootWrapper",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "여기서 헤더가 붙는다"
+    },
+    {
+      "id": "fetch",
+      "type": "decision",
+      "label": "조회",
+      "sublabel": "buildParams → 훅",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "params 가 키"
+    },
+    {
+      "id": "shown",
+      "type": "active",
+      "label": "목록 표시",
+      "sublabel": "Skeleton → 테이블",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "create",
+      "type": "success",
+      "label": "생성 · 수정",
+      "sublabel": "CreateModal → mutate",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "perm",
+      "type": "waiting",
+      "label": "권한 확인",
+      "sublabel": "functions.includes",
+      "lane": "side",
+      "col": 0,
+      "tag": "탭마다 다르다"
+    },
+    {
+      "id": "empty",
+      "type": "waiting",
+      "label": "빈 상태",
+      "sublabel": "colSpan 안내 행",
+      "lane": "side",
+      "col": 1,
+      "tag": "하드코딩이다"
+    },
+    {
+      "id": "confirmSave",
+      "type": "waiting",
+      "label": "저장 확인",
+      "sublabel": "모달 닫기 전",
+      "lane": "side",
+      "col": 2
+    },
+    {
+      "id": "unauth",
+      "type": "failure",
+      "label": "/unauthorized",
+      "sublabel": "redirect",
+      "lane": "terminal",
+      "col": 0
+    },
+    {
+      "id": "fail401",
+      "type": "failure",
+      "label": "401",
+      "sublabel": "셸 밖 호출",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "헤더가 없다"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "enter",
+      "to": "shell",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "shell",
+      "to": "fetch",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "fetch",
+      "to": "shown",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "shown",
+      "to": "create",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "fetch",
+      "to": "perm",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "shown",
+      "to": "empty",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "create",
+      "to": "confirmSave",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x1",
+      "from": "perm",
+      "to": "unauth",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x2",
+      "from": "empty",
+      "to": "fail401",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "기본 경로",
+      "items": [
+        "layout.tsx 가 서버에서 auth() 로 세션을 보고 requiredFunction 을 확인한다",
+        "HubRootWrapper 셸이 axios 기본 헤더에 Authorization 을 심는다",
+        "'use client' 페이지가 searchValues·page 를 소유하고 buildParams 로 훅을 한 번 부른다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "갈라지는 곳",
+      "items": [
+        "권한 코드는 탭마다 다르다. 새 코드를 만들지 않고 기존 코드를 재사용하는 것이 이 레포의 결정이다",
+        "빈 상태 행의 colSpan 과 SkeletonTableBody 의 cols 는 하드코딩이라 컬럼을 늘릴 때 같이 고쳐야 한다",
+        "셸 밖에서 클라이언트 훅을 부르면 Authorization 이 없어 401 이 난다"
+      ]
+    }
+  ]
+}

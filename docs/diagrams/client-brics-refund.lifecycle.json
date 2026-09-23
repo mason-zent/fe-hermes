@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "client-brics-refund 화면 상태",
+    "subtitle": "목록 화면이 진입부터 저장까지 지나는 상태와 갈라지는 곳",
+    "output": "docs/diagrams/client-brics-refund.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "enter",
+          "parse",
+          "fetch",
+          "shown",
+          "edit"
+        ],
+        "note": "진입 → 쿼리 파싱 → 조회 → 목록 표시 → 수정. 대부분 이 길이다."
+      },
+      {
+        "id": "branch",
+        "label": "갈라지는 곳",
+        "focus": [
+          "fetch",
+          "wait",
+          "unmask",
+          "confirmSave"
+        ],
+        "note": "검색 필수 화면은 조건이 없으면 조회하지 않고, 마스킹 해제는 훅을 따로 탄다."
+      },
+      {
+        "id": "stop",
+        "label": "끝나는 곳",
+        "focus": [
+          "wait",
+          "unmask",
+          "failErr",
+          "failAuth"
+        ],
+        "note": "조회 실패는 빈 상태로, 403 은 마스킹 상태로 되돌아간다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    },
+    {
+      "id": "terminal",
+      "label": "종료 상태"
+    }
+  ],
+  "states": [
+    {
+      "id": "enter",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "layout 가드 통과",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "P8 블록"
+    },
+    {
+      "id": "parse",
+      "type": "active",
+      "label": "쿼리 파싱",
+      "sublabel": "searchParams → pageNo",
+      "lane": "main",
+      "col": 1,
+      "step": "02"
+    },
+    {
+      "id": "fetch",
+      "type": "decision",
+      "label": "조회",
+      "sublabel": "SWR 키로 호출",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "params 가 키"
+    },
+    {
+      "id": "shown",
+      "type": "active",
+      "label": "목록 표시",
+      "sublabel": "Containers → ListTable",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "edit",
+      "type": "success",
+      "label": "상세 · 수정",
+      "sublabel": "edit 폼 제출",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "wait",
+      "type": "waiting",
+      "label": "검색 대기",
+      "sublabel": "hasSearchParams",
+      "lane": "side",
+      "col": 0,
+      "tag": "조건 없으면 조회 안 함"
+    },
+    {
+      "id": "unmask",
+      "type": "active",
+      "label": "마스킹 해제",
+      "sublabel": "unmasked 훅",
+      "lane": "side",
+      "col": 1,
+      "tag": "enabled 로 가른다"
+    },
+    {
+      "id": "confirmSave",
+      "type": "waiting",
+      "label": "저장 확인",
+      "sublabel": "다이얼로그",
+      "lane": "side",
+      "col": 2
+    },
+    {
+      "id": "failErr",
+      "type": "failure",
+      "label": "조회 실패",
+      "sublabel": "에러 분기 · 빈 상태",
+      "lane": "terminal",
+      "col": 0
+    },
+    {
+      "id": "failAuth",
+      "type": "failure",
+      "label": "권한 부족",
+      "sublabel": "403 이면 되돌림",
+      "lane": "terminal",
+      "col": 1,
+      "tag": "마스킹 상태로"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "enter",
+      "to": "parse",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "parse",
+      "to": "fetch",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "fetch",
+      "to": "shown",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "shown",
+      "to": "edit",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "fetch",
+      "to": "wait",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "shown",
+      "to": "unmask",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "edit",
+      "to": "confirmSave",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x1",
+      "from": "wait",
+      "to": "failErr",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "x2",
+      "from": "unmask",
+      "to": "failAuth",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "기본 경로",
+      "items": [
+        "layout 의 P8 가드를 통과해야 화면이 뜬다",
+        "searchParams 로 만든 params 가 그대로 SWR 키라, URL 이 바뀌면 자동으로 다시 조회된다",
+        "목록은 Containers 가 받아 ListTable 에 내린다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "갈라지는 곳",
+      "items": [
+        "user/all·refund-overview 처럼 prd 에서 검색이 필수인 화면은 조건이 없으면 조회하지 않고 대기한다",
+        "마스킹 해제는 별도 훅을 enabled 로 가른다. 403 이 오면 마스킹 상태로 되돌린다",
+        "저장은 확인 다이얼로그를 거친다"
+      ]
+    }
+  ]
+}

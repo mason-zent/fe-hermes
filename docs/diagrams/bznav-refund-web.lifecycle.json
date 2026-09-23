@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "비즈넵 환급 웹 — 홈택스 인증 라이프사이클",
+    "subtitle": "apps/refund-web · 인증 수단 선택부터 홈택스 연동 완료까지의 상태 전이",
+    "output": "docs/diagrams/bznav-refund-web.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-path",
+        "label": "간편인증 정상 경로",
+        "focus": [
+          "select",
+          "input",
+          "poll",
+          "confirm",
+          "linked"
+        ],
+        "note": "선택 → 요청 → 폴링 → 토큰 확정 → 연동 완료. 대부분의 사용자가 지나는 길이다."
+      },
+      {
+        "id": "alt-methods",
+        "label": "대체 인증 수단",
+        "focus": [
+          "select",
+          "idauth",
+          "cert",
+          "confirm",
+          "linked"
+        ],
+        "note": "ID 로그인과 공동인증서는 폴링을 거치지 않고 각각 토큰 확정·연동 단계로 합류한다."
+      },
+      {
+        "id": "stuck",
+        "label": "대기 · 종료",
+        "focus": [
+          "poll",
+          "blocked",
+          "failed"
+        ],
+        "note": "점검 대기열은 종료가 아니라 대기다. 대기열이 풀리지 않거나 폴링이 만료되면 인증 실패로 끝난다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "간편인증 단계"
+    },
+    {
+      "id": "alt",
+      "label": "대체 인증 수단"
+    },
+    {
+      "id": "queue",
+      "label": "홈택스 점검 대기"
+    },
+    {
+      "id": "terminal",
+      "label": "종료 상태"
+    }
+  ],
+  "states": [
+    {
+      "id": "select",
+      "type": "start",
+      "label": "수단 선택",
+      "sublabel": "select-method",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "진입"
+    },
+    {
+      "id": "input",
+      "type": "active",
+      "label": "간편인증 요청",
+      "sublabel": "simple-auth/input",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "요청"
+    },
+    {
+      "id": "poll",
+      "type": "decision",
+      "label": "상태 폴링",
+      "sublabel": "PollingToken",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "대기"
+    },
+    {
+      "id": "confirm",
+      "type": "active",
+      "label": "토큰 확정",
+      "sublabel": "confirm · confirm-auto",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "확정"
+    },
+    {
+      "id": "linked",
+      "type": "success",
+      "label": "홈택스 연동",
+      "sublabel": "환급 조회 진입",
+      "lane": "main",
+      "col": 4,
+      "step": "05",
+      "tag": "완료"
+    },
+    {
+      "id": "blocked",
+      "type": "waiting",
+      "label": "점검 대기열",
+      "sublabel": "hometaxBlockSettingsAtom",
+      "lane": "queue",
+      "col": 0,
+      "tag": "차단"
+    },
+    {
+      "id": "idauth",
+      "type": "active",
+      "label": "ID 로그인",
+      "sublabel": "홈택스 아이디",
+      "lane": "alt",
+      "col": 1,
+      "tag": "대체"
+    },
+    {
+      "id": "cert",
+      "type": "active",
+      "label": "공동인증서",
+      "sublabel": "install → select",
+      "lane": "alt",
+      "col": 2,
+      "tag": "axios"
+    },
+    {
+      "id": "failed",
+      "type": "failure",
+      "label": "인증 실패",
+      "sublabel": "error.ts 매핑 · 폴링 만료",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "종료"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "t1",
+      "from": "select",
+      "to": "input",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "t2",
+      "from": "input",
+      "to": "poll",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "t3",
+      "from": "poll",
+      "to": "confirm",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "t4",
+      "from": "confirm",
+      "to": "linked",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "t5",
+      "from": "poll",
+      "to": "blocked",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "t6",
+      "from": "blocked",
+      "to": "failed",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "t7",
+      "from": "idauth",
+      "to": "confirm",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "route": "straight"
+    },
+    {
+      "id": "t8",
+      "from": "cert",
+      "to": "linked",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "route": "straight"
+    },
+    {
+      "id": "t9",
+      "from": "select",
+      "to": "idauth",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "via": [
+        [
+          94,
+          54
+        ],
+        [
+          830,
+          54
+        ],
+        [
+          830,
+          392
+        ],
+        [
+          556,
+          392
+        ]
+      ]
+    },
+    {
+      "id": "t10",
+      "from": "select",
+      "to": "cert",
+      "variant": "default",
+      "fromSide": "top",
+      "toSide": "right",
+      "via": [
+        [
+          94,
+          76
+        ],
+        [
+          800,
+          76
+        ],
+        [
+          800,
+          307
+        ]
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "간편인증이 기본 경로",
+      "items": [
+        "수단 선택 → 요청 → 폴링 → 토큰 확정 → 연동 완료 5단계",
+        "자동 확정(confirm-auto)은 simpleAuthAuto*Atom 으로 상태를 분리해 둔다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "갈라지는 곳과 멈추는 곳",
+      "items": [
+        "ID 로그인·공동인증서는 폴링 없이 각각 확정·연동 단계로 합류한다",
+        "점검 대기열은 종료가 아니라 대기다. 풀리지 않으면 인증 실패로 끝난다"
+      ]
+    }
+  ]
+}
