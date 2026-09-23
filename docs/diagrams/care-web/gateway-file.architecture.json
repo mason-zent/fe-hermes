@@ -1,0 +1,466 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "게이트웨이 · 파일 다운로드 27화면",
+    "subtitle": "app/(gateway) 16 + app/(external-file-download) 11 — 앱 밖에서 들어오고 나가는 길",
+    "output": "gateway-file.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "gw",
+        "label": "게이트웨이 16",
+        "focus": [
+          "payGw",
+          "acctGw",
+          "svcGw",
+          "extGw",
+          "acctSw",
+          "landGw"
+        ],
+        "note": "결제·계좌 콜백, 신고 서비스 진입, 외부 제휴 진입, 계정 전환까지 전부 전용 화면이다."
+      },
+      {
+        "id": "file",
+        "label": "파일 다운로드 11",
+        "focus": [
+          "fVat",
+          "fPay",
+          "fEtc",
+          "fErr"
+        ],
+        "note": "임시 자격증명을 받아 내려받는다. 토큰이 만료되면 전용 오류 화면으로 간다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/(gateway) — 16 화면",
+      "wraps": [
+        "payGw",
+        "acctGw",
+        "svcGw",
+        "extGw",
+        "acctSw",
+        "landGw"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "app/(external-file-download) — 11 화면 · 인증 밖",
+      "wraps": [
+        "fVat",
+        "fPay",
+        "fEtc",
+        "fErr"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "payGw",
+      "type": "backend",
+      "label": "결제 게이트웨이",
+      "sublabel": "성공 · 실패 · 취소",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/payment-gateway/success/page.tsx",
+          "line": 1,
+          "label": "/payment-gateway/success"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/payment-gateway/failed/page.tsx",
+          "line": 1,
+          "label": "/payment-gateway/failed"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/payment-gateway/cancel/page.tsx",
+          "line": 1,
+          "label": "/payment-gateway/cancel"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "acctGw",
+      "type": "backend",
+      "label": "내 계좌 게이트웨이",
+      "sublabel": "성공 · 취소",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/my-account-gateway/success/page.tsx",
+          "line": 1,
+          "label": "/my-account-gateway/success"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/my-account-gateway/cancel/page.tsx",
+          "line": 1,
+          "label": "/my-account-gateway/cancel"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "svcGw",
+      "type": "frontend",
+      "label": "신고 서비스 진입",
+      "sublabel": "부가세 · 종소세 · 급여",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/vat-gateway/page.tsx",
+          "line": 1,
+          "label": "/vat-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/global-income-gateway/page.tsx",
+          "line": 1,
+          "label": "/global-income-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/payroll-gateway/page.tsx",
+          "line": 1,
+          "label": "/payroll-gateway"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "extGw",
+      "type": "external",
+      "label": "외부 제휴 진입",
+      "sublabel": "캐시노트 · 페이히어",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/external-gateway/page.tsx",
+          "line": 1,
+          "label": "/external-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/cashnote-gateway/page.tsx",
+          "line": 1,
+          "label": "/cashnote-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/payhere-gateway/page.tsx",
+          "line": 1,
+          "label": "/payhere-gateway"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "acctSw",
+      "type": "security",
+      "label": "계정 전환 · 로그아웃",
+      "sublabel": "pro 포함",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/logout-gateway/page.tsx",
+          "line": 1,
+          "label": "/logout-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/switch-account-gateway/page.tsx",
+          "line": 1,
+          "label": "/switch-account-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/pro-gateway/page.tsx",
+          "line": 1,
+          "label": "/pro-gateway"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "landGw",
+      "type": "frontend",
+      "label": "랜딩 · 위임 진입",
+      "sublabel": "landing · delegation",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(gateway)/landing-gateway/page.tsx",
+          "line": 1,
+          "label": "/landing-gateway"
+        },
+        {
+          "path": "apps/care-web/app/(gateway)/delegation-gateway/page.tsx",
+          "line": 1,
+          "label": "/delegation-gateway"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "fVat",
+      "type": "backend",
+      "label": "파일 — 부가세",
+      "sublabel": "장부 · 매입대행",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/vat/page.tsx",
+          "line": 1,
+          "label": "/file-download/vat"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/vat/book-bill/page.tsx",
+          "line": 1,
+          "label": "/vat/book-bill"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/vat/buying-agency/page.tsx",
+          "line": 1,
+          "label": "/vat/buying-agency"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "fPay",
+      "type": "backend",
+      "label": "파일 — 급여 · 종소세",
+      "sublabel": "급여대장 서식 포함",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/payroll/page.tsx",
+          "line": 1,
+          "label": "/file-download/payroll"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/payroll/form/page.tsx",
+          "line": 1,
+          "label": "/payroll/form"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/global-income/page.tsx",
+          "line": 1,
+          "label": "/file-download/global-income"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "fEtc",
+      "type": "backend",
+      "label": "파일 — 그 외",
+      "sublabel": "연말정산 · 증명서 · 장부",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/year-end-tax/page.tsx",
+          "line": 1,
+          "label": "/file-download/year-end-tax"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/certificate/page.tsx",
+          "line": 1,
+          "label": "/file-download/certificate"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/my-book/page.tsx",
+          "line": 1,
+          "label": "/file-download/my-book"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "fErr",
+      "type": "security",
+      "label": "파일 — 레거시 · 만료",
+      "sublabel": "expired-token",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/legacy-additional-expense/page.tsx",
+          "line": 1,
+          "label": "/legacy-additional-expense"
+        },
+        {
+          "path": "apps/care-web/app/(external-file-download)/file-download/(error-page)/expired-token/page.tsx",
+          "line": 1,
+          "label": "/expired-token — 토큰 만료"
+        }
+      ],
+      "tag": "2 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "payGw-acctGw",
+      "from": "payGw",
+      "to": "acctGw",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "acctGw-svcGw",
+      "from": "acctGw",
+      "to": "svcGw",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "svcGw-extGw",
+      "from": "svcGw",
+      "to": "extGw",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "acctSw-landGw",
+      "from": "acctSw",
+      "to": "landGw",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "landGw-fVat",
+      "from": "landGw",
+      "to": "fVat",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "fVat-fPay",
+      "from": "fVat",
+      "to": "fPay",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "fEtc-fErr",
+      "from": "fEtc",
+      "to": "fErr",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "payGw-acctSw",
+      "from": "payGw",
+      "to": "acctSw",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "acctSw-fEtc",
+      "from": "acctSw",
+      "to": "fEtc",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "앱 밖에서 들어오는 길이 16개다",
+      "items": [
+        "결제(성공·실패·취소)와 내 계좌(성공·취소)는 PG 콜백을 받는 전용 화면이다",
+        "부가세·종소세·급여는 각각 전용 gateway 로 진입한다 — 외부 링크에서 바로 들어올 때 쓴다",
+        "캐시노트·페이히어 같은 제휴 진입과 계정 전환·로그아웃·pro 도 gateway 로 처리한다",
+        "이 경로들에는 CareAuthGuard 가 걸려 있지 않다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "파일 다운로드는 별도 경계다",
+      "items": [
+        "(external-file-download) route group 은 앱 인증 밖에서 동작한다 — 임시 자격증명을 따로 받는다",
+        "useFileDownloadExternalBase 가 그 자격증명을 다룬다",
+        "토큰이 만료되면 (error-page)/expired-token 으로 간다",
+        "부가세만 book-bill · buying-agency 하위가 더 있다"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,552 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "온보딩 (auth) 30화면",
+    "subtitle": "app/(auth) — 홈택스 위임·연결 10 · 구독 결제 10 · 4대보험 6 · 세무대리인 3 · 완료 1",
+    "output": "auth-onboarding.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "hometax",
+        "label": "홈택스",
+        "focus": [
+          "deleg",
+          "delegEnd",
+          "link",
+          "pwd"
+        ],
+        "note": "위임과 연결이 별도 흐름이다. 각각 완료·이미완료 화면을 따로 갖는다. 10 화면."
+      },
+      {
+        "id": "billing",
+        "label": "구독 결제",
+        "focus": [
+          "billing",
+          "billExc",
+          "renew",
+          "bank"
+        ],
+        "note": "최초 결제와 갱신이 별도 흐름이고, 미납·카드등록·은행점검이 예외 화면으로 붙는다. 10 화면."
+      },
+      {
+        "id": "etc",
+        "label": "4대보험 · 세무대리인",
+        "focus": [
+          "ins",
+          "insEnd",
+          "agent",
+          "done"
+        ],
+        "note": "4대보험은 사업장 목록 → 동의 → PDF 순이고 사업자별 PDF 가 따로 있다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/(auth) — 30 화면 전수 · CareAuthGuard 아래",
+      "wraps": [
+        "deleg",
+        "delegEnd",
+        "link",
+        "pwd",
+        "billing",
+        "billExc",
+        "renew",
+        "bank",
+        "ins",
+        "insEnd",
+        "agent",
+        "done"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "(homeTax) — 위임 · 연결",
+      "wraps": [
+        "deleg",
+        "delegEnd",
+        "link",
+        "pwd"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "deleg",
+      "type": "frontend",
+      "label": "홈택스 위임",
+      "sublabel": "개인 · 법인 · 주민번호",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/delegation/(stage)/page.tsx",
+          "line": 1,
+          "label": "/delegation — 위임 단계"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/delegation/(stage)/corporations/page.tsx",
+          "line": 1,
+          "label": "/corporations — 법인 선택"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/delegation/(stage)/corporations/inputrrn/page.tsx",
+          "line": 1,
+          "label": "/inputrrn — 주민번호 입력"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "delegEnd",
+      "type": "backend",
+      "label": "위임 종료",
+      "sublabel": "완료 · 이미 완료",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/delegation/complete/page.tsx",
+          "line": 1,
+          "label": "/delegation/complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/delegation/alreadyFinish/page.tsx",
+          "line": 1,
+          "label": "/alreadyFinish — 이미 완료"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "link",
+      "type": "frontend",
+      "label": "홈택스 연결",
+      "sublabel": "연결 · 완료 · 이미 완료",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/linkhometax/(stage)/page.tsx",
+          "line": 1,
+          "label": "/linkhometax — 연결 단계"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/linkhometax/complete/page.tsx",
+          "line": 1,
+          "label": "/complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/linkhometax/alreadyFinish/page.tsx",
+          "line": 1,
+          "label": "/alreadyFinish — 이미 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "pwd",
+      "type": "security",
+      "label": "홈택스 비밀번호 변경",
+      "sublabel": "(nonStage) · 간편인증",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/linkhometax/(nonStage)/passwordchange/page.tsx",
+          "line": 1,
+          "label": "/passwordchange — 비밀번호 변경"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/(homeTax)/linkhometax/(nonStage)/passwordchange/simpleauth/page.tsx",
+          "line": 1,
+          "label": "/simpleauth — 간편인증"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "billing",
+      "type": "frontend",
+      "label": "구독 결제",
+      "sublabel": "진입 · 결제 · 완료",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/billing/page.tsx",
+          "line": 1,
+          "label": "/billing — 요금제 진입"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/checkout/(stage)/page.tsx",
+          "line": 1,
+          "label": "/checkout — 결제 단계"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/checkout/complete/page.tsx",
+          "line": 1,
+          "label": "/checkout/complete — 결제 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "billExc",
+      "type": "backend",
+      "label": "결제 예외",
+      "sublabel": "미납 · 카드 · 이미 완료",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/billing/unpaid/page.tsx",
+          "line": 1,
+          "label": "/unpaid — 미납"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/payment-method/[bizNo]/card/page.tsx",
+          "line": 1,
+          "label": "/payment-method/[bizNo]/card — 카드 등록"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/checkout/alreadyFinish/page.tsx",
+          "line": 1,
+          "label": "/checkout/alreadyFinish — 이미 결제"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "renew",
+      "type": "frontend",
+      "label": "구독 갱신",
+      "sublabel": "갱신 · 완료 · 이미 완료",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/billing/renewal/(stage)/page.tsx",
+          "line": 1,
+          "label": "/renewal — 갱신 단계"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/renewal/complete/page.tsx",
+          "line": 1,
+          "label": "/renewal/complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/billing/renewal/alreadyComplete/page.tsx",
+          "line": 1,
+          "label": "/alreadyComplete — 이미 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "bank",
+      "type": "backend",
+      "label": "은행 점검",
+      "sublabel": "bankMaintenance",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/billing/renewal/bankMaintenance/page.tsx",
+          "line": 1,
+          "label": "/bankMaintenance — 은행 점검 안내"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "ins",
+      "type": "frontend",
+      "label": "4대보험 동의",
+      "sublabel": "사업장 목록 · 동의 · PDF",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/(orgList)/page.tsx",
+          "line": 1,
+          "label": "/four-insurance — 사업장 목록"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/(orgList)/agreements/page.tsx",
+          "line": 1,
+          "label": "/agreements — 동의"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/(orgList)/agreements/pdf/page.tsx",
+          "line": 1,
+          "label": "/agreements/pdf — 약관 PDF"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "insEnd",
+      "type": "backend",
+      "label": "4대보험 종료",
+      "sublabel": "사업자별 PDF · 완료",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/(orgList)/agreements/pdf/[bmanTin]/page.tsx",
+          "line": 1,
+          "label": "/pdf/[bmanTin] — 사업자별 PDF"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/complete/page.tsx",
+          "line": 1,
+          "label": "/four-insurance/complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/four-insurance/already-finish/page.tsx",
+          "line": 1,
+          "label": "/already-finish — 이미 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "agent",
+      "type": "frontend",
+      "label": "세무대리인 입력",
+      "sublabel": "입력 · 완료 · 이미 완료",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/taxagentinput/(stage)/page.tsx",
+          "line": 1,
+          "label": "/taxagentinput — 입력 단계"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/taxagentinput/complete/page.tsx",
+          "line": 1,
+          "label": "/complete — 완료"
+        },
+        {
+          "path": "apps/care-web/app/(auth)/taxagentinput/alreadyComplete/page.tsx",
+          "line": 1,
+          "label": "/alreadyComplete — 이미 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "done",
+      "type": "backend",
+      "label": "온보딩 완료",
+      "sublabel": "complete",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(auth)/complete/page.tsx",
+          "line": 1,
+          "label": "/(auth)/complete — 온보딩 완료"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "deleg-delegEnd",
+      "from": "deleg",
+      "to": "delegEnd",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "delegEnd-link",
+      "from": "delegEnd",
+      "to": "link",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "link-pwd",
+      "from": "link",
+      "to": "pwd",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "billing-billExc",
+      "from": "billing",
+      "to": "billExc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "billExc-renew",
+      "from": "billExc",
+      "to": "renew",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "renew-bank",
+      "from": "renew",
+      "to": "bank",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "ins-insEnd",
+      "from": "ins",
+      "to": "insEnd",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "insEnd-agent",
+      "from": "insEnd",
+      "to": "agent",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "agent-done",
+      "from": "agent",
+      "to": "done",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "deleg-billing",
+      "from": "deleg",
+      "to": "billing",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "billing-ins",
+      "from": "billing",
+      "to": "ins",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "단계마다 '이미 완료' 화면이 따로 있다",
+      "items": [
+        "delegation · linkhometax · checkout · renewal · four-insurance · taxagentinput 여섯 곳이 각각 alreadyFinish/alreadyComplete 를 갖는다",
+        "이미 끝낸 사람이 링크로 다시 들어왔을 때를 화면으로 처리한다 — 리다이렉트가 아니다",
+        "이름이 통일돼 있지 않다: alreadyFinish(홈택스·결제·4대보험은 already-finish), alreadyComplete(갱신·세무대리인)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "(stage) 와 (nonStage)",
+      "items": [
+        "대부분 (stage) route group 아래에 있다 — 온보딩 단계 셸을 공유한다는 뜻이다",
+        "홈택스 비밀번호 변경만 (nonStage) 다. 단계 밖에서 독립적으로 들어오는 화면이다",
+        "four-insurance 는 (orgList) 라는 또 다른 group 을 쓴다 — 사업장 목록 셸이다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "결제가 가장 복잡하다",
+      "items": [
+        "최초 결제(checkout)와 갱신(renewal)이 별도 흐름이고 각각 완료·이미완료를 갖는다",
+        "미납(unpaid) · 카드 등록(payment-method/[bizNo]/card) · 은행 점검(bankMaintenance)이 예외 화면으로 붙는다",
+        "billing 아래 atoms/promotionInfo.ts 로 프로모션 상태를 따로 들고 있다"
+      ]
+    }
+  ]
+}

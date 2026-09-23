@@ -1,0 +1,840 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "종소세 나머지 · 연말정산 · 로그인 등 53화면",
+    "subtitle": "care-web 266 화면 중 앞선 다섯 장에 담기지 않은 전부",
+    "output": "care-rest.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      470
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "gi",
+        "label": "종소세 나머지 12",
+        "focus": [
+          "giMain",
+          "giHist",
+          "giPay",
+          "giResult"
+        ],
+        "note": "자료제출 43 을 뺀 나머지. 예상세액 → 결제 동의 → 신고 결과 → 환급 계좌 순이다."
+      },
+      {
+        "id": "yet",
+        "label": "연말정산 8",
+        "focus": [
+          "yetOwner",
+          "yetEmp",
+          "yetDone"
+        ],
+        "note": "사업주가 보는 화면과 직원 본인이 인증 후 보는 화면이 경로부터 갈라져 있다."
+      },
+      {
+        "id": "login",
+        "label": "로그인 · 결제",
+        "focus": [
+          "login",
+          "pay"
+        ],
+        "note": "로그인 4화면에 CI 수집·인증이 포함된다. 결제 결과는 완료·실패·만료 세 화면이다."
+      },
+      {
+        "id": "etc",
+        "label": "그 외",
+        "focus": [
+          "bizCard",
+          "cert",
+          "startup",
+          "misc",
+          "misc2",
+          "misc3",
+          "misc4"
+        ],
+        "note": "명함·증명서·창업확인·알림톡·고객센터(Notion)·점검·테스트."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "care-web — 나머지 53 화면",
+      "wraps": [
+        "giMain",
+        "giHist",
+        "giPay",
+        "giResult",
+        "addExp",
+        "addExpSt",
+        "addExpLeg",
+        "yetOwner",
+        "yetEmp",
+        "yetDone",
+        "login",
+        "pay",
+        "bizCard",
+        "cert",
+        "startup",
+        "misc",
+        "misc2",
+        "misc3",
+        "misc4"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "giMain",
+      "type": "frontend",
+      "label": "종소세 · 신고 한 바퀴",
+      "sublabel": "진입 · 예상세액 · 경비",
+      "pos": [
+        92,
+        38
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/page.tsx",
+          "line": 1,
+          "label": "/global-income — 진입"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/estimated-tax/page.tsx",
+          "line": 1,
+          "label": "/estimated-tax — 예상 세액"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/estimated-tax/business-expenses/page.tsx",
+          "line": 1,
+          "label": "/business-expenses — 사업 경비"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "giHist",
+      "type": "frontend",
+      "label": "종소세 · 이력 · 결과",
+      "sublabel": "이력 · 상세 · 미리보기",
+      "pos": [
+        384,
+        38
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/history/page.tsx",
+          "line": 1,
+          "label": "/history — 이력"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/history/detail/page.tsx",
+          "line": 1,
+          "label": "/history/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/history/preview/page.tsx",
+          "line": 1,
+          "label": "/history/preview — 미리보기"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "giPay",
+      "type": "frontend",
+      "label": "종소세 · 결제 · 환급",
+      "sublabel": "동의 · 완료 · 계좌",
+      "pos": [
+        676,
+        38
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/payment-agree/page.tsx",
+          "line": 1,
+          "label": "/payment-agree — 결제 동의"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/payment-agree/complete/page.tsx",
+          "line": 1,
+          "label": "/payment-agree/complete — 동의 완료"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/refund-account/page.tsx",
+          "line": 1,
+          "label": "/refund-account — 환급 계좌"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "giResult",
+      "type": "backend",
+      "label": "종소세 · 신고 결과",
+      "sublabel": "결과 · 미리보기 · 결제",
+      "pos": [
+        968,
+        38
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/tax-result/page.tsx",
+          "line": 1,
+          "label": "/tax-result — 신고 결과"
+        },
+        {
+          "path": "apps/care-web/app/global-income/(auth)/tax-result/preview/page.tsx",
+          "line": 1,
+          "label": "/tax-result/preview — 미리보기"
+        },
+        {
+          "path": "apps/care-web/app/global-income/billing/page.tsx",
+          "line": 1,
+          "label": "/global-income/billing — 결제"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "addExp",
+      "type": "frontend",
+      "label": "추가 경비 · 제출",
+      "sublabel": "안내 · 입력 · 자료 · 진행",
+      "pos": [
+        92,
+        120
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/additional-expense/submit/guide/page.tsx",
+          "line": 1,
+          "label": "/submit/guide — 안내"
+        },
+        {
+          "path": "apps/care-web/app/additional-expense/submit/input/page.tsx",
+          "line": 1,
+          "label": "/submit/input — 입력"
+        },
+        {
+          "path": "apps/care-web/app/additional-expense/submit/material/page.tsx",
+          "line": 1,
+          "label": "/submit/material — 자료"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "addExpSt",
+      "type": "frontend",
+      "label": "추가 경비 · 현황",
+      "sublabel": "진행 · 현황 · 이력",
+      "pos": [
+        384,
+        120
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/additional-expense/submit/progress/page.tsx",
+          "line": 1,
+          "label": "/submit/progress — 진행 중"
+        },
+        {
+          "path": "apps/care-web/app/additional-expense/status/page.tsx",
+          "line": 1,
+          "label": "/status — 현황"
+        },
+        {
+          "path": "apps/care-web/app/additional-expense/status/detail/page.tsx",
+          "line": 1,
+          "label": "/status/detail — 상세"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "addExpLeg",
+      "type": "backend",
+      "label": "추가 경비 · 레거시",
+      "sublabel": "history-legacy",
+      "pos": [
+        676,
+        120
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/additional-expense/history-legacy/page.tsx",
+          "line": 1,
+          "label": "/history-legacy — 이전 이력"
+        },
+        {
+          "path": "apps/care-web/app/additional-expense/history-legacy/preview/page.tsx",
+          "line": 1,
+          "label": "/history-legacy/preview — 미리보기"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "yetOwner",
+      "type": "frontend",
+      "label": "연말정산 · 사업주",
+      "sublabel": "연도 · 직원 · 결과",
+      "pos": [
+        968,
+        120
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/year-end-tax/page.tsx",
+          "line": 1,
+          "label": "/year-end-tax — 진입"
+        },
+        {
+          "path": "apps/care-web/app/year-end-tax/[year]/page.tsx",
+          "line": 1,
+          "label": "/[year] — 연도별"
+        },
+        {
+          "path": "apps/care-web/app/year-end-tax/[year]/[employeeId]/page.tsx",
+          "line": 1,
+          "label": "/[year]/[employeeId] — 직원"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "yetEmp",
+      "type": "security",
+      "label": "연말정산 · 직원 본인",
+      "sublabel": "인증 후 제출",
+      "pos": [
+        92,
+        202
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/year-end-tax/[year]/[employeeId]/result/page.tsx",
+          "line": 1,
+          "label": "/[employeeId]/result — 결과"
+        },
+        {
+          "path": "apps/care-web/app/year-end-tax/employee/[year]/[employeeId]/auth/page.tsx",
+          "line": 1,
+          "label": "/employee/.../auth — 본인 인증"
+        },
+        {
+          "path": "apps/care-web/app/year-end-tax/employee/[year]/[employeeId]/(authenticate)/page.tsx",
+          "line": 1,
+          "label": "/(authenticate) — 인증 후 입력"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "yetDone",
+      "type": "backend",
+      "label": "연말정산 · 제출 완료",
+      "sublabel": "(authenticate)/result · submit-complete",
+      "pos": [
+        384,
+        202
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/year-end-tax/employee/[year]/[employeeId]/(authenticate)/result/page.tsx",
+          "line": 1,
+          "label": "/(authenticate)/result — 결과"
+        },
+        {
+          "path": "apps/care-web/app/year-end-tax/employee/submit-complete/page.tsx",
+          "line": 1,
+          "label": "/employee/submit-complete — 제출 완료"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "login",
+      "type": "security",
+      "label": "로그인 · 본인확인",
+      "sublabel": "로그인 · 약관 · CI 2단계",
+      "pos": [
+        676,
+        202
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(login)/login/page.tsx",
+          "line": 1,
+          "label": "/login — 로그인"
+        },
+        {
+          "path": "apps/care-web/app/(login)/sign-up-terms/page.tsx",
+          "line": 1,
+          "label": "/sign-up-terms — 약관 동의"
+        },
+        {
+          "path": "apps/care-web/app/(login)/ci-request/page.tsx",
+          "line": 1,
+          "label": "/ci-request — CI 수집 요청"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "pay",
+      "type": "backend",
+      "label": "결제 결과 · CI 인증",
+      "sublabel": "완료 · 만료 · 실패",
+      "pos": [
+        968,
+        202
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(login)/ci-authentication/page.tsx",
+          "line": 1,
+          "label": "/ci-authentication — CI 인증"
+        },
+        {
+          "path": "apps/care-web/app/(payment)/payment-complete/page.tsx",
+          "line": 1,
+          "label": "/payment-complete — 결제 완료"
+        },
+        {
+          "path": "apps/care-web/app/(payment)/payment-failed/page.tsx",
+          "line": 1,
+          "label": "/payment-failed — 결제 실패"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "bizCard",
+      "type": "frontend",
+      "label": "명함 · 사업자 확인",
+      "sublabel": "현황 · 상세 · 입력",
+      "pos": [
+        92,
+        284
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/business-card/status/page.tsx",
+          "line": 1,
+          "label": "/business-card/status — 현황"
+        },
+        {
+          "path": "apps/care-web/app/business-card/status/detail/page.tsx",
+          "line": 1,
+          "label": "/status/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/business-card/submit/input/page.tsx",
+          "line": 1,
+          "label": "/submit/input — 입력"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "cert",
+      "type": "frontend",
+      "label": "증명서 · 창업 확인",
+      "sublabel": "발급 · 미리보기 · 처리중",
+      "pos": [
+        384,
+        284
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/certificate/page.tsx",
+          "line": 1,
+          "label": "/certificate — 증명서"
+        },
+        {
+          "path": "apps/care-web/app/certificate/preview/page.tsx",
+          "line": 1,
+          "label": "/certificate/preview — 미리보기"
+        },
+        {
+          "path": "apps/care-web/app/certificate/processing/page.tsx",
+          "line": 1,
+          "label": "/certificate/processing — 처리 중"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "startup",
+      "type": "frontend",
+      "label": "창업 확인 · 알림톡",
+      "sublabel": "startup-check · add-manager",
+      "pos": [
+        676,
+        284
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/startup-check/page.tsx",
+          "line": 1,
+          "label": "/startup-check — 진입"
+        },
+        {
+          "path": "apps/care-web/app/startup-check/input/page.tsx",
+          "line": 1,
+          "label": "/input — 입력"
+        },
+        {
+          "path": "apps/care-web/app/startup-check/result/page.tsx",
+          "line": 1,
+          "label": "/result — 결과"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "misc",
+      "type": "backend",
+      "label": "그 외",
+      "sublabel": "고객센터 · 점검 · 테스트",
+      "pos": [
+        968,
+        284
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/cs-center/page.tsx",
+          "line": 1,
+          "label": "/cs-center — 도움말(Notion)"
+        },
+        {
+          "path": "apps/care-web/app/service-maintenance/page.tsx",
+          "line": 1,
+          "label": "/service-maintenance — 점검"
+        },
+        {
+          "path": "apps/care-web/app/card-expense/download-guide/page.tsx",
+          "line": 1,
+          "label": "/card-expense/download-guide — 내려받기 안내"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "misc2",
+      "type": "backend",
+      "label": "그 외 ②",
+      "sublabel": "알림톡 · 결제만료 · 명함완료",
+      "pos": [
+        92,
+        366
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(kakaoTalk-notification)/add-manager/page.tsx",
+          "line": 1,
+          "label": "/add-manager — 담당자 추가"
+        },
+        {
+          "path": "apps/care-web/app/(kakaoTalk-notification)/add-manager/result/page.tsx",
+          "line": 1,
+          "label": "/add-manager/result — 결과"
+        },
+        {
+          "path": "apps/care-web/app/(payment)/payment-expired/page.tsx",
+          "line": 1,
+          "label": "/payment-expired — 결제 만료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "misc3",
+      "type": "backend",
+      "label": "그 외 ③",
+      "sublabel": "명함 완료 · 고객센터 상세 · 테스트",
+      "pos": [
+        384,
+        366
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/business-card/submit/complete/page.tsx",
+          "line": 1,
+          "label": "/business-card/submit/complete — 명함 완료"
+        },
+        {
+          "path": "apps/care-web/app/cs-center/detail/[slug]/page.tsx",
+          "line": 1,
+          "label": "/cs-center/detail/[slug] — 도움말 상세"
+        },
+        {
+          "path": "apps/care-web/app/test/page.tsx",
+          "line": 1,
+          "label": "/test — 테스트"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "misc4",
+      "type": "backend",
+      "label": "그 외 ④",
+      "sublabel": "e2e 테스트",
+      "pos": [
+        676,
+        366
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/test/e2e/page.tsx",
+          "line": 1,
+          "label": "/test/e2e — E2E 테스트"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "giMain-giHist",
+      "from": "giMain",
+      "to": "giHist",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "giHist-giPay",
+      "from": "giHist",
+      "to": "giPay",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "giPay-giResult",
+      "from": "giPay",
+      "to": "giResult",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "addExp-addExpSt",
+      "from": "addExp",
+      "to": "addExpSt",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "addExpSt-addExpLeg",
+      "from": "addExpSt",
+      "to": "addExpLeg",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "addExpLeg-yetOwner",
+      "from": "addExpLeg",
+      "to": "yetOwner",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "yetEmp-yetDone",
+      "from": "yetEmp",
+      "to": "yetDone",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "yetDone-login",
+      "from": "yetDone",
+      "to": "login",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "login-pay",
+      "from": "login",
+      "to": "pay",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "bizCard-cert",
+      "from": "bizCard",
+      "to": "cert",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "cert-startup",
+      "from": "cert",
+      "to": "startup",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "startup-misc",
+      "from": "startup",
+      "to": "misc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "misc2-misc3",
+      "from": "misc2",
+      "to": "misc3",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "misc3-misc4",
+      "from": "misc3",
+      "to": "misc4",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "giMain-addExp",
+      "from": "giMain",
+      "to": "addExp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "addExp-yetEmp",
+      "from": "addExp",
+      "to": "yetEmp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "yetEmp-bizCard",
+      "from": "yetEmp",
+      "to": "bizCard",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "bizCard-misc2",
+      "from": "bizCard",
+      "to": "misc2",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "연말정산은 보는 사람이 둘이다",
+      "items": [
+        "사업주 경로: /year-end-tax/[year]/[employeeId] — 직원 목록에서 들어간다",
+        "직원 본인 경로: /year-end-tax/employee/[year]/[employeeId]/auth → (authenticate) — 별도 인증 layout 이 있다",
+        "같은 연말정산인데 경로부터 갈라져 있고 인증 방식도 다르다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "종소세는 자료제출 밖이 12화면",
+      "items": [
+        "예상 세액(사업 경비 포함) → 결제 동의 → 신고 결과·미리보기 → 환급 계좌",
+        "global-income/billing 은 (auth) 밖에 따로 있다",
+        "부가세와 같은 골격이지만 화면 이름과 파일이 전부 다르다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "작은 도메인이 많다",
+      "items": [
+        "명함 4 · 증명서 3 · 창업확인 3 · 알림톡 담당자 2 · 고객센터 2(Notion) · 결제 결과 3",
+        "test · test/e2e 두 화면은 운영 화면이 아니다 — 지우거나 제외 목록에 넣을 후보다",
+        "card-expense/download-guide 는 최상위에 홀로 남은 안내 화면이다"
+      ]
+    }
+  ]
+}

@@ -4,14 +4,14 @@ D = os.path.dirname(os.path.abspath(__file__))
 # 탭 사이 드릴다운: {출발 탭 번호: {노드 id: 도착 탭 번호}}
 DRILL = {
     0: {
-        "shell":   {"tab": 1, "label": "Provider 14겹 펼쳐 보기 →"},
-        "vat":     {"tab": 2, "label": "부가세 50화면 보기 →"},
-        "gincome": {"tab": 4, "label": "종소세 자료제출 43화면 보기 →"},
-        "payroll": {"tab": 5, "label": "급여 28화면 보기 →"},
+        "shell":     {"tab": 1, "label": "Provider 14겹 펼쳐 보기 →"},
+        "vat":       {"tab": 2, "label": "부가세 50화면 보기 →"},
+        "gincome":   {"tab": 4, "label": "종소세 자료제출 43화면 보기 →"},
+        "payroll":   {"tab": 5, "label": "급여 28화면 보기 →"},
+        "onboard":   {"tab": 6, "label": "온보딩 30화면 보기 →"},
+        "etcscreen": {"tab": 8, "label": "마이 · 랜딩 34화면 보기 →"},
     },
-    2: {
-        "submitMat": {"tab": 3, "label": "자료제출 35화면 전수 보기 →"},
-    },
+    2: {"submitMat": {"tab": 3, "label": "자료제출 35화면 전수 보기 →"}},
 }
 
 TABS = [
@@ -20,7 +20,11 @@ TABS = [
     ("부가세 · 전체",      "vat-rest.architecture.html",                      "자료제출 밖 15화면 · 신고 한 바퀴"),
     ("부가세 · 자료제출",  "vat-submit-material.architecture.html",           "35화면 전수 · socket.io 계정연결"),
     ("종소세 · 자료제출",  "global-income-submit-material.architecture.html", "43화면 전수 · 간편인증 두 곳"),
-    ("급여",               "payroll.architecture.html",                       "28화면 전수 · 정규 18 + 알바 10"),
+    ("급여",               "payroll.architecture.html",                       "28화면 · 정규 18 + 알바 10"),
+    ("온보딩 (auth)",      "auth-onboarding.architecture.html",                "30화면 · 홈택스·결제·4대보험"),
+    ("게이트웨이 · 파일",  "gateway-file.architecture.html",                   "27화면 · 앱 밖에서 드나드는 길"),
+    ("마이 · 랜딩 · 요금제","my-landing.architecture.html",                    "34화면 · 이용제한 9 포함"),
+    ("그 외 53화면",       "care-rest.architecture.html",                      "종소세 나머지 · 연말정산 · 로그인"),
 ]
 
 buttons, panels = [], []
@@ -128,7 +132,7 @@ page = """<!doctype html>
 <body>
 <header>
   <h1>care-web 아키텍처 다이어그램</h1>
-  <p class="sub">Archify 로 생성 · 저장소 리비전 bb53fbaf 기준 · <b>점선 테두리 노드</b>를 클릭하면 Semantic passport 안에 <b>상세 보기 버튼</b>이 뜹니다</p>
+  <p class="sub">Archify 로 생성 · 저장소 리비전 bb53fbaf 기준 · <b>266화면 전수</b> · <b>점선 테두리 노드</b>를 클릭하면 Semantic passport 안에 <b>상세 보기 버튼</b>이 뜹니다</p>
   <nav>__BUTTONS__</nav>
 </header>
 <main>__PANELS__</main>

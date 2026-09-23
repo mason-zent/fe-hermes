@@ -1,0 +1,585 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "마이 · 이용상태 · 랜딩 · 요금제 34화면",
+    "subtitle": "app/(my-info) 10 + user-status 9 + (landing) 8 + pricing 7",
+    "output": "my-landing.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      382
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "my",
+        "label": "마이 · 장부",
+        "focus": [
+          "home",
+          "book",
+          "export",
+          "exportDone"
+        ],
+        "note": "장부 내보내기는 설정 → 처리중 → 완료 세 화면으로 비동기 작업을 화면으로 보여준다."
+      },
+      {
+        "id": "block",
+        "label": "이용 제한 9화면",
+        "focus": [
+          "block1",
+          "block2",
+          "status"
+        ],
+        "note": "쓸 수 없는 이유마다 전용 화면이 있다. 한 화면에서 분기하지 않는다."
+      },
+      {
+        "id": "land",
+        "label": "랜딩 · 요금제",
+        "focus": [
+          "land",
+          "landInd1",
+          "landInd2",
+          "price",
+          "verify"
+        ],
+        "note": "업종별 퍼포먼스 랜딩 5개와 요금제 검증 실험 4화면이 따로 있다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "마이 · 장부 (my-info) 10",
+      "wraps": [
+        "home",
+        "book",
+        "export",
+        "exportDone"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "user-status — 이용 제한 9",
+      "wraps": [
+        "block1",
+        "block2",
+        "status"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "마이 홈 · 내 정보",
+      "sublabel": "home · my-info · 알림",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/home/page.tsx",
+          "line": 1,
+          "label": "/home — 마이 홈"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-info/page.tsx",
+          "line": 1,
+          "label": "/my-info — 내 정보"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-info/notification/page.tsx",
+          "line": 1,
+          "label": "/my-info/notification — 알림 설정"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "book",
+      "type": "frontend",
+      "label": "장부",
+      "sublabel": "환급계좌 · 매입 · 매출",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/my-info/refund-account/page.tsx",
+          "line": 1,
+          "label": "/my-info/refund-account — 환급 계좌"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/page.tsx",
+          "line": 1,
+          "label": "/my-book — 장부"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/purchase/page.tsx",
+          "line": 1,
+          "label": "/my-book/purchase — 매입"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "export",
+      "type": "frontend",
+      "label": "장부 내보내기",
+      "sublabel": "매출 · 설정 · 처리중",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/sales/page.tsx",
+          "line": 1,
+          "label": "/my-book/sales — 매출"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/export/setting/page.tsx",
+          "line": 1,
+          "label": "/export/setting — 내보내기 설정"
+        },
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/export/processing/page.tsx",
+          "line": 1,
+          "label": "/export/processing — 처리 중"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "exportDone",
+      "type": "backend",
+      "label": "내보내기 완료",
+      "sublabel": "export/complete",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(my-info)/my-book/export/complete/page.tsx",
+          "line": 1,
+          "label": "/export/complete — 완료"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "block1",
+      "type": "security",
+      "label": "이용 제한 ①",
+      "sublabel": "권한 · 사업장 · 폐업",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/user-status/forbidden/page.tsx",
+          "line": 1,
+          "label": "/forbidden — 접근 불가"
+        },
+        {
+          "path": "apps/care-web/app/user-status/no-org/page.tsx",
+          "line": 1,
+          "label": "/no-org — 사업장 없음"
+        },
+        {
+          "path": "apps/care-web/app/user-status/closed-business-only/page.tsx",
+          "line": 1,
+          "label": "/closed-business-only — 폐업만 보유"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "block2",
+      "type": "security",
+      "label": "이용 제한 ②",
+      "sublabel": "업종 · 면세 · 기간",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/user-status/restricted-business/page.tsx",
+          "line": 1,
+          "label": "/restricted-business — 제한 업종"
+        },
+        {
+          "path": "apps/care-web/app/user-status/tax-free-limited/page.tsx",
+          "line": 1,
+          "label": "/tax-free-limited — 면세 제한"
+        },
+        {
+          "path": "apps/care-web/app/user-status/tax-period-closed/page.tsx",
+          "line": 1,
+          "label": "/tax-period-closed — 신고 기간 종료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "status",
+      "type": "frontend",
+      "label": "이용 상태",
+      "sublabel": "홈택스 종료 · 케어플러스",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/user-status/hometax-service-closed/page.tsx",
+          "line": 1,
+          "label": "/hometax-service-closed — 홈택스 점검"
+        },
+        {
+          "path": "apps/care-web/app/user-status/care-plus-target/page.tsx",
+          "line": 1,
+          "label": "/care-plus-target — 케어플러스 대상"
+        },
+        {
+          "path": "apps/care-web/app/user-status/care-plus-history/page.tsx",
+          "line": 1,
+          "label": "/care-plus-history — 케어플러스 이력"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "land",
+      "type": "frontend",
+      "label": "랜딩",
+      "sublabel": "루트 · 프리미엄 · 이벤트",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(landing)/page.tsx",
+          "line": 1,
+          "label": "/(landing) — 랜딩 루트"
+        },
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/premium/page.tsx",
+          "line": 1,
+          "label": "/premium — 프리미엄"
+        },
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/events/page.tsx",
+          "line": 1,
+          "label": "/events — 이벤트"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "landInd1",
+      "type": "frontend",
+      "label": "업종 랜딩 ①",
+      "sublabel": "뷰티 · 음식 · 통신판매",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/beauty-industry/page.tsx",
+          "line": 1,
+          "label": "/beauty-industry — 뷰티"
+        },
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/food-industry/page.tsx",
+          "line": 1,
+          "label": "/food-industry — 음식"
+        },
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/mail-order-industry/page.tsx",
+          "line": 1,
+          "label": "/mail-order-industry — 통신판매"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "landInd2",
+      "type": "frontend",
+      "label": "업종 랜딩 ②",
+      "sublabel": "1인 사업자 · 종소세",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/single-person-business/page.tsx",
+          "line": 1,
+          "label": "/single-person-business — 1인 사업자"
+        },
+        {
+          "path": "apps/care-web/app/(landing)/(performance-landing)/income-tax/page.tsx",
+          "line": 1,
+          "label": "/income-tax — 종합소득세"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "price",
+      "type": "frontend",
+      "label": "요금제",
+      "sublabel": "폼 · 결과 · 완료",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/pricing/(form)/page.tsx",
+          "line": 1,
+          "label": "/pricing — 요금제 폼"
+        },
+        {
+          "path": "apps/care-web/app/pricing/(form)/result/page.tsx",
+          "line": 1,
+          "label": "/result — 결과"
+        },
+        {
+          "path": "apps/care-web/app/pricing/(form)/complete/page.tsx",
+          "line": 1,
+          "label": "/complete — 완료"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "verify",
+      "type": "frontend",
+      "label": "요금제 검증 실험",
+      "sublabel": "(experiment) 4화면",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/pricing/(experiment)/verification/user/page.tsx",
+          "line": 1,
+          "label": "/verification/user — 사용자"
+        },
+        {
+          "path": "apps/care-web/app/pricing/(experiment)/verification/hometax/page.tsx",
+          "line": 1,
+          "label": "/verification/hometax — 홈택스"
+        },
+        {
+          "path": "apps/care-web/app/pricing/(experiment)/verification/employee/page.tsx",
+          "line": 1,
+          "label": "/verification/employee — 직원"
+        }
+      ],
+      "tag": "4 화면 중 3"
+    },
+    {
+      "id": "verifyBiz",
+      "type": "frontend",
+      "label": "검증 — 사업자 조회",
+      "sublabel": "business-query",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/pricing/(experiment)/verification/business-query/page.tsx",
+          "line": 1,
+          "label": "/verification/business-query — 사업자 조회"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "home-book",
+      "from": "home",
+      "to": "book",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "book-export",
+      "from": "book",
+      "to": "export",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "export-exportDone",
+      "from": "export",
+      "to": "exportDone",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "block1-block2",
+      "from": "block1",
+      "to": "block2",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "block2-status",
+      "from": "block2",
+      "to": "status",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "status-land",
+      "from": "status",
+      "to": "land",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "landInd1-landInd2",
+      "from": "landInd1",
+      "to": "landInd2",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "landInd2-price",
+      "from": "landInd2",
+      "to": "price",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "price-verify",
+      "from": "price",
+      "to": "verify",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "home-block1",
+      "from": "home",
+      "to": "block1",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "block1-landInd1",
+      "from": "block1",
+      "to": "landInd1",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "landInd1-verifyBiz",
+      "from": "landInd1",
+      "to": "verifyBiz",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "이용 제한이 9화면이나 된다",
+      "items": [
+        "권한 없음 · 사업장 없음 · 폐업만 보유 · 제한 업종 · 면세 제한 · 신고기간 종료 · 홈택스 점검 등 이유마다 전용 화면이다",
+        "한 화면에서 메시지를 갈아끼우는 방식이 아니다 — 새 제한 사유가 생기면 화면을 하나 더 만드는 구조다",
+        "케어플러스 대상·이력도 이 그룹에 있다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "업종별 랜딩이 5개",
+      "items": [
+        "(performance-landing) 아래 뷰티·음식·통신판매·1인사업자·종소세 다섯 업종",
+        "프리미엄과 이벤트가 더 있고 랜딩 루트가 따로 있다",
+        "미들웨어 withLandingRedirectMiddleware 가 이 경로들의 접근을 가른다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "장부 내보내기는 비동기다",
+      "items": [
+        "설정 → 처리중 → 완료 세 화면으로 진행 상태를 보여준다",
+        "requestMyBookExcelFile 이 파일을 만들고 (external-file-download) 로 내려받는다",
+        "요금제에는 (experiment) 검증 실험 4화면이 따로 붙어 있다"
+      ]
+    }
+  ]
+}
