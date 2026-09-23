@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "데이터가 어디서 와서 어디로 가는가",
+    "subtitle": "담당 9개 서비스의 출처와 관문 — 계열마다 관문이 완전히 다르다",
+    "output": "docs/diagrams/data-sources.html",
+    "viewBox": [
+      1080,
+      520
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "brics",
+        "label": "운영 콘솔 · 내부",
+        "focus": [
+          "zentbe",
+          "orval",
+          "consoles"
+        ],
+        "note": "BRICS 콘솔 3개는 Orval 생성 훅 + SWR 로 부른다. web-op 만 자기 Route Handler 를 거치는 길이 따로 있다."
+      },
+      {
+        "id": "bznav",
+        "label": "환급 · 케어 웹",
+        "focus": [
+          "gateway",
+          "relay",
+          "bznav2"
+        ],
+        "note": "BE 게이트웨이를 Relay 로 부른다. 아티팩트가 없으면 타입 검사가 통째로 건너뛰어진다."
+      },
+      {
+        "id": "own",
+        "label": "앱마다 다른 관문",
+        "focus": [
+          "own",
+          "own2",
+          "own3"
+        ],
+        "note": "세나는 fetch 래퍼, 브랜드는 DatoCMS, 플러스는 Notion 이다. 같은 모노레포인데 관문이 다르다."
+      }
+    ]
+  },
+  "stages": [
+    {
+      "label": "출처"
+    },
+    {
+      "label": "관문"
+    },
+    {
+      "label": "서비스"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "zentbe",
+      "type": "cloud",
+      "stage": 0,
+      "row": 0,
+      "label": "zent 백엔드",
+      "sublabel": "zent-ip · zent 서버"
+    },
+    {
+      "id": "gateway",
+      "type": "cloud",
+      "stage": 0,
+      "row": 1,
+      "label": "BE 게이트웨이",
+      "sublabel": "bznav GraphQL"
+    },
+    {
+      "id": "own",
+      "type": "external",
+      "stage": 0,
+      "row": 2,
+      "label": "앱별 출처",
+      "sublabel": "세나 API · CMS"
+    },
+    {
+      "id": "orval",
+      "type": "messagebus",
+      "stage": 1,
+      "row": 0,
+      "label": "Orval + SWR",
+      "sublabel": "생성 훅",
+      "tag": "web-op 만 자체 BFF"
+    },
+    {
+      "id": "relay",
+      "type": "messagebus",
+      "stage": 1,
+      "row": 1,
+      "label": "Relay",
+      "sublabel": "useLazyLoadQuery",
+      "tag": "아티팩트 먼저 생성"
+    },
+    {
+      "id": "own2",
+      "type": "messagebus",
+      "stage": 1,
+      "row": 2,
+      "label": "앱 전용 관문",
+      "sublabel": "fetch · CMS 클라이언트",
+      "tag": "앱마다 다르다"
+    },
+    {
+      "id": "consoles",
+      "type": "frontend",
+      "stage": 2,
+      "row": 0,
+      "label": "운영 콘솔 4개",
+      "sublabel": "refund·hub·care·web-op"
+    },
+    {
+      "id": "bznav2",
+      "type": "frontend",
+      "stage": 2,
+      "row": 1,
+      "label": "환급 · 케어 웹",
+      "sublabel": "refund-web · care-web"
+    },
+    {
+      "id": "own3",
+      "type": "frontend",
+      "stage": 2,
+      "row": 2,
+      "label": "나머지 3개 앱",
+      "sublabel": "세나 · 브랜드 · 플러스"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f1",
+      "from": "zentbe",
+      "to": "orval",
+      "label": "REST",
+      "classification": "업무 데이터",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f2",
+      "from": "orval",
+      "to": "consoles",
+      "label": "훅 + 캐시",
+      "classification": "업무 데이터",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f3",
+      "from": "gateway",
+      "to": "relay",
+      "label": "GraphQL",
+      "classification": "사용자 데이터",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f4",
+      "from": "relay",
+      "to": "bznav2",
+      "label": "쿼리 결과",
+      "classification": "사용자 데이터",
+      "variant": "emphasis"
+    },
+    {
+      "id": "f5",
+      "from": "own",
+      "to": "own2",
+      "label": "SSE · GraphQL · API",
+      "classification": "대화 · 콘텐츠"
+    },
+    {
+      "id": "f6",
+      "from": "own2",
+      "to": "own3",
+      "label": "페이지 데이터",
+      "classification": "대화 · 콘텐츠"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "관문이 계열마다 다르다",
+      "items": [
+        "BRICS 콘솔 3개(refund·hub·care): zent-ip 를 Orval 생성 훅 + SWR 로 부른다. __generated__ 는 직접 고치지 않고 genapi 로 만든다",
+        "web-op: 화면이 외부를 직접 부르는 길과, 자기 Route Handler(app/api → Service → gateway)를 거치는 길이 함께 있다. 콘솔 3개와 다르다",
+        "비즈넵 환급·케어: BE 게이트웨이를 Relay 로 부른다. 아티팩트를 먼저 만들지 않으면 검증에서 타입 검사가 통째로 건너뛰어진다",
+        "세나: axios 도 Relay 도 없다. lib/utils/request.ts 의 fetch 래퍼 둘이 관문이고 응답은 SSE 스트림이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "콘텐츠는 코드가 아니다",
+      "items": [
+        "브랜드 웹: DatoCMS GraphQL 하나뿐이다(requestDatoCms). 약관 변경은 DatoCMS 데이터 작업이다",
+        "플러스 웹: Notion(notion-client). 세금 콘텐츠는 DB 행 추가로 끝나는 것이 원칙이다",
+        "케어 웹의 도움말센터도 Notion 을 쓴다 — 플러스만 쓰는 게 아니다",
+        "web-op 의 노션 가이드도 같은 성격이다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이 그림에 없는 옆길",
+      "items": [
+        "Firebase — 세나의 점검 플래그(proxy.ts)와 비즈넵 환급 웹의 Remote Config 에 쓰인다. 화면 데이터가 아니라 설정이다",
+        "공동인증서 — 비즈넵 환급 웹에서 로컬 인증서 프로그램과만 axios 로 통신한다. 계정 확인·로그인은 Relay 다",
+        "web-op 의 Redis — 자체 BFF 안에서 RedisRepository 로 쓴다"
+      ]
+    }
+  ]
+}

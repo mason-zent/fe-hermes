@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "zent-packages 발행 패키지가 가는 곳",
+    "subtitle": "무엇을 발행하고 누가 실제로 쓰는가 — 쓰이지 않는 갈래가 있다",
+    "output": "docs/diagrams/zent-packages.html",
+    "viewBox": [
+      1060,
+      600
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "brics",
+        "label": "brics 계열",
+        "focus": [
+          "all3",
+          "some",
+          "consoles"
+        ],
+        "note": "콘솔 3개가 쓰는 갈래다. 셋 다 쓰는 것과 일부만 쓰는 것이 나뉜다."
+      },
+      {
+        "id": "bznav",
+        "label": "bznav 계열",
+        "focus": [
+          "bznavpub",
+          "webop",
+          "bznavapps"
+        ],
+        "note": "9개를 발행하지만 실제로 쓰이는 건 2개, 쓰는 곳은 web-op 하나다."
+      },
+      {
+        "id": "surprise",
+        "label": "의외인 것",
+        "focus": [
+          "webop",
+          "bznavapps",
+          "consoles"
+        ],
+        "note": "web-op 은 BRICS 콘솔인데 brics 계열을 하나도 쓰지 않는다. bznav 앱들은 발행 패키지를 쓰지 않는다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "zent-packages/frontend — 여기서 발행한다",
+      "wraps": [
+        "all3",
+        "some",
+        "bznavpub"
+      ],
+      "pad": 16
+    },
+    {
+      "kind": "region",
+      "label": "쓰지 않는다",
+      "wraps": [
+        "bznavapps"
+      ],
+      "pad": 14
+    }
+  ],
+  "components": [
+    {
+      "id": "all3",
+      "type": "frontend",
+      "row": 1,
+      "col": 1,
+      "label": "콘솔 3개 공통",
+      "sublabel": "brics-fe-ui · zent-auth",
+      "tag": "+ zent-fe-devkit",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "some",
+      "type": "frontend",
+      "row": 1,
+      "col": 3,
+      "label": "일부만 쓴다",
+      "sublabel": "resource-manager 등",
+      "tag": "refund·hub 또는 하나만",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "consoles",
+      "type": "external",
+      "row": 2,
+      "col": 2,
+      "label": "BRICS 콘솔 3개",
+      "sublabel": "refund · hub · care",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "bznavpub",
+      "type": "backend",
+      "row": 3,
+      "col": 1,
+      "label": "bznav 계열 발행",
+      "sublabel": "9개를 발행한다",
+      "tag": "실제로 쓰이는 건 2개",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "bznavapps",
+      "type": "external",
+      "row": 3,
+      "col": 3,
+      "label": "bznav 5개 앱",
+      "sublabel": "모노레포 packages/* 사용",
+      "tag": "발행 패키지를 안 쓴다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "webop",
+      "type": "external",
+      "row": 4,
+      "col": 1,
+      "label": "web-op",
+      "sublabel": "bznav-fe-ui · project-config",
+      "tag": "brics 계열은 안 쓴다",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "all3",
+      "to": "consoles",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "some",
+      "to": "consoles"
+    },
+    {
+      "id": "e3",
+      "from": "bznavpub",
+      "to": "webop",
+      "label": "2개만",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        276,
+        466
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "brics 계열 — 콘솔 3개가 쓴다",
+      "items": [
+        "셋 다 쓰는 것: brics-fe-ui · brics-fe-zent-auth · zent-fe-devkit",
+        "refund·hub 둘만: brics-fe-resource-manager",
+        "하나만: brics-fe-project-config(refund) · brics-fe-datadog-trace(hub)",
+        "버전이 레포마다 다르다 — 예를 들어 brics-fe-ui 는 refund 0.3.3, hub 0.2.4, care 0.2.4 다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "bznav 계열 — 거의 쓰이지 않는다",
+      "items": [
+        "bznav-fe-{ui, ui-deprecated, user-session, user-sign, tracking-service, platform, common-utils, project-config, channel-talk} 를 발행한다",
+        "실제로 의존하는 곳은 web-op 하나이고, 그것도 bznav-fe-ui 와 bznav-fe-project-config 둘뿐이다",
+        "bznav 5개 앱은 이 발행 패키지를 쓰지 않는다 — 모노레포 안의 @repo/* 를 쓴다",
+        "즉 bznav 계열 발행본과 모노레포 packages/* 는 이름이 비슷해도 서로 다른 코드다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "디스패치할 때",
+      "items": [
+        "발행 패키지를 고치면 packages-fe 를 먼저 보내고, changeset·스냅샷 태그를 소비 레포 에이전트에 넘긴다",
+        "web-op 은 BRICS 콘솔이지만 brics 계열을 하나도 쓰지 않는다. brics-fe-ui 를 고쳐도 web-op 은 영향이 없다",
+        "반대로 bznav-fe-ui 를 고치면 bznav 앱이 아니라 web-op 이 영향을 받는다"
+      ]
+    }
+  ]
+}

@@ -12,9 +12,30 @@ const DIR = join(ROOT, 'docs/diagrams');
 // 타입별 표시 이름. architecture 만 파일명에 타입이 안 붙는다(먼저 만든 9장의 관례).
 const TYPES = [
   { key: 'architecture', label: '구조', suffix: '.html' },
-  { key: 'workflow', label: '작업 절차', suffix: '.workflow.html' },
   { key: 'sequence', label: '요청 흐름', suffix: '.sequence.html' },
   { key: 'lifecycle', label: '화면 상태', suffix: '.lifecycle.html' },
+];
+
+// 레포를 가로지르는 구조 — 타입 4종 패턴이 아니라 한 장짜리다
+const CROSS = [
+  {
+    file: 'bznav-packages.html',
+    name: 'bznav packages 의존 층',
+    sub: '@repo/* 8개',
+    desc: 'project-config 가 바닥이고 user-sign 이 꼭대기다. 아래를 고치면 위가 전부 영향을 받는다.',
+  },
+  {
+    file: 'zent-packages.html',
+    name: 'zent-packages 발행처',
+    sub: '발행 → 소비',
+    desc: 'brics 계열은 콘솔 3개가 쓰고, bznav 계열은 web-op 하나만 쓴다. bznav 앱은 발행본을 안 쓴다.',
+  },
+  {
+    file: 'data-sources.html',
+    name: '데이터 출처 지도',
+    sub: '출처 · 관문 · 서비스',
+    desc: 'Orval+SWR / Relay / fetch 래퍼 / CMS 클라이언트 — 계열마다 관문이 완전히 다르다.',
+  },
 ];
 
 const GROUPS = [
@@ -105,7 +126,21 @@ const section = (group) => {
     .filter(Boolean);
   return `    <h2>${esc(group.title)}</h2>\n    <div class="grid">\n${cards.join('\n')}\n    </div>`;
 };
-const body = GROUPS.map(section).join('\n');
+const crossCards = CROSS.filter((item) => existsSync(join(DIR, item.file)))
+  .map((item) => {
+    total++;
+    return `      <div class="card">
+        <div class="t">${esc(item.name)}</div>
+        <div class="s">${esc(item.sub)}</div>
+        <div class="d">${esc(item.desc)}</div>
+        <div class="pills"><a class="pill" href="${item.file}">열기</a></div>
+      </div>`;
+  });
+const crossSection = crossCards.length
+  ? `    <h2>레포를 가로지르는 구조</h2>\n    <div class="grid">\n${crossCards.join('\n')}\n    </div>`
+  : '';
+
+const body = [crossSection, ...GROUPS.map(section)].filter(Boolean).join('\n');
 
 const html = `<!doctype html>
 <html lang="ko">
@@ -156,7 +191,7 @@ const html = `<!doctype html>
   <div class="wrap">
     <h1>헤르메스 다이어그램</h1>
     <p class="lead">작업 흐름과 담당 레포를 인터랙티브 HTML 로 본다. 서비스마다 보는 각도를 나눠 두었다.</p>
-    <p class="note"><b>구조</b>는 무엇으로 이루어져 있는가, <b>작업 절차</b>는 새 화면을 어떤 순서로 만드는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가, <b>화면 상태</b>는 어디서 갈라지고 멈추는가를 본다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
+    <p class="note"><b>구조</b>는 무엇으로 이루어져 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가, <b>화면 상태</b>는 어디서 갈라지고 멈추는가를 본다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
     <h2>작업 흐름</h2>
     <div class="grid">
       <div class="card">

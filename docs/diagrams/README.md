@@ -10,33 +10,44 @@ open docs/diagrams/index.html
 
 `index.html` 이 목록이고 거기서 골라 들어간다. 각 다이어그램은 **독립 실행 HTML** 이라 의존성 없이 열린다(장당 약 800KB).
 
-서비스마다 **보는 각도를 넷으로 나눴다.**
+서비스마다 **보는 각도를 셋으로 나누고**, 그 위에 **레포를 가로지르는 구조** 세 장을 뒀다.
 
 | 타입 | 무엇을 보나 | 파일 |
 |---|---|---|
 | architecture | 무엇으로 이루어져 있는가 (파일 근거 포함) | `<서비스>.architecture.json` → `<서비스>.html` |
-| workflow | 새 화면을 어떤 순서로 만드는가 · 어디서 막히는가 | `<서비스>.workflow.json` |
 | sequence | 한 화면이 뜰 때 무엇이 오가는가 | `<서비스>.sequence.json` |
 | lifecycle | 상태가 어디서 갈라지고 멈추는가 | `<서비스>.lifecycle.json` |
 
-| 서비스 | architecture | workflow | sequence | lifecycle | 대표 화면 |
-|---|:--:|:--:|:--:|:--:|---|
-| client-brics-refund | ✅ | ✅ | ✅ | ✅ | `app/refund-service/user/all` |
-| client-brics-hub | ✅ | ✅ | ✅ | ✅ | `app/messages/templates` |
-| client-brics-care | ✅ | ✅ | ✅ | ✅ | `app/promotion-page` (시퀀스는 `app/bmans`) |
-| web-op | ✅ | ✅ | ✅ | ✅ | `app/documents/[key]` |
-| bznav refund-web | ✅ | ✅ | ✅ | ✅ | `pages/event/[...slug]` · 개인 간편인증 |
-| bznav care-web | ✅ | ✅ | ✅ | ✅ | `app/(my-info)/my-book` |
-| bznav brand-web | ✅ | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
-| bznav sena-web | ✅ | ✅ | ✅ | ✅ | 챗 스트림 |
-| bznav plus-web | ✅ | ✅ | ✅ | ✅ | `app/calc/holiday-pay` (계산기마다 단계가 다르다) |
+| 서비스 | architecture | sequence | lifecycle | 대표 화면 |
+|---|:--:|:--:|:--:|---|
+| client-brics-refund | ✅ | ✅ | ✅ | `app/refund-service/user/all` |
+| client-brics-hub | ✅ | ✅ | ✅ | `app/messages/templates` |
+| client-brics-care | ✅ | ✅ | ✅ | `app/promotion-page` (시퀀스는 `app/bmans`) |
+| web-op | ✅ | ✅ | ✅ | `app/documents/[key]` |
+| bznav refund-web | ✅ | ✅ | ✅ | `pages/event/[...slug]` · 개인 간편인증 |
+| bznav care-web | ✅ | ✅ | ✅ | `app/(my-info)/my-book` |
+| bznav brand-web | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
+| bznav sena-web | ✅ | ✅ | ✅ | 챗 스트림 |
+| bznav plus-web | ✅ | ✅ | ✅ | `app/calc/holiday-pay` (계산기마다 단계가 다르다) |
 
-⚠️ **workflow·sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
+⚠️ **sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
 다르게 동작한다(care 콘솔의 promotion 과 bmans, hub 의 messages 와 admin 이 그렇다). 일반화해서 옮기지 않는다.
 이 원칙은 교차 검증에서 오류가 무더기로 나온 뒤에 세운 것이다 — 처음에는 지식 문서 요약으로 일반화해 그렸다가
 20건 넘게 틀렸다.
 
-그 밖에 `hermes-flow.workflow.json` (헤르메스 Plan-First 작업 흐름) 이 있다.
+### 레포를 가로지르는 구조
+
+한 레포 안에서는 보이지 않는 것들이다. 영향 범위와 디스패치 순서가 여기서 나온다.
+
+| 다이어그램 | 무엇을 보나 | 원본 |
+|---|---|---|
+| bznav packages 의존 층 | `@repo/*` 8개가 쌓인 순서. `project-config` 가 바닥, `user-sign` 이 꼭대기 | `bznav-packages.architecture.json` |
+| zent-packages 발행처 | 무엇을 발행하고 누가 실제로 쓰는가. bznav 계열은 `web-op` 하나만 쓴다 | `zent-packages.architecture.json` |
+| 데이터 출처 지도 | 출처 → 관문 → 서비스. 계열마다 관문이 완전히 다르다 | `data-sources.dataflow.json` |
+
+**`workflow`(작업 절차)는 걷어냈다.** `workflows.md` 텍스트가 더 정확하고 정보량도 많았다.
+그림으로 옮기면서 절차 문장이 단정으로 바뀌어 오류가 생기기도 했다. `hermes-flow.workflow.json`
+(헤르메스 자신의 Plan-First 흐름)만 남겼다.
 
 아직 없는 것: bznav `packages/*`, `zent-packages`. 화면이 없는 패키지 레포라 성격이 달라 뒤로 미뤘다.
 

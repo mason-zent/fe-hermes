@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav packages/* 의존 층",
+    "subtitle": "8개 공통 패키지가 어떤 순서로 쌓여 있는가 — 고칠 때 아래층부터 본다",
+    "output": "docs/diagrams/bznav-packages.html",
+    "viewBox": [
+      1120,
+      800
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "stack",
+        "label": "의존 층",
+        "focus": [
+          "project-config",
+          "common-utils",
+          "platform",
+          "ui",
+          "tracking",
+          "session",
+          "sign"
+        ],
+        "note": "project-config 가 바닥이고 user-sign 이 꼭대기다. 아래를 고치면 위가 전부 영향을 받는다."
+      },
+      {
+        "id": "apps",
+        "label": "앱이 쓰는 것",
+        "focus": [
+          "sign",
+          "session",
+          "ui",
+          "apps",
+          "legacy"
+        ],
+        "note": "5개 앱이 공통 5종을 쓰고, 로그인이 있는 3개만 user-session·user-sign 을 더 쓴다."
+      },
+      {
+        "id": "legacy",
+        "label": "구버전 UI",
+        "focus": [
+          "legacy",
+          "apps",
+          "project-config"
+        ],
+        "note": "디렉터리는 ui-deprecated 지만 패키지 이름은 @zenterprise-inc/ui 다. care·refund 만 쓴다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "repos/bznav-web/packages — 모노레포 안. 발행하지 않는다",
+      "wraps": [
+        "project-config",
+        "common-utils",
+        "platform",
+        "ui",
+        "tracking",
+        "session",
+        "sign",
+        "legacy"
+      ],
+      "pad": 18
+    }
+  ],
+  "components": [
+    {
+      "id": "project-config",
+      "type": "backend",
+      "row": 1,
+      "col": 2,
+      "label": "project-config",
+      "sublabel": "tsconfig · eslint",
+      "tag": "아무것도 의존하지 않는다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "legacy",
+      "type": "frontend",
+      "row": 2,
+      "col": 4,
+      "label": "구버전 UI",
+      "sublabel": "@zenterprise-inc/ui",
+      "tag": "디렉터리는 ui-deprecated",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "common-utils",
+      "type": "backend",
+      "row": 2,
+      "col": 2,
+      "label": "common-utils",
+      "sublabel": "쿠키 · 포맷 · 훅",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "platform",
+      "type": "backend",
+      "row": 3,
+      "col": 1,
+      "label": "platform",
+      "sublabel": "웹 · 앱 분기",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "ui",
+      "type": "frontend",
+      "row": 3,
+      "col": 3,
+      "label": "ui",
+      "sublabel": "@repo/ui 디자인 시스템",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "tracking",
+      "type": "messagebus",
+      "row": 4,
+      "col": 0,
+      "label": "tracking-service",
+      "sublabel": "이벤트 로깅",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "session",
+      "type": "security",
+      "row": 4,
+      "col": 4,
+      "label": "user-session",
+      "sublabel": "로그인 세션",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "sign",
+      "type": "security",
+      "row": 5,
+      "col": 2,
+      "label": "user-sign",
+      "sublabel": "로그인 화면",
+      "tag": "가장 위층이다",
+      "size": [
+        128,
+        54
+      ]
+    },
+    {
+      "id": "apps",
+      "type": "external",
+      "row": 6,
+      "col": 2,
+      "label": "앱 5개",
+      "sublabel": "brand·care·plus·refund·sena",
+      "tag": "공통 5종 + 로그인 3개",
+      "size": [
+        128,
+        54
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "common-utils",
+      "to": "project-config",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "e2",
+      "from": "legacy",
+      "to": "project-config"
+    },
+    {
+      "id": "e3",
+      "from": "platform",
+      "to": "common-utils"
+    },
+    {
+      "id": "e4",
+      "from": "ui",
+      "to": "common-utils"
+    },
+    {
+      "id": "e5",
+      "from": "tracking",
+      "to": "platform"
+    },
+    {
+      "id": "e6",
+      "from": "session",
+      "to": "ui"
+    },
+    {
+      "id": "e7",
+      "from": "sign",
+      "to": "session"
+    },
+    {
+      "id": "e8",
+      "from": "sign",
+      "to": "tracking"
+    },
+    {
+      "id": "e9",
+      "from": "apps",
+      "to": "sign",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "층이 넷이다 — 아래부터 고친다",
+      "items": [
+        "project-config 는 아무것도 의존하지 않는 바닥이다. 여기를 고치면 8개 전부가 영향을 받는다",
+        "common-utils → platform · ui → tracking-service · user-session → user-sign 순으로 쌓인다",
+        "user-sign 이 꼭대기다 — common-utils · platform · project-config · tracking-service · ui · user-session 여섯을 전부 의존한다",
+        "그림의 화살표는 직접 의존만 그렸다. 전이 의존(예: tracking-service → project-config)은 생략했다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "앱이 실제로 쓰는 것",
+      "items": [
+        "5개 앱 전부: common-utils · platform · project-config · tracking-service · ui",
+        "로그인이 있는 3개(care · refund · sena)만: user-session · user-sign",
+        "care · refund 2개만: @zenterprise-inc/ui — 디렉터리 이름은 ui-deprecated 지만 패키지 이름이 다르다. @repo/ 로 찾으면 안 나온다",
+        "brand · plus 는 로그인 관련 패키지를 쓰지 않는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "주의",
+      "items": [
+        "channel-talk 은 이미 제거된 패키지다(소비 앱으로 내재화). 로컬에 디렉터리가 남아 있어도 git 추적 파일은 0 이다",
+        "패키지를 고칠 때는 bznav-packages-fe 를 먼저 보내고 앱 에이전트를 그다음에 보낸다",
+        "이 패키지들은 발행하지 않는다. 발행 패키지는 zent-packages 쪽이다"
+      ]
+    }
+  ]
+}
