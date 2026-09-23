@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav plus-web 요청 흐름",
+    "subtitle": "대표 화면 app/calc/<경로> · layout 은 SEO, page 는 UI, 계산은 순수 함수",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-plus-web.sequence.html",
+    "views": [
+      {
+        "id": "seo",
+        "label": "진입할 때",
+        "focus": [
+          "user",
+          "layout",
+          "page",
+          "logger"
+        ],
+        "note": "layout 이 metadata·JsonLd·TopNavigation 을 붙이고 page 는 UI 만 맡는다."
+      },
+      {
+        "id": "input",
+        "label": "입력할 때",
+        "focus": [
+          "user",
+          "page",
+          "form"
+        ],
+        "note": "RHF 를 쓰지만 handleSubmit 과 resolver 는 쓰지 않는다. watch 와 setValue 만 쓴다."
+      },
+      {
+        "id": "calc",
+        "label": "계산할 때",
+        "focus": [
+          "page",
+          "hook",
+          "calc",
+          "dp"
+        ],
+        "note": "step 이 result-step 이 되어야 순수 함수를 부른다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "layout",
+      "type": "backend",
+      "label": "layout.tsx",
+      "sublabel": "SEO 전담"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "'use client'"
+    },
+    {
+      "id": "form",
+      "type": "messagebus",
+      "label": "폼 훅",
+      "sublabel": "use-<name>-form"
+    },
+    {
+      "id": "hook",
+      "type": "messagebus",
+      "label": "계산 훅",
+      "sublabel": "use-<name>"
+    },
+    {
+      "id": "calc",
+      "type": "backend",
+      "label": "순수 함수",
+      "sublabel": "lib/utils/calc"
+    },
+    {
+      "id": "dp",
+      "type": "cloud",
+      "label": "DP 로그",
+      "sublabel": "useCalculatorDpLog"
+    },
+    {
+      "id": "logger",
+      "type": "cloud",
+      "label": "뷰 이벤트",
+      "sublabel": "PageViewEventLogger"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "진입"
+    },
+    {
+      "from": 316,
+      "to": 540,
+      "label": "입력"
+    },
+    {
+      "from": 556,
+      "to": 830,
+      "label": "계산 · 결과"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "layout",
+      "y": 180,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "layout",
+      "to": "page",
+      "y": 225,
+      "label": "metadata · JsonLd · TopNav",
+      "note": "layout 이 SEO 를 전담하고 page 는 UI 만 그린다"
+    },
+    {
+      "from": "page",
+      "to": "logger",
+      "y": 270,
+      "label": "pageName 기록",
+      "note": "이름 규칙은 plus_<도메인>_<화면>"
+    },
+    {
+      "from": "user",
+      "to": "page",
+      "y": 340,
+      "label": "값 입력",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "form",
+      "y": 385,
+      "label": "setters 로 반영",
+      "note": "handleSubmit·resolver 를 쓰지 않는다. watch/setValue/reset 만 쓴다"
+    },
+    {
+      "from": "form",
+      "to": "page",
+      "y": 430,
+      "label": "parsedInput · isInputValid",
+      "variant": "return"
+    },
+    {
+      "from": "user",
+      "to": "page",
+      "y": 480,
+      "label": "계산 버튼",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "hook",
+      "y": 525,
+      "label": "step 을 result-step 으로"
+    },
+    {
+      "from": "hook",
+      "to": "calc",
+      "y": 590,
+      "label": "parsedInput 전달",
+      "variant": "emphasis"
+    },
+    {
+      "from": "calc",
+      "to": "hook",
+      "y": 635,
+      "label": "결과",
+      "variant": "return",
+      "note": "React 와 무관한 순수 함수다. 요율·공식 근거는 JSDoc 에 있다"
+    },
+    {
+      "from": "hook",
+      "to": "page",
+      "y": 680,
+      "label": "result",
+      "variant": "emphasis",
+      "note": "step 이 result-step 일 때만 계산한다"
+    },
+    {
+      "from": "page",
+      "to": "user",
+      "y": 725,
+      "label": "결과 표시",
+      "variant": "emphasis"
+    },
+    {
+      "from": "hook",
+      "to": "dp",
+      "y": 770,
+      "label": "계산 로그"
+    },
+    {
+      "from": "user",
+      "to": "page",
+      "y": 808,
+      "label": "다시 계산"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "layout 과 page 가 나뉘어 있다",
+      "items": [
+        "layout.tsx(서버)가 buildServiceMetadata 와 buildWebApplicationLd, CommonTopNavigation 을 맡는다",
+        "page.tsx 는 계산기라면 전부 'use client' 다. 말미에 PageViewEventLogger 를 붙이고 이름은 plus_<도메인>_<화면> 규칙이다",
+        "tax-check 랜딩과 tax-content 는 서버 컴포넌트라 이 그림과 다르다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "계산은 React 밖에서",
+      "items": [
+        "폼 훅은 watch/setValue/reset 만 쓴다. handleSubmit 과 resolver 를 쓰지 않는 것이 이 앱의 관례다",
+        "step 이 result-step 일 때만 순수 함수를 불러 결과를 만든다. 입력 중에는 계산하지 않는다",
+        "계산 함수는 lib/utils/calc/ 에 React 와 무관하게 두고 요율·공식 근거를 JSDoc 에 적는다",
+        "훅의 반환 shape 은 7세트가 모두 같다 — { form, setters, parsedInput, validation, result, sections, actions }"
+      ]
+    }
+  ]
+}

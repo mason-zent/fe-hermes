@@ -1,0 +1,211 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "bznav care-web 화면 상태",
+    "subtitle": "대표 화면 app/(my-info)/my-book · 두 겹의 가드를 지나 장부가 뜬다",
+    "output": "docs/diagrams/bznav-care-web.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "entry",
+          "auth",
+          "gate",
+          "list",
+          "filter"
+        ],
+        "note": "인증 경계와 구독 상태 가드를 모두 지나야 장부가 뜬다."
+      },
+      {
+        "id": "branch",
+        "label": "갈라지는 곳",
+        "focus": [
+          "gate",
+          "home",
+          "list",
+          "empty"
+        ],
+        "note": "구독 상태가 맞지 않으면 홈으로 보낸다. 결과가 없으면 빈 목록 컴포넌트로 그린다."
+      },
+      {
+        "id": "filter",
+        "label": "필터",
+        "focus": [
+          "list",
+          "filter",
+          "drawer"
+        ],
+        "note": "월·사업자·거래 유형·공제 유형이 쿼리 변수라 바꾸면 다시 조회된다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    }
+  ],
+  "states": [
+    {
+      "id": "entry",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "/my-book",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "auth",
+      "type": "decision",
+      "label": "인증 경계",
+      "sublabel": "layout CareAuthGuard",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "returnUrl 저장 후 로그인"
+    },
+    {
+      "id": "gate",
+      "type": "decision",
+      "label": "구독 상태 가드",
+      "sublabel": "userStatus 확인",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "PENDING·CARE_USER 만"
+    },
+    {
+      "id": "list",
+      "type": "active",
+      "label": "장부 표시",
+      "sublabel": "Suspense 안쪽 Relay",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "filter",
+      "type": "success",
+      "label": "필터 · 월 변경",
+      "sublabel": "변수 변경 → 재조회",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "home",
+      "type": "neutral",
+      "label": "홈으로",
+      "sublabel": "replace",
+      "lane": "side",
+      "col": 0,
+      "tag": "그 외 상태면"
+    },
+    {
+      "id": "empty",
+      "type": "waiting",
+      "label": "빈 목록",
+      "sublabel": "EmptyList",
+      "lane": "side",
+      "col": 1
+    },
+    {
+      "id": "drawer",
+      "type": "waiting",
+      "label": "필터 drawer",
+      "sublabel": "공제 유형 선택",
+      "lane": "side",
+      "col": 2
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "entry",
+      "to": "auth",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "auth",
+      "to": "gate",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "gate",
+      "to": "list",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "list",
+      "to": "filter",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "gate",
+      "to": "home",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "list",
+      "to": "empty",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "filter",
+      "to": "drawer",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "문이 두 개다",
+      "items": [
+        "layout 의 CareAuthGuard 가 먼저다 — accessToken 이 없으면 현재 경로를 returnUrl 로 저장하고 로그인으로 보낸다",
+        "page.tsx 의 useEffect 가 구독 상태를 본다 — userStatus 가 PENDING 도 CARE_USER 도 아니면 홈으로 replace 한다",
+        "둘을 지나야 Suspense 안쪽에서 useLazyLoadQuery 가 돈다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "화면 안에서",
+      "items": [
+        "월·사업자·거래 유형·공제 유형이 쿼리 변수다. 바꾸면 그대로 다시 조회된다",
+        "공제 유형은 별도 drawer 에서 고른다",
+        "결과가 없으면 EmptyList 로 그린다 — 오류와는 다른 갈래다"
+      ]
+    }
+  ]
+}

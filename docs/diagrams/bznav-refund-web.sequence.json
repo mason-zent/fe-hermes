@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav refund-web 요청 흐름",
+    "subtitle": "대표 화면 pages/event/[...slug] · 어드민 콘텐츠가 서버에서 조립되는 순서",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-refund-web.sequence.html",
+    "views": [
+      {
+        "id": "main",
+        "label": "콘텐츠가 뜨기까지",
+        "focus": [
+          "user",
+          "page",
+          "api",
+          "be",
+          "content"
+        ],
+        "note": "경로를 확정하고 BE 에서 base·variant 를 받아 서버에서 조립한다."
+      },
+      {
+        "id": "ab",
+        "label": "A/B variant",
+        "focus": [
+          "page",
+          "cookie",
+          "api"
+        ],
+        "note": "variant 쿠키의 labId 를 실어 보내고, assigned 로 돌아오면 쿠키에 저장한다."
+      },
+      {
+        "id": "fallback",
+        "label": "실패했을 때",
+        "focus": [
+          "page",
+          "be",
+          "main"
+        ],
+        "note": "BE 장애면 메인 랜딩으로 돌리고, 정상 '없음' 이면 라우트에 따라 404 다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "[...slug]",
+      "sublabel": "gSSP"
+    },
+    {
+      "id": "resolve",
+      "type": "backend",
+      "label": "resolvePath",
+      "sublabel": "prefix + slug"
+    },
+    {
+      "id": "cookie",
+      "type": "database",
+      "label": "variant 쿠키",
+      "sublabel": "labId"
+    },
+    {
+      "id": "api",
+      "type": "messagebus",
+      "label": "fetchPage",
+      "sublabel": "content-page/api"
+    },
+    {
+      "id": "be",
+      "type": "cloud",
+      "label": "BE 게이트웨이",
+      "sublabel": "GraphQL"
+    },
+    {
+      "id": "seo",
+      "type": "backend",
+      "label": "seoHead",
+      "sublabel": "og · canonical"
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "ContentPage",
+      "sublabel": "base + variant"
+    },
+    {
+      "id": "main",
+      "type": "frontend",
+      "label": "MainLanding",
+      "sublabel": "fallback"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "경로 확정"
+    },
+    {
+      "from": 316,
+      "to": 560,
+      "label": "콘텐츠 조회"
+    },
+    {
+      "from": 576,
+      "to": 830,
+      "label": "렌더 · fallback"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "page",
+      "y": 180,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "resolve",
+      "y": 220,
+      "label": "prefix + slug",
+      "note": "null 이면 곧바로 404 다. 메인 라우트만 빈 문자열을 돌려준다"
+    },
+    {
+      "from": "resolve",
+      "to": "page",
+      "y": 260,
+      "label": "path",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "cookie",
+      "y": 330,
+      "label": "variant 쿠키 읽기",
+      "note": "cookies-next 6.x 의 getCookie 는 gSSP 에서 Promise 라 반드시 await 해야 한다"
+    },
+    {
+      "from": "page",
+      "to": "api",
+      "y": 375,
+      "label": "path · labId · preview",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "be",
+      "y": 420,
+      "label": "getRefundContentPage"
+    },
+    {
+      "from": "be",
+      "to": "api",
+      "y": 465,
+      "label": "result · base · variant",
+      "variant": "return"
+    },
+    {
+      "from": "api",
+      "to": "page",
+      "y": 510,
+      "label": "응답",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "cookie",
+      "y": 555,
+      "label": "assigned 면 쿠키 저장",
+      "variant": "dashed"
+    },
+    {
+      "from": "page",
+      "to": "seo",
+      "y": 605,
+      "label": "canonical · og 조립"
+    },
+    {
+      "from": "seo",
+      "to": "page",
+      "y": 650,
+      "label": "seoHead",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "content",
+      "y": 690,
+      "label": "base · variant",
+      "variant": "emphasis"
+    },
+    {
+      "from": "content",
+      "to": "user",
+      "y": 728,
+      "label": "콘텐츠 렌더",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "main",
+      "y": 768,
+      "label": "실패면 메인 랜딩",
+      "variant": "security",
+      "note": "BE 장애·5xx·네트워크면 모든 랜딩을 메인으로 돌린다. 정상 \"없음\" 응답은 event·landing 이면 404, 메인이면 fallback"
+    },
+    {
+      "from": "main",
+      "to": "user",
+      "y": 805,
+      "label": "메인 표시",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "서버에서 다 조립된다",
+      "items": [
+        "pages/event/[...slug].tsx · landing · home · 메인이 같은 createContentPageServerSideProps 를 쓴다. 다른 것은 resolveContentPath 의 prefix 뿐이다",
+        "resolveContentPath 가 null 을 주면 404 다. 메인 라우트만 빈 문자열을 돌려준다",
+        "variant 쿠키의 labId 를 실어 보내고, 응답의 variant.assigned 가 참이면 쿠키에 저장한다",
+        "canonical 과 OG 는 seoHead 로 서버에서 만들어 붙인다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "실패는 두 가지로 갈린다",
+      "items": [
+        "BE 장애·5xx·네트워크 오류면 예외를 잡아 모든 랜딩을 MainLanding 으로 돌린다(fallbackToMain)",
+        "정상 '없음' 응답(result:false)은 event·landing 이면 404, 메인 라우트면 메인 랜딩 fallback 이다",
+        "cookies-next 6.x 의 getCookie 는 gSSP 컨텍스트에서 Promise 를 돌려준다. await 를 빼먹으면 조용히 어긋난다"
+      ]
+    }
+  ]
+}

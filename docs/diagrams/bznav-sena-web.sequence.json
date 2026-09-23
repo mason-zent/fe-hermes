@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav sena-web 요청 흐름",
+    "subtitle": "대표 흐름 챗 질문 전송 · 진입 가드부터 SSE 스트림과 재연결까지",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-sena-web.sequence.html",
+    "views": [
+      {
+        "id": "guard",
+        "label": "보내기 전",
+        "focus": [
+          "user",
+          "content",
+          "submit",
+          "atoms"
+        ],
+        "note": "비제휴 + 비로그인 + 잔여 0 이면 여기서 막고 로그인을 요구한다."
+      },
+      {
+        "id": "stream",
+        "label": "스트림이 도는 동안",
+        "focus": [
+          "msg",
+          "api",
+          "sse",
+          "content"
+        ],
+        "note": "첫 프레임이 오면 loading 에서 streaming 으로 바뀌고 토큰이 누적된다."
+      },
+      {
+        "id": "recover",
+        "label": "끊겼을 때",
+        "focus": [
+          "msg",
+          "storage",
+          "api",
+          "sse"
+        ],
+        "note": "sessionStorage 에 남긴 보류 스트림으로 다시 붙는다. 복귀하면 loading 으로 되돌린다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "ChatContent",
+      "sublabel": "화면"
+    },
+    {
+      "id": "submit",
+      "type": "messagebus",
+      "label": "진입 가드",
+      "sublabel": "submitQuestion"
+    },
+    {
+      "id": "atoms",
+      "type": "database",
+      "label": "chat atoms",
+      "sublabel": "jotai"
+    },
+    {
+      "id": "msg",
+      "type": "messagebus",
+      "label": "스트림",
+      "sublabel": "useChatMessage"
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "sessionStore",
+      "sublabel": "보류 스트림"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "lib/api/chat",
+      "sublabel": "4갈래"
+    },
+    {
+      "id": "sse",
+      "type": "cloud",
+      "label": "SSE",
+      "sublabel": "ChatSseFrame"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "진입 가드"
+    },
+    {
+      "from": 316,
+      "to": 560,
+      "label": "스트림 시작"
+    },
+    {
+      "from": 576,
+      "to": 830,
+      "label": "수신 · 재연결"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "content",
+      "y": 180,
+      "label": "질문 입력",
+      "variant": "emphasis"
+    },
+    {
+      "from": "content",
+      "to": "submit",
+      "y": 225,
+      "label": "submitQuestion(question)"
+    },
+    {
+      "from": "submit",
+      "to": "atoms",
+      "y": 270,
+      "label": "잔여 · 로그인 확인",
+      "note": "비제휴이고 비로그인이며 dailyChatRemaining 이 0 이면 login-required 를 돌려주고 끝난다"
+    },
+    {
+      "from": "submit",
+      "to": "msg",
+      "y": 335,
+      "label": "sendMessage",
+      "variant": "emphasis",
+      "note": "이미 /chat 이면 이어서 보내고, 아니면 새 대화를 시작한다"
+    },
+    {
+      "from": "msg",
+      "to": "atoms",
+      "y": 380,
+      "label": "스트림 생성 · loading",
+      "note": "streamId 별 AbortController 를 모듈 스코프 Map 에 넣는다"
+    },
+    {
+      "from": "msg",
+      "to": "storage",
+      "y": 425,
+      "label": "보류 스트림 저장"
+    },
+    {
+      "from": "msg",
+      "to": "api",
+      "y": 470,
+      "label": "질문 전송",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "sse",
+      "y": 515,
+      "label": "스트림 요청"
+    },
+    {
+      "from": "sse",
+      "to": "msg",
+      "y": 600,
+      "label": "첫 프레임",
+      "variant": "return",
+      "note": "여기서 phase 가 streaming 으로 바뀐다"
+    },
+    {
+      "from": "sse",
+      "to": "content",
+      "y": 645,
+      "label": "토큰 누적",
+      "variant": "dashed"
+    },
+    {
+      "from": "sse",
+      "to": "msg",
+      "y": 690,
+      "label": "연결 끊김",
+      "variant": "security"
+    },
+    {
+      "from": "msg",
+      "to": "api",
+      "y": 735,
+      "label": "재연결",
+      "variant": "dashed",
+      "note": "phase 를 reconnecting 으로 바꾸고 다시 붙는다. 복귀 시에는 loading 으로 되돌린다"
+    },
+    {
+      "from": "sse",
+      "to": "content",
+      "y": 778,
+      "label": "완료",
+      "variant": "return"
+    },
+    {
+      "from": "msg",
+      "to": "storage",
+      "y": 808,
+      "label": "보류 목록 정리"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "보내기 전에 한 번 막는다",
+      "items": [
+        "useSubmitQuestion 이 비제휴이고 비로그인이며 dailyChatRemaining 이 0 이면 login-required 를 돌려준다",
+        "이미 /chat 경로면 이어서 보내고, 아니면 새 대화를 시작한 뒤 보낸다",
+        "스트림마다 streamId 를 만들고 AbortController 를 모듈 스코프 Map 에 넣는다 — atom 이 아니다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "끊겨도 이어 붙는다",
+      "items": [
+        "보류 스트림을 sessionStorage 에 적어 둔다. 화면을 떠났다 돌아와도 다시 붙을 수 있다",
+        "phase 는 loading → streaming → (끊기면) reconnecting 셋뿐이다",
+        "복귀해서 재연결할 때는 phase 를 loading 으로 되돌린 뒤 다시 받는다",
+        "app/chat/layout.tsx 와 ChatContent.tsx 의 리마운트 경계가 이 복구와 맞물린다"
+      ]
+    }
+  ]
+}

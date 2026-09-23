@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "bznav plus-web 화면 상태",
+    "subtitle": "대표 화면 app/calc/<경로> · step 은 input-step 과 result-step 둘뿐이다",
+    "output": "docs/diagrams/bznav-plus-web.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "enter",
+          "input",
+          "valid",
+          "result",
+          "sections"
+        ],
+        "note": "입력이 유효해야 계산 버튼이 살아나고, result-step 이 되어야 순수 함수가 돈다."
+      },
+      {
+        "id": "gate",
+        "label": "막히는 곳",
+        "focus": [
+          "input",
+          "valid",
+          "blocked"
+        ],
+        "note": "FIELD_LIMITS 로 잘린 값이 유효하지 않으면 버튼이 비활성이다."
+      },
+      {
+        "id": "again",
+        "label": "다시 할 때",
+        "focus": [
+          "result",
+          "reset"
+        ],
+        "note": "reset 은 step 을 input-step 으로 되돌리고 폼도 초기화한다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    }
+  ],
+  "states": [
+    {
+      "id": "enter",
+      "type": "start",
+      "label": "진입",
+      "sublabel": "app/calc/<경로>",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "input",
+      "type": "active",
+      "label": "입력",
+      "sublabel": "watch + setters",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "handleSubmit 을 쓰지 않는다"
+    },
+    {
+      "id": "valid",
+      "type": "decision",
+      "label": "계산 가능?",
+      "sublabel": "validation.isInputValid",
+      "lane": "main",
+      "col": 2,
+      "step": "03"
+    },
+    {
+      "id": "result",
+      "type": "success",
+      "label": "결과 표시",
+      "sublabel": "step: result-step",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "여기서만 계산한다"
+    },
+    {
+      "id": "sections",
+      "type": "active",
+      "label": "상세 펼치기",
+      "sublabel": "openSections",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "blocked",
+      "type": "waiting",
+      "label": "버튼 비활성",
+      "sublabel": "입력이 모자라면",
+      "lane": "side",
+      "col": 0
+    },
+    {
+      "id": "reset",
+      "type": "neutral",
+      "label": "다시 계산",
+      "sublabel": "step 을 input-step 으로",
+      "lane": "side",
+      "col": 1,
+      "tag": "폼도 초기화한다"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "enter",
+      "to": "input",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "input",
+      "to": "valid",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "valid",
+      "to": "result",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "result",
+      "to": "sections",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "valid",
+      "to": "blocked",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "result",
+      "to": "reset",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "step 은 둘뿐이다",
+      "items": [
+        "Step = 'input-step' | 'result-step'. 그 사이 상태가 없다",
+        "result 는 step 이 result-step 일 때만 계산한다. 입력하는 동안에는 계산하지 않는다",
+        "계산 버튼(calculate)이 step 을 바꾸고, reset 이 input-step 으로 되돌리면서 폼도 초기화한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "입력 쪽",
+      "items": [
+        "RHF 를 쓰지만 handleSubmit 과 resolver 를 쓰지 않는다. watch 와 setValue, 그리고 createFormSetter 로 만든 setters 만 쓴다",
+        "값은 FIELD_LIMITS 로 자르고 parseInteger 로 숫자로 바꿔 parsedInput 에 담는다",
+        "validation.isInputValid 가 거짓이면 계산 버튼이 비활성이다",
+        "결과가 나오면 useCalculatorDpLog 로 계산 로그를 남긴다"
+      ]
+    }
+  ]
+}

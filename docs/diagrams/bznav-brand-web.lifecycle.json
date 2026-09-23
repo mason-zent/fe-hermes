@@ -1,0 +1,208 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "bznav brand-web 화면 상태",
+    "subtitle": "대표 화면 app/terms/[...terms] · 빌드에서 만들어지고 DatoCMS 로 채워진다",
+    "output": "docs/diagrams/bznav-brand-web.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "build",
+          "enter",
+          "fetch",
+          "shown",
+          "version"
+        ],
+        "note": "빌드에서 경로를 만들고, 요청 때 DatoCMS 에서 약관과 버전을 받아 그린다."
+      },
+      {
+        "id": "miss",
+        "label": "없을 때",
+        "focus": [
+          "fetch",
+          "notfound"
+        ],
+        "note": "term 이 비면 notFound() 로 404 다. 요청 실패는 그보다 앞에서 throw 되어 다른 길로 간다."
+      },
+      {
+        "id": "stale",
+        "label": "바로 안 바뀔 때",
+        "focus": [
+          "version",
+          "stale"
+        ],
+        "note": "revalidate 가 3600 이라 DatoCMS 를 고쳐도 최대 1시간 지연된다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    }
+  ],
+  "states": [
+    {
+      "id": "build",
+      "type": "start",
+      "label": "정적 경로 생성",
+      "sublabel": "generateStaticParams",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "enter",
+      "type": "active",
+      "label": "요청",
+      "sublabel": "/terms/<경로>",
+      "lane": "main",
+      "col": 1,
+      "step": "02"
+    },
+    {
+      "id": "fetch",
+      "type": "decision",
+      "label": "DatoCMS 조회",
+      "sublabel": "getTermsDetail",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "실패는 throw 로 빠진다"
+    },
+    {
+      "id": "shown",
+      "type": "active",
+      "label": "약관 표시",
+      "sublabel": "TermContentSection",
+      "lane": "main",
+      "col": 3,
+      "step": "04"
+    },
+    {
+      "id": "version",
+      "type": "success",
+      "label": "버전 전환",
+      "sublabel": "versions 목록",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "notfound",
+      "type": "failure",
+      "label": "404",
+      "sublabel": "term 이 비면",
+      "lane": "side",
+      "col": 0,
+      "tag": "notFound()"
+    },
+    {
+      "id": "sidebar",
+      "type": "neutral",
+      "label": "다른 약관",
+      "sublabel": "서비스 · 개인정보",
+      "lane": "side",
+      "col": 1
+    },
+    {
+      "id": "stale",
+      "type": "waiting",
+      "label": "반영 지연",
+      "sublabel": "revalidate = 3600",
+      "lane": "side",
+      "col": 2,
+      "tag": "최대 1시간"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "build",
+      "to": "enter",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "enter",
+      "to": "fetch",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "fetch",
+      "to": "shown",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "shown",
+      "to": "version",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "fetch",
+      "to": "notfound",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "shown",
+      "to": "sidebar",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d3",
+      "from": "version",
+      "to": "stale",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "서버에서 끝난다",
+      "items": [
+        "generateStaticParams 가 getTermsPaths 로 약관 경로를 미리 만든다",
+        "page.tsx 는 서버 컴포넌트다. getTermsDetail 로 term 과 versions 를 받아 그대로 조립한다",
+        "클라이언트 코드는 섹션 컴포넌트 쪽에만 있다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "두 가지 실패는 다르다",
+      "items": [
+        "term 이 비면 notFound() 로 404 를 낸다",
+        "요청 자체가 실패하면(응답 ok 아님) requestDatoCms 가 본문을 throw 한다 — 404 가 아니다",
+        "revalidate = 3600 이라 데이터를 고쳐도 최대 1시간 뒤에 반영된다. 약관 변경은 코드가 아니라 DatoCMS 작업이다"
+      ]
+    }
+  ]
+}

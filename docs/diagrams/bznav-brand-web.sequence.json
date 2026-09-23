@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav brand-web 요청 흐름",
+    "subtitle": "대표 화면 app/terms/[...terms] · DatoCMS 하나로만 데이터가 온다",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-brand-web.sequence.html",
+    "views": [
+      {
+        "id": "main",
+        "label": "약관이 뜨기까지",
+        "focus": [
+          "user",
+          "page",
+          "detail",
+          "dato",
+          "cms",
+          "section"
+        ],
+        "note": "서버에서 DatoCMS 를 한 번 부르고 조립해 내려준다."
+      },
+      {
+        "id": "build",
+        "label": "빌드 시점",
+        "focus": [
+          "build",
+          "page"
+        ],
+        "note": "generateStaticParams 로 약관 경로를 미리 만들어 둔다."
+      },
+      {
+        "id": "miss",
+        "label": "없을 때",
+        "focus": [
+          "page",
+          "nf"
+        ],
+        "note": "term 이 비면 notFound() 로 404 를 낸다. 요청 실패는 그보다 앞에서 throw 된다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "build",
+      "type": "backend",
+      "label": "빌드",
+      "sublabel": "정적 경로 생성"
+    },
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "서버 컴포넌트"
+    },
+    {
+      "id": "detail",
+      "type": "backend",
+      "label": "getTerms",
+      "sublabel": "Detail · lib/utils"
+    },
+    {
+      "id": "dato",
+      "type": "messagebus",
+      "label": "requestDato",
+      "sublabel": "단일 경로"
+    },
+    {
+      "id": "cms",
+      "type": "cloud",
+      "label": "DatoCMS",
+      "sublabel": "graphql.datocms.com"
+    },
+    {
+      "id": "nf",
+      "type": "security",
+      "label": "notFound()",
+      "sublabel": "404"
+    },
+    {
+      "id": "section",
+      "type": "frontend",
+      "label": "TermContent",
+      "sublabel": "Section"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 290,
+      "label": "빌드 시점"
+    },
+    {
+      "from": 310,
+      "to": 570,
+      "label": "조회"
+    },
+    {
+      "from": 590,
+      "to": 830,
+      "label": "렌더"
+    }
+  ],
+  "messages": [
+    {
+      "from": "build",
+      "to": "page",
+      "y": 180,
+      "label": "경로 목록 생성",
+      "note": "getTermsPaths 로 약관 경로를 미리 만든다"
+    },
+    {
+      "from": "user",
+      "to": "page",
+      "y": 235,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "detail",
+      "y": 335,
+      "label": "params 로 조회",
+      "variant": "emphasis"
+    },
+    {
+      "from": "detail",
+      "to": "dato",
+      "y": 375,
+      "label": "쿼리 + 변수"
+    },
+    {
+      "from": "dato",
+      "to": "cms",
+      "y": 415,
+      "label": "POST graphql",
+      "note": "DATO_ACCESS_TOKEN 을 Authorization 헤더에 싣는다"
+    },
+    {
+      "from": "cms",
+      "to": "dato",
+      "y": 455,
+      "label": "응답",
+      "variant": "return"
+    },
+    {
+      "from": "dato",
+      "to": "detail",
+      "y": 495,
+      "label": "data",
+      "variant": "return",
+      "note": "응답이 ok 가 아니면 본문을 그대로 throw 한다"
+    },
+    {
+      "from": "detail",
+      "to": "page",
+      "y": 535,
+      "label": "term · versions",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "nf",
+      "y": 600,
+      "label": "term 이 없으면",
+      "variant": "security"
+    },
+    {
+      "from": "nf",
+      "to": "user",
+      "y": 640,
+      "label": "404",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "section",
+      "y": 700,
+      "label": "term · versions",
+      "variant": "emphasis"
+    },
+    {
+      "from": "section",
+      "to": "user",
+      "y": 740,
+      "label": "약관 렌더",
+      "variant": "emphasis"
+    },
+    {
+      "from": "user",
+      "to": "section",
+      "y": 778,
+      "label": "다른 버전 선택"
+    },
+    {
+      "from": "section",
+      "to": "user",
+      "y": 808,
+      "label": "버전 전환",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "데이터 경로가 하나뿐이다",
+      "items": [
+        "이 앱은 fetch·axios 를 직접 쓰지 않는다. lib/utils/dato-cms.ts 의 requestDatoCms 하나로만 나간다",
+        "쿼리는 lib/constants/graph-ql-query.ts 에 모여 있다",
+        "DATO_ACCESS_TOKEN 을 Authorization 헤더에 싣는다. 응답이 ok 가 아니면 본문을 그대로 throw 한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "404 와 반영 지연",
+      "items": [
+        "term 이 비면 notFound() 를 부른다. 요청 자체가 실패한 경우는 그보다 앞에서 throw 되어 다른 길이다",
+        "페이지에 revalidate = 3600 이 걸려 있어 DatoCMS 에서 약관을 고쳐도 최대 1시간 뒤에 반영된다",
+        "약관 변경은 코드 작업이 아니다 — 데이터를 고치는 일이다"
+      ]
+    }
+  ]
+}

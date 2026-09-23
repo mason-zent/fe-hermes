@@ -1,0 +1,344 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "bznav brand-web 작업 절차",
+    "subtitle": "새 페이지를 만들 때 — 서버 컴포넌트가 기본이고 sitemap 은 자동이다",
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-brand-web.workflow.html",
+    "views": [
+      {
+        "id": "main",
+        "label": "새 페이지 만들기",
+        "focus": [
+          "api",
+          "copy",
+          "files",
+          "schema",
+          "guard",
+          "verify"
+        ],
+        "note": "서버 page.tsx 를 만들고 layout 에서 LogoLayout 으로 감싼다. 클라이언트 코드는 _components 에만 둔다."
+      },
+      {
+        "id": "blocked",
+        "label": "SEO · 링크",
+        "focus": [
+          "api",
+          "regen",
+          "temp",
+          "authfn",
+          "menu"
+        ],
+        "note": "sitemap 은 manifest 에서 자동 수집된다. 제외는 EXCLUDE_ROUTES 로 한다."
+      },
+      {
+        "id": "column",
+        "label": "약관을 바꿀 때",
+        "focus": [
+          "files",
+          "colspan",
+          "filter",
+          "schema"
+        ],
+        "note": "약관은 코드가 아니라 DatoCMS 데이터다. 고쳐도 최대 1시간 지연된다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "prep",
+      "label": "확인"
+    },
+    {
+      "id": "make",
+      "label": "만들기"
+    },
+    {
+      "id": "stop",
+      "label": "막힘 · 보고",
+      "variant": "exception"
+    },
+    {
+      "id": "check",
+      "label": "검증"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "준비",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "p2",
+      "label": "생성",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p3",
+      "label": "마무리",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "g1",
+      "label": "서버에서 조립",
+      "lane": "make",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "g2",
+      "label": "여기서 멈추고 보고",
+      "lane": "stop",
+      "fromCol": 1,
+      "toCol": 4,
+      "variant": "security"
+    }
+  ],
+  "mainPath": [
+    "api",
+    "copy",
+    "files",
+    "schema",
+    "guard",
+    "verify"
+  ],
+  "nodes": [
+    {
+      "id": "api",
+      "lane": "prep",
+      "col": 0,
+      "type": "database",
+      "label": "라우트 정하기",
+      "sublabel": "app/<route>/",
+      "tag": "서버 컴포넌트가 기본",
+      "width": 140
+    },
+    {
+      "id": "copy",
+      "lane": "prep",
+      "col": 1,
+      "type": "frontend",
+      "label": "레이아웃",
+      "sublabel": "layout.tsx 에서 LogoLayout",
+      "width": 140,
+      "tag": "home·terms 선례"
+    },
+    {
+      "id": "files",
+      "lane": "make",
+      "col": 2,
+      "type": "frontend",
+      "label": "페이지 조립",
+      "sublabel": "섹션 컴포넌트를 붙인다",
+      "tag": "페이지는 조립만",
+      "width": 140
+    },
+    {
+      "id": "schema",
+      "lane": "make",
+      "col": 3,
+      "type": "backend",
+      "label": "인터랙션",
+      "sublabel": "_components/*.tsx",
+      "width": 140,
+      "tag": "'use client' 는 여기만"
+    },
+    {
+      "id": "guard",
+      "lane": "make",
+      "col": 4,
+      "type": "security",
+      "label": "메타데이터",
+      "sublabel": "page.tsx export const metadata",
+      "width": 140,
+      "tag": "brand-resource 선례"
+    },
+    {
+      "id": "verify",
+      "lane": "check",
+      "col": 5,
+      "type": "backend",
+      "label": "검증",
+      "sublabel": "bznav-web.sh brand-web",
+      "width": 140
+    },
+    {
+      "id": "regen",
+      "lane": "stop",
+      "col": 1,
+      "type": "messagebus",
+      "label": "sitemap",
+      "sublabel": "next-sitemap 이 자동 수집",
+      "tag": "따로 등록하지 않는다",
+      "width": 140
+    },
+    {
+      "id": "temp",
+      "lane": "stop",
+      "col": 2,
+      "type": "messagebus",
+      "label": "색인 제외",
+      "sublabel": "EXCLUDE_ROUTES",
+      "tag": "동적 세그먼트는 자동 제외",
+      "width": 140
+    },
+    {
+      "id": "authfn",
+      "lane": "stop",
+      "col": 4,
+      "type": "security",
+      "label": "외부 링크",
+      "sublabel": "SERVICE_LINKS + useWindowOpen",
+      "tag": "UTM 이 들어 있다",
+      "width": 140
+    },
+    {
+      "id": "menu",
+      "lane": "stop",
+      "col": 5,
+      "type": "security",
+      "label": "/ rewrite 충돌",
+      "sublabel": "겹치는 경로 확인",
+      "tag": "겹치면 조용히 어긋난다",
+      "width": 140
+    },
+    {
+      "id": "colspan",
+      "lane": "make",
+      "col": 2,
+      "type": "frontend",
+      "label": "약관은 코드가 아니다",
+      "sublabel": "DatoCMS 데이터",
+      "tag": "graph-ql-query.ts",
+      "width": 140,
+      "yOffset": 90
+    },
+    {
+      "id": "filter",
+      "lane": "make",
+      "col": 3,
+      "type": "frontend",
+      "label": "반영 지연",
+      "sublabel": "revalidate = 3600",
+      "tag": "즉시 바뀌지 않는다",
+      "width": 140,
+      "yOffset": 90
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "api",
+      "to": "copy",
+      "label": "정했으면",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "copy",
+      "to": "files",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e3",
+      "from": "files",
+      "to": "schema"
+    },
+    {
+      "id": "e4",
+      "from": "schema",
+      "to": "guard"
+    },
+    {
+      "id": "e5",
+      "from": "guard",
+      "to": "verify",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "api",
+      "to": "regen",
+      "label": "색인 대상이면",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "e7",
+      "from": "regen",
+      "to": "temp",
+      "label": "제외하려면",
+      "variant": "dashed"
+    },
+    {
+      "id": "e8",
+      "from": "temp",
+      "to": "files",
+      "variant": "dashed"
+    },
+    {
+      "id": "e9",
+      "from": "guard",
+      "to": "authfn",
+      "label": "외부로 보내면",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "e10",
+      "from": "verify",
+      "to": "menu",
+      "label": "끝나면",
+      "variant": "security"
+    },
+    {
+      "id": "e11",
+      "from": "colspan",
+      "to": "filter",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "새 페이지",
+      "items": [
+        "1) app/<route>/page.tsx 는 서버 컴포넌트다. layout.tsx 에서 LogoLayout 으로 감싼다(home·terms 선례)",
+        "2) 페이지는 조립만 하고 화면은 섹션 컴포넌트가 그린다",
+        "3) 클라이언트 인터랙션은 app/<route>/_components/*.tsx 에 'use client' 로 둔다",
+        "4) 메타는 page.tsx 의 export const metadata 다(brand-resource 선례)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "SEO 와 외부 링크",
+      "items": [
+        "sitemap 은 next-sitemap.config.mjs 가 manifest 에서 자동 수집한다 — 따로 등록하지 않는다",
+        "동적 세그먼트는 자동으로 빠지고, 색인에서 빼려면 EXCLUDE_ROUTES 에 넣는다",
+        "/ rewrite 와 경로가 겹치지 않는지 확인한다",
+        "외부 서비스로 보내는 링크는 lib/constants/common.ts 의 SERVICE_LINKS(UTM 포함) + useWindowOpen() 을 쓴다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이 앱에 없는 것",
+      "items": [
+        "데이터 경로는 DatoCMS GraphQL 하나뿐이다. fetch·axios 를 직접 쓰지 않는다",
+        "스토어 선례가 없다(Jotai Provider 1건뿐). 도입이 필요하면 헤르메스에 먼저 알린다",
+        "폼이 없다(RHF·yup 미설치). 일반 페이지에 PageViewEventLogger 를 붙이지 않는 것이 현 관행이다"
+      ]
+    }
+  ]
+}

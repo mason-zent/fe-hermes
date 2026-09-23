@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "bznav sena-web 화면 상태",
+    "subtitle": "대표 흐름 챗 스트림 · phase 는 loading · streaming · reconnecting 셋뿐이다",
+    "output": "docs/diagrams/bznav-sena-web.lifecycle.html",
+    "viewBox": [
+      1030,
+      630
+    ],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main",
+        "label": "기본 경로",
+        "focus": [
+          "ask",
+          "guard",
+          "loading",
+          "streaming",
+          "done"
+        ],
+        "note": "가드를 지나면 스트림을 만들고, 첫 프레임이 오면 streaming 으로 바뀐다."
+      },
+      {
+        "id": "guard",
+        "label": "막히는 곳",
+        "focus": [
+          "ask",
+          "guard"
+        ],
+        "note": "비제휴이고 비로그인이며 그날 잔여가 0 이면 login-required 로 끝난다."
+      },
+      {
+        "id": "recover",
+        "label": "끊겼을 때",
+        "focus": [
+          "loading",
+          "saved",
+          "streaming",
+          "reconnect"
+        ],
+        "note": "보류 스트림을 sessionStorage 에 남겨 두고, 끊기면 reconnecting 으로 바꿔 다시 붙는다."
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "기본 경로"
+    },
+    {
+      "id": "side",
+      "label": "갈라지는 곳"
+    }
+  ],
+  "states": [
+    {
+      "id": "ask",
+      "type": "start",
+      "label": "질문 입력",
+      "sublabel": "submitQuestion",
+      "lane": "main",
+      "col": 0,
+      "step": "01"
+    },
+    {
+      "id": "guard",
+      "type": "decision",
+      "label": "진입 가드",
+      "sublabel": "비제휴 · 비로그인 · 잔여 0",
+      "lane": "main",
+      "col": 1,
+      "step": "02",
+      "tag": "login-required"
+    },
+    {
+      "id": "loading",
+      "type": "active",
+      "label": "스트림 생성",
+      "sublabel": "phase: loading",
+      "lane": "main",
+      "col": 2,
+      "step": "03",
+      "tag": "AbortController 를 Map 에"
+    },
+    {
+      "id": "streaming",
+      "type": "active",
+      "label": "수신 중",
+      "sublabel": "phase: streaming",
+      "lane": "main",
+      "col": 3,
+      "step": "04",
+      "tag": "취소하면 abort"
+    },
+    {
+      "id": "done",
+      "type": "success",
+      "label": "완료",
+      "sublabel": "보류 목록 정리",
+      "lane": "main",
+      "col": 4,
+      "step": "05"
+    },
+    {
+      "id": "saved",
+      "type": "neutral",
+      "label": "보류 스트림 저장",
+      "sublabel": "sessionStorage",
+      "lane": "side",
+      "col": 0,
+      "tag": "복귀 재연결에 쓴다"
+    },
+    {
+      "id": "reconnect",
+      "type": "waiting",
+      "label": "재연결",
+      "sublabel": "phase: reconnecting",
+      "lane": "side",
+      "col": 1,
+      "tag": "복귀 시 loading 으로"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "r1",
+      "from": "ask",
+      "to": "guard",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
+      "from": "guard",
+      "to": "loading",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r3",
+      "from": "loading",
+      "to": "streaming",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "streaming",
+      "to": "done",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "d1",
+      "from": "loading",
+      "to": "saved",
+      "variant": "security",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    },
+    {
+      "id": "d2",
+      "from": "streaming",
+      "to": "reconnect",
+      "variant": "default",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "phase 는 셋뿐이다",
+      "items": [
+        "ChatStreamPhase = loading | streaming | reconnecting. 그 밖의 상태는 없다",
+        "스트림을 만들면 loading 이고, 첫 프레임이 오면 streaming 으로 바뀐다",
+        "streamId 별 AbortController 는 atom 이 아니라 모듈 스코프 Map 에 둔다 — 직렬화할 수 없는 값이라서다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "끊김과 복귀",
+      "items": [
+        "보류 스트림을 sessionStorage 에 적어 둔다. 연결이 끊기면 phase 를 reconnecting 으로 바꾸고 다시 붙는다",
+        "화면을 떠났다 돌아와 복구할 때는 phase 를 loading 으로 되돌린 뒤 다시 받는다",
+        "끝나면 보류 목록에서 지운다. app/chat/layout.tsx 와 ChatContent.tsx 의 리마운트 경계가 여기에 맞물린다"
+      ]
+    }
+  ]
+}

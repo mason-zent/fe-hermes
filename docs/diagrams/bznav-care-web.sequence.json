@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav care-web 요청 흐름",
+    "subtitle": "대표 화면 app/(my-info)/my-book · 인증 경계부터 Relay 조회까지",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-care-web.sequence.html",
+    "views": [
+      {
+        "id": "main",
+        "label": "장부가 뜨기까지",
+        "focus": [
+          "user",
+          "guard",
+          "page",
+          "inner",
+          "hook",
+          "be"
+        ],
+        "note": "인증 경계 → 구독 상태 가드 → Suspense 안쪽에서 Relay 조회 순이다."
+      },
+      {
+        "id": "auth",
+        "label": "인증 경계",
+        "focus": [
+          "user",
+          "guard",
+          "session"
+        ],
+        "note": "CareAuthGuard 가 토큰을 보고, 없으면 returnUrl 을 저장한 뒤 로그인으로 보낸다."
+      },
+      {
+        "id": "filter",
+        "label": "필터가 바뀔 때",
+        "focus": [
+          "user",
+          "inner",
+          "hook",
+          "be"
+        ],
+        "note": "월·사업자·거래 유형이 쿼리 변수라 바뀌면 다시 조회된다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "브라우저"
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "CareAuthGuard",
+      "sublabel": "layout"
+    },
+    {
+      "id": "session",
+      "type": "security",
+      "label": "user-session",
+      "sublabel": "accessToken"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "page.tsx",
+      "sublabel": "'use client'"
+    },
+    {
+      "id": "status",
+      "type": "messagebus",
+      "label": "구독 상태",
+      "sublabel": "useGetSubscription"
+    },
+    {
+      "id": "inner",
+      "type": "frontend",
+      "label": "AccountBook",
+      "sublabel": "Suspense 안쪽"
+    },
+    {
+      "id": "hook",
+      "type": "messagebus",
+      "label": "장부 훅",
+      "sublabel": "useGetAccountBook"
+    },
+    {
+      "id": "relay",
+      "type": "backend",
+      "label": "Relay",
+      "sublabel": "useLazyLoadQuery"
+    },
+    {
+      "id": "be",
+      "type": "cloud",
+      "label": "BE",
+      "sublabel": "ledgerQuery"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "인증 경계"
+    },
+    {
+      "from": 316,
+      "to": 560,
+      "label": "상태 가드"
+    },
+    {
+      "from": 576,
+      "to": 830,
+      "label": "조회 · 필터"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "guard",
+      "y": 180,
+      "label": "라우트 진입",
+      "variant": "emphasis"
+    },
+    {
+      "from": "guard",
+      "to": "session",
+      "y": 220,
+      "label": "accessToken 확인",
+      "variant": "security",
+      "note": "토큰이 없으면 현재 경로를 returnUrl 로 저장하고 로그인 화면으로 보낸다"
+    },
+    {
+      "from": "session",
+      "to": "guard",
+      "y": 260,
+      "label": "통과",
+      "variant": "return"
+    },
+    {
+      "from": "guard",
+      "to": "page",
+      "y": 325,
+      "label": "렌더",
+      "variant": "emphasis"
+    },
+    {
+      "from": "page",
+      "to": "status",
+      "y": 370,
+      "label": "구독 상태 조회"
+    },
+    {
+      "from": "status",
+      "to": "page",
+      "y": 415,
+      "label": "userStatus",
+      "variant": "return"
+    },
+    {
+      "from": "page",
+      "to": "inner",
+      "y": 460,
+      "label": "상태 가드 통과",
+      "variant": "emphasis",
+      "note": "PENDING 이나 CARE_USER 가 아니면 홈으로 replace 한다"
+    },
+    {
+      "from": "inner",
+      "to": "hook",
+      "y": 520,
+      "label": "월 · 사업자 · 필터"
+    },
+    {
+      "from": "hook",
+      "to": "relay",
+      "y": 565,
+      "label": "useLazyLoadQuery",
+      "variant": "emphasis",
+      "note": "Suspense 가 바깥에 있어야 한다. page 가 직접 부르면 안 된다"
+    },
+    {
+      "from": "relay",
+      "to": "be",
+      "y": 610,
+      "label": "ledgerQuery"
+    },
+    {
+      "from": "be",
+      "to": "inner",
+      "y": 655,
+      "label": "장부 데이터",
+      "variant": "return"
+    },
+    {
+      "from": "user",
+      "to": "inner",
+      "y": 715,
+      "label": "필터 · 월 변경",
+      "variant": "emphasis"
+    },
+    {
+      "from": "inner",
+      "to": "hook",
+      "y": 760,
+      "label": "변수 변경 → 재조회",
+      "variant": "dashed"
+    },
+    {
+      "from": "be",
+      "to": "inner",
+      "y": 805,
+      "label": "갱신된 장부",
+      "variant": "return"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "두 겹의 문",
+      "items": [
+        "먼저 layout 의 CareAuthGuard 가 accessToken 을 본다. 없으면 pathname(+query)을 returnUrl 로 저장하고 로그인 화면으로 보낸다",
+        "그다음 page.tsx('use client')가 구독 상태를 본다. PENDING 이나 CARE_USER 가 아니면 홈으로 replace 한다",
+        "둘을 통과해야 Suspense 안쪽 컴포넌트가 렌더된다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Relay 는 안쪽에서",
+      "items": [
+        "useLazyLoadQuery 는 Suspense 경계 안쪽 컴포넌트에서 부른다. page 가 직접 부르면 fallback 이 걸리지 않는다",
+        "월·사업자·거래 유형·공제 유형이 쿼리 변수다. 바꾸면 그대로 다시 조회된다",
+        "검증할 때 Relay 아티팩트가 없으면 타입 검사가 통째로 건너뛰어진다 — pnpm --filter care-web relay 를 먼저 돌린다"
+      ]
+    }
+  ]
+}

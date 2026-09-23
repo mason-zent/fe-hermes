@@ -19,14 +19,22 @@ open docs/diagrams/index.html
 | sequence | 한 화면이 뜰 때 무엇이 오가는가 | `<서비스>.sequence.json` |
 | lifecycle | 상태가 어디서 갈라지고 멈추는가 | `<서비스>.lifecycle.json` |
 
-| 서비스 | architecture | workflow | sequence | lifecycle |
-|---|:--:|:--:|:--:|:--:|
-| client-brics-refund | ✅ | ✅ | ✅ | ✅ |
-| client-brics-hub | ✅ | ✅ | ✅ | ✅ |
-| client-brics-care | ✅ | ✅ | ✅ | ✅ |
-| web-op | ✅ | ✅ | ✅ | ✅ |
-| bznav refund-web | ✅ | — | — | ✅ |
-| bznav care-web · brand-web · sena-web · plus-web | ✅ | — | — | — |
+| 서비스 | architecture | workflow | sequence | lifecycle | 대표 화면 |
+|---|:--:|:--:|:--:|:--:|---|
+| client-brics-refund | ✅ | ✅ | ✅ | ✅ | `app/refund-service/user/all` |
+| client-brics-hub | ✅ | ✅ | ✅ | ✅ | `app/messages/templates` |
+| client-brics-care | ✅ | ✅ | ✅ | ✅ | `app/promotion-page` (시퀀스는 `app/bmans`) |
+| web-op | ✅ | ✅ | ✅ | ✅ | `app/documents/[key]` |
+| bznav refund-web | ✅ | ✅ | ✅ | ✅ | `pages/event/[...slug]` · 개인 간편인증 |
+| bznav care-web | ✅ | ✅ | ✅ | ✅ | `app/(my-info)/my-book` |
+| bznav brand-web | ✅ | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
+| bznav sena-web | ✅ | ✅ | ✅ | ✅ | 챗 스트림 |
+| bznav plus-web | ✅ | ✅ | ✅ | ✅ | `app/calc/<경로>` 계산기 |
+
+⚠️ **workflow·sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
+다르게 동작한다(care 콘솔의 promotion 과 bmans, hub 의 messages 와 admin 이 그렇다). 일반화해서 옮기지 않는다.
+이 원칙은 교차 검증에서 오류가 무더기로 나온 뒤에 세운 것이다 — 처음에는 지식 문서 요약으로 일반화해 그렸다가
+20건 넘게 틀렸다.
 
 그 밖에 `hermes-flow.workflow.json` (헤르메스 Plan-First 작업 흐름) 이 있다.
 
