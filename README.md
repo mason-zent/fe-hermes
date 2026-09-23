@@ -31,7 +31,7 @@ claude
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
 - `/branch` — 작업 브랜치·워크트리를 만든다. 레포별 PR base(`hermes.config.json` 의 `prBase`)에서 분기하고, 기본이 워크트리라 메인 체크아웃을 건드리지 않는다(여러 작업 동시 진행 가능). 디스패치 전에 쓴다
 - `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`
-- `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide 그림`은 다이어그램 목록(`docs/diagrams/index.html`)을 브라우저로 연다 — 작업 흐름 + 담당 레포 9개 구조. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
+- `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide 그림`은 다이어그램 목록(`docs/diagrams/index.html`)을 브라우저로 연다 — 작업 흐름 + 담당 서비스 9개 × 4종(구조·작업 절차·요청 흐름·화면 상태). `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
 
 에이전트를 직접 부를 수도 있다: "hub-fe로 메시지 큐 화면 컬럼 하나 추가해줘" (계획서 규칙은 헤르메스가 판단).
 
