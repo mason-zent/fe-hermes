@@ -3,7 +3,7 @@
   "diagram_type": "sequence",
   "meta": {
     "title": "web-op 요청 흐름",
-    "subtitle": "화면이 데이터를 받을 때 무엇이 오가는가 · Route Handler 를 거치는 경로",
+    "subtitle": "대표 화면 app/documents/[key] · gateway 가 외부를 직접 부르는 길과 /api 를 거치는 길",
     "viewBox": [
       1040,
       900
@@ -15,15 +15,15 @@
     "views": [
       {
         "id": "read",
-        "label": "데이터를 받을 때",
+        "label": "요건을 받을 때",
         "focus": [
           "user",
           "page",
           "container",
-          "hook",
-          "gateway"
+          "gateway",
+          "ext"
         ],
-        "note": "page 는 껍데기, Container 가 상태와 오케스트레이션을 갖는다."
+        "note": "documents 의 조회·업로드 gateway 는 /api 를 거치지 않고 외부를 직접 부른다."
       },
       {
         "id": "api",
@@ -34,7 +34,7 @@
           "service",
           "ext"
         ],
-        "note": "route → Service → gateway 순서를 지킨다. route 가 repository 를 직접 부르지 않는다."
+        "note": "신규 권장은 route → Service → gateway 다. 기존에는 Service 없이 route 가 바로 부르는 것도 있다."
       },
       {
         "id": "error",
@@ -42,11 +42,10 @@
         "focus": [
           "service",
           "route",
-          "hook",
           "container",
           "toast"
         ],
-        "note": "CommonException 을 throw 하고 route 가 { message } 와 status 로 바꿔 돌려준다."
+        "note": "성공은 데이터, 실패는 message + status 다. 화면 쪽 처리는 오류 종류마다 다르다."
       }
     ]
   },
@@ -70,16 +69,10 @@
       "sublabel": "'use client'"
     },
     {
-      "id": "hook",
-      "type": "messagebus",
-      "label": "useXxx",
-      "sublabel": "도메인 훅"
-    },
-    {
       "id": "gateway",
       "type": "backend",
       "label": "Gateway",
-      "sublabel": "axios · B계통"
+      "sublabel": "axios"
     },
     {
       "id": "route",
@@ -109,16 +102,16 @@
   "segments": [
     {
       "from": 150,
-      "to": 300,
-      "label": "진입"
+      "to": 390,
+      "label": "요건 조회"
     },
     {
-      "from": 316,
-      "to": 600,
-      "label": "데이터 조회"
+      "from": 406,
+      "to": 700,
+      "label": "제출"
     },
     {
-      "from": 616,
+      "from": 716,
       "to": 830,
       "label": "결과 · 오류"
     }
@@ -134,113 +127,117 @@
     {
       "from": "page",
       "to": "container",
-      "y": 230,
+      "y": 225,
       "label": "서버 → 클라이언트",
       "note": "page 는 껍데기, 상태는 Container 가 갖는다"
     },
     {
       "from": "container",
-      "to": "hook",
-      "y": 290,
-      "label": "조회 요청",
-      "variant": "emphasis"
+      "to": "gateway",
+      "y": 270,
+      "label": "요건 조회",
+      "variant": "emphasis",
+      "note": "documents 파일 조회·업로드 gateway 는 /api 를 거치지 않고 외부를 직접 부른다"
     },
     {
-      "from": "hook",
+      "from": "gateway",
+      "to": "ext",
+      "y": 315,
+      "label": "외부 직접 호출"
+    },
+    {
+      "from": "ext",
+      "to": "container",
+      "y": 360,
+      "label": "요건 · 만료일",
+      "variant": "return",
+      "note": "만료거나 이미 제출이면 여기서 다른 화면으로 replace 한다"
+    },
+    {
+      "from": "container",
       "to": "gateway",
-      "y": 340,
-      "label": "gateway 호출",
-      "note": "신규는 B계통 axios 직접. BaseApiGateway 상속은 하지 않는다"
+      "y": 430,
+      "label": "제출",
+      "variant": "emphasis"
     },
     {
       "from": "gateway",
       "to": "route",
-      "y": 390,
-      "label": "/api/... 호출"
+      "y": 475,
+      "label": "/api 경유",
+      "note": "notion-guide 처럼 Service 없이 route 가 바로 외부를 부르는 것도 있다"
     },
     {
       "from": "route",
       "to": "service",
-      "y": 440,
+      "y": 520,
       "label": "Service 위임",
       "variant": "security",
-      "note": "route 에서 repository 를 직접 부르지 않는다"
+      "note": "신규는 route 에서 repository 를 직접 부르지 않는다"
     },
     {
       "from": "service",
       "to": "ext",
-      "y": 490,
+      "y": 565,
       "label": "외부 호출 · Redis"
     },
     {
       "from": "ext",
       "to": "service",
-      "y": 540,
+      "y": 610,
       "label": "응답",
       "variant": "return"
     },
     {
       "from": "service",
       "to": "route",
-      "y": 580,
-      "label": "결과 또는 CommonException",
-      "variant": "return"
+      "y": 655,
+      "label": "결과 또는 ZentException",
+      "variant": "return",
+      "note": "CommonException.ts 는 클래스가 아니라 BAD_REQUEST 같은 팩토리 모음이다"
     },
     {
       "from": "route",
-      "to": "hook",
-      "y": 630,
-      "label": "{ message } + status",
-      "variant": "return",
-      "note": "status 는 error.httpStatus ?? error.status"
-    },
-    {
-      "from": "hook",
       "to": "container",
-      "y": 680,
-      "label": "데이터 · 오류",
-      "variant": "emphasis"
+      "y": 720,
+      "label": "성공은 데이터 · 실패는 message",
+      "variant": "return",
+      "note": "오류 매핑은 route 마다 다르다. catch 가 없는 route 도 있다"
     },
     {
       "from": "container",
       "to": "toast",
-      "y": 730,
-      "label": "실패면 토스트",
+      "y": 770,
+      "label": "일시 오류면 토스트",
       "variant": "dashed",
-      "note": "layout.tsx 에 DialogProvider 와 Toaster 가 있어야 동작한다"
+      "note": "초기 조회 실패는 /not-found 로, 제출 파일 오류는 다이얼로그로 간다"
     },
     {
       "from": "container",
       "to": "user",
-      "y": 780,
+      "y": 810,
       "label": "화면 갱신",
       "variant": "emphasis"
-    },
-    {
-      "from": "user",
-      "to": "toast",
-      "y": 810,
-      "label": "확인"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "화면 쪽",
+      "title": "경로가 하나가 아니다",
       "items": [
-        "app/<domain>/<route>/page.tsx 는 서버 껍데기다. 상태·오케스트레이션은 src/containers 의 Container 가 갖는다",
-        "데이터는 src/hooks/<domain>/useXxx.ts 를 거쳐 gateway 로 간다. 신규는 B계통(axios 직접)이고 BaseApiGateway 상속은 하지 않는다",
-        "토스트·다이얼로그는 bznav-fe-ui 의 useToast·useDialog 다. 라우트 layout.tsx 에 DialogProvider 와 Toaster 가 있어야 뜬다"
+        "대표 화면은 app/documents/[key] 다. documents 의 파일 조회·업로드 gateway 는 /api 를 거치지 않고 외부 API 를 직접 부른다",
+        "app/api 를 거치는 경우에도 notion-guide 처럼 Service 없이 route 가 바로 외부를 부르는 것이 있다. 모든 요청을 한 경로로 설명하면 틀린다",
+        "신규 권장은 route → Service → repository/gateway 이고, route 에서 repository 를 직접 부르지 않는 것은 현행에서도 지켜진다"
       ]
     },
     {
       "dot": "amber",
-      "title": "서버 쪽 (app/api)",
+      "title": "오류 처리",
       "items": [
-        "route.ts 는 얇게 두고 로직은 src/backend/service/XxxService.ts 클래스에 둔다",
-        "외부 호출은 repository/external/XxxApiGateway.ts, 저장은 RedisRepository. route 에서 repository 를 직접 부르지 않는다",
-        "에러는 CommonException 팩토리를 throw 하고, route catch 에서 { message } 와 status: error.httpStatus ?? error.status 로 바꾼다",
-        "동적 세그먼트는 context.params 가 Promise 라 await 해야 한다 (Next 16)"
+        "CommonException.ts 는 클래스가 아니라 BAD_REQUEST 같은 ZentException 팩토리 모음이다",
+        "route 의 catch 에서 { message } + status: error.httpStatus ?? error.status 로 바꾸는 것이 권장 형태지만, catch 가 없는 route 도 있다",
+        "화면 쪽은 오류 종류마다 다르다 — 초기 조회 실패는 /not-found, 제출 파일 오류는 다이얼로그, 일시 오류는 토스트",
+        "sales 계열은 bznav-fe-ui 의 useToast 가 아니라 별도 useToastStore 를 쓴다"
       ]
     }
   ]

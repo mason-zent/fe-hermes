@@ -3,7 +3,7 @@
   "diagram_type": "lifecycle",
   "meta": {
     "title": "client-brics-hub 화면 상태",
-    "subtitle": "목록 화면이 진입부터 생성까지 지나는 상태와 갈라지는 곳",
+    "subtitle": "대표 화면 app/messages/templates · 가드가 먼저, 조회는 그다음",
     "output": "docs/diagrams/client-brics-hub.lifecycle.html",
     "viewBox": [
       1030,
@@ -16,82 +16,76 @@
         "id": "main",
         "label": "기본 경로",
         "focus": [
-          "enter",
-          "shell",
+          "entry",
+          "guard",
           "fetch",
           "shown",
-          "create"
+          "mutate"
         ],
-        "note": "가드 → 셸 → 조회 → 목록 → 생성. 헤더는 셸에서 붙는다."
+        "note": "서버 가드를 먼저 통과해야 조회가 시작된다. 권한 차단은 조회 뒤가 아니라 앞이다."
       },
       {
         "id": "branch",
         "label": "갈라지는 곳",
         "focus": [
           "fetch",
-          "perm",
-          "empty",
-          "confirmSave"
+          "fail",
+          "shown",
+          "empty"
         ],
-        "note": "권한과 빈 상태는 화면마다 따로 처리한다."
+        "note": "요청 오류와 빈 결과는 서로 다른 갈래다. 빈 목록이 권한 문제로 이어지지 않는다."
       },
       {
-        "id": "stop",
-        "label": "끝나는 곳",
+        "id": "change",
+        "label": "변경할 때",
         "focus": [
-          "perm",
-          "empty",
-          "unauth",
-          "fail401"
+          "shown",
+          "toggle",
+          "mutate"
         ],
-        "note": "권한이 없으면 redirect, 셸 밖에서 훅을 부르면 401 이다."
+        "note": "확인 모달은 활성/비활성 토글 경로에만 있다. 생성은 제출하면 바로 API 를 부른다."
       }
     ]
   },
   "lanes": [
     {
       "id": "main",
-      "label": "기본 경로"
+      "label": "조회 단계"
     },
     {
       "id": "side",
       "label": "갈라지는 곳"
-    },
-    {
-      "id": "terminal",
-      "label": "종료 상태"
     }
   ],
   "states": [
     {
-      "id": "enter",
+      "id": "entry",
       "type": "start",
       "label": "진입",
-      "sublabel": "layout auth()",
+      "sublabel": "/messages/templates",
       "lane": "main",
       "col": 0,
-      "step": "01",
-      "tag": "requiredFunction"
+      "step": "01"
     },
     {
-      "id": "shell",
-      "type": "active",
-      "label": "셸 통과",
-      "sublabel": "RootWrapper",
+      "id": "guard",
+      "type": "decision",
+      "label": "서버 가드",
+      "sublabel": "layout auth()",
       "lane": "main",
       "col": 1,
       "step": "02",
-      "tag": "여기서 헤더가 붙는다"
+      "tag": "로그인만 검사한다"
     },
     {
       "id": "fetch",
-      "type": "decision",
+      "type": "active",
       "label": "조회",
       "sublabel": "buildParams → 훅",
       "lane": "main",
       "col": 2,
       "step": "03",
-      "tag": "params 가 키"
+      "tag": "params 가 SWR 키"
     },
     {
       "id": "shown",
@@ -103,22 +97,22 @@
       "step": "04"
     },
     {
-      "id": "create",
+      "id": "mutate",
       "type": "success",
-      "label": "생성 · 수정",
-      "sublabel": "CreateModal → mutate",
+      "label": "생성 · 갱신",
+      "sublabel": "제출 → API → mutate",
       "lane": "main",
       "col": 4,
-      "step": "05"
+      "step": "05",
+      "tag": "확인 모달 없다"
     },
     {
-      "id": "perm",
-      "type": "waiting",
-      "label": "권한 확인",
-      "sublabel": "functions.includes",
+      "id": "fail",
+      "type": "failure",
+      "label": "조회 실패",
+      "sublabel": "페이지 레벨 분기",
       "lane": "side",
-      "col": 0,
-      "tag": "탭마다 다르다"
+      "col": 0
     },
     {
       "id": "empty",
@@ -127,47 +121,31 @@
       "sublabel": "colSpan 안내 행",
       "lane": "side",
       "col": 1,
-      "tag": "하드코딩이다"
+      "tag": "cols 도 하드코딩"
     },
     {
-      "id": "confirmSave",
+      "id": "toggle",
       "type": "waiting",
-      "label": "저장 확인",
-      "sublabel": "모달 닫기 전",
+      "label": "활성 토글 확인",
+      "sublabel": "확인 모달",
       "lane": "side",
-      "col": 2
-    },
-    {
-      "id": "unauth",
-      "type": "failure",
-      "label": "/unauthorized",
-      "sublabel": "redirect",
-      "lane": "terminal",
-      "col": 0
-    },
-    {
-      "id": "fail401",
-      "type": "failure",
-      "label": "401",
-      "sublabel": "셸 밖 호출",
-      "lane": "terminal",
-      "col": 1,
-      "tag": "헤더가 없다"
+      "col": 2,
+      "tag": "토글 경로에만 있다"
     }
   ],
   "transitions": [
     {
       "id": "r1",
-      "from": "enter",
-      "to": "shell",
+      "from": "entry",
+      "to": "guard",
       "variant": "default",
       "route": "straight"
     },
     {
       "id": "r2",
-      "from": "shell",
+      "from": "guard",
       "to": "fetch",
-      "variant": "default",
+      "variant": "emphasis",
       "route": "straight"
     },
     {
@@ -180,14 +158,14 @@
     {
       "id": "r4",
       "from": "shown",
-      "to": "create",
-      "variant": "emphasis",
+      "to": "mutate",
+      "variant": "default",
       "route": "straight"
     },
     {
       "id": "d1",
       "from": "fetch",
-      "to": "perm",
+      "to": "fail",
       "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
@@ -203,50 +181,32 @@
       "route": "straight"
     },
     {
-      "id": "d3",
-      "from": "create",
-      "to": "confirmSave",
+      "id": "u1",
+      "from": "toggle",
+      "to": "mutate",
       "variant": "default",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x1",
-      "from": "perm",
-      "to": "unauth",
-      "variant": "security",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x2",
-      "from": "empty",
-      "to": "fail401",
-      "variant": "security",
-      "fromSide": "bottom",
-      "toSide": "top",
+      "fromSide": "top",
+      "toSide": "bottom",
       "route": "straight"
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "기본 경로",
+      "title": "순서 — 가드가 먼저다",
       "items": [
-        "layout.tsx 가 서버에서 auth() 로 세션을 보고 requiredFunction 을 확인한다",
-        "HubRootWrapper 셸이 axios 기본 헤더에 Authorization 을 심는다",
-        "'use client' 페이지가 searchValues·page 를 소유하고 buildParams 로 훅을 한 번 부른다"
+        "messages/layout.tsx 가 서버에서 auth() 로 로그인만 검사한다. 세션이 없으면 /unauthorized 로 redirect 하고 조회는 시작도 하지 않는다",
+        "admin 탭은 각 page 에서 functions.includes('PAGE_ADMIN_*') 를 검사한다 — 화면마다 다르므로 이 그림을 그대로 옮기지 않는다",
+        "통과하면 'use client' 페이지가 buildParams 로 훅을 한 번 부른다. params 가 SWR 키다"
       ]
     },
     {
       "dot": "amber",
       "title": "갈라지는 곳",
       "items": [
-        "권한 코드는 탭마다 다르다. 새 코드를 만들지 않고 기존 코드를 재사용하는 것이 이 레포의 결정이다",
+        "요청 오류는 페이지 레벨에서 분기하고, 빈 결과는 colSpan 안내 행으로 그린다. 둘은 별개다",
         "빈 상태 행의 colSpan 과 SkeletonTableBody 의 cols 는 하드코딩이라 컬럼을 늘릴 때 같이 고쳐야 한다",
-        "셸 밖에서 클라이언트 훅을 부르면 Authorization 이 없어 401 이 난다"
+        "생성은 폼 제출 → 생성 API → mutate → 모달 닫기 순이고 확인 모달이 없다. 확인 모달은 활성/비활성 토글 경로에 있다"
       ]
     }
   ]

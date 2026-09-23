@@ -3,7 +3,7 @@
   "diagram_type": "lifecycle",
   "meta": {
     "title": "client-brics-care 화면 상태",
-    "subtitle": "목록 화면이 진입부터 저장까지 지나는 상태와 갈라지는 곳",
+    "subtitle": "대표 화면 app/promotion-page · 전체 조회 후 클라이언트 필터, 저장은 검증→확인 순",
     "output": "docs/diagrams/client-brics-care.lifecycle.html",
     "viewBox": [
       1030,
@@ -16,88 +16,80 @@
         "id": "main",
         "label": "기본 경로",
         "focus": [
-          "enter",
-          "filters",
+          "entry",
+          "guard",
           "fetch",
           "shown",
           "save"
         ],
-        "note": "가드 → 필터 → 조회 → 목록 → 저장. 가드는 layout 에 둔다."
+        "note": "목록 page 에서 가드를 통과하면 전체를 한 번 받고, 이후 거르기는 화면 안에서 한다."
       },
       {
         "id": "branch",
         "label": "갈라지는 곳",
         "focus": [
-          "fetch",
-          "refilter",
-          "empty",
-          "confirmSave"
+          "shown",
+          "local",
+          "open"
         ],
-        "note": "필터가 바뀌면 page 가 1 로 돌아간다. URL 에는 반영하지 않는다."
+        "note": "필터를 바꿔도 서버를 다시 부르지 않는다. 생성·수정 화면에는 가드가 없다."
       },
       {
         "id": "stop",
-        "label": "끝나는 곳",
+        "label": "저장이 막힐 때",
         "focus": [
-          "refilter",
-          "empty",
-          "failErr",
-          "failAuth"
+          "save",
+          "blocked"
         ],
-        "note": "권한 코드가 없으면 zent-auth 작업이 먼저다."
+        "note": "검증 → 확인 다이얼로그 → API 순이고, 응답 statusCode 가 400 이면 저장 불가 다이얼로그로 갈린다."
       }
     ]
   },
   "lanes": [
     {
       "id": "main",
-      "label": "기본 경로"
+      "label": "조회 · 저장 단계"
     },
     {
       "id": "side",
       "label": "갈라지는 곳"
-    },
-    {
-      "id": "terminal",
-      "label": "종료 상태"
     }
   ],
   "states": [
     {
-      "id": "enter",
+      "id": "entry",
       "type": "start",
       "label": "진입",
-      "sublabel": "layout 가드",
+      "sublabel": "/promotion-page",
       "lane": "main",
       "col": 0,
-      "step": "01",
-      "tag": "create·edit 까지"
+      "step": "01"
     },
     {
-      "id": "filters",
-      "type": "active",
-      "label": "필터 로드",
-      "sublabel": "zustand 스토어",
+      "id": "guard",
+      "type": "decision",
+      "label": "목록 가드",
+      "sublabel": "page.tsx auth()",
       "lane": "main",
       "col": 1,
       "step": "02",
-      "tag": "많을 때만 쓴다"
+      "tag": "create·edit 엔 없다"
     },
     {
       "id": "fetch",
-      "type": "decision",
-      "label": "조회",
-      "sublabel": "useFindXxx",
+      "type": "active",
+      "label": "전체 조회",
+      "sublabel": "useGetAllPromotion",
       "lane": "main",
       "col": 2,
       "step": "03",
-      "tag": "page 는 0-base"
+      "tag": "페이지네이션 아님"
     },
     {
       "id": "shown",
       "type": "active",
       "label": "목록 표시",
-      "sublabel": "Table + Pagination",
+      "sublabel": "클라이언트 필터·slice",
       "lane": "main",
       "col": 3,
       "step": "04"
@@ -105,69 +97,54 @@
     {
       "id": "save",
       "type": "success",
-      "label": "생성 · 수정",
-      "sublabel": "zod → toast → push",
+      "label": "저장",
+      "sublabel": "확인 → API → toast → push",
       "lane": "main",
       "col": 4,
-      "step": "05"
+      "step": "05",
+      "tag": "검증이 먼저다"
     },
     {
-      "id": "refilter",
-      "type": "waiting",
-      "label": "필터 변경",
-      "sublabel": "setter 호출",
+      "id": "local",
+      "type": "neutral",
+      "label": "필터 · 정렬",
+      "sublabel": "로컬에서 다시 계산",
       "lane": "side",
       "col": 0,
-      "tag": "page 를 1 로 리셋"
+      "tag": "서버 재조회 없다"
     },
     {
-      "id": "empty",
-      "type": "waiting",
-      "label": "빈 상태",
-      "sublabel": "조회 결과 없음",
+      "id": "open",
+      "type": "active",
+      "label": "생성 · 수정 진입",
+      "sublabel": "create · edit/[id]",
       "lane": "side",
-      "col": 1
+      "col": 1,
+      "tag": "여기엔 가드가 없다"
     },
     {
-      "id": "confirmSave",
-      "type": "waiting",
-      "label": "저장 확인",
-      "sublabel": "다이얼로그",
+      "id": "blocked",
+      "type": "failure",
+      "label": "저장 불가",
+      "sublabel": "응답 statusCode 400",
       "lane": "side",
       "col": 2,
-      "tag": "trigger() 먼저"
-    },
-    {
-      "id": "failErr",
-      "type": "failure",
-      "label": "조회 실패",
-      "sublabel": "오류 표시",
-      "lane": "terminal",
-      "col": 0
-    },
-    {
-      "id": "failAuth",
-      "type": "failure",
-      "label": "권한 부족",
-      "sublabel": "PAGE_CARE_* 없음",
-      "lane": "terminal",
-      "col": 1,
-      "tag": "/unauthorized"
+      "tag": "전용 다이얼로그"
     }
   ],
   "transitions": [
     {
       "id": "r1",
-      "from": "enter",
-      "to": "filters",
+      "from": "entry",
+      "to": "guard",
       "variant": "default",
       "route": "straight"
     },
     {
       "id": "r2",
-      "from": "filters",
+      "from": "guard",
       "to": "fetch",
-      "variant": "default",
+      "variant": "emphasis",
       "route": "straight"
     },
     {
@@ -181,14 +158,14 @@
       "id": "r4",
       "from": "shown",
       "to": "save",
-      "variant": "emphasis",
+      "variant": "default",
       "route": "straight"
     },
     {
       "id": "d1",
       "from": "fetch",
-      "to": "refilter",
-      "variant": "security",
+      "to": "local",
+      "variant": "default",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
@@ -196,8 +173,8 @@
     {
       "id": "d2",
       "from": "shown",
-      "to": "empty",
-      "variant": "default",
+      "to": "open",
+      "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
@@ -205,25 +182,7 @@
     {
       "id": "d3",
       "from": "save",
-      "to": "confirmSave",
-      "variant": "default",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x1",
-      "from": "refilter",
-      "to": "failErr",
-      "variant": "security",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x2",
-      "from": "empty",
-      "to": "failAuth",
+      "to": "blocked",
       "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
@@ -233,20 +192,21 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "기본 경로",
+      "title": "이 화면은 서버 페이지네이션이 아니다",
       "items": [
-        "가드는 app/<domain>/layout.tsx 에 둔다. page 에 두면 create·edit 가 비어 있는 채로 남는다",
-        "목록은 useFindXxx({ page: page - 1, take: limit }) 로 부른다. 화면은 1-base, API 는 0-base 다",
-        "저장은 zod 검증 → 확인 다이얼로그 → toast → router.push 순이다"
+        "useGetAllPromotion 으로 전체를 한 번 받고 필터·정렬·slice 를 화면에서 한다. 필터를 바꿔도 서버를 다시 부르지 않는다",
+        "서버 페이지네이션(page-1·take)과 setter 의 page 초기화가 필요하면 원본은 bmans 다",
+        "저장 버튼은 form.trigger() 로 검증부터 하고, 통과해야 확인 다이얼로그를 연다. 확인하면 mutation.trigger → toast → router.push"
       ]
     },
     {
       "dot": "amber",
-      "title": "갈라지는 곳",
+      "title": "주의",
       "items": [
-        "필터 스토어의 setter 는 값이 같으면 아무것도 하지 않고, 다르면 page 를 1 로 되돌린다",
-        "텍스트 입력은 useDebounce 를 거치고 URL 에는 반영하지 않는다",
-        "AuthFunction enum 에 코드가 없으면 이 레포에서 만들 수 없다 → zent-auth(packages-fe) 선행"
+        "가드는 목록 page 에만 있다. create·edit 는 URL 로 바로 열린다 — 새 화면은 app/<domain>/layout.tsx 에 둬야 덮인다",
+        "저장 실패는 둘로 갈린다. 응답 statusCode 가 400 이면 저장 불가 전용 다이얼로그, 그 외는 오류 toast",
+        "qa 는 권한을 통과해도 prd 에서는 사용 불가 안내로 끝나는 분기가 따로 있다",
+        "/unauthorized 는 조회 전 서버 가드의 결과다. 빈 목록과는 관계가 없다"
       ]
     }
   ]

@@ -14,7 +14,7 @@
    - 로그인 직후 진입 후보면 `app/page.tsx`의 `HUB_ROUTES`에 `{ href, requiredFunction }`
    - `README.md` "담당 화면" 표에 한 줄
 4. 사이드바 노출은 코드가 아니다 → `/brics-menus`에서 메뉴 행 추가(`svcCl=HUB`, `pth=/foo/<tab>`, `roleIds`, `icon`). 보고에 "메뉴 등록 필요"로 적는다
-5. 검증: `scripts/verify/client-brics-hub.sh` (test → lint:check → typecheck). 필요 시 `pnpm dev`(13003)로 확인
+5. 검증: `scripts/verify/client-brics-hub.sh` (**lint:check → typecheck → test** 순. `__generated__`가 없으면 typecheck는 건너뛴다). 필요 시 `pnpm dev`(13003)로 확인
 
 ## B. admin 탭 추가 (`/admin/bar`) — 선례 `app/admin/@tabs/access-requests/**`
 1. `app/admin/_tabs.ts`의 `ADMIN_TABS`에 `{ href: '/admin/bar', label, requiredFunction: 'PAGE_ADMIN_XXX' }` 추가(기존 순서 유지). **새 권한 코드를 만들지 말고 기존 코드 재사용**이 레포 결정

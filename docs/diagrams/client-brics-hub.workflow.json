@@ -161,7 +161,8 @@
       "type": "security",
       "label": "권한 가드",
       "sublabel": "layout auth() + 탭",
-      "width": 140
+      "width": 140,
+      "tag": "복사 원본은 로그인만 검사"
     },
     {
       "id": "verify",
@@ -170,7 +171,7 @@
       "type": "backend",
       "label": "검증",
       "sublabel": "verify 스크립트",
-      "tag": "test + lint + tsc",
+      "tag": "lint → typecheck → test",
       "width": 140
     },
     {
@@ -315,9 +316,9 @@
       "title": "A. 새 도메인 화면",
       "items": [
         "1) 서버에 API 가 있으면 pnpm genapi:local 로 생성물을 갱신한다 (hub 서버 + .env.local 필요)",
-        "2) app/messages/** 를 복사한다 — _tabs.ts(FOO_TITLE·DEFAULT_TAB·TABS·REQUIRED_FUNCTION) + layout.tsx(auth 가드·Heading·탭바) + page.tsx(redirect)",
+        "2) app/messages/** 를 복사한다 — _tabs.ts(FOO_TITLE·DEFAULT_TAB·TABS·REQUIRED_FUNCTION) + layout.tsx(가드·Heading·탭바) + page.tsx(redirect). ⚠️ 복사 원본 messages/layout.tsx 는 로그인만 검사한다 — REQUIRED_FUNCTION 값을 채우는 것만으로 권한 검사가 생기지 않는다. functions.includes 검사를 직접 넣어야 한다",
         "3) 탭별 page.tsx 와 _components(SearchForm·Table·CreateModal·CreateForm), fooFormSchema.ts, fooSearchValues.ts, _helpers/*.ts 를 만든다. spec 파일을 같이 만든다",
-        "4) 검증 scripts/verify/client-brics-hub.sh — test → lint:check → typecheck 순이다"
+        "4) 검증 scripts/verify/client-brics-hub.sh — lint:check → typecheck → test 순이다. __generated__ 가 없으면 typecheck 를 건너뛴다"
       ]
     },
     {
@@ -336,7 +337,7 @@
         "새 권한 코드를 만들지 않는 것이 이 레포의 결정이다. 기존 코드를 재사용하고, 정말 필요하면 보고한다",
         "사이드바 노출은 코드가 아니라 hub 의 /brics-menus 메뉴 행(svcCl=HUB, pth, roleIds, icon)이다 → 보고에 '메뉴 등록 필요'",
         "Orval 에 훅이 없으면 lib/fooSwr.ts 를 §10 틀로 임시 작성하고 교체 절차를 주석에 남긴 뒤 보고한다",
-        "클라이언트 훅은 HubRootWrapper 셸 안에서만 Authorization 헤더가 붙는다. 셸 밖에서 부르면 401"
+        "Authorization 은 HubRootWrapper 가 공유 AXIOS_INSTANCE.defaults 에 심는다(세션이 있고 기존 헤더가 비어 있을 때 1회). 한 번 심은 뒤에는 셸 밖 호출도 같은 헤더를 쓴다 — 위험한 것은 셸이 헤더를 심기 전에 보호 API 를 부르는 경우다"
       ]
     }
   ]

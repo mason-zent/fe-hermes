@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "lifecycle",
   "meta": {
-    "title": "비즈넵 환급 웹 — 홈택스 인증 라이프사이클",
-    "subtitle": "apps/refund-web · 인증 수단 선택부터 홈택스 연동 완료까지의 상태 전이",
+    "title": "비즈넵 환급 웹 — 홈택스 간편인증 라이프사이클",
+    "subtitle": "apps/refund-web · 개인(indis) 간편인증 기준. 법인·공동인증서는 카드 참고",
     "output": "docs/diagrams/bznav-refund-web.lifecycle.html",
     "viewBox": [
       1030,
@@ -13,38 +13,38 @@
     "quality_profile": "showcase",
     "views": [
       {
-        "id": "main-path",
-        "label": "간편인증 정상 경로",
+        "id": "auto",
+        "label": "자동 확정 경로",
         "focus": [
+          "entry",
           "select",
           "input",
-          "poll",
-          "confirm",
-          "linked"
+          "auto",
+          "token"
         ],
-        "note": "선택 → 요청 → 폴링 → 토큰 확정 → 연동 완료. 대부분의 사용자가 지나는 길이다."
+        "note": "카카오 + from 이 home·decision·결정확인 알림톡이면 confirm-auto 화면으로 가고 폴링은 그 화면 안에서 돈다."
       },
       {
-        "id": "alt-methods",
-        "label": "대체 인증 수단",
+        "id": "manual",
+        "label": "수동 확정 경로",
         "focus": [
-          "select",
-          "idauth",
-          "cert",
-          "confirm",
-          "linked"
+          "input",
+          "manual",
+          "token"
         ],
-        "note": "ID 로그인과 공동인증서는 폴링을 거치지 않고 각각 토큰 확정·연동 단계로 합류한다."
+        "note": "네이버 등 자동 대상이 아니면 confirm 화면에서 [인증완료] 버튼을 누른다. 폴링하지 않는다."
       },
       {
         "id": "stuck",
-        "label": "대기 · 종료",
+        "label": "멈추고 빠져나가는 곳",
         "focus": [
-          "poll",
-          "blocked",
-          "failed"
+          "input",
+          "queue",
+          "expired",
+          "home",
+          "again"
         ],
-        "note": "점검 대기열은 종료가 아니라 대기다. 대기열이 풀리지 않거나 폴링이 만료되면 인증 실패로 끝난다."
+        "note": "점검 대기열은 입력 화면 진입 시 갈라지고, 인증 만료는 안내 뒤 입력으로 돌아간다. 둘 다 인증 실패가 아니다."
       }
     ]
   },
@@ -54,235 +54,202 @@
       "label": "간편인증 단계"
     },
     {
-      "id": "alt",
-      "label": "대체 인증 수단"
-    },
-    {
-      "id": "queue",
-      "label": "홈택스 점검 대기"
+      "id": "side",
+      "label": "갈라지는 곳"
     },
     {
       "id": "terminal",
-      "label": "종료 상태"
+      "label": "빠져나가는 곳"
     }
   ],
   "states": [
     {
-      "id": "select",
+      "id": "entry",
       "type": "start",
-      "label": "수단 선택",
-      "sublabel": "select-method",
+      "label": "진입",
+      "sublabel": "AuthGuard · ?from=",
       "lane": "main",
       "col": 0,
       "step": "01",
-      "tag": "진입"
+      "tag": "FROM_TYPE_CONFIG 로 갈린다"
     },
     {
-      "id": "input",
+      "id": "select",
       "type": "active",
-      "label": "간편인증 요청",
-      "sublabel": "simple-auth/input",
+      "label": "수단 선택",
+      "sublabel": "select-method",
       "lane": "main",
       "col": 1,
       "step": "02",
-      "tag": "요청"
+      "tag": "법인은 ID·공동인증서 화면"
     },
     {
-      "id": "poll",
+      "id": "input",
       "type": "decision",
-      "label": "상태 폴링",
-      "sublabel": "PollingToken",
+      "label": "간편인증 입력",
+      "sublabel": "simple-auth/input",
       "lane": "main",
       "col": 2,
       "step": "03",
-      "tag": "대기"
+      "tag": "여기서 자동 대상인지 판별"
     },
     {
-      "id": "confirm",
+      "id": "auto",
       "type": "active",
-      "label": "토큰 확정",
-      "sublabel": "confirm · confirm-auto",
+      "label": "자동 확정",
+      "sublabel": "confirm-auto",
       "lane": "main",
       "col": 3,
       "step": "04",
-      "tag": "확정"
+      "tag": "이 화면 안에서 상태 폴링"
     },
     {
-      "id": "linked",
+      "id": "token",
       "type": "success",
-      "label": "홈택스 연동",
-      "sublabel": "환급 조회 진입",
+      "label": "refundToken 저장",
+      "sublabel": "조회 흐름 진입",
       "lane": "main",
       "col": 4,
-      "step": "05",
-      "tag": "완료"
+      "step": "05"
     },
     {
-      "id": "blocked",
+      "id": "queue",
       "type": "waiting",
       "label": "점검 대기열",
-      "sublabel": "hometaxBlockSettingsAtom",
-      "lane": "queue",
+      "sublabel": "queueScreenStage",
+      "lane": "side",
       "col": 0,
-      "tag": "차단"
+      "tag": "BEFORE_AUTH 면 입력에서 replace"
     },
     {
-      "id": "idauth",
-      "type": "active",
-      "label": "ID 로그인",
-      "sublabel": "홈택스 아이디",
-      "lane": "alt",
+      "id": "expired",
+      "type": "waiting",
+      "label": "인증 만료 · 실패",
+      "sublabel": "안내 다이얼로그",
+      "lane": "side",
       "col": 1,
-      "tag": "대체"
+      "tag": "인증 다시 받기"
     },
     {
-      "id": "cert",
+      "id": "manual",
       "type": "active",
-      "label": "공동인증서",
-      "sublabel": "install → select",
-      "lane": "alt",
+      "label": "수동 확정",
+      "sublabel": "confirm · [인증완료]",
+      "lane": "side",
       "col": 2,
-      "tag": "axios"
+      "tag": "카카오 자동 대상이 아닐 때"
     },
     {
-      "id": "failed",
-      "type": "failure",
-      "label": "인증 실패",
-      "sublabel": "error.ts 매핑 · 폴링 만료",
+      "id": "home",
+      "type": "neutral",
+      "label": "홈으로",
+      "sublabel": "알림 신청 후 확인",
       "lane": "terminal",
-      "col": 0,
-      "tag": "종료"
+      "col": 0
+    },
+    {
+      "id": "again",
+      "type": "neutral",
+      "label": "입력으로 복귀",
+      "sublabel": "재인증",
+      "lane": "terminal",
+      "col": 1
     }
   ],
   "transitions": [
     {
-      "id": "t1",
+      "id": "r1",
+      "from": "entry",
+      "to": "select",
+      "variant": "default",
+      "route": "straight"
+    },
+    {
+      "id": "r2",
       "from": "select",
       "to": "input",
       "variant": "default",
       "route": "straight"
     },
     {
-      "id": "t2",
+      "id": "r3",
       "from": "input",
-      "to": "poll",
-      "variant": "default",
-      "route": "straight"
-    },
-    {
-      "id": "t3",
-      "from": "poll",
-      "to": "confirm",
+      "to": "auto",
       "variant": "emphasis",
       "route": "straight"
     },
     {
-      "id": "t4",
-      "from": "confirm",
-      "to": "linked",
+      "id": "r4",
+      "from": "auto",
+      "to": "token",
       "variant": "emphasis",
       "route": "straight"
     },
     {
-      "id": "t5",
-      "from": "poll",
-      "to": "blocked",
+      "id": "d1",
+      "from": "input",
+      "to": "queue",
       "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
     },
     {
-      "id": "t6",
-      "from": "blocked",
-      "to": "failed",
+      "id": "d2",
+      "from": "auto",
+      "to": "expired",
       "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
     },
     {
-      "id": "t7",
-      "from": "idauth",
-      "to": "confirm",
+      "id": "u1",
+      "from": "manual",
+      "to": "token",
       "variant": "default",
       "fromSide": "top",
       "toSide": "bottom",
       "route": "straight"
     },
     {
-      "id": "t8",
-      "from": "cert",
-      "to": "linked",
+      "id": "x1",
+      "from": "queue",
+      "to": "home",
       "variant": "default",
-      "fromSide": "top",
-      "toSide": "bottom",
+      "fromSide": "bottom",
+      "toSide": "top",
       "route": "straight"
     },
     {
-      "id": "t9",
-      "from": "select",
-      "to": "idauth",
+      "id": "x2",
+      "from": "expired",
+      "to": "again",
       "variant": "default",
-      "fromSide": "top",
-      "toSide": "bottom",
-      "via": [
-        [
-          94,
-          54
-        ],
-        [
-          830,
-          54
-        ],
-        [
-          830,
-          392
-        ],
-        [
-          556,
-          392
-        ]
-      ]
-    },
-    {
-      "id": "t10",
-      "from": "select",
-      "to": "cert",
-      "variant": "default",
-      "fromSide": "top",
-      "toSide": "right",
-      "via": [
-        [
-          94,
-          76
-        ],
-        [
-          800,
-          76
-        ],
-        [
-          800,
-          307
-        ]
-      ]
+      "fromSide": "bottom",
+      "toSide": "top",
+      "route": "straight"
     }
   ],
   "cards": [
     {
       "dot": "emerald",
-      "title": "간편인증이 기본 경로",
+      "title": "자동이냐 수동이냐가 갈리는 조건",
       "items": [
-        "수단 선택 → 요청 → 폴링 → 토큰 확정 → 연동 완료 5단계",
-        "자동 확정(confirm-auto)은 simpleAuthAuto*Atom 으로 상태를 분리해 둔다"
+        "isAutoPollingTarget = certType 이 Kakao 이고 from 이 home · decision · (alimtalk 이면서 bizMessageType 이 checkDecision) 일 때만 참이다",
+        "참이면 requestSimpleAuthPollingToken → confirm-auto 화면으로 replace 하고, 상태 폴링은 그 화면 안에서 돈다",
+        "거짓이면 requestSimpleAuthToken → confirm 화면에서 [인증완료] 버튼을 누른다. 폴링이 없다",
+        "새로고침 후 [인증 다시 받기]를 위해 simpleAuthAuto* atom 에 인증 정보를 따로 남긴다"
       ]
     },
     {
-      "dot": "rose",
-      "title": "갈라지는 곳과 멈추는 곳",
+      "dot": "amber",
+      "title": "이 그림에 없는 갈래",
       "items": [
-        "ID 로그인·공동인증서는 폴링 없이 각각 확정·연동 단계로 합류한다",
-        "점검 대기열은 종료가 아니라 대기다. 풀리지 않으면 인증 실패로 끝난다"
+        "법인(corps)은 select-method 에서 아예 다른 화면(SelectHometaxIdOrJointCert)으로 간다 — ID 로그인 또는 공동인증서",
+        "공동인증서는 Windows 에서만 진행되고 그 외 OS 는 안내 다이얼로그로 막힌다. 로컬 인증서 프로그램 통신만 axios 이고 계정 확인·로그인은 Relay mutation 이다",
+        "ID 로그인은 폴링하지 않고 checkHometaxAccount 성공 시 refundToken 을 저장해 조회 흐름으로 간다 — 간편인증 confirm 에 합류하지 않는다",
+        "대기열은 알림 신청을 받고 확인하면 홈으로 보낸다. 대기가 길어져도 인증 실패로 바뀌지 않는다"
       ]
     }
   ]

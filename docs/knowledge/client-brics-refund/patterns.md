@@ -24,7 +24,7 @@
 - `user/all/_components/SearchBar.tsx`, `refund-overview/[refundType]/_components/{SearchBar,Containers}.tsx`
 - 쓰기 `const params = new URLSearchParams(); params.set(k, v); router.push(`${pathname}?${params}`)` / 읽기 `Number(searchParams.get('page')) || 1`, `searchParams.get('x') ?? undefined` → 그대로 훅 params에
 - 근거: `useSearchParams` 30파일, `useRouter` 45파일. 전역 스토어 0건
-- ⚠️ prd에서는 검색 조건 없으면 목록 호출을 막는 화면 2곳(`user/all`, `refund-overview`): `isProd ? !hasSearchParams : false`
+- ⚠️ prd에서 검색 조건이 없으면 **테이블 대신 안내 문구를 그리는** 화면 2곳(`user/all`, `refund-overview`): `shouldShowSearchNotice = isProd ? !hasSearchParams : false`. **호출을 막는 것이 아니다** — 목록 훅은 그대로 돈다(`enabled`는 unmask·환급 종류만 검사). 필터 키를 추가하면 `hasSearchParams` 조건에도 넣어야 안내 문구가 맞게 뜬다
 
 ## P4. 모달 — `useDialog().showDialog`가 1순위
 - `app/_components/DialogProvider.tsx` · 사용 예 `partner/discount/_components/EditForm.tsx`

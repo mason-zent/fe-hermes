@@ -3,7 +3,7 @@
   "diagram_type": "sequence",
   "meta": {
     "title": "client-brics-hub 요청 흐름",
-    "subtitle": "목록 화면이 그려질 때 무엇이 오가는가 · 헤더 주입 셸과 검색 재조회",
+    "subtitle": "대표 화면 app/messages/templates 기준 · 가드·헤더 주입·검색 재조회",
     "viewBox": [
       1040,
       900
@@ -23,7 +23,7 @@
           "axios",
           "api"
         ],
-        "note": "페이지가 상태를 소유하고 buildParams 로 훅을 한 번 부른다."
+        "note": "templates 페이지가 상태를 소유하고 buildParams 로 훅을 한 번 부른다."
       },
       {
         "id": "shell",
@@ -35,7 +35,7 @@
           "shell",
           "page"
         ],
-        "note": "RootWrapper 가 axios 기본 헤더에 토큰을 심는다. 이 셸 밖이면 401."
+        "note": "HubRootWrapper 가 공유 axios 기본 헤더에 토큰을 심는다. 심기 전 호출이 위험하다."
       },
       {
         "id": "search",
@@ -62,7 +62,7 @@
       "id": "guard",
       "type": "security",
       "label": "layout.tsx",
-      "sublabel": "서버 가드"
+      "sublabel": "로그인만 검사"
     },
     {
       "id": "auth",
@@ -79,7 +79,7 @@
     {
       "id": "page",
       "type": "frontend",
-      "label": "page.tsx",
+      "label": "templates",
       "sublabel": "'use client'"
     },
     {
@@ -143,9 +143,9 @@
       "from": "auth",
       "to": "guard",
       "y": 260,
-      "label": "requiredFunction 확인",
+      "label": "로그인 여부 확인",
       "variant": "return",
-      "note": "없으면 /unauthorized 로 redirect"
+      "note": "messages 는 기능 코드가 아직 없어 로그인만 본다. admin 탭은 각 page 에서 functions.includes('PAGE_ADMIN_*') 를 검사한다 — 화면마다 다르다"
     },
     {
       "from": "guard",
@@ -159,7 +159,7 @@
       "to": "page",
       "y": 370,
       "label": "Authorization 심음",
-      "note": "이 셸 밖에서 훅을 부르면 401"
+      "note": "세션이 있고 기본 헤더가 비어 있을 때 1회만 심는다. 공유 AXIOS_INSTANCE.defaults 라 심은 뒤에는 셸 밖 호출도 같은 헤더를 쓴다"
     },
     {
       "from": "page",
@@ -201,7 +201,7 @@
       "y": 640,
       "label": "onSearch(values)",
       "variant": "dashed",
-      "note": "페이지가 searchValues·page 를 useState 로 소유한다"
+      "note": "검색값을 바꾸면서 page 도 1 로 되돌린다. 페이지가 searchValues·page 를 useState 로 소유한다"
     },
     {
       "from": "page",
@@ -235,16 +235,17 @@
       "dot": "cyan",
       "title": "한 화면이 그려지기까지",
       "items": [
-        "layout.tsx 가 서버에서 auth() 로 세션을 보고 requiredFunction 을 확인한다. 없으면 /unauthorized",
-        "HubRootWrapper 가 axios 기본 헤더에 Authorization 을 심는다. 이 셸 밖에서 훅을 부르면 401 이 난다",
-        "'use client' 페이지가 searchValues·page 를 useState 로 소유하고, 순수 함수 buildParams 로 쿼리를 만들어 Orval 훅을 한 번 부른다"
+        "대표 화면은 app/messages/templates 다. 가드·권한 검사 방식은 화면마다 다르므로 다른 화면에 그대로 옮기지 않는다",
+        "messages/layout.tsx 는 로그인만 검사한다. 기능 코드가 발급되면 functions.includes 검사로 바꾸도록 주석이 달려 있다",
+        "HubRootWrapper 가 공유 AXIOS_INSTANCE.defaults 에 Authorization 을 심는다(세션 있고 헤더 비었을 때 1회)",
+        "'use client' 페이지가 searchValues·page 를 useState 로 소유하고 buildParams 로 Orval 훅을 한 번 부른다"
       ]
     },
     {
       "dot": "amber",
       "title": "다시 조회되는 방식",
       "items": [
-        "params 가 SWR 키다. 검색이나 페이지가 바뀌면 키가 바뀌어 자동으로 다시 조회된다",
+        "params 가 SWR 키다. 검색이나 페이지가 바뀌면 키가 바뀌어 자동으로 다시 조회된다. 검색 시에는 page 도 1 로 되돌린다",
         "로딩은 테이블에 isLoading 을 내려 SkeletonTableBody 로, 에러는 페이지 레벨에서 분기한다",
         "페이지네이션은 total > 0 일 때만 그린다"
       ]

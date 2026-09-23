@@ -3,7 +3,7 @@
   "diagram_type": "sequence",
   "meta": {
     "title": "client-brics-care 요청 흐름",
-    "subtitle": "목록 화면이 그려질 때 무엇이 오가는가 · 필터 스토어와 페이지 리셋",
+    "subtitle": "대표 화면 app/bmans (서버 페이지네이션) · 가드·필터 스토어·재조회",
     "viewBox": [
       1040,
       900
@@ -18,12 +18,12 @@
         "label": "목록을 그릴 때",
         "focus": [
           "user",
-          "page",
+          "guard",
           "list",
           "hook",
           "api"
         ],
-        "note": "컨테이너 하나가 필터 UI·테이블·페이지네이션을 전부 갖는다."
+        "note": "컨테이너 하나가 필터 UI·테이블·페이지네이션을 갖고, 같은 화면에서 훅을 세 번 부른다."
       },
       {
         "id": "filter",
@@ -34,7 +34,7 @@
           "store",
           "hook"
         ],
-        "note": "스토어 setter 가 page 를 1 로 되돌린다. URL 에는 반영하지 않는다."
+        "note": "bmans 의 setter 는 page 를 1 로 되돌린다. URL 에는 반영하지 않는다."
       },
       {
         "id": "guard",
@@ -44,7 +44,7 @@
           "guard",
           "auth"
         ],
-        "note": "가드는 page 가 아니라 layout 에 둔다. create·edit 까지 덮어야 한다."
+        "note": "bmans 는 목록 page 에서만 검사한다. create·edit 를 덮으려면 layout 에 둬야 한다."
       }
     ]
   },
@@ -58,8 +58,8 @@
     {
       "id": "guard",
       "type": "security",
-      "label": "layout.tsx",
-      "sublabel": "도메인 가드"
+      "label": "page.tsx",
+      "sublabel": "목록만 검사"
     },
     {
       "id": "auth",
@@ -68,16 +68,10 @@
       "sublabel": "PAGE_CARE_*"
     },
     {
-      "id": "page",
-      "type": "frontend",
-      "label": "page.tsx",
-      "sublabel": "서버"
-    },
-    {
       "id": "list",
       "type": "frontend",
-      "label": "XxxList",
-      "sublabel": "'use client'"
+      "label": "Payments",
+      "sublabel": "Container"
     },
     {
       "id": "store",
@@ -88,20 +82,20 @@
     {
       "id": "hook",
       "type": "messagebus",
-      "label": "Orval 훅",
-      "sublabel": "useFindXxx"
+      "label": "useFindBmans",
+      "sublabel": "Orval"
     },
     {
       "id": "fetcher",
       "type": "backend",
-      "label": "orval-fetcher",
+      "label": "fetcher",
       "sublabel": "mutator"
     },
     {
       "id": "api",
       "type": "cloud",
       "label": "care API",
-      "sublabel": "구독 · 결제"
+      "sublabel": "결제 · 수수료"
     }
   ],
   "segments": [
@@ -142,69 +136,70 @@
       "y": 260,
       "label": "PAGE_CARE_* 확인",
       "variant": "return",
-      "note": "layout 가드라 create·edit 까지 덮는다"
+      "note": "bmans 는 목록 page 에서만 검사한다. create·edit 에는 가드가 없고, layout 기능 가드는 qa 하나뿐이다"
     },
     {
       "from": "guard",
-      "to": "page",
+      "to": "list",
       "y": 330,
       "label": "통과",
       "variant": "emphasis"
     },
     {
-      "from": "page",
-      "to": "list",
-      "y": 370,
-      "label": "서버 → 클라이언트"
-    },
-    {
       "from": "list",
       "to": "store",
-      "y": 410,
+      "y": 370,
       "label": "필터 값 읽기",
       "note": "필터가 많을 때만 스토어를 쓴다"
     },
     {
       "from": "list",
       "to": "hook",
-      "y": 450,
+      "y": 410,
       "label": "page-1 · take · 필터",
       "variant": "emphasis",
-      "note": "page 는 0-base 로 내려간다"
+      "note": "화면은 1-base, API 는 0-base 로 내려간다"
     },
     {
       "from": "hook",
       "to": "fetcher",
-      "y": 490,
+      "y": 450,
       "label": "mutator"
     },
     {
       "from": "fetcher",
       "to": "api",
-      "y": 530,
+      "y": 490,
       "label": "GET 목록"
     },
     {
       "from": "api",
       "to": "list",
-      "y": 570,
+      "y": 530,
       "label": "목록 + 총 건수",
       "variant": "return"
     },
     {
+      "from": "list",
+      "to": "hook",
+      "y": 575,
+      "label": "수수료 미입력 · 연체 건수",
+      "note": "같은 화면에서 useFindBmans 를 두 번 더 부른다"
+    },
+    {
       "from": "user",
       "to": "list",
-      "y": 630,
+      "y": 635,
       "label": "필터 변경",
       "variant": "emphasis"
     },
     {
       "from": "list",
       "to": "store",
-      "y": 670,
+      "y": 675,
       "label": "setter 호출",
       "variant": "dashed",
-      "note": "값이 같으면 no-op, 다르면 page 를 1 로 리셋한다"
+      "note": "값이 같으면 no-op, 다르면 page 를 1 로 되돌린다"
     },
     {
       "from": "store",
@@ -230,19 +225,20 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "한 화면이 그려지기까지",
+      "title": "대표 화면은 app/bmans 다",
       "items": [
-        "가드는 app/<domain>/layout.tsx 에 둔다. page 에 두면 create·edit 가 비어 있는 채로 남는다 (선례 qa/layout.tsx)",
-        "page.tsx 는 서버, 화면은 _components/XxxList.tsx 가 'use client' 로 받는다",
-        "목록 호출은 useFindXxx({ page: page - 1, take: limit, …filters }) — 화면의 1-base 를 API 의 0-base 로 바꿔 보낸다"
+        "도메인마다 조회 방식이 다르다. promotion 은 useGetAllPromotion 으로 전체를 받아 클라이언트에서 거른다 — 이 그림을 그대로 옮기면 틀린다",
+        "가드는 목록 page 에만 있다. create·edit 에는 없고 layout 기능 가드는 qa 하나뿐이다",
+        "목록 호출은 useFindBmans({ page: page - 1, take: limit }) 다. 화면은 1-base, API 는 0-base",
+        "같은 화면에서 수수료 미입력·연체 건수를 위해 useFindBmans 를 두 번 더 부른다"
       ]
     },
     {
       "dot": "amber",
       "title": "필터와 페이지",
       "items": [
-        "필터가 많으면 zustand 스토어(use<Domain>Filters)를 쓴다. setter 는 값이 같으면 아무것도 하지 않고, 다르면 page 를 1 로 되돌린다",
-        "텍스트 입력은 useDebounce 를 거친다. URL 에는 반영하지 않는다 — 새 패턴을 들이지 않기로 한 레포다",
+        "필터 스토어의 setter 는 값이 같으면 아무것도 하지 않고, 다르면 page 를 1 로 되돌린다 (bmans 기준)",
+        "텍스트 입력은 useDebounce 를 거치고 URL 에는 반영하지 않는다 — 새 패턴을 들이지 않기로 한 레포다",
         "유지가 필요하면 persist + sessionStorage 를 쓴다"
       ]
     }

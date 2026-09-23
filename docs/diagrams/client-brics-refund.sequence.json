@@ -143,7 +143,7 @@
       "y": 260,
       "label": "functions 포함 여부",
       "variant": "return",
-      "note": "없으면 /unauthorized 로 redirect"
+      "note": "없으면 /unauthorized 로 redirect. 다만 layout 25개가 전부 functions 검사는 아니다 — landing-seo 는 로그인만 본다"
     },
     {
       "from": "guard",
@@ -198,13 +198,14 @@
       "y": 640,
       "label": "URL 쿼리 갱신 → 키 변경",
       "variant": "dashed",
-      "note": "router.push 만으로 재조회된다. prd 에서 user/all·refund-overview 는 조건이 없으면 조회하지 않는다"
+      "note": "router.push 만으로 재조회된다. prd 의 user/all·refund-overview 는 조건이 없으면 테이블 대신 안내를 그린다(조회는 돈다)"
     },
     {
       "from": "user",
       "to": "containers",
       "y": 700,
-      "label": "unmask 켜기"
+      "label": "unmask 토글 ON",
+      "note": "먼저 PERMISSION_PRIVATE_ACCESS 권한을 보고, 없으면 토스트로 막는다. 권한이 있어도 인증 유효기간이 지났으면 비밀번호 인증 다이얼로그를 거친다"
     },
     {
       "from": "containers",

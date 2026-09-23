@@ -5,7 +5,7 @@
 ## 0. 전제
 - `@/swr` = `__generated__/index.ts`(Orval 배럴). `swr/` 디렉터리는 없다. 그 외 별칭: `@/generated/*`, `@/components/*`(=`app/_components`), `@ui/*`(brics-fe-ui src), `@zent-auth/*`
 - 공용 UI는 패키지명이 아니라 **`@ui/components/ui/button`처럼 개별 경로 별칭**으로 import (배럴 import는 지양, `scripts/debarrel-ui-imports.py` 존재)
-- 클라이언트 API의 Authorization 헤더는 `app/_components/sidebar/HubRootWrapper.tsx`가 axios 기본 헤더에 심는다. 이 셸 밖에서 훅을 부르면 401
+- 클라이언트 API의 Authorization 헤더는 `app/_components/sidebar/HubRootWrapper.tsx`가 **공유 `AXIOS_INSTANCE.defaults`**에 심는다(세션이 있고 기존 헤더가 비어 있을 때 1회). 공유 인스턴스라 한 번 심은 뒤에는 셸 밖 호출도 같은 헤더를 쓴다 — 위험한 것은 **셸이 헤더를 심기 전에 보호 API를 호출하는 경우**다. 그때는 인증 실패한다(401 확정은 실서버 미검증)
 - 생성물은 손대지 않는다. 재생성 `pnpm genapi:local`
 
 ## 1. 목록 페이지 (테이블 + 페이지네이션 + 필터)

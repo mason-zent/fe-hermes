@@ -5200,7 +5200,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="168.6" y="240" width="110.8" height="16" rx="3" class="c-mask"/>
           <text x="224" y="250" class="t-muted" font-size="9" text-anchor="middle">functions 포함 여부</text>
         </g>
-        <text data-detail="fine" x="189" y="278" class="t-dim" font-size="7">없으면 /unauthorized 로 redirect</text>
+        <text data-detail="fine" x="189" y="278" class="t-dim" font-size="7">없으면 /unauthorized 로 redirect. 다만 layout 25개가 전부 functions 검사는 아니다 — landing-seo 는 로그인만 본다</text>
         </g>
 
         <g data-edge-from="guard" data-edge-to="page" data-edge-label="통과" data-edge-key="3">
@@ -5266,15 +5266,16 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="482.2" y="620" width="131.60000000000002" height="16" rx="3" class="c-mask"/>
           <text x="548" y="630" class="t-messagebus" font-size="9" text-anchor="middle">URL 쿼리 갱신 → 키 변경</text>
         </g>
-        <text data-detail="fine" x="513" y="658" class="t-dim" font-size="7">router.push 만으로 재조회된다. prd 에서 user/all·refund-overview 는 조건이 없으면 조회하지 않는다</text>
+        <text data-detail="fine" x="513" y="658" class="t-dim" font-size="7">router.push 만으로 재조회된다. prd 의 user/all·refund-overview 는 조건이 없으면 테이블 대신 안내를 그린다(조회는 돈다)</text>
         </g>
 
-        <g data-edge-from="user" data-edge-to="containers" data-edge-label="unmask 켜기" data-edge-key="11">
+        <g data-edge-from="user" data-edge-to="containers" data-edge-label="unmask 토글 ON" data-edge-key="11">
           <path data-composition-edge-from="user" data-composition-edge-to="containers" data-composition-points="69,700;487,700" d="M 69 700 L 487 700" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
-          <rect x="243.4" y="680" width="69.2" height="16" rx="3" class="c-mask"/>
-          <text x="278" y="690" class="t-backend" font-size="9" text-anchor="middle">unmask 켜기</text>
+          <rect x="235.6" y="680" width="84.8" height="16" rx="3" class="c-mask"/>
+          <text x="278" y="690" class="t-backend" font-size="9" text-anchor="middle">unmask 토글 ON</text>
         </g>
+        <text data-detail="fine" x="81" y="718" class="t-dim" font-size="7">먼저 PERMISSION_PRIVATE_ACCESS 권한을 보고, 없으면 토스트로 막는다. 권한이 있어도 인증 유효기간이 지났으면 비밀번호 인증 다이얼로그를 거친다</text>
         </g>
 
         <g data-edge-from="containers" data-edge-to="unmask" data-edge-label="enabled 전환" data-edge-key="12">

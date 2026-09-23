@@ -3,7 +3,7 @@
   "diagram_type": "lifecycle",
   "meta": {
     "title": "web-op 화면 상태",
-    "subtitle": "화면이 진입부터 제출까지 지나는 상태와 갈라지는 곳",
+    "subtitle": "대표 화면 app/documents/[key] · 로딩은 조회 시작에, 확인은 제출 전에",
     "output": "docs/diagrams/web-op.lifecycle.html",
     "viewBox": [
       1030,
@@ -16,217 +16,176 @@
         "id": "main",
         "label": "기본 경로",
         "focus": [
-          "enter",
-          "mount",
-          "fetch",
+          "entry",
+          "loading",
           "shown",
-          "submit"
+          "confirm",
+          "done"
         ],
-        "note": "page 는 껍데기, Container 가 상태를 갖는다. documents 계열이 신규 기준이다."
+        "note": "조회를 시작할 때 로딩이 켜지고, 확인 drawer 는 제출 전에 열린다. 순서를 뒤집지 않는다."
       },
       {
         "id": "branch",
         "label": "갈라지는 곳",
         "focus": [
-          "fetch",
-          "route",
           "loading",
-          "confirmSave"
+          "shown",
+          "partial",
+          "confirm"
         ],
-        "note": "자체 API 가 필요하면 Route Handler 를 거쳐 Service 로 간다."
+        "note": "만료·기제출·조회 실패는 조회 단계에서 다른 화면으로 빠진다. 첨부가 모자라면 부분 제출 안내가 뜬다."
       },
       {
         "id": "stop",
-        "label": "끝나는 곳",
+        "label": "실패와 로깅",
         "focus": [
-          "route",
-          "loading",
-          "failErr",
-          "fail500"
+          "confirm",
+          "failSubmit",
+          "done",
+          "logging"
         ],
-        "note": "에러는 CommonException 으로 던지고 route 에서 status 로 바꾼다."
+        "note": "파일 오류는 다이얼로그, 일시 오류는 토스트다. 제출 이벤트는 성공할 때마다 보낸다."
       }
     ]
   },
   "lanes": [
     {
       "id": "main",
-      "label": "기본 경로"
+      "label": "제출 단계"
     },
     {
       "id": "side",
       "label": "갈라지는 곳"
-    },
-    {
-      "id": "terminal",
-      "label": "종료 상태"
     }
   ],
   "states": [
     {
-      "id": "enter",
+      "id": "entry",
       "type": "start",
       "label": "진입",
-      "sublabel": "page 서버 껍데기",
+      "sublabel": "/documents/[key]",
       "lane": "main",
       "col": 0,
-      "step": "01",
-      "tag": "force-dynamic 여부"
+      "step": "01"
     },
     {
-      "id": "mount",
-      "type": "active",
-      "label": "컨테이너 마운트",
-      "sublabel": "'use client'",
+      "id": "loading",
+      "type": "decision",
+      "label": "요건 조회",
+      "sublabel": "setIsLoading 으로 시작",
       "lane": "main",
       "col": 1,
       "step": "02",
-      "tag": "상태는 여기"
-    },
-    {
-      "id": "fetch",
-      "type": "decision",
-      "label": "조회",
-      "sublabel": "useXxx → gateway",
-      "lane": "main",
-      "col": 2,
-      "step": "03",
-      "tag": "신규는 B계통"
+      "tag": "만료·기제출이면 다른 화면"
     },
     {
       "id": "shown",
       "type": "active",
-      "label": "화면 표시",
-      "sublabel": "프레젠테이션만",
+      "label": "제출 화면",
+      "sublabel": "타입별 첨부",
+      "lane": "main",
+      "col": 2,
+      "step": "03"
+    },
+    {
+      "id": "confirm",
+      "type": "decision",
+      "label": "확인 drawer",
+      "sublabel": "partial · full",
       "lane": "main",
       "col": 3,
-      "step": "04"
+      "step": "04",
+      "tag": "제출 전에 연다"
     },
     {
-      "id": "submit",
+      "id": "done",
       "type": "success",
-      "label": "제출 · 완료",
-      "sublabel": "useEventLogger",
+      "label": "제출 완료",
+      "sublabel": "handleConfirmSubmit 성공",
       "lane": "main",
       "col": 4,
-      "step": "05",
-      "tag": "useRef 1회 가드"
+      "step": "05"
     },
     {
-      "id": "route",
+      "id": "partial",
       "type": "waiting",
-      "label": "Route Handler",
-      "sublabel": "app/api → Service",
+      "label": "부분 제출 안내",
+      "sublabel": "첨부가 모자랄 때",
       "lane": "side",
       "col": 0,
-      "tag": "params 는 await"
+      "tag": "blocked 이벤트를 보낸다"
     },
     {
-      "id": "loading",
-      "type": "waiting",
-      "label": "로딩",
-      "sublabel": "ContainerLayout",
+      "id": "failSubmit",
+      "type": "failure",
+      "label": "제출 실패",
+      "sublabel": "파일 오류는 다이얼로그",
       "lane": "side",
-      "col": 1
+      "col": 1,
+      "tag": "일시 오류는 토스트"
     },
     {
-      "id": "confirmSave",
-      "type": "waiting",
-      "label": "확인 다이얼로그",
-      "sublabel": "useDialog",
+      "id": "logging",
+      "type": "neutral",
+      "label": "제출 이벤트",
+      "sublabel": "성공한 제출마다",
       "lane": "side",
       "col": 2,
-      "tag": "Provider 필요"
-    },
-    {
-      "id": "failErr",
-      "type": "failure",
-      "label": "오류 토스트",
-      "sublabel": "CommonException",
-      "lane": "terminal",
-      "col": 0,
-      "tag": "status 매핑"
-    },
-    {
-      "id": "fail500",
-      "type": "failure",
-      "label": "500",
-      "sublabel": "시크릿 미설정",
-      "lane": "terminal",
-      "col": 1,
-      "tag": "NEXT_PUBLIC 금지"
+      "tag": "조회 이벤트만 1회 가드"
     }
   ],
   "transitions": [
     {
       "id": "r1",
-      "from": "enter",
-      "to": "mount",
+      "from": "entry",
+      "to": "loading",
       "variant": "default",
       "route": "straight"
     },
     {
       "id": "r2",
-      "from": "mount",
-      "to": "fetch",
-      "variant": "default",
-      "route": "straight"
-    },
-    {
-      "id": "r3",
-      "from": "fetch",
+      "from": "loading",
       "to": "shown",
       "variant": "emphasis",
       "route": "straight"
     },
     {
-      "id": "r4",
+      "id": "r3",
       "from": "shown",
-      "to": "submit",
+      "to": "confirm",
+      "variant": "emphasis",
+      "route": "straight"
+    },
+    {
+      "id": "r4",
+      "from": "confirm",
+      "to": "done",
       "variant": "emphasis",
       "route": "straight"
     },
     {
       "id": "d1",
-      "from": "fetch",
-      "to": "route",
-      "variant": "security",
+      "from": "shown",
+      "to": "partial",
+      "variant": "default",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
     },
     {
       "id": "d2",
-      "from": "shown",
-      "to": "loading",
-      "variant": "default",
+      "from": "confirm",
+      "to": "failSubmit",
+      "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
     },
     {
       "id": "d3",
-      "from": "submit",
-      "to": "confirmSave",
+      "from": "done",
+      "to": "logging",
       "variant": "default",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x1",
-      "from": "route",
-      "to": "failErr",
-      "variant": "security",
-      "fromSide": "bottom",
-      "toSide": "top",
-      "route": "straight"
-    },
-    {
-      "id": "x2",
-      "from": "loading",
-      "to": "fail500",
-      "variant": "security",
       "fromSide": "bottom",
       "toSide": "top",
       "route": "straight"
@@ -235,21 +194,21 @@
   "cards": [
     {
       "dot": "cyan",
-      "title": "기본 경로",
+      "title": "순서를 뒤집지 않는다",
       "items": [
-        "app/<domain>/<route>/page.tsx 는 서버 껍데기다. 상태·오케스트레이션은 Container 가 갖는다",
-        "데이터는 src/hooks/<domain>/useXxx.ts → gateway 로 간다. 신규는 B계통 axios 직접이다",
-        "레이아웃은 ContainerLayout, 이벤트는 useEventLogger 를 useRef 로 한 번만 보낸다"
+        "조회를 시작할 때 setIsLoading(true) 한다. 화면을 그린 뒤에 로딩이 오는 것이 아니다",
+        "확인 drawer 는 제출 전에 연다 — 첨부 상태에 따라 partial 또는 full 로 열리고, 확인해야 handleConfirmSubmit 이 돈다",
+        "화면 조회 이벤트만 useRef 로 1회 가드한다. 제출 이벤트는 성공한 제출마다 보낸다"
       ]
     },
     {
       "dot": "amber",
-      "title": "갈라지는 곳",
+      "title": "조회 단계에서 빠지는 길",
       "items": [
-        "자체 API 가 필요하면 app/api/<path>/route.ts → src/backend/service/XxxService.ts 순서를 지킨다. route 에서 repository 를 직접 부르지 않는다",
-        "동적 세그먼트의 context.params 는 Promise 라 await 해야 한다 (Next 16)",
-        "에러는 CommonException 을 throw 하고 route catch 에서 { message } 와 status: error.httpStatus ?? error.status 로 바꾼다",
-        "시크릿이 없으면 500 을 반환한다. .env.example 에는 이름만 넣고 NEXT_PUBLIC_ 은 쓰지 않는다"
+        "요청 만료일이 지났으면 /documents/status/expired 로 replace 한다",
+        "이미 제출된 건이면 완료 화면으로 보낸다. 조회 자체가 실패하면 /not-found 로 간다",
+        "첨부가 모자란 채로 제출하려 하면 부분 제출 안내가 뜨고 blocked 이벤트를 보낸다 — 화면에 그대로 남는다",
+        "제출 실패는 파일 오류면 다이얼로그, 일시 오류면 토스트로 갈린다. 시크릿 미설정 500 은 employee 프록시 쪽 이야기라 이 화면과 무관하다"
       ]
     }
   ]

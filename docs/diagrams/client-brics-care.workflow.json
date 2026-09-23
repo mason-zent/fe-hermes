@@ -133,7 +133,7 @@
       "label": "복사 원본",
       "sublabel": "app/promotion-page/",
       "width": 140,
-      "tag": "hub·refund 금지"
+      "tag": "목록은 전체 조회다"
     },
     {
       "id": "files",
@@ -153,7 +153,7 @@
       "label": "zod 스키마",
       "sublabel": "schemas/schemas.ts",
       "width": 140,
-      "tag": "mode 판별 유니온"
+      "tag": "판별 유니온은 props 타입"
     },
     {
       "id": "guard",
@@ -161,9 +161,9 @@
       "col": 4,
       "type": "security",
       "label": "권한 가드",
-      "sublabel": "layout.tsx 에 둔다",
+      "sublabel": "새 화면은 layout 에",
       "width": 140,
-      "tag": "하위까지 덮는다"
+      "tag": "지금은 qa 만"
     },
     {
       "id": "verify",
@@ -192,7 +192,7 @@
       "type": "messagebus",
       "label": "필터 스토어",
       "sublabel": "zustand use<D>Filters",
-      "tag": "setter 에 page 리셋",
+      "tag": "bmans 는 page 리셋",
       "width": 140
     },
     {
@@ -316,10 +316,12 @@
       "dot": "cyan",
       "title": "A. 새 도메인 화면",
       "items": [
-        "1) 스펙이 올라온 뒤 pnpm genapi:local → __generated__/endpoints/<tag>/ 에 useFindXxx·useAddXxx 확인",
-        "2) app/<domain>/layout.tsx 에 auth() + AuthFunction.PAGE_CARE_* 가드를 둔다. page 가 아니라 layout 이어야 create·edit 까지 덮는다 (선례 qa/layout.tsx)",
-        "3) page.tsx(서버) → _components/XxxList.tsx('use client', 필터 + Table + Pagination + LimitSelector, useFindXxx({ page: page-1, take: limit }))",
-        "4) schemas/schemas.ts(zod) → XxxForm.tsx(mode 판별 유니온, zodResolver, 저장 확인 다이얼로그 → toast → router.push) → create·edit 얇은 래퍼"
+        "1) 스펙이 올라온 뒤 pnpm genapi:local → __generated__/endpoints/<tag>/ 에 훅 확인",
+        "2) 라우트 골격은 app/promotion-page/ 를 복사한다 — page(서버) · create · edit/[id] · _components · schemas · stores",
+        "⚠️ promotion 의 목록은 useGetAllPromotion 으로 전체를 받아 클라이언트에서 필터·정렬·slice 한다. 서버 페이지네이션(page-1·take)과 필터 setter 의 page 초기화가 필요하면 원본은 promotion 이 아니라 bmans 다",
+        "3) 가드는 app/<domain>/layout.tsx 에 두는 것이 권고다. 현재 layout 기능 가드는 qa 하나뿐이고 promotion 은 목록 page 만 검사해 create·edit 가 열려 있다",
+        "4) 폼은 zod 스키마(schemas.ts) + RHF. mode 판별 유니온은 zod 가 아니라 XxxFormProps 의 TypeScript 타입이다",
+        "5) 저장은 form.trigger() → 확인 다이얼로그 → mutation.trigger → toast → router.push 순이다"
       ]
     },
     {
@@ -328,7 +330,7 @@
       "items": [
         "컬럼은 컨테이너의 헤더와 바디 map 에 같은 순서로 넣는다. bmans 는 TableCell, subscription·marketing 은 TableHead 로 태그가 다르다",
         "marketing 은 constants.ts 의 TABLE_COLUMNS 만 고치면 되고, promotion 은 PromotionRow 타입 + useMemo 매핑 + JSX 3곳을 같이 고쳐야 한다",
-        "필터는 스토어 필드·setter(값이 같으면 no-op, page:1) → reset 기본값 → UI → useFindXxx 파라미터 순. 텍스트는 useDebounce, URL 반영은 하지 않는다"
+        "필터 setter 가 값이 같으면 no-op, 다르면 page 를 1 로 되돌리는 것은 bmans 패턴이다. promotion 의 setter 는 page 를 건드리지 않고 로컬 필터링만 다시 한다"
       ]
     },
     {
