@@ -1,0 +1,502 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "급여 28화면",
+    "subtitle": "app/payroll — 정규 급여 18 + 아르바이트 10, 전수",
+    "output": "payroll.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "main",
+        "label": "정규 급여",
+        "focus": [
+          "entry",
+          "material",
+          "manual1",
+          "manual2",
+          "confirm",
+          "result",
+          "finish"
+        ],
+        "note": "진입·현황 → 자료 제출 또는 수동 입력 → 확정 → 결과 → 완료. 18 화면."
+      },
+      {
+        "id": "manual",
+        "label": "수동 입력",
+        "focus": [
+          "manual1",
+          "manual2",
+          "confirm"
+        ],
+        "note": "기본·급여·4대보험·입퇴사·기타소득 다섯 화면을 채운 뒤 확정으로 간다."
+      },
+      {
+        "id": "pt",
+        "label": "아르바이트",
+        "focus": [
+          "ptList",
+          "ptReg",
+          "ptCalc",
+          "ptSlip"
+        ],
+        "note": "(part-time) route group 아래 10 화면. 등록 → 계산 → 명세서로 정규 급여와 별도 흐름이다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/payroll — 28 화면 전수",
+      "wraps": [
+        "entry",
+        "material",
+        "manual1",
+        "manual2",
+        "confirm",
+        "result",
+        "finish",
+        "ptList",
+        "ptReg",
+        "ptCalc",
+        "ptSlip"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "(part-time) 아르바이트 10화면",
+      "wraps": [
+        "ptList",
+        "ptReg",
+        "ptCalc",
+        "ptSlip"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "entry",
+      "type": "frontend",
+      "label": "진입 · 현황",
+      "sublabel": "input · status",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/input/page.tsx",
+          "line": 1,
+          "label": "/payroll/input — 급여 입력 진입"
+        },
+        {
+          "path": "apps/care-web/app/payroll/status/page.tsx",
+          "line": 1,
+          "label": "/status — 진행 현황"
+        },
+        {
+          "path": "apps/care-web/app/payroll/status/detail/page.tsx",
+          "line": 1,
+          "label": "/status/detail — 현황 상세"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "material",
+      "type": "frontend",
+      "label": "자료 제출",
+      "sublabel": "material · no-salary",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/submit/material/page.tsx",
+          "line": 1,
+          "label": "/submit/material — 자료 제출"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/no-salary/page.tsx",
+          "line": 1,
+          "label": "/submit/no-salary — 급여 없음"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "manual1",
+      "type": "frontend",
+      "label": "수동 입력 ①",
+      "sublabel": "기본 · 급여 · 4대보험",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/basic-info/page.tsx",
+          "line": 1,
+          "label": "/manual/basic-info — 기본 정보"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/salary-info/page.tsx",
+          "line": 1,
+          "label": "/manual/salary-info — 급여 정보"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/four-insurance/page.tsx",
+          "line": 1,
+          "label": "/manual/four-insurance — 4대보험"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "manual2",
+      "type": "frontend",
+      "label": "수동 입력 ②",
+      "sublabel": "입퇴사 · 기타소득",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/join-leave-info/page.tsx",
+          "line": 1,
+          "label": "/manual/join-leave-info — 입·퇴사"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/other-income/page.tsx",
+          "line": 1,
+          "label": "/manual/other-income — 기타 소득"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "confirm",
+      "type": "frontend",
+      "label": "확정",
+      "sublabel": "목록 · 상세 · 삭제",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/confirmation/page.tsx",
+          "line": 1,
+          "label": "/manual/confirmation — 확정 목록"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/confirmation/detail/page.tsx",
+          "line": 1,
+          "label": "/confirmation/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/payroll/submit/manual/confirmation/delete/page.tsx",
+          "line": 1,
+          "label": "/confirmation/delete — 삭제"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "result",
+      "type": "frontend",
+      "label": "결과",
+      "sublabel": "개요 · 상세 · 미리보기",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/result/overview/page.tsx",
+          "line": 1,
+          "label": "/result/overview — 결과 개요"
+        },
+        {
+          "path": "apps/care-web/app/payroll/result/detail/page.tsx",
+          "line": 1,
+          "label": "/result/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/payroll/result/detail/preview/page.tsx",
+          "line": 1,
+          "label": "/result/detail/preview — 미리보기"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "finish",
+      "type": "backend",
+      "label": "완료",
+      "sublabel": "finish · no-salary",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/finish/page.tsx",
+          "line": 1,
+          "label": "/finish — 완료"
+        },
+        {
+          "path": "apps/care-web/app/payroll/finish/no-salary/page.tsx",
+          "line": 1,
+          "label": "/finish/no-salary — 급여 없음 완료"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "ptList",
+      "type": "frontend",
+      "label": "아르바이트 · 목록",
+      "sublabel": "목록 · 상세 · 근무",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/page.tsx",
+          "line": 1,
+          "label": "/part-timers — 목록"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/detail/page.tsx",
+          "line": 1,
+          "label": "/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/work/page.tsx",
+          "line": 1,
+          "label": "/work — 근무 입력"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "ptReg",
+      "type": "frontend",
+      "label": "아르바이트 · 등록",
+      "sublabel": "기본 · 시급 · 근무시간",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/register/basic-info/page.tsx",
+          "line": 1,
+          "label": "/register/basic-info — 기본 정보"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/register/wage/page.tsx",
+          "line": 1,
+          "label": "/register/wage — 시급"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/register/base-work-time/page.tsx",
+          "line": 1,
+          "label": "/register/base-work-time — 소정 근로시간"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "ptCalc",
+      "type": "frontend",
+      "label": "아르바이트 · 계산",
+      "sublabel": "수당 · 근무일 · 요약",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/register/additional-allowance/page.tsx",
+          "line": 1,
+          "label": "/register/additional-allowance — 추가 수당"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/calculate/work-days/page.tsx",
+          "line": 1,
+          "label": "/calculate/work-days — 근무일"
+        },
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/calculate/work-summary/page.tsx",
+          "line": 1,
+          "label": "/calculate/work-summary — 근무 요약"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "ptSlip",
+      "type": "backend",
+      "label": "아르바이트 · 명세서",
+      "sublabel": "payslip",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/payroll/(part-time)/part-timers/payslip/page.tsx",
+          "line": 1,
+          "label": "/payslip — 급여명세서"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "entry-material",
+      "from": "entry",
+      "to": "material",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "material-manual1",
+      "from": "material",
+      "to": "manual1",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "manual1-manual2",
+      "from": "manual1",
+      "to": "manual2",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "confirm-result",
+      "from": "confirm",
+      "to": "result",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "result-finish",
+      "from": "result",
+      "to": "finish",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "ptReg-ptCalc",
+      "from": "ptReg",
+      "to": "ptCalc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "ptCalc-ptSlip",
+      "from": "ptCalc",
+      "to": "ptSlip",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "entry-confirm",
+      "from": "entry",
+      "to": "confirm",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ptList-ptReg",
+      "from": "ptList",
+      "to": "ptReg",
+      "fromSide": "bottom",
+      "toSide": "right"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "두 흐름이 따로 있다",
+      "items": [
+        "정규 급여 18 화면 — 진입·현황 → 자료 제출 또는 수동 입력 5단계 → 확정 → 결과 → 완료",
+        "아르바이트 10 화면 — (part-time) route group 아래 목록 → 등록 3단계 → 계산 3단계 → 명세서",
+        "'급여 없음'이 제출 단계와 완료 단계에 각각 별도 화면으로 있다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "폴더 이름이 다른 도메인과 다르다",
+      "items": [
+        "payroll 은 constant · type · util 로 단수를 쓴다. vat 는 constants · types · utils 로 복수다",
+        "hooks · graphql · store · components 는 라우트 옆에 둔다 — 루트 공용 폴더에 두지 않는다",
+        "useGetPreviousPayroll · usePreviousPayrollIConfirmation 처럼 전월 급여를 끌어오는 훅이 따로 있다"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,554 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "루트 셸 — Provider 14겹",
+    "subtitle": "app/GlobalProvider.tsx · 중첩 순서가 의미를 갖는 지점이 셋 있다",
+    "output": "provider-chain.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "order",
+        "label": "순서가 중요한 곳",
+        "focus": [
+          "auth",
+          "relay",
+          "user"
+        ],
+        "note": "CareAuthProvider 안에 RelayProvider 가 있어야 토큰이 실리고, CareUserInfoProvider 는 Relay 안쪽이어야 me 쿼리를 던질 수 있다."
+      },
+      {
+        "id": "track",
+        "label": "추적 계열",
+        "focus": [
+          "track",
+          "sign",
+          "logger"
+        ],
+        "note": "외부 분석은 CareEventTracking, 업무 이벤트는 EventLogger 로 갈린다. CareAuthSign 은 인증 이벤트를 연동한다."
+      },
+      {
+        "id": "ui",
+        "label": "UI · 상태",
+        "focus": [
+          "sidebar",
+          "atom",
+          "dialog",
+          "cache"
+        ],
+        "note": "jotai 전역 스코프와 오버레이 3겹, SVG 캐시와 스플래시가 가장 안쪽이다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/GlobalProvider.tsx — 바깥에서 안쪽 순서",
+      "wraps": [
+        "nav",
+        "auth",
+        "track",
+        "relay",
+        "sign",
+        "logger",
+        "sidebar",
+        "atom",
+        "dialog",
+        "user",
+        "cache"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "인증 → Relay → 사용자 정보 (순서 고정)",
+      "wraps": [
+        "auth",
+        "relay",
+        "user"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "root",
+      "type": "backend",
+      "label": "app/layout.tsx",
+      "sublabel": "서버 루트 · 메타 · Toaster",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/layout.tsx",
+          "line": 57,
+          "label": "RootLayout — Toaster · Registry 장착"
+        },
+        {
+          "path": "apps/care-web/app/layout.tsx",
+          "line": 10,
+          "label": "(registry) — GA · 카카오픽셀 · 틱톡 · 헥토"
+        },
+        {
+          "path": "apps/care-web/constants/metadata.ts",
+          "line": 1,
+          "label": "METADATA · OG_IMAGE · SERVICE_ORIGIN"
+        }
+      ],
+      "tag": "서버"
+    },
+    {
+      "id": "nav",
+      "type": "frontend",
+      "label": "1. PageNavigationEvent",
+      "sublabel": "@repo/platform",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 39,
+          "label": "가장 바깥 — 페이지 이동 이벤트"
+        },
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 4,
+          "label": "import @repo/platform"
+        }
+      ],
+      "tag": "라우팅 이벤트"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "2. CareAuthProvider",
+      "sublabel": "세션 · 라우터 어댑터",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareAuthProvider.tsx",
+          "line": 11,
+          "label": "initializeReactNativeBridge('bznav-care')"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareAuthProvider.tsx",
+          "line": 19,
+          "label": "SignPaths — 로그인·약관·CI 경로 매핑"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareAuthProvider.tsx",
+          "line": 16,
+          "label": "clientId = bznav-care-<플랫폼>"
+        }
+      ],
+      "tag": "여기서 토큰이 생긴다"
+    },
+    {
+      "id": "track",
+      "type": "messagebus",
+      "label": "3. CareEventTracking",
+      "sublabel": "@repo/tracking-service",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareEventTrackingProvider.tsx",
+          "line": 45,
+          "label": "EventTrackingProvider — 전송 대상"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareEventTrackingProvider.tsx",
+          "line": 9,
+          "label": "maskSensitiveUrlParams — URL 마스킹"
+        }
+      ],
+      "tag": "Mixpanel · Datadog"
+    },
+    {
+      "id": "relay",
+      "type": "backend",
+      "label": "4. RelayProvider",
+      "sublabel": "RelayEnvironmentProvider",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/relayProvider.tsx",
+          "line": 3,
+          "label": "useAuthContext — 위 인증에 의존한다"
+        },
+        {
+          "path": "apps/care-web/libs/relay/relayEnvironment.ts",
+          "line": 43,
+          "label": "useEnvironment(토큰·세션 주입)"
+        },
+        {
+          "path": "apps/care-web/libs/relay/fetchGraphQLFactory.ts",
+          "line": 32,
+          "label": "fetchGraphQL — 전송"
+        }
+      ],
+      "tag": "인증 안쪽이어야 한다"
+    },
+    {
+      "id": "sign",
+      "type": "security",
+      "label": "5. CareAuthSignProvider",
+      "sublabel": "@repo/user-sign",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareAuthSignProvider.tsx",
+          "line": 3,
+          "label": "useIntegrateAuthEventTracking — 인증 이벤트 연동"
+        }
+      ],
+      "tag": "12줄짜리 얇은 층"
+    },
+    {
+      "id": "logger",
+      "type": "messagebus",
+      "label": "6. EventLoggerProvider",
+      "sublabel": "자체 Context",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/EventLoggerProvider.tsx",
+          "line": 7,
+          "label": "EventLoggerContext = createContext"
+        },
+        {
+          "path": "apps/care-web/libs/provider/EventLoggerProvider.tsx",
+          "line": 10,
+          "label": "service = useMemo(...)"
+        },
+        {
+          "path": "apps/care-web/libs/eventLogger/useCareEventLogger.ts",
+          "line": 19,
+          "label": "useCareEventLogger — 업무 이벤트"
+        }
+      ],
+      "tag": "업무 이벤트"
+    },
+    {
+      "id": "sidebar",
+      "type": "frontend",
+      "label": "7. SidebarProvider",
+      "sublabel": "AppSidebar 열림 상태",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/components/common/appSideBar/sidebar.tsx",
+          "line": 1,
+          "label": "SidebarProvider"
+        },
+        {
+          "path": "apps/care-web/components/common/appSideBar/AppSidebar.tsx",
+          "line": 1,
+          "label": "AppSidebar — Suspense 안에서 렌더"
+        }
+      ],
+      "tag": "형제로 AppSidebar"
+    },
+    {
+      "id": "atom",
+      "type": "database",
+      "label": "8. GlobalAtomProvider",
+      "sublabel": "jotai Provider",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/GlobalAtomProvider.tsx",
+          "line": 1,
+          "label": "jotai Provider as AtomProvider"
+        },
+        {
+          "path": "apps/care-web/libs/provider/GlobalAtomProvider.tsx",
+          "line": 4,
+          "label": "PayrollSessionCleaner 를 같이 건다"
+        },
+        {
+          "path": "apps/care-web/components/common/auth/PayrollSessionCleaner.tsx",
+          "line": 9,
+          "label": "급여 세션 정리"
+        }
+      ],
+      "tag": "전역 atom 스코프"
+    },
+    {
+      "id": "dialog",
+      "type": "frontend",
+      "label": "9~11. Dialog · Tooltip · NiceModal",
+      "sublabel": "@repo/ui + nice-modal-react",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 47,
+          "label": "DialogProvider"
+        },
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 48,
+          "label": "TooltipProvider"
+        },
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 49,
+          "label": "NiceModal.Provider"
+        }
+      ],
+      "tag": "UI 오버레이 3겹"
+    },
+    {
+      "id": "user",
+      "type": "frontend",
+      "label": "12. CareUserInfoProvider",
+      "sublabel": "me 쿼리 · UTM",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/libs/provider/CareUserInfoProvider.tsx",
+          "line": 46,
+          "label": "fetchQuery(meQuery) — 사용자 조회"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareUserInfoProvider.tsx",
+          "line": 39,
+          "label": "careUser useState"
+        },
+        {
+          "path": "apps/care-web/libs/provider/CareUserInfoProvider.tsx",
+          "line": 3,
+          "label": "useUTM — 유입 정보 병합"
+        }
+      ],
+      "tag": "Relay 안쪽이어야 한다"
+    },
+    {
+      "id": "cache",
+      "type": "backend",
+      "label": "13~14. Cache · Splash",
+      "sublabel": "react-inlinesvg · 스플래시",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 52,
+          "label": "CacheProvider — SVG 캐시"
+        },
+        {
+          "path": "apps/care-web/components/common/splash/SplashWrapper.tsx",
+          "line": 14,
+          "label": "SplashWrapper — 첫 진입 스플래시"
+        },
+        {
+          "path": "apps/care-web/app/GlobalProvider.tsx",
+          "line": 57,
+          "label": "InitChannelTalk — 형제로 장착"
+        }
+      ],
+      "tag": "가장 안쪽"
+    }
+  ],
+  "connections": [
+    {
+      "id": "root-nav",
+      "from": "root",
+      "to": "nav",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "nav-auth",
+      "from": "nav",
+      "to": "auth",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "auth-track",
+      "from": "auth",
+      "to": "track",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "track-relay",
+      "from": "track",
+      "to": "relay",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "relay-sign",
+      "from": "relay",
+      "to": "sign",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "sign-logger",
+      "from": "sign",
+      "to": "logger",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "logger-sidebar",
+      "from": "logger",
+      "to": "sidebar",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "sidebar-atom",
+      "from": "sidebar",
+      "to": "atom",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "atom-dialog",
+      "from": "atom",
+      "to": "dialog",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "dialog-user",
+      "from": "dialog",
+      "to": "user",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "user-cache",
+      "from": "user",
+      "to": "cache",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "순서가 의미를 갖는 지점 셋",
+      "items": [
+        "CareAuthProvider → RelayProvider — relayProvider 가 useAuthContext 로 토큰을 꺼내 환경에 싣는다. 밖에 두면 인증 없는 요청이 된다",
+        "RelayProvider → CareUserInfoProvider — fetchQuery(meQuery) 를 던지려면 Relay 환경이 이미 있어야 한다",
+        "CareAuthProvider 가 SignPaths(로그인·약관동의·CI 수집·CI 인증·홈)를 CARE_PATHS 로 매핑한다. 로그인 흐름의 경로가 전부 여기서 정해진다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Provider 가 아닌 형제들",
+      "items": [
+        "AppSidebar 는 Suspense 안에서 렌더되는 형제다. Provider 체인의 한 겹이 아니다",
+        "InitChannelTalk · InitUtm 도 children 을 감싸지 않는 형제다 — 지식 문서가 이 둘을 체인의 일부로 적고 있어 바로잡았다",
+        "PayrollSessionCleaner 는 GlobalAtomProvider 안에 같이 걸려 급여 세션을 정리한다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "추적이 두 갈래다",
+      "items": [
+        "CareEventTrackingProvider — 외부 분석(@repo/tracking-service). maskSensitiveUrlParams 로 URL 을 가린다",
+        "EventLoggerProvider — 자체 Context. useCareEventLogger 로 업무 이벤트를 남긴다",
+        "CareAuthSignProvider 는 12줄짜리로 useIntegrateAuthEventTracking 하나만 건다"
+      ]
+    }
+  ]
+}

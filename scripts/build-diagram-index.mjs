@@ -23,8 +23,8 @@ const DEEP = [
   {
     file: 'care-web/care-web-architecture.html',
     name: 'bznav care-web 심층',
-    sub: '탭 3장 · 화면 78개 전수',
-    desc: '상세 아키텍처(노드 26 · 근거 60) + 부가세 자료제출 35화면 + 종소세 자료제출 43화면. 노드를 클릭하면 실제 page.tsx 경로가 전부 뜬다.',
+    sub: '탭 6장 · 화면 156개 전수',
+    desc: '상세 아키텍처 + Provider 14겹 + 부가세 50화면 + 종소세 자료제출 43 + 급여 28. 노드를 클릭하면 실제 page.tsx 경로가 뜨고, 점선 노드는 패스포트에서 상세 탭으로 넘어간다.',
   },
 ];
 

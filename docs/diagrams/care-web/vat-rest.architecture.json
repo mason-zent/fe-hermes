@@ -1,0 +1,353 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "부가세 — 자료제출 밖 15화면",
+    "subtitle": "app/vat 50 화면 중 submit-material 35 를 뺀 나머지 전부",
+    "output": "vat-rest.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1240,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+    },
+    "views": [
+      {
+        "id": "flow",
+        "label": "신고 한 바퀴",
+        "focus": [
+          "orgStatus",
+          "submitMat",
+          "estimated",
+          "history",
+          "result"
+        ],
+        "note": "사업장 현황 → 자료 제출 → 예상 세액 → 이력 → 결과·환급. 자료 제출만 35 화면이다."
+      },
+      {
+        "id": "connect",
+        "label": "계정 연결",
+        "focus": [
+          "connMain",
+          "conn",
+          "connDone"
+        ],
+        "note": "service-connect 아래 4 화면. 자료제출 안에도 같은 연결 화면이 따로 있지만 컴포넌트는 공유한다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/vat — 50 화면 중 15",
+      "wraps": [
+        "orgStatus",
+        "connMain",
+        "conn",
+        "connDone",
+        "submitMat",
+        "estimated",
+        "history",
+        "result"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "orgStatus",
+      "type": "frontend",
+      "label": "사업장 현황",
+      "sublabel": "(status)/org-status",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/(status)/org-status/page.tsx",
+          "line": 1,
+          "label": "/vat/org-status — 사업장 현황"
+        }
+      ]
+    },
+    {
+      "id": "connMain",
+      "type": "frontend",
+      "label": "서비스 연결 진입",
+      "sublabel": "service-connect/(main)",
+      "pos": [
+        376,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/service-connect/(main)/page.tsx",
+          "line": 1,
+          "label": "/vat/service-connect — 연결 안내"
+        }
+      ]
+    },
+    {
+      "id": "conn",
+      "type": "security",
+      "label": "계정 연결",
+      "sublabel": "socket.io 로 상태 수신",
+      "pos": [
+        656,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-account/page.tsx",
+          "line": 1,
+          "label": "/connect-account — 연결 시작"
+        },
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-account/verify/page.tsx",
+          "line": 1,
+          "label": "/verify — 인증"
+        },
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-account/processing/page.tsx",
+          "line": 1,
+          "label": "/processing — 진행 중"
+        }
+      ]
+    },
+    {
+      "id": "connDone",
+      "type": "backend",
+      "label": "연결 완료",
+      "sublabel": "connect-complete",
+      "pos": [
+        936,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "1 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/service-connect/(connect)/connect-complete/page.tsx",
+          "line": 1,
+          "label": "/connect-complete — 연결 완료"
+        }
+      ]
+    },
+    {
+      "id": "submitMat",
+      "type": "frontend",
+      "label": "자료 제출 35화면",
+      "sublabel": "별도 탭에서 전수로 본다",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "클릭하면 이동",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/submit-material/(submitMaterial)/(main)/page.tsx",
+          "line": 1,
+          "label": "/vat/submit-material — 항목 목록"
+        }
+      ]
+    },
+    {
+      "id": "estimated",
+      "type": "frontend",
+      "label": "예상 세액",
+      "sublabel": "(main) · complete · deduction",
+      "pos": [
+        376,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/estimated-tax/(main)/page.tsx",
+          "line": 1,
+          "label": "/estimated-tax — 예상 세액"
+        },
+        {
+          "path": "apps/care-web/app/vat/estimated-tax/(main)/complete/page.tsx",
+          "line": 1,
+          "label": "/complete — 산출 완료"
+        },
+        {
+          "path": "apps/care-web/app/vat/estimated-tax/deduction/page.tsx",
+          "line": 1,
+          "label": "/deduction — 공제 확인"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "type": "frontend",
+      "label": "신고 이력",
+      "sublabel": "목록 · 상세 · 미리보기",
+      "pos": [
+        656,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/history/page.tsx",
+          "line": 1,
+          "label": "/history — 이력 목록"
+        },
+        {
+          "path": "apps/care-web/app/vat/history/detail/page.tsx",
+          "line": 1,
+          "label": "/history/detail — 상세"
+        },
+        {
+          "path": "apps/care-web/app/vat/history/preview/page.tsx",
+          "line": 1,
+          "label": "/history/preview — 미리보기"
+        }
+      ]
+    },
+    {
+      "id": "result",
+      "type": "backend",
+      "label": "신고 결과 · 환급",
+      "sublabel": "가이드 · 미리보기 · 계좌",
+      "pos": [
+        936,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "3 화면",
+      "sources": [
+        {
+          "path": "apps/care-web/app/vat/tax-result/(guide)/page.tsx",
+          "line": 1,
+          "label": "/tax-result — 결과 안내"
+        },
+        {
+          "path": "apps/care-web/app/vat/tax-result/preview/page.tsx",
+          "line": 1,
+          "label": "/tax-result/preview — 미리보기"
+        },
+        {
+          "path": "apps/care-web/app/vat/refund-account/page.tsx",
+          "line": 1,
+          "label": "/refund-account — 환급 계좌"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "orgStatus",
+      "to": "connMain",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "connMain",
+      "to": "conn",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e3",
+      "from": "conn",
+      "to": "connDone",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e4",
+      "from": "orgStatus",
+      "to": "submitMat",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e5",
+      "from": "submitMat",
+      "to": "estimated",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "estimated",
+      "to": "history",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "e7",
+      "from": "history",
+      "to": "result",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "자료 제출 밖의 한 바퀴",
+      "items": [
+        "사업장 현황에서 시작해 자료 제출 → 예상 세액 → 신고 이력 → 결과·환급 계좌로 이어진다",
+        "이 15 화면에 자료 제출 35 를 더해야 부가세 50 이 된다",
+        "자료 제출 노드를 클릭하면 35 화면을 전수로 담은 탭으로 이동한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "계정 연결 화면이 두 군데 있다",
+      "items": [
+        "service-connect/(connect) 아래 4 화면과, 자료제출 안 (connection) 아래 4 화면이 따로 있다",
+        "다만 카드 항목과 달리 통째 복제는 아니다 — ConnectAccountPage · SocketProvider · useSocketMessage · useConnectAccount 를 공유한다",
+        "자료제출 쪽만 platformData · useGetPlatformName · useGetBmantin 을 더 쓴다",
+        "socket.io 는 care-web 에서 이 연결 화면들만 쓴다"
+      ]
+    }
+  ]
+}

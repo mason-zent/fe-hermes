@@ -1,16 +1,63 @@
-import html, os, sys
+import html, json, os, sys
 
 D = os.path.dirname(os.path.abspath(__file__))
+# 탭 사이 드릴다운: {출발 탭 번호: {노드 id: 도착 탭 번호}}
+DRILL = {
+    0: {
+        "shell":   {"tab": 1, "label": "Provider 14겹 펼쳐 보기 →"},
+        "vat":     {"tab": 2, "label": "부가세 50화면 보기 →"},
+        "gincome": {"tab": 4, "label": "종소세 자료제출 43화면 보기 →"},
+        "payroll": {"tab": 5, "label": "급여 28화면 보기 →"},
+    },
+    2: {
+        "submitMat": {"tab": 3, "label": "자료제출 35화면 전수 보기 →"},
+    },
+}
+
 TABS = [
-    ("care-web 상세",      "care-web-detail.architecture.html",                "진입 → 셸 → 가드 → 화면군 → 훅 → 관문"),
-    ("부가세 자료제출",    "vat-submit-material.architecture.html",            "35 화면 전수 · socket.io 계정연결"),
-    ("종소세 자료제출",    "global-income-submit-material.architecture.html",  "43 화면 전수 · 간편인증 두 곳"),
+    ("care-web 상세",      "care-web-detail.architecture.html",               "진입 → 셸 → 가드 → 화면군 → 훅 → 관문"),
+    ("루트 셸 Provider",   "provider-chain.architecture.html",                "14겹 · 순서가 의미를 갖는 곳 셋"),
+    ("부가세 · 전체",      "vat-rest.architecture.html",                      "자료제출 밖 15화면 · 신고 한 바퀴"),
+    ("부가세 · 자료제출",  "vat-submit-material.architecture.html",           "35화면 전수 · socket.io 계정연결"),
+    ("종소세 · 자료제출",  "global-income-submit-material.architecture.html", "43화면 전수 · 간편인증 두 곳"),
+    ("급여",               "payroll.architecture.html",                       "28화면 전수 · 정규 18 + 알바 10"),
 ]
 
 buttons, panels = [], []
 for i, (name, fn, desc) in enumerate(TABS):
     with open(os.path.join(D, fn), encoding="utf-8") as f:
-        srcdoc = html.escape(f.read(), quote=True)
+        raw = f.read()
+    mapping = DRILL.get(i)
+    if mapping:
+        child = (
+            "<script>(function(){var M=" + json.dumps(mapping) + ";"
+            "var b=document.createElement('button');b.type='button';"
+            "b.style.cssText='margin-top:10px;display:none;width:100%;padding:8px 10px;"
+            "border-radius:8px;border:1px solid currentColor;background:transparent;color:inherit;"
+            "font:inherit;font-size:12px;font-weight:700;cursor:pointer';"
+            "b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();"
+            "if(b.dataset.t!==undefined)parent.postMessage({archifyDrill:Number(b.dataset.t)},'*');});"
+            "function host(){var m=document.querySelector('.semantic-passport-meta');"
+            "if(m&&m.parentElement)return m.parentElement;"
+            "var f=document.getElementById('focus-passport-meta');"
+            "return f?f.parentElement:null;}"
+            "function sync(){var h=host();if(h&&b.parentElement!==h)h.appendChild(b);"
+            "var s=document.querySelector('[data-focus-selected]');"
+            "var id=s&&s.getAttribute('data-node-id');var d=id?M[id]:undefined;"
+            "if(!d){b.style.display='none';return;}"
+            "b.dataset.t=String(d.tab);b.textContent=d.label;b.style.display='block';}"
+            "function mark(){Object.keys(M).forEach(function(id){"
+            "var el=document.querySelector('[data-node-id=\\''+id+'\\']');"
+            "if(!el||el.dataset.drill)return;el.dataset.drill='1';"
+            "var r=el.querySelector('rect');if(r){r.setAttribute('stroke-dasharray','6 4');"
+            "r.setAttribute('stroke-width','2');}});}"
+            "new MutationObserver(sync).observe(document.documentElement,"
+            "{attributes:true,subtree:true,attributeFilter:['data-focus-selected']});"
+            "[200,700,1500].forEach(function(ms){setTimeout(function(){mark();sync();},ms);});"
+            "})();</script>"
+        )
+        raw = raw.replace("</body>", child + "</body>", 1) if "</body>" in raw else raw + child
+    srcdoc = html.escape(raw, quote=True)
     active = " is-active" if i == 0 else ""
     buttons.append(
         f'<button class="tab{active}" data-idx="{i}" type="button">'
@@ -27,7 +74,7 @@ page = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>refund-web 아키텍처 다이어그램</title>
+<title>care-web 아키텍처 다이어그램</title>
 <style>
   :root {
     color-scheme: light;
@@ -80,8 +127,8 @@ page = """<!doctype html>
 </head>
 <body>
 <header>
-  <h1>refund-web 아키텍처 다이어그램</h1>
-  <p class="sub">Archify 로 생성 · 저장소 리비전 4be90b5e 기준 · 각 탭은 독립 실행되는 다이어그램입니다</p>
+  <h1>care-web 아키텍처 다이어그램</h1>
+  <p class="sub">Archify 로 생성 · 저장소 리비전 bb53fbaf 기준 · <b>점선 테두리 노드</b>를 클릭하면 Semantic passport 안에 <b>상세 보기 버튼</b>이 뜹니다</p>
   <nav>__BUTTONS__</nav>
 </header>
 <main>__PANELS__</main>
@@ -93,11 +140,17 @@ page = """<!doctype html>
       const idx = tab.dataset.idx;
       tabs.forEach(function (t) { t.classList.toggle('is-active', t === tab); });
       panels.forEach(function (p) { p.classList.toggle('is-active', p.dataset.idx === idx); });
-      try { localStorage.setItem('refund-diagram-tab', idx); } catch (e) {}
+      try { localStorage.setItem('care-diagram-tab', idx); } catch (e) {}
     });
   });
+  window.addEventListener('message', function (ev) {
+    const d = ev.data;
+    if (!d || typeof d.archifyDrill !== 'number') return;
+    const target = document.querySelector('.tab[data-idx="' + d.archifyDrill + '"]');
+    if (target) { target.click(); target.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+  });
   try {
-    const saved = localStorage.getItem('refund-diagram-tab');
+    const saved = localStorage.getItem('care-diagram-tab');
     if (saved !== null) {
       const target = document.querySelector('.tab[data-idx="' + saved + '"]');
       if (target) target.click();
