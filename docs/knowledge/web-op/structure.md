@@ -5,9 +5,9 @@
 ## app/ 라우트
 | 경로 | 역할 | 인증 |
 |---|---|---|
-| `app/sales/**` (14) | 판매자센터·제휴마케팅 포털: `login`, `signup`(+`done`), `mfa-setup`, `password-reset`, `auth/[key]`(SSO 딥링크), 홈, `customers`(+`[id]`), `salesmans/[id]/customers`, `child`, `upload`, `url` | **자체 JWT(ES512)** `SalesJwtGenerator`, 토큰은 `localStorage["salesUser"]`, 상태 `useSalesAuthStore`, 가드는 `src/containers/sales/index.tsx`의 store subscribe → `/sales/login` |
-| `app/documents/**` (5) | 대고객 서류 제출: `[key]`(알림톡 링크 키), `status/{complete,expired}`, `layout.tsx`(DialogProvider+Toaster) | 링크 키(Redis 8자)가 접근권. 파일 API는 `POST {ZENT_API}/documents/auth` 임시 토큰 |
-| `app/employee/**` (4) | 고용보험 직원 인증서 발급: `[key]/page.tsx`(`force-dynamic`) → `EmployeeKeyClient.tsx` 분기 허브 | 링크 키 + 서버 전용 `EMP_INS_NOTI_API_KEY`(`_proxy.ts`) |
+| `app/sales/**` (파일 14 · 화면 13) | 판매자센터·제휴마케팅 포털: `login`, `signup`(+`done`), `mfa-setup`, `password-reset`, `auth/[key]`(SSO 딥링크), 홈, `customers`(+`[id]`), `salesmans/[id]/customers`, `child`, `upload`, `url` | **자체 JWT(ES512)** `SalesJwtGenerator`, 토큰은 `localStorage["salesUser"]`, 상태 `useSalesAuthStore`, 가드는 `src/containers/sales/index.tsx`의 store subscribe → `/sales/login` |
+| `app/documents/**` (파일 5 · 화면 3) | 대고객 서류 제출: `[key]`(알림톡 링크 키), `status/{complete,expired}`, `layout.tsx`(DialogProvider+Toaster) | 링크 키(Redis 8자)가 접근권. 파일 API는 `POST {ZENT_API}/documents/auth` 임시 토큰 |
+| `app/employee/**` (파일 4 · 화면 1) | 고용보험 직원 인증서 발급: `[key]/page.tsx`(`force-dynamic`) → `EmployeeKeyClient.tsx` 분기 허브 | 링크 키 + 서버 전용 `EMP_INS_NOTI_API_KEY`(`_proxy.ts`) |
 | `app/api/**` (route 30 + `_proxy.ts`) | BFF. 25개가 `src/backend/service` 호출, 2개만 `ApiResponse`(controller) 경유, employee 3개는 `_proxy` 직행, `notion-guide`·`ping` 독립 | 라우트마다 상이 |
 | `app/layout.tsx` | `@zenterprise-inc/bznav-fe-ui/globals.css` + `MixpanelProvider` | — |
 
@@ -16,7 +16,7 @@
 |---|---|---|
 | `components/` | 75 | common 15 / documents 27 / sales 32 / employee 1 |
 | `containers/` | 31 | sales 17 / employee 8 / documents 6 |
-| `hooks/` | 13 | documents 3 / employee 6 / 루트 3(`useEventLogger`) |
+| `hooks/` | 13 | documents 3 / employee 7 / 루트 3(`useEventLogger`) |
 | `gateway/` | 10 | `BaseApiGateway` + 도메인 9 (클라이언트 axios) |
 | `backend/` | 9 | controller 1(`ApiResponse`) / service 5 / repository 3(`RedisRepository`, `external/{Pipedrive,SalesExternal}ApiGateway`) |
 | `utils/` | 8 | `SalesJwtGenerator(.test)`, `QrUtil`, `FileType`, `DateTimePrettier`, `RandomStringUtils`, `SafeErrorLog`, `PipedriveCustomField` |

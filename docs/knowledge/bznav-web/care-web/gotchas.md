@@ -1,10 +1,10 @@
 # bznav-web apps/care-web 함정·이력
 
 - **Relay 아티팩트 미커밋**(`.gitignore:51`) — pull 직후 `@/__generated__/*` 타입 에러는 정상. `pnpm --filter care-web relay`
-- **문서가 코드보다 낡음** — `care-web.agent.md:27`·`.ai/basic-rule.md`는 `constant/paths.ts`(실제 `constants/`). NEWCARE-633으로 도메인 파일 이동·`libs/{kakao,channelTalk,eventLogger}` 신설·`hooks/`·`store/` 루트화. 이어서 **NEWCARE-649(prd-care 반영 `bdc96ff`)가 폴더명을 kebab-case로 개명**(`libs/event-logger`·`libs/channel-talk`·`components/common/app-side-bar`, `app/payroll/{utils,hooks,types,constants}` 등 29곳)하고 상대경로 import를 `@/` 절대경로로, `.ts/.tsx` 확장자 import를 제거했다. 옛 import 경로 기억 버릴 것
+- **문서가 코드보다 낡음** — `care-web.agent.md:27`·`.ai/basic-rule.md`는 `constant/paths.ts`(실제 `constants/`). NEWCARE-633으로 도메인 파일 이동·`libs/{kakao,channelTalk,eventLogger}` 신설·`hooks/`·`store/` 루트화. 이어서 **NEWCARE-638 이 공통·기능 폴더명을 kebab-case로 개명**(`libs/event-logger`·`libs/channel-talk`·`components/common/app-side-bar`, `app/payroll/{utils,hooks,types,constants}` 등 29곳 — `eventLogger` 두 곳만 NEWCARE-649, prd-care 반영 `bdc96ff`)하고 NEWCARE-649 가 상대경로 import를 `@/` 절대경로로, `.ts/.tsx` 확장자 import를 제거했다. 옛 import 경로 기억 버릴 것
 - **`gen:env` 스크립트 없음** — 5개 앱 중 **care-web 만** 없다(brand·sena 는 `dev` 에서 자동 실행, refund 도 `dev` 에 포함, plus 는 있지만 수동). env 는 수동(Secrets Manager): `node scripts/generate-env.mjs --app=care-web --env=<env> --source=sm`. 참조 `NEXT_PUBLIC_ZENV`, `NEXT_PUBLIC_RESOURCE_CENTER_URL`, `NEXT_PUBLIC_TRACKING_DEBUG_MODE`
 - **미들웨어 순서 = `composeMiddleware` 인자 앞이 먼저**(`reduceRight`). NEWCARE-550 `f4e06be07`이 `withLandingRedirectMiddleware`를 앞으로 + 리다이렉트 시 `url.search=''`. 추가·재배치 시 루프·쿼리 유실 확인
-- **차단된 랜딩** `BLOCKED_LANDING_PATHS`(1인사업자·미용·요식·통판·첫달무료·종소세) → `/`로 리다이렉트(NEWCARE-528). 파일이 있어도 동작 안 함. **`/premium`만 활성**
+- **차단된 랜딩** `BLOCKED_LANDING_PATHS`(1인사업자·미용·요식·통판·첫달무료·종소세) → `/`로 리다이렉트(NEWCARE-528). 파일이 있어도 동작 안 함. **performance-landing 중 열리는 건 `/premium` 과 `/events`(mktEvent 빌더 랜딩) 둘**
 - **`@repo/ui`에서 문의 버튼 제거**(NEWCARE-629) → `app/pricing/components/TopNavigationInquiryButton.tsx`. `@repo/ui`에서 import하면 깨짐. 채널톡 열기는 `@/libs/channel-talk`
 - **deprecated `ToastProvider` / SSR 상충** — `GlobalProvider.tsx`의 `SSR_PATHS`에 vat·billing·four-insurance 경로를 넣으면 `useCareToast`가 런타임 throw(주석 경고)
 - **한글 식별자**: 경로 키, 폼 필드 키, 이벤트 카테고리. 숫자 시작 키는 `CARE_PATHS['4대보험…']`

@@ -10,7 +10,7 @@
 - **모달 3방식 혼재**(`useDialog` 34 / shadcn Dialog 15 / nice-modal 7). 같은 도메인의 기존 방식을 따른다. `@ebay/nice-modal-react`를 관례로 적었던 기존 문서는 오류
 - **별칭은 `@/generated/*`**. hub의 `@/swr`는 없다. 엔드포인트 디렉터리명이 **한글**이라 경로 자동완성·grep 시 주의
 - **시간대 함정**: `lib/utils/datetime.ts`의 `convertTimezoneISOString`은 종료일을 `hour-1:59:59`로 세팅, `convertToKSTISOString`은 입력에 `'Z'`를 붙여 UTC 가정(오프셋 있는 값에 쓰면 깨짐). `partner/discount` 목록은 `toISOString().substring(0,10)`(UTC)이라 KST 자정 근처 날짜가 하루 밀릴 수 있음. hometax-block·refund-overview는 `date-fns-tz`. 도메인마다 다르니 그 화면 관례를 따른다
-- **prd에서 `user/all`·`refund-overview`는 검색 조건 없으면 목록을 조회하지 않음**. 로컬/dev에서만 전체 목록이 보여 버그 재현 시 혼동
+- **prd에서 `user/all`은 검색 조건(ern·name·email·phone)이 없으면 목록 대신 안내 문구를 보여 준다** — 조회 자체는 한다(`_components/Containers.tsx` `shouldShowSearchNotice`, 목록 훅은 `UserHandlerContext.tsx` 에서 마스킹 토글로만 켜고 끈다). 로컬/dev 에서는 전체 목록이 보여 버그 재현 시 혼동. `refund-overview` 도 같은지는 확인 필요
 - `lib/orval-fetcher.ts`: orval은 re-export를 인식 못 함 → `fetcher`/`ErrorType`/`BodyType` 직접 선언 유지
 - `emergency/maintenance/_components/EditForm.tsx`의 `config[env]?.maintenanceSetting`은 임시 마이그레이션 코드(v.25.09.200 이후 제거 예정, 아직 남음)
 - `landing-seo-api.ts`: 버킷 CORS 미설정으로 업로드 `response.ok` 검사 생략 중(실패가 미리보기 깨짐으로만 드러남)

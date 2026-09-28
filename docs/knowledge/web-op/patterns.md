@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
 ## P8. 인증·MFA·비밀번호 재설정
 - 콘솔 인증: `POST /api/authorize` → `AuthService.generateAuthKey`(도메인 화이트리스트) → HS256 JWT + Redis 24h → `ApiResponse`가 검증
-- sales 로그인: `containers/sales/login` → `SalesAuthUseCase.signin`(id/pw를 ES512 `encryptString`) → `SalesAuthApiClient` → `/api/sales/auth/signin` → `SalesAuthService` → zent API. 응답 3분기: JWT / `{mfaRequired, mfaToken}` / `{mfaSetupRequired, token}`
+- sales 로그인: `containers/sales/login` → `SalesAuthUseCase.signin`(id/pw를 ES512 `encryptString`) → `SalesAuthApiClient` → **zent API 직접**(`${NEXT_PUBLIC_SERVER_ZENT_API_URL}/sales/auth`, `src/gateway/sales/SalesAuthApiClient.ts`). 레포 BFF(`/api/sales/**`)를 거치는 건 sso(`/api/sales/auth/sso`) 하나뿐이다. 응답 3분기: JWT / `{mfaRequired, mfaToken}` / `{mfaSetupRequired, token}`
 - MFA: Google Authenticator, `setupMfa`(QR `qrcode.react`, `containers/sales/mfaSetup`) / `verifyMfaSetup` / `verifyMfa` / `disableMfa`
 - 비밀번호 재설정: `password-reset` → 본인인증 `/api/sales/auth/self-cert/request` → `/self-cert` → `/[salesUserId]/reset-password`
 - SSO 딥링크: `POST /api/sales/auth/sso` → key → `/sales/auth/[key]` → `GET …/sso?key=` → store+localStorage → `/sales`

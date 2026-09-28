@@ -17,4 +17,4 @@
 ## 스크립트·설정
 - `dev`: `pnpm gen:env && next dev -p 3000 --turbo`(**gen:env 자동**, SSM `--env=loc`) · `postbuild`: next-sitemap(manifest에서 정적 라우트 자동 수집, `EXCLUDE_ROUTES=['/home']`)
 - `next.config.mjs`(3앱 중 유일하게 webpack 커스텀): assetPrefix `${CDN}/bznav-brand-web`(빌드 ID 없음), `productionBrowserSourceMaps: true`, **rewrite `/` → `/home`**, redirect `/storybook/*` → chromatic, `/tax/refund/*` → `NEXT_PUBLIC_REFUND_DOMAIN`(308), SVGR
-- `proxy.ts`: `/ping` 응답만
+- `proxy.ts`: `/ping`·`/.well-known/appspecific/com.chrome.devtools.json` 에 JSON 응답만

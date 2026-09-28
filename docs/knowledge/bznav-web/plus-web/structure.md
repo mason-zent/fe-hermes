@@ -14,7 +14,7 @@
 | `_components/` | `RootLayoutContent`, `CommonTopNavigation`, `JsonLd`, `AccordionMorphButton` — 4개뿐 |
 
 ## 디렉터리
-`lib/api/`(12: notion 3, 홈택스·진단 4, SSO 3(`user-info`·`upsert-app-user`·`terms`), `dp-logs`, `fortune`) · `lib/hooks/calc/`(계산기별 `use-<name>.ts` + `use-<name>-form.ts` ×7 + 공통 3) · `lib/hooks/{common,simple-auth,fortune}/` · `lib/utils/calc/`(순수 계산 8) · `lib/utils/{seo,dp-logs,common,form}/` · `lib/constants/calc/`(12: 요율표·`FIELD_LIMITS`·`meta`·`home-menus`) · `lib/types/calc/`(10) · **`lib/regex/schema/`**(yup) · **`store/auth-store.ts`**(루트, `lib/` 밖) + `app/fortune/_store/` · SCSS는 라우트 스코프(`calc/_styles`, `fortune/_styles`), 모듈 0
+`lib/api/`(12: notion 3, 홈택스·진단 4, SSO 3(`user-info`·`upsert-app-user`·`terms`), `dp-logs`, `fortune`) · `lib/hooks/calc/`(계산기별 `use-<name>.ts` + `use-<name>-form.ts` ×8(breakeven·holiday-pay·salary-actual·salary-contract·simple-vat·store-sales·tax-penalty·vat) + 공통 3) · `lib/hooks/{common,simple-auth,fortune}/` · `lib/utils/calc/`(순수 계산 8) · `lib/utils/{seo,dp-logs,common,form}/` · `lib/constants/calc/`(12: 요율표·`FIELD_LIMITS`·`meta`·`home-menus`) · `lib/types/calc/`(10) · **`lib/regex/schema/`**(yup) · **`store/auth-store.ts`**(루트, `lib/` 밖) + `app/fortune/_store/` · SCSS는 라우트 스코프(`calc/_styles`, `fortune/_styles`), 모듈 0
 
 ## 스크립트·설정
 - `dev`: `next dev -p 3400 --turbo` — **`gen:env` 미포함**(3앱 중 유일). `gen:env`: `--env=dev --app=plus-web`, `SM_APPS`에 걸려 **Secrets Manager**. `postbuild`: next-sitemap(**`exclude: ['/*']` + `INDEXABLE_PATHS` 11개 화이트리스트 수동**, `DISALLOW_PATHS`)

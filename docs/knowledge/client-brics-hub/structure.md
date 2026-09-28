@@ -12,10 +12,10 @@ orval.config.ts  jest.config.ts  next.config.js  tailwind.config.js  components.
 | 경로 | 역할 | 라우트 형태 | 권한 |
 |---|---|---|---|
 | `admin/` | 권한 관리 (users · roles · functions · access-requests) | **병렬 라우트** `layout.tsx` + `@tabs/<탭>/page.tsx`, 탭 정의 `_tabs.ts`(+spec), `_components/` | 탭별 `AuthFunction` (`PAGE_ADMIN_*`) |
-| `brics-menus/` | 메뉴(사이드바) 관리 — 트리·편집 패널·아이콘 피커·역할 멀티셀렉트 | 일반 라우트, `_components/`(MenuTree, MenuEditPanel, MenuEditForm, IconPicker, RoleMultiSelect, buildMenuTree, menuFormSchema) | (확인 필요) |
+| `brics-menus/` | 메뉴(사이드바) 관리 — 트리·편집 패널·아이콘 피커·역할 멀티셀렉트 | 일반 라우트, `_components/`(MenuTree, MenuEditPanel, MenuEditForm, IconPicker, RoleMultiSelect, buildMenuTree, menuFormSchema) | page 가드 `'PAGE_ADMIN_MENU'`(`page.tsx:9`) |
 | `messages/` | 메시지 플랫폼 — `queue/` `history/` `templates/` `throttle/` | 일반 중첩 라우트, `layout.tsx` + `_tabs.ts`(+spec) + `_components/` + `_helpers/` | 로그인만 (`MESSAGES_REQUIRED_FUNCTION` 미정) |
-| `alimtalk-control/` | 알림톡 제어 | 일반 라우트, `_components/` | (확인 필요) |
-| `resource-center/` | 리소스 센터 (S3 업로드) | 일반 라우트, `_components/` | (확인 필요) |
+| `alimtalk-control/` | 알림톡 제어 | 일반 라우트, `_components/` | page 가드 `AuthFunction.PAGE_ALIMTALK`(`page.tsx:9`) |
+| `resource-center/` | 리소스 센터 (S3 업로드) | 일반 라우트, `_components/` | page 가드 `AuthFunction.PAGE_RESOURCE_CENTER`(`page.tsx:9`) |
 | `access-requests/` | 접근 요청 | `layout.tsx` + `page.tsx` + `_components/` | layout 가드 |
 | `activity-log/` | 활동 로그 | `layout.tsx` + `page.tsx` + `_components/` + `_helpers/` | `PAGE_ACCESS_LOGS` |
 | `audit/permission-changes/` | 권한 변경 감사 | 중첩 라우트 | `PAGE_ACCESS_LOGS` |

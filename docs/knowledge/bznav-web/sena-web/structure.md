@@ -8,7 +8,7 @@
 | `chat/[[...chatId]]/page.tsx` | optional catch-all. 내용은 `PageViewEventLogger`만 |
 | **`chat/layout.tsx`** | 채팅 본문 `<ChatContent/>`를 **layout에서 렌더**(`/chat` ↔ `/chat/[id]` 전환 시 리마운트 방지) |
 | `chat/_components/` | `ChatContent.tsx`(코어), `ChatItems.tsx`, `DislikeFeedbackDrawer.tsx` |
-| `(authenticated)/` | `layout.tsx` = `<AuthGuard logoutPagePath="/">`. `my/`, `notification/`, `policies/`, `withdraw/`, `user-type-survey/`(5단계. `app/_components/SurveyGuard.tsx`가 설문 미완료 + 가입 24시간 경과 회원을 이리로 `replace`하되, 설문 화면을 한 번 연 적이 있으면(`SURVEY_VISITED_KEY`) 다시 보내지 않는다 — `5cc858b`에서 강제 진행 제거) |
+| `(authenticated)/` | `layout.tsx` = `<AuthGuard logoutPagePath="/">`. `my/`, `notification/`, `policies/`, `withdraw/`, `user-type-survey/`(page 는 `?step=` 으로 6단계 intro·user-type·industry·office-info·interest·completed, API 단계는 4개 `lib/constants/survey.ts`. `app/_components/SurveyGuard.tsx`가 설문 미완료 + 가입 24시간 경과 회원을 이리로 `replace`하되, 설문 화면을 한 번 연 적이 있으면(`SURVEY_VISITED_KEY`) 다시 보내지 않는다 — `5cc858b`에서 강제 진행 제거) |
 | `(login)/` | `signin`, `signup/{terms,input}`, `ci-request`, `ci-authentication`, `duplicate-account` — 본문은 `@repo/user-sign` 컴포넌트 그대로 |
 | `contents/` | `(conversion)/[id]` 상세, `gone/`, `_components/` |
 | `about/`(+`_hooks/`) · `app-menu/` · `search-chat/` · `system-maintenance/` · `not-found.tsx` | |

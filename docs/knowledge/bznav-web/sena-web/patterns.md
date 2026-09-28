@@ -5,7 +5,7 @@
 - 클라이언트 파일 94 — 서버 컴포넌트는 `page.tsx`/`layout.tsx` 얕은 층만
 
 ## 클라이언트 셸 `SenaAppContent.tsx` (가장 깊은 Provider 중첩)
-`RouterProvider` → `AuthProvider(isUseCI: true)` → `EventTrackingProvider`(**mixpanel+airbridge+datadog+google**, datadog `appVersion: packageJSON.version`) → `Suspense` → `CiGuard` → `TooltipProvider` → `DialogProvider` → `NiceModal.Provider` → `SurveyGuard` → `SenaMainShell` → `PageContent`(`GlobalErrorBoundary`). `initializeReactNativeBridge(SERVICE_APP_ID)` + `sendBznavNativeMessage('setSignInInitialRoute')`, `registerUnauthorizedHandler(() => { setStatusSignOut(); router.push(PATHS.SIGN_IN) })`, `useForceAppUpdate()`, `import '@/styles/markdown.scss'`
+`RouterProvider` → `AuthProvider(isUseCI: true)` → `EventTrackingProvider`(**mixpanel+airbridge+datadog+google**, datadog `appVersion: packageJSON.version`) → `Suspense` → `CiGuard` → `TooltipProvider` → `DialogProvider` → `NiceModal.Provider` → `SurveyGuard` → `SenaMainShell` → `PageContent`(`GlobalErrorBoundary`). `initializeReactNativeBridge(SERVICE_APP_ID)` + `sendBznavNativeMessage('setSignInInitialRoute')`, `registerUnauthorizedHandler(() => { unsubscribePush(); setStatusSignOut(); router.push(PATHS.SIGN_IN) })`(푸시 구독 해제가 먼저)`, `useForceAppUpdate()`, `import '@/styles/markdown.scss'`
 
 ## 데이터 — axios 없음, fetch 래퍼 2개가 관문 (`lib/utils/request.ts`)
 - `requestSenaV2Fetch(endpoint, platform, data?, options?)`: `NEXT_PUBLIC_SENA_API_SERVER`, `X-Platform` 헤더, 실패 body `code` → `handleAuthErrorCode` — HTTP 401 이 아니라 `code` 가 `INVALID_TOKEN`·`MISSING_USER_ID`·`USER_LOAD_ERROR`·`AUTH_REQUIRED` 일 때만(`lib/utils/auth-error-handler.ts`). 핸들러는 `SenaAppContent` 에서 등록되며 **푸시 구독 해제(`unsubscribePush`) 후 로그아웃**

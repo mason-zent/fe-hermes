@@ -9,7 +9,7 @@
 | `app/_components/` | 전역 공통 9개(DialogProvider, UnmaskToggle, BaseFileUploader, LoadingSpinner, NiceModalProvider, PrivateAccessDialog, SigninCard, AuthForm, PaginationLimitSelector) + `modals/UserSearchModal.tsx` |
 | `app/_lib/` | `masking.ts`, `privateAccess.ts`, `usePrivateAccessState.ts`, `hooks/`(useUnmaskedEndpoints, useCsvDownload 등 3개) |
 | `lib/` | `constants/`(common·advertisement·landing-seo·partner) · `types/`(도메인별 **zod 스키마** 15파일) · `utils/`(datetime·strings·api-error·image) · `swr/`(수동 훅 틀) · `orval-fetcher.ts` · `formdata.ts` · `crmListUploadHelper.ts` |
-| `__generated__/` | Orval 생성물, **git 커밋됨**. `endpoints/<태그>/<태그>.ts` 23개 — **태그 디렉터리명이 한글**(`제휴처`, `광고구좌`, `알림톡`, `파이프-드라이브`, `콘텐츠-페이지-어드민`, `sso-약관` …) + `models/`. 별칭 `@/generated/*` |
+| `__generated__/` | Orval 생성물, **git 커밋됨**. `endpoints/<태그>/<태그>.ts` 26개 — **태그 디렉터리명이 한글**(`제휴처`, `광고구좌`, `알림톡`, `파이프-드라이브`, `콘텐츠-페이지-어드민`, `sso-약관` …) + `models/`. 별칭 `@/generated/*` |
 | `docs/landing-seo-claude.md` | 랜딩 SEO Claude 프롬프트 문서 |
 | 기타 | `orval.config.ts`, `generate-env.mjs`(SSM→.env), `next.config.mjs`(`distDir: dist`, svgr), `.github/workflows` 4개, `Dockerfile(.preview)` |
 

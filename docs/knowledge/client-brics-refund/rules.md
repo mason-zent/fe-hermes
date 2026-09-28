@@ -17,7 +17,7 @@
 ## 구조·패턴
 - App Router. 도메인 화면은 `app/refund-service/<도메인>/`, 화면 전용 컴포넌트는 그 라우트의 `_components/`, 공통은 `app/_components/`, 공통 훅 `app/_lib/hooks/`
 - 클라이언트 컴포넌트는 `'use client'` 명시. `page.tsx`/`layout.tsx` 분리
-- **권한 가드는 `layout.tsx`에 둔다** (`middleware.ts`가 없다). `origin/prd` 확인 결과 `refund-service/**/layout.tsx` 25개가 `auth()` → `session.user.functions.includes(AuthFunction.X)` → `redirect('/unauthorized')` 패턴이고 `page.tsx`에 가드를 둔 화면은 **0개**다. 복사 원본은 `partner/discount/layout.tsx`
+- **권한 가드는 `layout.tsx`에 둔다** (`middleware.ts`가 없다). `origin/prd` 확인 결과 `refund-service/**/layout.tsx` 25개 중 24개가 `auth()` → `session.user.functions.includes(AuthFunction.X)`(`advertisement/landing-seo/layout.tsx` 1개는 로그인 여부만 본다) → `redirect('/unauthorized')` 패턴이고 `page.tsx`에 가드를 둔 화면은 **0개**다. 복사 원본은 `partner/discount/layout.tsx`
 
 ## API
 - 손으로 API 클라이언트를 쓰지 않는다. `__generated__/`(Orval, 별칭 `@/generated/*`)에 있으면 그것을 쓰고, 없으면 `pnpm gen:api:local`(서버 기동 + `.env.local`)로 재생성

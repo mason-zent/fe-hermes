@@ -52,7 +52,7 @@ if (res?.selected === 'secondary') return   // 'primary' | 'secondary' | 'none'.
 - `toast({ title, description, variant: 'destructive', duration: 2500 })` — `toast` 직접 import(`@ui/components/ui`)와 `useToast()` 둘 다 쓰임
 - 에러 문구는 `apiErrorMessage(error, fallback)`(`lib/utils/api-error.ts`)로 서버 메시지 우선
 
-## P8. 권한 가드 — layout.tsx 25개가 동일 블록
+## P8. 권한 가드 — layout.tsx 25개 중 24개가 동일 블록(`advertisement/landing-seo` 만 로그인 여부만)
 ```tsx
 export default async function layout({ children }: { children: ReactNode }) {
   const session = await auth()

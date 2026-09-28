@@ -28,7 +28,7 @@
 
 ## D. 컬럼·필터 추가
 - documents 서류 종류: `types/DocumentType.ts`의 `RequireDocumentType` enum — ⚠️ **숫자 값은 zent API·브릭스 어드민과 공유 계약, 변경·재배열 금지**. 표시는 `containers/documents/documentConfig.ts`(`CATEGORY_UX`)·`documentMeta.ts`, 값은 서버 `documentInfo` 우선·로컬은 폴백
-- sales 실적: `components/sales/detailList/index.tsx`(`getStatus()`), `components/sales/filterSelector`, `monthlySelector`. 파라미터는 `SalesDataApiClient → /api/sales/statstics|summary|settlement → SalesDataService(마스킹) → SalesExternalApiGateway` **전 구간** 추가
+- sales 실적: `components/sales/detailList/index.tsx`(`getStatus()`), `components/sales/filterSelector`, `monthlySelector`. 파라미터를 추가할 때: `SalesDataApiClient` 는 **zent API 를 직접** 부른다(`NEXT_PUBLIC_SERVER_ZENT_API_URL`). `/api/sales/statstics|summary|settlement → SalesDataService(마스킹) → SalesExternalApiGateway` Route Handler 도 있지만 **레포 안 호출자가 없다**(외부 호출 여부 확인 필요). 실제로 타는 경로(클라이언트 → zent API)부터 고치고, BFF 쪽까지 맞출지는 확인 후 정한다
 
 ## E. 검증
 ```bash

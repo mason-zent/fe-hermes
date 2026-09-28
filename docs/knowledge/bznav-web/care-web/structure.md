@@ -18,7 +18,7 @@
 | `(my-info)/` | 86 | `home`, `my-book`, `my-info` |
 | `year-end-tax/` | 71 | 연말정산 `[year]`, `employee/[year]/[employeeId]` |
 | `business-card/` 65 · `startup-check/` 63 · `certificate/` 32 · `card-expense/` 3 | | |
-| `(landing)/` | 55 | `(performance-landing)/{beauty-industry,food-industry,mail-order-industry,single-person-business,income-tax,events,premium}` — 대부분 미들웨어로 차단, **`/premium`만 활성** |
+| `(landing)/` | 55 | `(performance-landing)/{beauty-industry,food-industry,mail-order-industry,single-person-business,income-tax,events,premium}` — 대부분 미들웨어로 차단(`libs/hoc/withLandingRedirectMiddleware.ts`), **`/premium`·`/events` 만 열린다** |
 | `(external-file-download)/` | 20 | `file-download/{vat,payroll,my-book,…}` |
 | `(gateway)/` | 18 | 외부 진입/복귀 14종(`payment-gateway/{success,failed,cancel}`, `cashnote-gateway`, `pro-gateway`, …) |
 | `cs-center/` | 13 | 도움말 센터(노션 렌더 + JSON-LD, 서버 컴포넌트) |
@@ -33,7 +33,7 @@
 `composeMiddleware(...)`가 `reduceRight` → **인자 앞쪽이 먼저 실행**: `withServiceMaintenanceMiddleware` → `withLandingRedirectMiddleware` → `withSetWorkingPlatform` → `withSafeReturnUrlMiddleware` → `withAbTestMiddleware` → `withVatRedirectMiddleware` → `withPricingRedirectMiddleware`. 구현 `libs/hoc/`
 
 ## 루트 폴더
-- `components/common/`: `app-side-bar/`(shadcn 복사본 sidebar·sheet), `auth/CareAuthGuard.tsx`, `errors/`, `event-logger/ViewEventLogger`, `guard/HometaxGuard`, `layout/CareLayout`, `logo-top-navigation/`, `pdf-components/`, `top-navigation/`, `loading-dot/`, `loading-fallback/`, `file-upload-dialog/` 등. **폴더명은 kebab-case**(NEWCARE-649, 파일명은 그대로). 빈도: `ClickEventLogger` 248 · `CareLayout` 216 · `ViewEventLogger` 161 · `CareAuthGuard` 15
+- `components/common/`: `app-side-bar/`(shadcn 복사본 sidebar·sheet), `auth/CareAuthGuard.tsx`, `errors/`, `event-logger/ViewEventLogger`, `guard/HometaxGuard`, `layout/CareLayout`, `logo-top-navigation/`, `pdf-components/`, `top-navigation/`, `loading-dot/`, `loading-fallback/`, `file-upload-dialog/` 등. **`components/common`·`libs`·기능 폴더는 kebab-case**(NEWCARE-638, `event-logger` 는 649. 파일명은 그대로). **라우트 폴더에는 camelCase 가 남아 있다**(`alreadyFinish`·`(simpleAuth)`·`(submitMaterial)`·`bankMaintenance` 등) — URL 세그먼트는 바뀌지 않았다. 빈도: `ClickEventLogger` 248 · `CareLayout` 216 · `ViewEventLogger` 161 · `CareAuthGuard` 15
 - `constants/`(20): **`paths.ts`**(430줄, `CARE_PATHS` 한글 키 + 도메인별 `*_PATHS` 객체, 참조 264파일), `careEvent`, `storageKey`(`STORAGE_KEYS`), `formSchema`, `metadata`, `abTestValue`, `vatPeriod` …
 - `hooks/`(30 공용) · `store/`(루트 atom 5) — 도메인 atom은 라우트 옆 `store/`(트리 전체 95파일)
 - `libs/`: `relay/`(`relayEnvironment`, `fetchRelayFactory`), `provider/`(Care*Provider 7), `hoc/`(미들웨어 7 + compose), `event-logger/`(`useCareEventLogger`, `ClickEventLogger` 등), `channel-talk/`(`openChannelTalk`, `nativeBridge`), `kakao/`, `social/`, `image-resizer/`
