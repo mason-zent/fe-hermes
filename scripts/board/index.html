@@ -68,8 +68,6 @@
   .btn.danger:hover { border-color: var(--bad); }
   .btn:disabled { opacity: .5; cursor: progress; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .target { font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--muted); }
-  .target select { padding: 2px 6px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); }
   dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); width: min(640px, calc(100vw - 32px)); padding: 16px; }
   dialog::backdrop { background: rgba(0,0,0,.35); }
   dialog h3 { margin: 0 0 6px; font-size: 15px; }
@@ -84,7 +82,6 @@
 <header>
   <h1>헤르메스 현황판</h1>
   <span class="live"><span id="live-dot" class="dot"></span><span id="live-text">연결 중…</span></span>
-  <label class="target">지시 보낼 곳 <select id="target"></select></label>
   <div class="meta"><span id="updated"></span><span id="sync"></span></div>
 </header>
 <main>
@@ -129,7 +126,7 @@
   const ago = (sec) => (sec < 60 ? `${sec}초 전` : sec < 3600 ? `${Math.round(sec / 60)}분 전` : `${Math.round(sec / 3600)}시간 전`);
   let previous = new Map();
   let lastState = null;
-  let targetPane = localStorage.getItem('board-target') || '';
+  let targetPane = '';
 
   // 카드 상태별 액션 — 헤르메스에게 보낼 지시문 초안. 보내기 전에 창에서 고칠 수 있다
   const ACTIONS = {
@@ -238,9 +235,15 @@
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
       if (card?.worktree) to.innerHTML += `<br>워크트리 <code>${esc(card.worktree.rel)}</code> ← ${esc(card.worktree.ref)} (detached${card.worktree.exists ? ', 이미 있어서 그대로 써요' : ', 새로 만들어요'}) · 담당을 바꾸면 그 에이전트의 레포에 만들어요`;
     } else {
-      const pane = (lastState?.panes || []).find((entry) => entry.id === targetPane);
-      if (!pane) return toast('지시를 보낼 pane 이 없어요. 위쪽 "지시 보낼 곳" 에서 골라 주세요');
-      to.textContent = `→ ${pane.agent} (${pane.id})${pane.status === 'working' ? ' · 지금 작업 중이에요 — 끝난 뒤 이어서 처리돼요' : ''}`;
+      // 받는 곳: 카드에 붙은 에이전트 pane → 없으면 헤르메스 pane. 팝업 안에서만 바꿀 수 있다
+      const candidates = (lastState?.panes || []).filter((entry) => entry.role !== 'other');
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      const attached = [...(card?.agents || []), ...(card?.linkedPlan?.agents || [])];
+      const preferred = candidates.find((entry) => attached.includes(entry.id)) || candidates.find((entry) => entry.role === 'hermes') || candidates[0];
+      if (!preferred) return toast('지시를 받을 헤르메스·에이전트 pane 이 없어요');
+      targetPane = preferred.id;
+      to.innerHTML = `→ 받는 곳 <select id="ask-pane">${candidates.map((entry) => `<option value="${esc(entry.id)}" ${entry.id === targetPane ? 'selected' : ''}>${esc(entry.agent)} · ${esc(entry.id)}${entry.status === 'working' ? ' (작업 중)' : ''}</option>`).join('')}</select>`;
+      document.getElementById('ask-pane').onchange = (event) => { targetPane = event.target.value; };
     }
     pending = { mode, id: pendingId };
     setStatus('', '');
@@ -278,10 +281,6 @@
       setStatus(`보내지 못했어요: ${error.message}`, 'error');
       sendButton.disabled = false;
     }
-  };
-  document.getElementById('target').onchange = (event) => {
-    targetPane = event.target.value;
-    try { localStorage.setItem('board-target', targetPane); } catch { /* 저장 못 해도 동작한다 */ }
   };
 
   const controls = (card) => {
@@ -392,13 +391,6 @@
       }
     }
     previous = next;
-
-    // 지시 보낼 곳: 헤르메스 pane 먼저, 그다음 위임 에이전트 pane
-    const candidates = (state.panes || []).filter((pane) => pane.role !== 'other').sort((left, right) => (left.role === 'hermes' ? -1 : 1) - (right.role === 'hermes' ? -1 : 1));
-    if (!candidates.some((pane) => pane.id === targetPane)) targetPane = (candidates.find((pane) => pane.role === 'hermes') || candidates[0] || {}).id || '';
-    document.getElementById('target').innerHTML = candidates.length
-      ? candidates.map((pane) => `<option value="${esc(pane.id)}" ${pane.id === targetPane ? 'selected' : ''}>${esc(pane.agent)} · ${esc(pane.id)}</option>`).join('')
-      : '<option value="">(없음)</option>';
 
     const findCard = (id) => (state.cards || []).find((card) => card.id === id);
     document.querySelectorAll('[data-act]').forEach((button) => {
