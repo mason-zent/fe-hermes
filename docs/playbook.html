@@ -542,11 +542,11 @@ claude
         </article>
 
         <article class="cmd">
-          <div class="cmd-head"><kbd>/call <span class="arg">에이전트 브랜치</span></kbd><span class="tag plain">디스패치</span></div>
-          <p class="what">담당 에이전트를 <strong>먼저 띄우고, 요청은 그 pane 에서 직접</strong> 씁니다. 헤르메스가 대상 레포의 브랜치·미커밋 상태를 보고하고 확인을 받은 뒤, <code>/branch</code> 워크트리 → 빈 지시 경량 계획서(<code>plans/task/…</code>) → 지시 없는 pane 을 한 번에 만듭니다. 에이전트는 첫 요청을 받으면 계획서 제목·지시를 채우고 진행합니다.</p>
-          <div class="flow"><span>브랜치 확인</span><span>워크트리 · 경량 계획서</span><span class="hi">pane 에서 요청</span></div>
-<pre><code>/call bznav-plus-fe REF-3900
-/call refund-fe fix/목록-정렬</code></pre>
+          <div class="cmd-head"><kbd>/call <span class="arg">에이전트</span></kbd><span class="tag plain">디스패치</span></div>
+          <p class="what">담당 에이전트를 <strong>바로 띄웁니다.</strong> 헤르메스는 빈 지시 경량 계획서(<code>plans/task/…</code>)를 만들어 pane 만 띄우고, 뜬 에이전트가 브랜치·미커밋 상태를 보고한 뒤 <strong>브랜치 이름을 물어</strong> 워크트리를 만듭니다. 요청도 그 pane 에서 직접 쓰면 에이전트가 계획서 제목·지시를 채우고 진행합니다.</p>
+          <div class="flow"><span>pane 띄우기</span><span>에이전트가 브랜치 묻기 · 워크트리</span><span class="hi">pane 에서 요청</span></div>
+<pre><code>/call bznav-plus-fe
+/call refund-fe</code></pre>
         </article>
 
         <article class="cmd">

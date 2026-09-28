@@ -4,6 +4,7 @@
 # **계획서 없이는 띄우지 않는다** — 모든 작업은 계획서 하나에 묶인다 (AGENTS.md 5절)
 #   --plan <plans/…md>          이미 있는 계획서(정식·경량)에 묶는다
 #   --plan new "<한 줄 요약>"     경량 계획서를 새로 만들어 묶는다 (scripts/new-plan.mjs → plans/task/…)
+#   --ask-branch                 (/call) 워크트리 없이 띄우고, 에이전트가 브랜치 이름을 물어 new-branch.sh 로 만든다
 # 띄운 뒤 계획서 Checkpoint 의 Work ref 에 워크트리·브랜치·pane 을 적고, 에이전트 지시 맨 앞에 계획서 경로를 넣는다.
 #
 # 사용:
@@ -24,13 +25,14 @@
 set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-AGENT=""; PROMPT=""; DIR="right"; WORKDIR=""; HERE=0; PLAN=""; PLAN_NEW=""
+AGENT=""; PROMPT=""; DIR="right"; WORKDIR=""; HERE=0; PLAN=""; PLAN_NEW=""; ASK_BRANCH=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --plan)
       if [ "${2:-}" = new ]; then PLAN_NEW="${3:-}"; shift 3; else PLAN="${2:-}"; shift 2; fi ;;
     --down) DIR="down"; shift ;;
     --here) HERE=1; shift ;;
+    --ask-branch) ASK_BRANCH=1; shift ;;   # /call — 브랜치는 에이전트가 떠서 사용자에게 묻고 워크트리를 만든다
     --cwd)  WORKDIR="${2:-}"; shift 2 ;;
     -h|--help) grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) if [ -z "$AGENT" ]; then AGENT="$1"; else PROMPT="$1"; fi; shift ;;
@@ -63,6 +65,21 @@ case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 �
 # 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
 PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). "
 # 지시 없이 띄우면(/call) 사용자가 pane 에서 직접 요청한다 — 첫 요청으로 계획서를 채우게 한다
+# /call — 브랜치를 사용자에게 물어 에이전트가 워크트리를 만든다. new-branch.sh 대상 이름은 config 에서
+if [ "$ASK_BRANCH" = 1 ]; then
+  BRANCH_TARGET="$(python3 - "$HERMES_DIR/hermes.config.json" "$AGENT" <<'PYEOF'
+import json, sys
+cfg = json.load(open(sys.argv[1])); agent = sys.argv[2]
+alias = {'client-brics-refund': 'refund', 'client-brics-hub': 'hub', 'client-brics-care': 'care', 'web-op': 'op', 'zent-packages': 'packages'}
+for repo in cfg['repos']:
+    if agent in (repo.get('agents') or []): print(alias.get(repo['name'], repo['name'])); break
+    if repo.get('packagesAgent') == agent: print('bznav:<작업할 앱>'); break
+    hit = [name for name, app in (repo.get('apps') or {}).items() if app.get('agent') == agent]
+    if hit: print(f'bznav:{hit[0]}'); break
+PYEOF
+)"
+  PLAN_HEADER="${PLAN_HEADER}아직 브랜치·워크트리가 없다. 순서대로 한다: ① 담당 레포 메인 체크아웃(repos/…)의 브랜치·미커밋 상태를 git status --short --branch 로 한 줄 보고한다(체크아웃·stash 하지 않는다) ② 사용자에게 작업 브랜치 이름(티켓 번호 또는 fix/설명)을 묻는다 — 임의로 짓지 않는다 ③ 답을 받으면 $HERMES_DIR/scripts/new-branch.sh <이름> ${BRANCH_TARGET:-<대상>} 로 워크트리를 만들고, 이후 모든 읽기·수정은 그 워크트리 절대경로 안에서만 한다(메인 체크아웃은 수정하지 않는다). 계획서 Checkpoint 의 Work ref 줄에서 앞의 경로·🌿 브랜치를 새 워크트리·브랜치로 고친다(뒤의 'pane … (에이전트)' 는 그대로 둔다). 검증 스크립트는 HERMES_VERIFY_DIR=<워크트리> 를 붙여 돌린다 ④ 그다음 사용자의 요청을 기다린다. "
+fi
 [ -z "$PROMPT" ] && PLAN_HEADER="${PLAN_HEADER}지금은 지시가 없다. 브랜치·미커밋 상태만 확인해 한 줄로 보고하고 사용자의 요청을 기다린다. 첫 요청을 받으면 계획서의 제목(# 줄)과 '## 지시' 절을 그 요청으로 바꿔 적고 진행한다. 요청이 여러 레포·API 변경으로 커지면 멈추고 정식 계획서가 필요하다고 알린다. "
 PROMPT="$PLAN_HEADER${PROMPT}"
 
