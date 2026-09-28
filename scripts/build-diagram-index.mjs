@@ -10,21 +10,11 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'docs/diagrams');
 
 // 타입별 표시 이름. architecture 만 파일명에 타입이 안 붙는다(먼저 만든 9장의 관례).
+// lifecycle(화면 상태)·data-sources(가로지르는 장)는 목록에서 뺐다. 파일은 docs/diagrams/ 에 남아 있다
 const TYPES = [
   { key: 'architecture', label: '구조', suffix: '.html' },
   { key: 'domains', label: '화면 맵', suffix: '.domains.html' },
   { key: 'sequence', label: '요청 흐름', suffix: '.sequence.html' },
-  { key: 'lifecycle', label: '화면 상태', suffix: '.lifecycle.html' },
-];
-
-// 서비스 전체를 가로지르는 것 — 타입 4종 패턴이 아니라 한 장짜리다
-const CROSS = [
-  {
-    file: 'data-sources.html',
-    name: '데이터 출처 지도',
-    sub: '출처 · 관문 · 서비스',
-    desc: 'Orval+SWR / Relay / fetch 래퍼 / CMS 클라이언트 — 계열마다 관문이 완전히 다르다.',
-  },
 ];
 
 const GROUPS = [
@@ -65,13 +55,14 @@ const GROUPS = [
         name: 'bznav refund-web',
         sub: '비즈넵 환급 · 3200',
         desc: '5개 앱 중 유일한 Pages Router · webpack · Relay · 자체 sitemap',
+        extra: [{ file: 'refund-web/refund-web-architecture.html', label: '심층 · 106화면' }],
       },
       {
         base: 'bznav-care-web',
         name: 'bznav care-web',
         sub: '비즈넵 케어 · 3100',
         desc: 'route group · CARE_PATHS 한글 키 · CareAuthGuard · 유일하게 type-check·test:unit 보유. 심층은 화면 266개 전수(탭 10장)',
-        // 4종 밖에 따로 있는 장 — 같은 카드에 붙인다 (심층 칸을 따로 두지 않는다)
+        // 타입 밖에 따로 있는 장 — 같은 카드에 붙인다 (심층 칸을 따로 두지 않는다)
         extra: [{ file: 'care-web/care-web-architecture.html', label: '심층 · 266화면' }],
       },
       {
@@ -79,18 +70,21 @@ const GROUPS = [
         name: 'bznav brand-web',
         sub: '비즈넵 브랜드 · 3000',
         desc: 'DatoCMS GraphQL 단일 경로 · next-sitemap postbuild · Jotai 사용처 0건',
+        extra: [{ file: 'brand-web/brand-web-architecture.html', label: '심층 · 화면·URL' }],
       },
       {
         base: 'bznav-sena-web',
         name: 'bznav sena-web',
         sub: '비즈넵 세나 · 3300',
         desc: 'AI 챗 상태 흐름 · route group · marked 렌더 · firebase-key.json 주의',
+        extra: [{ file: 'sena-web/sena-web-architecture.html', label: '심층 · 20화면' }],
       },
       {
         base: 'bznav-plus-web',
         name: 'bznav plus-web',
         sub: '비즈넵 플러스 · 3400',
         desc: '계산기 3계층 · recharts · 노션 렌더 · gen:env 수동',
+        extra: [{ file: 'plus-web/plus-web-architecture.html', label: '심층 · 19화면' }],
       },
     ],
   },
@@ -122,21 +116,7 @@ const section = (group) => {
     .filter(Boolean);
   return `    <h2>${esc(group.title)}</h2>\n    <div class="grid">\n${cards.join('\n')}\n    </div>`;
 };
-const crossCards = CROSS.filter((item) => existsSync(join(DIR, item.file)))
-  .map((item) => {
-    total++;
-    return `      <div class="card">
-        <div class="t">${esc(item.name)}</div>
-        <div class="s">${esc(item.sub)}</div>
-        <div class="d">${esc(item.desc)}</div>
-        <div class="pills"><a class="pill" href="${item.file}">열기</a></div>
-      </div>`;
-  });
-const crossSection = crossCards.length
-  ? `    <h2>서비스 전체를 가로지르는 것</h2>\n    <div class="grid">\n${crossCards.join('\n')}\n    </div>`
-  : '';
-
-const body = [crossSection, ...GROUPS.map(section)].filter(Boolean).join('\n');
+const body = [...GROUPS.map(section)].filter(Boolean).join('\n');
 
 const html = `<!doctype html>
 <html lang="ko">
@@ -187,7 +167,7 @@ const html = `<!doctype html>
   <div class="wrap">
     <h1>헤르메스 다이어그램</h1>
     <p class="lead">작업 흐름과 담당 레포를 인터랙티브 HTML 로 본다. 서비스마다 보는 각도를 나눠 두었다.</p>
-    <p class="note"><b>구조</b>는 어떤 부품으로 이루어져 있는가, <b>화면 맵</b>은 실제로 어떤 화면이 몇 개씩 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가, <b>화면 상태</b>는 어디서 갈라지고 멈추는가를 본다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
+    <p class="note"><b>구조</b>는 어떤 부품으로 이루어져 있는가, <b>화면 맵</b>은 실제로 어떤 화면이 몇 개씩 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가를 본다. 비즈넵 웹 5개는 <b>심층</b>에 화면을 전수로 담았다(탭 번들). 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
     <h2>작업 흐름</h2>
     <div class="grid">
       <div class="card">

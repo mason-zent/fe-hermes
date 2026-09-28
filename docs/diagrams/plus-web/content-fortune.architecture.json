@@ -1,0 +1,619 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "세금 콘텐츠 · 운세 심층",
+    "subtitle": "노션 두 갈래 조회 → react-notion-x · 사업자번호 운세 → localStorage 병합",
+    "output": "content-fortune.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      382
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "edc6fe3009325aab275a90e8fa9c8fb668aa14e0"
+    },
+    "views": [
+      {
+        "id": "notion",
+        "label": "노션 조회",
+        "focus": [
+          "dbRows",
+          "notionFetch",
+          "notionExt",
+          "pageContent"
+        ],
+        "note": "행 목록은 공식 API, 본문은 notion-client 패키지로 따로 읽는다."
+      },
+      {
+        "id": "render",
+        "label": "렌더",
+        "focus": [
+          "meta",
+          "chrome",
+          "renderer"
+        ],
+        "note": "서버에서 recordMap 을 만들고 client Renderer 가 마운트 뒤에 그린다."
+      },
+      {
+        "id": "fortune",
+        "label": "운세",
+        "focus": [
+          "fPage",
+          "useFortune",
+          "fQuery",
+          "senaExt"
+        ],
+        "note": "사업자번호 하나로 세나 서버의 saju API 를 부른다."
+      },
+      {
+        "id": "fstore",
+        "label": "운세 저장",
+        "focus": [
+          "lastBizno",
+          "fStorage",
+          "fShare"
+        ],
+        "note": "하루 한 번만 오늘 운세를 갈아 끼운다. 기본사주는 최초 1회."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "tax-content 본문 — 서버 → client",
+      "wraps": [
+        "pageContent",
+        "renderer"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "운세 localStorage",
+      "wraps": [
+        "lastBizno",
+        "fStorage"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "dbRows",
+      "type": "backend",
+      "label": "노션 DB 행",
+      "sublabel": "resolveDatabaseId · cache()",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/get-notion-database-rows.ts",
+          "line": 10,
+          "label": "resolveDatabaseId — child_database 이름 검색 · 캐시",
+          "end_line": 23
+        },
+        {
+          "path": "apps/plus-web/lib/api/get-notion-database-rows.ts",
+          "line": 62,
+          "label": "listDatabaseRows — generateStaticParams 용",
+          "end_line": 65
+        },
+        {
+          "path": "apps/plus-web/lib/api/get-notion-database-rows.ts",
+          "line": 68,
+          "label": "findRowBySlug — React cache() · name 속성 equals",
+          "end_line": 81
+        }
+      ]
+    },
+    {
+      "id": "notionFetch",
+      "type": "backend",
+      "label": "notionFetch",
+      "sublabel": "api.notion.com/v1 · Bearer",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/notion-client.ts",
+          "line": 3,
+          "label": "notionFetch — Notion-Version 2022-06-28",
+          "end_line": 19
+        },
+        {
+          "path": "apps/plus-web/lib/constants/notion.ts",
+          "line": 1,
+          "label": "NOTION_TOKEN · PAGE_ID · DATABASE_NAME (env)",
+          "end_line": 6
+        }
+      ]
+    },
+    {
+      "id": "notionExt",
+      "type": "external",
+      "label": "Notion",
+      "sublabel": "공식 API · 페이지 레코드",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ]
+    },
+    {
+      "id": "pageContent",
+      "type": "backend",
+      "label": "getNotionPageContent",
+      "sublabel": "notion-client · NotionAPI.getPage",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/get-notion-page-content.ts",
+          "line": 1,
+          "label": "import { NotionAPI } from 'notion-client'"
+        },
+        {
+          "path": "apps/plus-web/lib/api/get-notion-page-content.ts",
+          "line": 5,
+          "label": "UA 헤더를 브라우저로 위장",
+          "end_line": 11
+        }
+      ]
+    },
+    {
+      "id": "meta",
+      "type": "frontend",
+      "label": "SEO 메타",
+      "sublabel": "generateMetadata · 공유 딥링크",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/tax-content/meta.ts",
+          "line": 1,
+          "label": "TAX_CONTENT_META"
+        },
+        {
+          "path": "apps/plus-web/lib/constants/link.ts",
+          "line": 6,
+          "label": "공유 · 설치 배너 에어브릿지 링크 — prd / 그 외",
+          "end_line": 7
+        }
+      ]
+    },
+    {
+      "id": "chrome",
+      "type": "frontend",
+      "label": "콘텐츠 주변 UI",
+      "sublabel": "헤더 · 설치 배너 · 맨위로 · 오류",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-content/_components/ContentDetailHeader.tsx",
+          "line": 13,
+          "label": "ContentDetailHeader — title 없으면 slug"
+        },
+        {
+          "path": "apps/plus-web/app/tax-content/_components/AppInstallBanner.tsx",
+          "line": 14,
+          "label": "앱이 아닐 때만 보인다 (mounted 이후)"
+        },
+        {
+          "path": "apps/plus-web/app/tax-content/_components/TaxContentErrorView.tsx",
+          "line": 9,
+          "label": "행이 없거나 조회 실패면 오류 뷰"
+        }
+      ]
+    },
+    {
+      "id": "renderer",
+      "type": "frontend",
+      "label": "Renderer",
+      "sublabel": "react-notion-x · 마운트 뒤 렌더",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-content/_components/Renderer.tsx",
+          "line": 22,
+          "label": "useMounted 전에는 null",
+          "end_line": 25
+        },
+        {
+          "path": "apps/plus-web/app/tax-content/_components/Renderer.tsx",
+          "line": 27,
+          "label": "block.value.value 한 겹 벗기기 sanitize",
+          "end_line": 45
+        },
+        {
+          "path": "apps/plus-web/app/tax-content/_components/Renderer.tsx",
+          "line": 19,
+          "label": "PageLink → DisabledPageLink (링크 막음)"
+        }
+      ]
+    },
+    {
+      "id": "fPage",
+      "type": "frontend",
+      "label": "FortunePage",
+      "sublabel": "입력 폼 ↔ 결과 · 새로고침 오버레이",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_components/FortunePage.tsx",
+          "line": 33,
+          "label": "isRefreshing 이면 NiceModal 로 오버레이",
+          "end_line": 39
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_components/FortuneEntryForm.tsx",
+          "line": 1,
+          "label": "FortuneEntryForm — 사업자번호"
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_components/FortuneResultSection.tsx",
+          "line": 38,
+          "label": "Summary · Detail · ActionList",
+          "end_line": 44
+        }
+      ]
+    },
+    {
+      "id": "useFortune",
+      "type": "messagebus",
+      "label": "useFortune",
+      "sublabel": "initializing · idle · editingBizno",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune.ts",
+          "line": 17,
+          "label": "FortuneMode 3상태"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune.ts",
+          "line": 26,
+          "label": "useForm + yupResolver(biznoSchema)",
+          "end_line": 30
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune.ts",
+          "line": 81,
+          "label": "부트스트랩 — 저장본 먼저 보이고 오늘 것이 아니면 새로 조회",
+          "end_line": 114
+        }
+      ]
+    },
+    {
+      "id": "fQuery",
+      "type": "messagebus",
+      "label": "useFortuneQuery",
+      "sublabel": "조회 → 병합 저장 → DP 로그",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune-query.ts",
+          "line": 32,
+          "label": "requestFortune — 실패는 폼 에러로",
+          "end_line": 64
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune-query.ts",
+          "line": 46,
+          "label": "sendDpLog('fortune') — businessNumber 포함",
+          "end_line": 56
+        },
+        {
+          "path": "apps/plus-web/lib/api/fortune/fortune.ts",
+          "line": 6,
+          "label": "fetchFortune — POST FORTUNE_API_URL { bizno }"
+        }
+      ]
+    },
+    {
+      "id": "senaExt",
+      "type": "external",
+      "label": "세나 API",
+      "sublabel": "/api/open/saju",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ]
+    },
+    {
+      "id": "sparkle",
+      "type": "frontend",
+      "label": "SparkleCanvas",
+      "sublabel": "canvas 2d · requestAnimationFrame",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_components/SparkleCanvas.tsx",
+          "line": 14,
+          "label": "enabled 일 때만 루프를 돈다"
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_canvas/sparkle.ts",
+          "line": 1,
+          "label": "Sparkle 클래스"
+        }
+      ]
+    },
+    {
+      "id": "lastBizno",
+      "type": "database",
+      "label": "lastBiznoAtom",
+      "sublabel": "atomWithStorage · getOnInit",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_store/fortune-store.ts",
+          "line": 5,
+          "label": "getOnInit — 하이드레이트 경합 방지 주석",
+          "end_line": 6
+        }
+      ]
+    },
+    {
+      "id": "fStorage",
+      "type": "database",
+      "label": "fortune-storage",
+      "sublabel": "사업자번호별 localStorage",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_store/fortune-storage.ts",
+          "line": 35,
+          "label": "mergeStoredFortuneWithNew",
+          "end_line": 96
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_store/fortune-storage.ts",
+          "line": 54,
+          "label": "오늘 · 이번달 · 올해를 따로 갈아 끼운다",
+          "end_line": 73
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_store/fortune-storage.ts",
+          "line": 75,
+          "label": "기본사주는 최초 1회만",
+          "end_line": 78
+        }
+      ]
+    },
+    {
+      "id": "fShare",
+      "type": "frontend",
+      "label": "공유",
+      "sublabel": "sharePage → /fortune/share",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_components/FortuneActionList.tsx",
+          "line": 33,
+          "label": "공유 문구 — 사업장명 · 최고 항목 점수",
+          "end_line": 35
+        },
+        {
+          "path": "apps/plus-web/lib/constants/paths.ts",
+          "line": 23,
+          "label": "SHARE_URL — plus.bznav.com/fortune/share"
+        },
+        {
+          "path": "apps/plus-web/lib/constants/fortune/utm.ts",
+          "line": 1,
+          "label": "FORTUNE_UTM_VALUES.SHARE",
+          "end_line": 8
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "dbRows-notionFetch",
+      "from": "dbRows",
+      "to": "notionFetch",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "notionFetch-notionExt",
+      "from": "notionFetch",
+      "to": "notionExt",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "pageContent-notionExt",
+      "from": "pageContent",
+      "to": "notionExt",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "dbRows-meta",
+      "from": "dbRows",
+      "to": "meta",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "pageContent-renderer",
+      "from": "pageContent",
+      "to": "renderer",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fPage-useFortune",
+      "from": "fPage",
+      "to": "useFortune",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "useFortune-fQuery",
+      "from": "useFortune",
+      "to": "fQuery",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "fQuery-senaExt",
+      "from": "fQuery",
+      "to": "senaExt",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "fPage-sparkle",
+      "from": "fPage",
+      "to": "sparkle",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "useFortune-lastBizno",
+      "from": "useFortune",
+      "to": "lastBizno",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fQuery-fStorage",
+      "from": "fQuery",
+      "to": "fStorage",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "노션을 두 갈래로 읽는다",
+      "items": [
+        "행(slug · title · icon · color · step · creationDate) — notionFetch 로 공식 API 의 /databases/{id}/query",
+        "DB id 는 NOTION_PAGE_ID 페이지의 child_database 블록을 NOTION_DATABASE_NAME 으로 찾아 모듈 변수에 캐시한다",
+        "본문 — notion-client 패키지의 NotionAPI.getPage 로 recordMap 을 받는다. 브라우저 UA 헤더를 붙인다",
+        "page 는 revalidate 1800 · generateStaticParams(목록 실패면 빈 배열) · findRowBySlug 는 cache() 로 metadata 와 공유"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Renderer 는 client 에서만",
+      "items": [
+        "useMounted 전에는 null — 초기 HTML 에 본문이 없다",
+        "recordMap.block 의 value.value 를 한 겹 벗겨 react-notion-x 에 넘긴다. recordMap: any",
+        "PageLink 는 span 으로 바꿔 막는다(링크 콘텐츠는 넣지 않기로 협의, 방어 로직 주석)",
+        "공유 · 설치 배너는 에어브릿지 abr.ge 링크를 prd 와 그 외로 나눠 쓴다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "운세는 저장본이 먼저다",
+      "items": [
+        "부트스트랩 — lastBizno 가 있으면 저장본을 먼저 보여주고, lastDaily 가 오늘이 아니면 refreshFortune",
+        "병합 — 오늘 운세는 하루 1회, 이번달은 월 변경, 올해는 연 변경 때만 새 값으로. 기본사주 · 사업장명은 최초 1회",
+        "사업자번호를 바꾸면 이전 저장본을 지우고 새로 조회한다. 같은 번호면 폼 에러",
+        "성공할 때마다 DP 로그 'fortune' 을 보낸다 — 계산기와 달리 businessNumber 가 붙는다"
+      ]
+    }
+  ]
+}

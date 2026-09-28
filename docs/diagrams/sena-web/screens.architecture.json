@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "sena-web 20화면",
+    "subtitle": "app/**/page.tsx 전수 — 공개 6 · 채팅 2 · (authenticated) 6 · (login) 6",
+    "output": "screens.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      382
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "714b34495f963fc66e86601b5eced1d18e103615"
+    },
+    "views": [
+      {
+        "id": "public",
+        "label": "공개",
+        "focus": [
+          "home",
+          "contents",
+          "about",
+          "maint"
+        ],
+        "note": "홈과 콘텐츠 상세는 서버 컴포넌트에서 세나 API 를 직접 부른다. 점검 화면은 proxy 가 보낸다."
+      },
+      {
+        "id": "chatv",
+        "label": "채팅",
+        "focus": [
+          "chatlayout",
+          "chatpage",
+          "searchlayout",
+          "searchpage"
+        ],
+        "note": "채팅 본문은 page 가 아니라 layout 에 있다. 검색은 로그인 회원만 머문다."
+      },
+      {
+        "id": "authedv",
+        "label": "(authenticated)",
+        "focus": [
+          "authlayout",
+          "my",
+          "surveypage",
+          "withdraw"
+        ],
+        "note": "그룹 layout 의 AuthGuard 가 6화면을 모두 막는다."
+      },
+      {
+        "id": "loginv",
+        "label": "(login)",
+        "focus": [
+          "signin",
+          "signup",
+          "ci",
+          "dup"
+        ],
+        "note": "6화면 모두 @repo/user-sign 컴포넌트를 그대로 렌더한다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/ — page.tsx 20개 전수",
+      "wraps": [
+        "home",
+        "contents",
+        "about",
+        "maint",
+        "chatlayout",
+        "chatpage",
+        "searchlayout",
+        "searchpage",
+        "authlayout",
+        "my",
+        "surveypage",
+        "withdraw",
+        "signin",
+        "signup",
+        "ci",
+        "dup"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "(authenticated) — AuthGuard",
+      "wraps": [
+        "authlayout",
+        "my",
+        "surveypage",
+        "withdraw"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "홈 /",
+      "sublabel": "서버 · 콘텐츠 카드 + 광고 카드",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/page.tsx",
+          "line": 13,
+          "label": "/ — Promise.all(콘텐츠, 광고)"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "contents",
+      "type": "frontend",
+      "label": "콘텐츠",
+      "sublabel": "/contents/[id] · /contents/gone",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/contents/(conversion)/[id]/page.tsx",
+          "line": 23,
+          "label": "/contents/[id] — 숫자 아니면 404"
+        },
+        {
+          "path": "apps/sena-web/app/contents/gone/page.tsx",
+          "line": 5,
+          "label": "/contents/gone — noindex"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "about",
+      "type": "frontend",
+      "label": "소개 · 모아보기",
+      "sublabel": "/about · /app-menu",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/about/page.tsx",
+          "line": 7,
+          "label": "/about — 히어로 · 기능 · CTA"
+        },
+        {
+          "path": "apps/sena-web/app/app-menu/page.tsx",
+          "line": 13,
+          "label": "/app-menu — 비즈넵 서비스 4묶음"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "maint",
+      "type": "backend",
+      "label": "점검",
+      "sublabel": "/system-maintenance",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/system-maintenance/page.tsx",
+          "line": 13,
+          "label": "/system-maintenance — 쿠키 설정 읽기"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "chatlayout",
+      "type": "frontend",
+      "label": "chat/layout.tsx",
+      "sublabel": "ChatContent 를 여기서 렌더",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/layout.tsx",
+          "line": 11,
+          "label": "BackButtonLayout · stickyChat always",
+          "end_line": 17
+        }
+      ],
+      "tag": "리마운트 방지"
+    },
+    {
+      "id": "chatpage",
+      "type": "frontend",
+      "label": "채팅 /chat/[[...chatId]]",
+      "sublabel": "page 는 PageViewEventLogger 뿐",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/[[...chatId]]/page.tsx",
+          "line": 4,
+          "label": "/chat · /chat/[id] — 로거만"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "searchlayout",
+      "type": "security",
+      "label": "search-chat/layout.tsx",
+      "sublabel": "비로그인 → 홈",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/search-chat/layout.tsx",
+          "line": 15,
+          "label": "useEffect router.push(HOME)",
+          "end_line": 19
+        }
+      ],
+      "tag": "렌더 뒤 이동"
+    },
+    {
+      "id": "searchpage",
+      "type": "frontend",
+      "label": "채팅 검색 /search-chat",
+      "sublabel": "SearchChatList · 2자 미만이면 최근",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/search-chat/page.tsx",
+          "line": 11,
+          "label": "/search-chat — 클라이언트 페이지"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "authlayout",
+      "type": "security",
+      "label": "(authenticated)/layout.tsx",
+      "sublabel": "AuthGuard logoutPagePath='/'",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/layout.tsx",
+          "line": 4,
+          "label": "AuthGuard",
+          "end_line": 6
+        }
+      ],
+      "tag": "그룹 전체"
+    },
+    {
+      "id": "my",
+      "type": "frontend",
+      "label": "마이 · 알림 · 약관",
+      "sublabel": "/my · /notification · /policies",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/my/page.tsx",
+          "line": 6,
+          "label": "/my — my-info"
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/notification/page.tsx",
+          "line": 6,
+          "label": "/notification — 마케팅 수신 동의"
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/policies/page.tsx",
+          "line": 6,
+          "label": "/policies — 약관 목록"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "surveypage",
+      "type": "frontend",
+      "label": "온보딩 설문",
+      "sublabel": "/user-type-survey · ?step= 6단계",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/user-type-survey/page.tsx",
+          "line": 50,
+          "label": "/user-type-survey — 진입 시 방문 기록"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "withdraw",
+      "type": "frontend",
+      "label": "탈퇴",
+      "sublabel": "/withdraw · /withdraw/confirm",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/withdraw/page.tsx",
+          "line": 7,
+          "label": "/withdraw — 사유 선택"
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/withdraw/confirm/page.tsx",
+          "line": 5,
+          "label": "/withdraw/confirm — 패키지 본문"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "signin",
+      "type": "frontend",
+      "label": "로그인",
+      "sublabel": "/signin",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/signin/page.tsx",
+          "line": 3,
+          "label": "/signin — SignInContent"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "signup",
+      "type": "frontend",
+      "label": "회원가입",
+      "sublabel": "/signup/terms · /signup/input",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/signup/terms/page.tsx",
+          "line": 3,
+          "label": "/signup/terms — SignTerms"
+        },
+        {
+          "path": "apps/sena-web/app/(login)/signup/input/page.tsx",
+          "line": 3,
+          "label": "/signup/input — SignUpInput"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "ci",
+      "type": "frontend",
+      "label": "본인확인 CI",
+      "sublabel": "/ci-request · /ci-authentication",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/ci-request/page.tsx",
+          "line": 3,
+          "label": "/ci-request — CICollectionRequest"
+        },
+        {
+          "path": "apps/sena-web/app/(login)/ci-authentication/page.tsx",
+          "line": 3,
+          "label": "/ci-authentication — CIAuthentication"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "dup",
+      "type": "frontend",
+      "label": "중복 계정",
+      "sublabel": "/duplicate-account",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/duplicate-account/page.tsx",
+          "line": 3,
+          "label": "/duplicate-account — 패키지 본문"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "home-contents",
+      "from": "home",
+      "to": "contents",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "chatlayout-chatpage",
+      "from": "chatlayout",
+      "to": "chatpage",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "searchlayout-searchpage",
+      "from": "searchlayout",
+      "to": "searchpage",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "authlayout-my",
+      "from": "authlayout",
+      "to": "my",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "my-surveypage",
+      "from": "my",
+      "to": "surveypage",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "surveypage-withdraw",
+      "from": "surveypage",
+      "to": "withdraw",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "signin-signup",
+      "from": "signin",
+      "to": "signup",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "signup-ci",
+      "from": "signup",
+      "to": "ci",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "ci-dup",
+      "from": "ci",
+      "to": "dup",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 수",
+      "items": [
+        "공개 6 — / · /contents/[id] · /contents/gone · /about · /app-menu · /system-maintenance",
+        "채팅 2 — /chat/[[...chatId]](optional catch-all 로 /chat 과 /chat/[id] 를 한 파일이 받는다) · /search-chat",
+        "(authenticated) 6 — /my · /notification · /policies · /user-type-survey · /withdraw · /withdraw/confirm",
+        "(login) 6 — /signin · /signup/terms · /signup/input · /ci-request · /ci-authentication · /duplicate-account"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "page.tsx 가 비어 있는 곳",
+      "items": [
+        "/chat 의 page 는 PageViewEventLogger 한 줄이다. 대화 본문 ChatContent 는 chat/layout.tsx 에 있어 /chat → /chat/[id] 전환에 리마운트되지 않는다",
+        "(login) 6화면과 /withdraw/confirm 은 @repo/user-sign 컴포넌트 한 개를 렌더한다 — 화면 수정은 패키지에서 한다",
+        "/user-type-survey 는 한 page 가 ?step= 으로 intro · user-type · industry · office-info · interest · completed 를 그린다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "화면이 아닌데 경로가 있는 것",
+      "items": [
+        "/api/maintenance · /api/partner/v2/chat/completions · /api/partner/v2/chat/streams/[requestUuid]/[action] — Route Handler 3개",
+        "not-found.tsx 는 404 화면이지만 page.tsx 가 아니다. /home 은 / 로, /calc/* 는 calc.bznav.com 으로 redirect"
+      ]
+    }
+  ]
+}

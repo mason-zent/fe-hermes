@@ -1,0 +1,1004 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "계산기 3계층 심층",
+    "subtitle": "입력 Section ← ① 폼 훅 ← ② 상태 훅 → ③ 순수 계산. 8세트를 매출 · 인건비 · 세금 3줄로",
+    "output": "calc-layers.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      546
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "edc6fe3009325aab275a90e8fa9c8fb668aa14e0"
+    },
+    "views": [
+      {
+        "id": "layers",
+        "label": "3계층 × 3묶음",
+        "focus": [
+          "salesIn",
+          "salesForm",
+          "salesState",
+          "salesCalc",
+          "laborIn",
+          "laborForm",
+          "laborState",
+          "laborCalc",
+          "taxIn",
+          "taxForm",
+          "taxState",
+          "taxCalc"
+        ],
+        "note": "page 는 ② 상태 훅 하나만 부른다. 상태 훅이 ① 폼 훅과 ③ 순수 함수를 묶는다."
+      },
+      {
+        "id": "common",
+        "label": "8세트 공통",
+        "focus": [
+          "resultSec",
+          "setter",
+          "stepM",
+          "consts",
+          "summary",
+          "slot"
+        ],
+        "note": "setter · 결과 카드 · 슬롯머신은 8세트가 같이 쓴다."
+      },
+      {
+        "id": "variants",
+        "label": "계산기마다 다른 곳",
+        "focus": [
+          "stepM",
+          "consts",
+          "taxTable",
+          "laborCalc"
+        ],
+        "note": "Step 은 2 · 3 · 4 단계로 갈린다. 급여 2종은 간이세액표를 공유한다."
+      },
+      {
+        "id": "dp",
+        "label": "DP 로그",
+        "focus": [
+          "dpHook",
+          "sendDp",
+          "dpUser",
+          "ssoExt",
+          "plusExt"
+        ],
+        "note": "결과 단계에 들어갈 때 N, 결과가 바뀌면 3초 뒤 Y 로 보낸다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "계산 3계층 — app/calc/*/_components · lib/hooks/calc · lib/utils/calc · lib/constants/calc",
+      "wraps": [
+        "salesIn",
+        "salesForm",
+        "salesState",
+        "salesCalc",
+        "laborIn",
+        "laborForm",
+        "laborState",
+        "laborCalc",
+        "taxIn",
+        "taxForm",
+        "taxState",
+        "taxCalc",
+        "resultSec",
+        "setter",
+        "stepM",
+        "consts",
+        "summary",
+        "slot",
+        "dpHook",
+        "taxTable"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "salesIn",
+      "type": "frontend",
+      "label": "매출 · 입력 Section",
+      "sublabel": "sales · bep — 3단계",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/sales/_components/RevenueSection.tsx",
+          "line": 13,
+          "label": "sales — RevenueSection (1단계)"
+        },
+        {
+          "path": "apps/plus-web/app/calc/sales/_components/CostSection.tsx",
+          "line": 13,
+          "label": "sales — CostSection (2단계)"
+        },
+        {
+          "path": "apps/plus-web/app/calc/bep/_components/TargetMarginSection.tsx",
+          "line": 12,
+          "label": "bep — CostSection 다음 TargetMargin"
+        }
+      ]
+    },
+    {
+      "id": "salesForm",
+      "type": "messagebus",
+      "label": "매출 · ① 폼 훅",
+      "sublabel": "isRevenueValid · isCostValid",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/store-sales/use-store-sales-form.ts",
+          "line": 22,
+          "label": "useStoreSalesForm"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/breakeven/use-breakeven-form.ts",
+          "line": 17,
+          "label": "useBreakevenForm"
+        }
+      ]
+    },
+    {
+      "id": "salesState",
+      "type": "messagebus",
+      "label": "매출 · ② 상태 훅",
+      "sublabel": "intermediates · annualFixedCost 반환",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/store-sales/use-store-sales.ts",
+          "line": 33,
+          "label": "intermediates — 입력 중에도 계산",
+          "end_line": 38
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/store-sales/use-store-sales.ts",
+          "line": 17,
+          "label": "브레이크포인트가 바뀌면 step 보정",
+          "end_line": 25
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/breakeven/use-breakeven.ts",
+          "line": 68,
+          "label": "annualFixedCost · targetMargin 반환",
+          "end_line": 79
+        }
+      ]
+    },
+    {
+      "id": "salesCalc",
+      "type": "backend",
+      "label": "매출 · ③ 순수 계산",
+      "sublabel": "10원 절사 · 원가율 100% = ∞",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/calc/store-sales.ts",
+          "line": 79,
+          "label": "calcStoreSales — 연 매출·순이익·부가세"
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/store-sales.ts",
+          "line": 65,
+          "label": "calcIntermediates — 중간값"
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/breakeven.ts",
+          "line": 10,
+          "label": "calcBreakeven — 분모 0 이면 Infinity",
+          "end_line": 24
+        }
+      ]
+    },
+    {
+      "id": "laborIn",
+      "type": "frontend",
+      "label": "인건비 · 입력 Section",
+      "sublabel": "salary 2종 · holidaypay — 2단계",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/salary/(contract)/_components/SalaryInfoSection.tsx",
+          "line": 14,
+          "label": "salary — SalaryInfoSection"
+        },
+        {
+          "path": "apps/plus-web/app/calc/salary/actual/_components/ContractSalarySection.tsx",
+          "line": 15,
+          "label": "salary/actual — ContractSalarySection"
+        },
+        {
+          "path": "apps/plus-web/app/calc/holidaypay/_components/WorkInfoSection.tsx",
+          "line": 13,
+          "label": "holidaypay — WorkInfoSection"
+        }
+      ]
+    },
+    {
+      "id": "laborForm",
+      "type": "messagebus",
+      "label": "인건비 · ① 폼 훅",
+      "sublabel": "use-salary-* · use-holiday-pay-form",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/salary-contract/use-salary-contract-form.ts",
+          "line": 16,
+          "label": "useSalaryContractForm"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/salary-actual/use-salary-actual-form.ts",
+          "line": 17,
+          "label": "useSalaryActualForm"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/holiday-pay/use-holiday-pay-form.ts",
+          "line": 18,
+          "label": "useHolidayPayForm"
+        }
+      ]
+    },
+    {
+      "id": "laborState",
+      "type": "messagebus",
+      "label": "인건비 · ② 상태 훅",
+      "sublabel": "salary 2종은 salarySection 반환",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/salary-contract/use-salary-contract.ts",
+          "line": 43,
+          "label": "netSalary · salarySection 반환",
+          "end_line": 53
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/salary-actual/use-salary-actual.ts",
+          "line": 47,
+          "label": "monthlyGrossSalary · salarySection",
+          "end_line": 57
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/holiday-pay/use-holiday-pay.ts",
+          "line": 44,
+          "label": "holiday-pay — 표준 반환 shape",
+          "end_line": 54
+        }
+      ]
+    },
+    {
+      "id": "laborCalc",
+      "type": "backend",
+      "label": "인건비 · ③ 순수 계산",
+      "sublabel": "간이세액표 · 역산 탐색",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/calc/salary-actual.ts",
+          "line": 73,
+          "label": "calcSalaryActual — calcDeduction 사용",
+          "end_line": 97
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/salary-contract.ts",
+          "line": 24,
+          "label": "reverseCalcDeduction — 100원씩 올려 찾는다",
+          "end_line": 50
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/holiday-pay.ts",
+          "line": 8,
+          "label": "calcHolidayPay — 주 15시간 · 결근 없음",
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "taxIn",
+      "type": "frontend",
+      "label": "세금 · 입력 Section",
+      "sublabel": "vat 2 · penalty 3 · simplevat 4단계",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/tax/vat/_components/TradeInfoSection.tsx",
+          "line": 12,
+          "label": "vat — TradeInfoSection"
+        },
+        {
+          "path": "apps/plus-web/app/calc/tax/penalty/_components/PaymentInfoSection.tsx",
+          "line": 28,
+          "label": "penalty — TaxInfo 다음 PaymentInfo"
+        },
+        {
+          "path": "apps/plus-web/app/calc/tax/simplevat/_components/DeductionSection.tsx",
+          "line": 13,
+          "label": "simplevat — Sales · Deduction · PaidTax"
+        }
+      ]
+    },
+    {
+      "id": "taxForm",
+      "type": "messagebus",
+      "label": "세금 · ① 폼 훅",
+      "sublabel": "watch · setValue · reset 만",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat-form.ts",
+          "line": 17,
+          "label": "useForm — resolver 없음 · handleSubmit 없음"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat-form.ts",
+          "line": 20,
+          "label": "parsedInput — parseInteger 를 useMemo",
+          "end_line": 26
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/tax-penalty/use-tax-penalty-form.ts",
+          "line": 20,
+          "label": "useTaxPenaltyForm — 날짜 입력"
+        }
+      ]
+    },
+    {
+      "id": "taxState",
+      "type": "messagebus",
+      "label": "세금 · ② 상태 훅",
+      "sublabel": "표준 반환 shape {parsedInput, sections}",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat.ts",
+          "line": 17,
+          "label": "result — result-step 일 때만 calcVat",
+          "end_line": 20
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat.ts",
+          "line": 43,
+          "label": "반환 — step · parsedInput · sections · actions",
+          "end_line": 53
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/simple-vat/use-simple-vat.ts",
+          "line": 19,
+          "label": "태블릿이면 한 번에 편다 · 7월 이후 paid",
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "taxCalc",
+      "type": "backend",
+      "label": "세금 · ③ 순수 계산",
+      "sublabel": "floor · 날짜 역전이면 0",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/calc/vat.ts",
+          "line": 8,
+          "label": "calcVat — 공급가액/10 · 공급대가/11",
+          "end_line": 16
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/simple-vat.ts",
+          "line": 48,
+          "label": "calcSimpleVat — 업종 부가가치율"
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/tax-penalty.ts",
+          "line": 93,
+          "label": "calcTaxPenalty — 무신고·납부지연 합산",
+          "end_line": 124
+        }
+      ]
+    },
+    {
+      "id": "resultSec",
+      "type": "frontend",
+      "label": "결과 Section",
+      "sublabel": "*ResultSection · ref · 스크롤",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/tax/vat/_components/VatResultSection.tsx",
+          "line": 10,
+          "label": "VatResultSection — ref 를 받는다"
+        },
+        {
+          "path": "apps/plus-web/app/calc/salary/_components/DeductionDetailAccordion.tsx",
+          "line": 1,
+          "label": "salary 2종이 공유하는 공제 상세"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-scroll-to-result.ts",
+          "line": 12,
+          "label": "useScrollToResult — 300ms 뒤 스크롤",
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "setter",
+      "type": "backend",
+      "label": "createFormSetter",
+      "sublabel": "sanitize → max 초과 무시 → 콤마",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/form/create-form-setter.ts",
+          "line": 14,
+          "label": "createFormSetter — format · decimal",
+          "end_line": 24
+        },
+        {
+          "path": "apps/plus-web/lib/utils/common/parse-integer.ts",
+          "line": 1,
+          "label": "parseInteger — 콤마 문자열 → 숫자"
+        },
+        {
+          "path": "apps/plus-web/lib/utils/common/sanitize.ts",
+          "line": 1,
+          "label": "sanitizeInteger · sanitizeDecimal"
+        }
+      ]
+    },
+    {
+      "id": "stepM",
+      "type": "messagebus",
+      "label": "Step 타입",
+      "sublabel": "2단계 4 · 3단계 3 · 4단계 1",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/types/calc/vat.ts",
+          "line": 1,
+          "label": "input-step | result-step (2단계)"
+        },
+        {
+          "path": "apps/plus-web/lib/types/calc/store-sales.ts",
+          "line": 1,
+          "label": "revenue → cost → result (3단계)"
+        },
+        {
+          "path": "apps/plus-web/lib/types/calc/simple-vat.ts",
+          "line": 8,
+          "label": "sales → deduction → paid → result"
+        }
+      ]
+    },
+    {
+      "id": "consts",
+      "type": "database",
+      "label": "상수 · 요율",
+      "sublabel": "lib/constants/calc · FIELD_LIMITS",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/calc/vat.ts",
+          "line": 1,
+          "label": "VAT_DIVISOR 10 · 11 · FIELD_LIMITS",
+          "end_line": 9
+        },
+        {
+          "path": "apps/plus-web/lib/constants/calc/salary-actual.ts",
+          "line": 1,
+          "label": "4대보험 요율 · 국민연금 상·하한"
+        },
+        {
+          "path": "apps/plus-web/lib/constants/calc/meta.ts",
+          "line": 1,
+          "label": "계산기별 SEO META — layout 이 쓴다"
+        }
+      ]
+    },
+    {
+      "id": "summary",
+      "type": "frontend",
+      "label": "CalcSummary · PriceUnit",
+      "sublabel": "app/calc/_components 공용",
+      "pos": [
+        96,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/_components/CalcSummary.tsx",
+          "line": 3,
+          "label": "CalcSummary — accent · default"
+        },
+        {
+          "path": "apps/plus-web/app/calc/_components/CalcPriceUnit.tsx",
+          "line": 6,
+          "label": "CalcPriceUnit — large 만 슬롯머신 · ∞"
+        },
+        {
+          "path": "apps/plus-web/app/calc/_components/CalcTableRow.tsx",
+          "line": 1,
+          "label": "CalcTableRow — 표 행"
+        }
+      ]
+    },
+    {
+      "id": "slot",
+      "type": "frontend",
+      "label": "SlotMachineNumber",
+      "sublabel": "바뀐 자리만 굴린다",
+      "pos": [
+        388,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/_components/SlotMachineNumber.tsx",
+          "line": 1,
+          "label": "SlotMachineNumber"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-slot-machine-digits.ts",
+          "line": 29,
+          "label": "buildChangedIndices — 바뀐 자리 계산"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-slot-machine-digits.ts",
+          "line": 18,
+          "label": "HOLD_AT_ZERO 1000ms · STAGGER 50ms",
+          "end_line": 19
+        }
+      ]
+    },
+    {
+      "id": "dpHook",
+      "type": "messagebus",
+      "label": "useCalculatorDpLog",
+      "sublabel": "최초 N · 재계산 Y (3초 뒤)",
+      "pos": [
+        680,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-calculator-dp-log.ts",
+          "line": 10,
+          "label": "useCalculatorDpLog(toolType, …)",
+          "end_line": 34
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-calculator-dp-log.ts",
+          "line": 6,
+          "label": "RECALCULATION_DEBOUNCE_MS 3000"
+        },
+        {
+          "path": "apps/plus-web/lib/types/dp-logs.ts",
+          "line": 2,
+          "label": "DpToolType — calc_payroll 은 쓰는 곳 없음",
+          "end_line": 12
+        }
+      ]
+    },
+    {
+      "id": "taxTable",
+      "type": "database",
+      "label": "근로소득 간이세액표",
+      "sublabel": "2026 · 654줄 · 선형 탐색",
+      "pos": [
+        972,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/calc/simplified-income-tax-table.ts",
+          "line": 6,
+          "label": "SIMPLIFIED_INCOME_TAX_TABLE"
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/salary-actual.ts",
+          "line": 32,
+          "label": "getSimplifiedIncomeTax — find 로 행 탐색",
+          "end_line": 57
+        },
+        {
+          "path": "apps/plus-web/lib/utils/calc/salary-contract.ts",
+          "line": 30,
+          "label": "TODO — 반복마다 세액표 선형 탐색",
+          "end_line": 36
+        }
+      ]
+    },
+    {
+      "id": "ssoExt",
+      "type": "external",
+      "label": "SSO API",
+      "sublabel": "/oauth/user → user.id",
+      "pos": [
+        96,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ]
+    },
+    {
+      "id": "dpUser",
+      "type": "backend",
+      "label": "DP 식별자",
+      "sublabel": "client_session_id · X-User-Id",
+      "pos": [
+        388,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/dp-logs/client-session-id.ts",
+          "line": 5,
+          "label": "getDpClientSessionId — localStorage uuid",
+          "end_line": 14
+        },
+        {
+          "path": "apps/plus-web/lib/utils/dp-logs/user-id.ts",
+          "line": 24,
+          "label": "getDpUserId — B_AT 토큰 · promise 캐시",
+          "end_line": 34
+        }
+      ]
+    },
+    {
+      "id": "sendDp",
+      "type": "backend",
+      "label": "sendDpLog",
+      "sublabel": "실패는 조용히 무시",
+      "pos": [
+        680,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/utils/dp-logs/send-dp-log.ts",
+          "line": 14,
+          "label": "sendDpLog — 세션 id 없으면 안 보낸다",
+          "end_line": 34
+        },
+        {
+          "path": "apps/plus-web/lib/api/dp-logs.ts",
+          "line": 6,
+          "label": "requestDpLog — POST · X-User-Id 헤더",
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "plusExt",
+      "type": "external",
+      "label": "PLUS API",
+      "sublabel": "/api/dp-logs",
+      "pos": [
+        972,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "salesState-salesForm",
+      "from": "salesState",
+      "to": "salesForm",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "salesForm-salesIn",
+      "from": "salesForm",
+      "to": "salesIn",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "salesState-salesCalc",
+      "from": "salesState",
+      "to": "salesCalc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "laborState-laborForm",
+      "from": "laborState",
+      "to": "laborForm",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "laborForm-laborIn",
+      "from": "laborForm",
+      "to": "laborIn",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "laborState-laborCalc",
+      "from": "laborState",
+      "to": "laborCalc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "taxState-taxForm",
+      "from": "taxState",
+      "to": "taxForm",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "taxForm-taxIn",
+      "from": "taxForm",
+      "to": "taxIn",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "taxState-taxCalc",
+      "from": "taxState",
+      "to": "taxCalc",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "taxForm-setter",
+      "from": "taxForm",
+      "to": "setter",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "taxState-stepM",
+      "from": "taxState",
+      "to": "stepM",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "taxCalc-consts",
+      "from": "taxCalc",
+      "to": "consts",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "resultSec-summary",
+      "from": "resultSec",
+      "to": "summary",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "summary-slot",
+      "from": "summary",
+      "to": "slot",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "stepM-dpHook",
+      "from": "stepM",
+      "to": "dpHook",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "consts-taxTable",
+      "from": "consts",
+      "to": "taxTable",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "dpHook-sendDp",
+      "from": "dpHook",
+      "to": "sendDp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "sendDp-dpUser",
+      "from": "sendDp",
+      "to": "dpUser",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "dpUser-ssoExt",
+      "from": "dpUser",
+      "to": "ssoExt",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "sendDp-plusExt",
+      "from": "sendDp",
+      "to": "plusExt",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "3계층은 같고 반환 shape 은 다르다",
+      "items": [
+        "① use-<name>-form — useForm 의 watch · setValue · reset 만 쓴다. handleSubmit · resolver 가 없다",
+        "② use-<name> — step · openSections 를 들고, result 는 result-step 일 때만 useMemo 로 순수 함수를 부른다",
+        "③ utils/calc — React 를 모르는 함수. 요율·한계는 constants/calc 에 있다",
+        "반환이 {parsedInput, sections} 로 통일된 건 vat · holiday-pay · simple-vat · tax-penalty 4종뿐이다. salary 2종은 salarySection(+netSalary · monthlyGrossSalary), breakeven 은 annualFixedCost · targetMargin, store-sales 는 intermediates 를 낸다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Step 이 계산기마다 다르다",
+      "items": [
+        "2단계(input → result) — vat · holiday-pay · salary-contract · salary-actual",
+        "3단계 — store-sales(revenue · cost) · breakeven(cost · margin) · tax-penalty(tax · payment)",
+        "4단계 — simple-vat(sales · deduction · paid). 7월 이후면 태블릿에서 paid-step 까지 한 번에 연다",
+        "store-sales · breakeven · simple-vat 은 useEffect 로 브레이크포인트가 바뀔 때 step 을 보정한다. tax-penalty 에는 이 보정이 없다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "결과는 차트가 아니다",
+      "items": [
+        "recharts 는 계산기에서 쓰지 않는다 — tax-check 경영진단 drawer 의 두 차트뿐이다",
+        "결과는 CalcSummary 안의 CalcPriceUnit. large 만 SlotMachineNumber 로 바뀐 자리를 굴리고, 무한대는 ∞ 로 쓴다",
+        "salary-contract 는 목표 실수령액이 나올 때까지 과세 합계를 100원씩 올린다. 반복마다 세액표를 선형 탐색한다(TODO)",
+        "DP 로그 toolType 은 calc_vat · calc_sales 처럼 계산기마다 따로다. calc_payroll 은 타입에만 있다"
+      ]
+    }
+  ]
+}

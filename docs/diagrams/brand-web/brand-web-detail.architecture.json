@@ -1,0 +1,917 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "brand-web 상세 아키텍처",
+    "subtitle": "진입 → 레이아웃 → 화면 4 → DatoCMS 관문 → 빌드 산출. 데이터 관문은 하나뿐이다",
+    "output": "brand-web-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      740
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "7f052c0c3963c043ff02e1580b0959d91fab5aaf"
+    },
+    "views": [
+      {
+        "id": "entry",
+        "label": "진입과 셸",
+        "focus": [
+          "clients",
+          "proxy",
+          "routing",
+          "cdn",
+          "root",
+          "shell"
+        ],
+        "note": "proxy.ts 는 /ping 만 가로챈다. 경로를 바꾸는 건 next.config 의 rewrite 1 · redirect 3 이다."
+      },
+      {
+        "id": "screens",
+        "label": "레이아웃과 화면",
+        "focus": [
+          "brl",
+          "logo",
+          "popl",
+          "brand",
+          "home",
+          "terms",
+          "popup",
+          "notfound"
+        ],
+        "note": "page.tsx 는 4개다. 레이아웃은 셋 — 일반 LogoLayout, 브랜드 리소스 헤더, 헤더 없는 팝업."
+      },
+      {
+        "id": "data",
+        "label": "DatoCMS 관문",
+        "focus": [
+          "termsfn",
+          "request",
+          "datocms"
+        ],
+        "note": "CMS 를 읽는 화면은 약관 두 경로뿐이다. 홈·브랜드 리소스는 코드 상수와 CDN 이미지로 그린다."
+      },
+      {
+        "id": "build",
+        "label": "빌드 산출",
+        "focus": [
+          "sitemap",
+          "robots",
+          "crawler"
+        ],
+        "note": "postbuild 가 sitemap.xml · robots.txt 를 새로 만든다. 둘 다 gitignore 라 레포에 없다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "apps/brand-web — 박스 밖은 이 앱에서 바꿀 수 없다",
+      "wraps": [
+        "proxy",
+        "routing",
+        "root",
+        "shell",
+        "brl",
+        "logo",
+        "popl",
+        "track",
+        "brand",
+        "home",
+        "terms",
+        "popup",
+        "notfound",
+        "brandc",
+        "homeparts",
+        "termsfn",
+        "sitemap",
+        "request",
+        "robots"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "CMS 를 읽는 곳 — 약관 두 경로뿐",
+      "wraps": [
+        "terms",
+        "popup",
+        "termsfn",
+        "request"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "방문자 채널",
+      "sublabel": "웹 · BZNAV 앱 웹뷰(?referrer=deeplink_fallback)",
+      "pos": [
+        60,
+        6
+      ],
+      "size": [
+        1260,
+        40
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "proxy.ts",
+      "sublabel": "/ping · devtools json 만 가로챈다",
+      "pos": [
+        60,
+        76
+      ],
+      "size": [
+        290,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/proxy.ts",
+          "line": 3,
+          "end_line": 11,
+          "label": "proxy — /ping 과 devtools 요청만 JSON 응답"
+        }
+      ]
+    },
+    {
+      "id": "routing",
+      "type": "backend",
+      "label": "next.config 경로 규칙",
+      "sublabel": "rewrite / → /home · redirect 3건",
+      "pos": [
+        390,
+        76
+      ],
+      "size": [
+        440,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 38,
+          "end_line": 45,
+          "label": "rewrites — / → /home"
+        },
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 46,
+          "end_line": 64,
+          "label": "redirects — storybook · tax/refund 2건"
+        },
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 26,
+          "end_line": 27,
+          "label": "assetPrefix CDN · 프로덕션 소스맵"
+        }
+      ]
+    },
+    {
+      "id": "cdn",
+      "type": "cloud",
+      "label": "CDN assetPrefix",
+      "sublabel": "${CDN}/bznav-brand-web · 빌드 ID 없음",
+      "pos": [
+        870,
+        76
+      ],
+      "size": [
+        450,
+        56
+      ]
+    },
+    {
+      "id": "root",
+      "type": "frontend",
+      "label": "루트 layout (서버)",
+      "sublabel": "metadata · Organization JSON-LD · 서버 플랫폼 판별",
+      "pos": [
+        60,
+        162
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/layout.tsx",
+          "line": 14,
+          "end_line": 120,
+          "label": "metadata — canonical https://bznav.com/"
+        },
+        {
+          "path": "apps/brand-web/app/layout.tsx",
+          "line": 136,
+          "end_line": 156,
+          "label": "Organization JSON-LD 인라인"
+        },
+        {
+          "path": "apps/brand-web/app/layout.tsx",
+          "line": 130,
+          "end_line": 166,
+          "label": "RootLayout — Jotai · Toaster · 셸 장착"
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "BrandAppContents 클라이언트 셸",
+      "sublabel": "Router → EventTracking → Dialog → ErrorBoundary → NiceModal",
+      "pos": [
+        60,
+        236
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/layout-content/BrandAppContents.tsx",
+          "line": 12,
+          "end_line": 39,
+          "label": "BrandAppContents — Provider 순서"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/BrandAppContents.tsx",
+          "line": 41,
+          "end_line": 49,
+          "label": "PageContent — useBznavAppVersion"
+        },
+        {
+          "path": "apps/brand-web/app/_components/GlobalErrorBoundary.tsx",
+          "line": 11,
+          "end_line": 18,
+          "label": "GlobalErrorBoundary — pathname 을 key 로"
+        }
+      ]
+    },
+    {
+      "id": "brl",
+      "type": "frontend",
+      "label": "브랜드 리소스 헤더",
+      "sublabel": "isBrandResource · 우측 버튼 없음",
+      "pos": [
+        60,
+        310
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/brand-resource/layout.tsx",
+          "line": 5,
+          "end_line": 7,
+          "label": "layout — LogoLayout isBrandResource"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/LayoutItems.tsx",
+          "line": 27,
+          "end_line": 33,
+          "label": "BrandResourceLogoHeader"
+        }
+      ]
+    },
+    {
+      "id": "logo",
+      "type": "frontend",
+      "label": "LogoLayout",
+      "sublabel": "Suspense · 헤더 · main · 푸터 · deeplink 면 헤더 숨김",
+      "pos": [
+        316,
+        310
+      ],
+      "size": [
+        492,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/layout-content/Layouts.tsx",
+          "line": 6,
+          "end_line": 13,
+          "label": "LogoLayout — 헤더 분기 · 푸터"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/LayoutItems.tsx",
+          "line": 9,
+          "end_line": 25,
+          "label": "LogoHeader — deeplink 이면 null"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/FooterItems.tsx",
+          "line": 29,
+          "end_line": 104,
+          "label": "DefaultFooter — 약관 링크 · 사업자 정보"
+        }
+      ]
+    },
+    {
+      "id": "popl",
+      "type": "frontend",
+      "label": "팝업 layout",
+      "sublabel": "헤더 · 푸터 없는 div 한 겹",
+      "pos": [
+        828,
+        310
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/popup/terms/[...terms]/layout.tsx",
+          "line": 3,
+          "end_line": 5,
+          "label": "팝업 layout — 흰 div 만"
+        }
+      ]
+    },
+    {
+      "id": "track",
+      "type": "messagebus",
+      "label": "이벤트 트래킹",
+      "sublabel": "appId bznav-brand · Mixpanel 만",
+      "pos": [
+        1084,
+        310
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/layout-content/BrandAppContents.tsx",
+          "line": 24,
+          "end_line": 32,
+          "label": "EventTrackingProvider — 인증 패키지 off"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/HeaderItems.tsx",
+          "line": 24,
+          "end_line": 37,
+          "label": "로고 클릭 topnav_logo"
+        }
+      ]
+    },
+    {
+      "id": "brand",
+      "type": "frontend",
+      "label": "브랜드 리소스",
+      "sublabel": "/brand-resource · 페이지 metadata",
+      "pos": [
+        60,
+        394
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "홈",
+      "sublabel": "/ (rewrite) = /home",
+      "pos": [
+        316,
+        394
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "terms",
+      "type": "frontend",
+      "label": "약관",
+      "sublabel": "/terms/[...terms] · ISR 3600",
+      "pos": [
+        572,
+        394
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "tag": "1 화면 · URL 여러 개"
+    },
+    {
+      "id": "popup",
+      "type": "frontend",
+      "label": "팝업 약관",
+      "sublabel": "/popup/terms/[...terms] · iframe 용",
+      "pos": [
+        828,
+        394
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "tag": "1 화면 · URL 여러 개"
+    },
+    {
+      "id": "notfound",
+      "type": "security",
+      "label": "404 · 에러 화면",
+      "sublabel": "not-found · ErrorBoundary 폴백",
+      "pos": [
+        1084,
+        394
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/not-found.tsx",
+          "line": 8,
+          "end_line": 31,
+          "label": "NotFound — PageViewEventLogger"
+        },
+        {
+          "path": "apps/brand-web/app/_components/GlobalErrorBoundary.tsx",
+          "line": 20,
+          "end_line": 53,
+          "label": "DefaultFallbackComponent — 에러 메시지"
+        }
+      ]
+    },
+    {
+      "id": "brandc",
+      "type": "frontend",
+      "label": "브랜드 리소스 섹션",
+      "sublabel": "로고 · 컬러 · 유의사항 이미지 · zip",
+      "pos": [
+        60,
+        482
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/brand-resource/_components/ContentSection.tsx",
+          "line": 5,
+          "end_line": 29,
+          "label": "BrandResourceContent — 섹션 4개"
+        },
+        {
+          "path": "apps/brand-web/app/brand-resource/_components/ContentSection.tsx",
+          "line": 153,
+          "end_line": 185,
+          "label": "ImageCard — 이미지 · zip 다운로드"
+        }
+      ]
+    },
+    {
+      "id": "homeparts",
+      "type": "frontend",
+      "label": "홈 섹션 3",
+      "sublabel": "Main 슬라이드 · IMC 배너 · 서비스 소개",
+      "pos": [
+        316,
+        482
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/home/_components/MainSection.tsx",
+          "line": 10,
+          "end_line": 102,
+          "label": "MainSection — 3초 슬라이드 · 스토어 버튼"
+        },
+        {
+          "path": "apps/brand-web/app/home/_components/IMCBanner.tsx",
+          "line": 10,
+          "end_line": 39,
+          "label": "IMCBanner — deeplink 면 숨김"
+        },
+        {
+          "path": "apps/brand-web/app/home/_components/ContentSection.tsx",
+          "line": 13,
+          "end_line": 63,
+          "label": "ContentSection — CONTENT_FEATURES 3개"
+        }
+      ]
+    },
+    {
+      "id": "termsfn",
+      "type": "backend",
+      "label": "약관 조회 함수",
+      "sublabel": "getTermsPaths(빌드) · getTermsDetail(요청)",
+      "pos": [
+        572,
+        482
+      ],
+      "size": [
+        480,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 27,
+          "end_line": 39,
+          "label": "getTermsPaths — generateStaticParams 용"
+        },
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 41,
+          "end_line": 68,
+          "label": "getTermsDetail — 실패하면 term null"
+        }
+      ]
+    },
+    {
+      "id": "sitemap",
+      "type": "backend",
+      "label": "postbuild next-sitemap",
+      "sublabel": "prerender 경로 + additionalPaths",
+      "pos": [
+        1084,
+        482
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/package.json",
+          "line": 13,
+          "label": "postbuild — sitemap·robots 재생성"
+        },
+        {
+          "path": "apps/brand-web/next-sitemap.config.mjs",
+          "line": 23,
+          "end_line": 46,
+          "label": "설정 — exclude /home · additionalPaths"
+        }
+      ]
+    },
+    {
+      "id": "request",
+      "type": "backend",
+      "label": "requestDatoCms",
+      "sublabel": "유일한 데이터 관문 · Bearer DATO_ACCESS_TOKEN",
+      "pos": [
+        572,
+        562
+      ],
+      "size": [
+        492,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 5,
+          "end_line": 25,
+          "label": "requestDatoCms — !ok 면 throw"
+        },
+        {
+          "path": "apps/brand-web/lib/constants/graph-ql-query.ts",
+          "line": 1,
+          "end_line": 66,
+          "label": "쿼리 3종 — 문자열 보간"
+        }
+      ]
+    },
+    {
+      "id": "robots",
+      "type": "database",
+      "label": "public 산출물",
+      "sublabel": "sitemap.xml · robots.txt (gitignore)",
+      "pos": [
+        1084,
+        562
+      ],
+      "size": [
+        236,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/.gitignore",
+          "line": 43,
+          "end_line": 44,
+          "label": "sitemap*.xml · robots.txt 미커밋"
+        }
+      ]
+    },
+    {
+      "id": "rc",
+      "type": "cloud",
+      "label": "리소스 센터 CDN",
+      "sublabel": "NEXT_PUBLIC_RESOURCE_CENTER_URL",
+      "pos": [
+        60,
+        648
+      ],
+      "size": [
+        236,
+        48
+      ]
+    },
+    {
+      "id": "services",
+      "type": "external",
+      "label": "다른 비즈넵 서비스",
+      "sublabel": "SERVICE_LINKS · useWindowOpen",
+      "pos": [
+        316,
+        648
+      ],
+      "size": [
+        236,
+        48
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/constants/common.ts",
+          "line": 1,
+          "end_line": 6,
+          "label": "SERVICE_LINKS — 환급·케어·세나·계산기"
+        }
+      ]
+    },
+    {
+      "id": "datocms",
+      "type": "cloud",
+      "label": "DatoCMS GraphQL",
+      "sublabel": "graphql.datocms.com · bznavTermType · bznavTerm",
+      "pos": [
+        572,
+        648
+      ],
+      "size": [
+        492,
+        48
+      ]
+    },
+    {
+      "id": "crawler",
+      "type": "external",
+      "label": "검색엔진",
+      "sublabel": "Google · Naver 사이트 인증",
+      "pos": [
+        1084,
+        648
+      ],
+      "size": [
+        236,
+        48
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "clients",
+      "to": "proxy",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "proxy",
+      "to": "routing",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c3",
+      "from": "routing",
+      "to": "cdn",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "c4",
+      "from": "routing",
+      "to": "root",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c5",
+      "from": "root",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c6",
+      "from": "shell",
+      "to": "brl",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c7",
+      "from": "shell",
+      "to": "logo",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c8",
+      "from": "shell",
+      "to": "popl",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c9",
+      "from": "shell",
+      "to": "track",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "c10",
+      "from": "brl",
+      "to": "brand",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c11",
+      "from": "logo",
+      "to": "home",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c12",
+      "from": "logo",
+      "to": "terms",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c13",
+      "from": "popl",
+      "to": "popup",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c14",
+      "from": "notfound",
+      "to": "track",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "c15",
+      "from": "brand",
+      "to": "brandc",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c16",
+      "from": "home",
+      "to": "homeparts",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c17",
+      "from": "terms",
+      "to": "termsfn",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c18",
+      "from": "popup",
+      "to": "termsfn",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c19",
+      "from": "termsfn",
+      "to": "sitemap",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "c20",
+      "from": "termsfn",
+      "to": "request",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c21",
+      "from": "sitemap",
+      "to": "robots",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c22",
+      "from": "brandc",
+      "to": "rc",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "c23",
+      "from": "homeparts",
+      "to": "services",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "c24",
+      "from": "request",
+      "to": "datocms",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c25",
+      "from": "robots",
+      "to": "crawler",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "경로를 바꾸는 곳은 next.config 다",
+      "items": [
+        "proxy.ts 는 /ping 과 /.well-known/appspecific/com.chrome.devtools.json 에 JSON 만 돌려준다. 나머지는 그대로 통과",
+        "/ 는 /home 으로 rewrite 된다(URL 은 / 그대로). /home 도 직접 열리지만 sitemap 에서는 빠진다",
+        "/tax/refund/reviews/* · /tax/refund/* 는 refund-web 도메인으로 308, /storybook/* 는 chromatic 으로 307",
+        "루트 metadata 의 canonical 이 https://bznav.com/ 고정이다. 페이지들이 alternates 를 덮지 않아 브랜드 리소스·약관도 이 값을 물려받는다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "데이터 관문은 하나, 쓰는 화면은 둘",
+      "items": [
+        "fetch · axios · Relay 없음. requestDatoCms 한 함수가 graphql.datocms.com 에 POST 한다",
+        "terms · popup/terms 두 page 만 getTermsPaths · getTermsDetail 을 부른다. 홈·브랜드 리소스는 CMS 를 읽지 않는다",
+        "getTermsDetail 은 실패를 삼켜 term null 을 돌려주고 page 가 notFound() 한다. getTermsPaths 는 try 가 없어 빌드 중 실패하면 빌드가 깨진다",
+        "쿼리는 variables 를 쓰지 않고 URL 에서 온 key 를 GraphQL 문자열에 그대로 끼운다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "앱 밖에서 정해지는 것",
+      "items": [
+        "약관 본문 · 시행 버전(enforceTerm) · 종류 목록은 DatoCMS 레코드다. 코드 배포 없이 바뀌고 revalidate 3600 초 뒤 반영",
+        "로고 · 배너 · OG 이미지는 리소스 센터 CDN(NEXT_PUBLIC_RESOURCE_CENTER_URL), 메인 슬라이드 · Lottie 는 public/images",
+        "헤더 · 홈 버튼은 환급 · 케어 · 세나 · 계산기 외부 도메인으로 나간다. 이 앱에서 구현하지 않는다",
+        "home/_components/CareInductionModal.tsx 는 어디서도 import 하지 않는다 — 현재 렌더되지 않는 파일"
+      ]
+    }
+  ]
+}

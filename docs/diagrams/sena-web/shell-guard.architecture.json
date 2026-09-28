@@ -1,0 +1,698 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "루트 셸 · 가드",
+    "subtitle": "SenaAppContent 의 Provider 순서와 화면을 막거나 돌려보내는 가드 8종",
+    "output": "shell-guard.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      382
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "714b34495f963fc66e86601b5eced1d18e103615"
+    },
+    "views": [
+      {
+        "id": "order",
+        "label": "Provider 순서",
+        "focus": [
+          "root",
+          "router",
+          "auth",
+          "track",
+          "banner",
+          "suspense",
+          "overlays",
+          "survey"
+        ],
+        "note": "Router → Auth → Tracking 까지 한 줄이고, 그 안에서 배너와 Suspense 가 형제로 갈라진다."
+      },
+      {
+        "id": "render",
+        "label": "렌더 경계",
+        "focus": [
+          "mainshell",
+          "page",
+          "authguard",
+          "searchguard"
+        ],
+        "note": "렌더 자체를 막는 건 AuthGuard 뿐이다. search-chat 은 렌더한 뒤 홈으로 보낸다."
+      },
+      {
+        "id": "action",
+        "label": "동작 게이트",
+        "focus": [
+          "submitgate",
+          "consent",
+          "secure",
+          "unauth"
+        ],
+        "note": "질문을 보내려는 순간이나 API 가 인증 오류 코드를 줄 때 걸리는 게이트다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "SenaAppContent — 바깥에서 안쪽 순서",
+      "wraps": [
+        "router",
+        "auth",
+        "track",
+        "banner",
+        "suspense",
+        "overlays",
+        "survey",
+        "mainshell",
+        "page"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "동작 게이트 — 렌더가 아니라 행동을 막는다",
+      "wraps": [
+        "submitgate",
+        "consent",
+        "secure",
+        "unauth"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "root",
+      "type": "backend",
+      "label": "app/layout.tsx",
+      "sublabel": "서버 · 플랫폼 쿠키 읽기",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/layout.tsx",
+          "line": 131,
+          "label": "RootLayout — getServerWorkingPlatform",
+          "end_line": 132
+        },
+        {
+          "path": "apps/sena-web/app/layout.tsx",
+          "line": 137,
+          "label": "AdSense — 운영에서만",
+          "end_line": 144
+        },
+        {
+          "path": "apps/sena-web/app/layout.tsx",
+          "line": 166,
+          "label": "Jotai · Toaster · PageNavigationEvent",
+          "end_line": 171
+        }
+      ],
+      "tag": "서버"
+    },
+    {
+      "id": "router",
+      "type": "frontend",
+      "label": "1. RouterProvider",
+      "sublabel": "useAppRouterAdapter · UTM",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 37,
+          "label": "SenaAppContent — 서버 플랫폼 주입",
+          "end_line": 48
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 56,
+          "label": "RouterProvider"
+        }
+      ],
+      "tag": "SSR 때 플랫폼 확정"
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "2. AuthProvider",
+      "sublabel": "clientId = bznav-sena-<플랫폼>",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 41,
+          "label": "SERVICE_APP_ID · clientId",
+          "end_line": 42
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 57,
+          "label": "AuthProvider isUseCI=true"
+        }
+      ],
+      "tag": "판정은 isCurrentAppActive"
+    },
+    {
+      "id": "track",
+      "type": "messagebus",
+      "label": "3. EventTrackingProvider",
+      "sublabel": "Mixpanel · Airbridge · Datadog · GA",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 58,
+          "label": "전송 대상 4종",
+          "end_line": 82
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 76,
+          "label": "Datadog appVersion = package.json"
+        }
+      ],
+      "tag": "isUseAuthPackages=false"
+    },
+    {
+      "id": "banner",
+      "type": "frontend",
+      "label": "4a. 답변 완료 배너",
+      "sublabel": "AnswerNotificationBannerList",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 83,
+          "label": "Suspense 바깥 — 형제 위치"
+        },
+        {
+          "path": "apps/sena-web/app/_components/answer-notification/AnswerNotificationBannerList.tsx",
+          "line": 26,
+          "label": "배너 목록 · 노출/클릭 이벤트",
+          "end_line": 47
+        }
+      ],
+      "tag": "Dialog 밖에 뜬다"
+    },
+    {
+      "id": "suspense",
+      "type": "security",
+      "label": "4b. Suspense · CiGuard",
+      "sublabel": "fallback=null",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 84,
+          "label": "Suspense fallback=null",
+          "end_line": 85
+        }
+      ],
+      "tag": "CI 인증 가드"
+    },
+    {
+      "id": "overlays",
+      "type": "frontend",
+      "label": "5~7. Tooltip · Dialog · NiceModal",
+      "sublabel": "@repo/ui + nice-modal-react",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 86,
+          "label": "TooltipProvider"
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 87,
+          "label": "DialogProvider"
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 88,
+          "label": "NiceModal.Provider"
+        }
+      ],
+      "tag": "오버레이 3겹"
+    },
+    {
+      "id": "survey",
+      "type": "security",
+      "label": "8. SurveyGuard",
+      "sublabel": "조건 맞으면 /user-type-survey 로 replace",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/SurveyGuard.tsx",
+          "line": 27,
+          "label": "세나 회원만 · 설문 화면이면 통과",
+          "end_line": 30
+        },
+        {
+          "path": "apps/sena-web/app/_components/SurveyGuard.tsx",
+          "line": 32,
+          "label": "캐시 atom 없으면 설문·프로필 조회",
+          "end_line": 37
+        },
+        {
+          "path": "apps/sena-web/app/_components/SurveyGuard.tsx",
+          "line": 39,
+          "label": "가입 24시간 경과 시 replace",
+          "end_line": 43
+        }
+      ],
+      "tag": "자식은 막지 않는다"
+    },
+    {
+      "id": "mainshell",
+      "type": "frontend",
+      "label": "9. SenaMainShell",
+      "sublabel": "사이드바 · 인증 오류 핸들러",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 112,
+          "label": "search-chat 비로그인이면 사이드바 숨김",
+          "end_line": 113
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 115,
+          "label": "401 핸들러 — 구독 해제 → 로그아웃",
+          "end_line": 125
+        },
+        {
+          "path": "apps/sena-web/lib/utils/sena-sidebar-path.ts",
+          "line": 13,
+          "label": "shouldShowSenaSidebar",
+          "end_line": 24
+        }
+      ],
+      "tag": "핸들러가 여기서 등록된다"
+    },
+    {
+      "id": "page",
+      "type": "frontend",
+      "label": "10. PageContent",
+      "sublabel": "GlobalErrorBoundary · 앱 버전 · 웹 푸시",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 137,
+          "label": "useBznavAppVersion · useForceAppUpdate",
+          "end_line": 140
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 142,
+          "label": "FIRST_ACCESS_PAGE_KEY 기록",
+          "end_line": 148
+        },
+        {
+          "path": "apps/sena-web/app/_components/GlobalErrorBoundary.tsx",
+          "line": 14,
+          "label": "GlobalErrorBoundary"
+        }
+      ],
+      "tag": "useWebPushLifecycle 1회"
+    },
+    {
+      "id": "authguard",
+      "type": "security",
+      "label": "AuthGuard",
+      "sublabel": "(authenticated) layout",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/layout.tsx",
+          "line": 4,
+          "label": "AuthGuard logoutPagePath='/'",
+          "end_line": 6
+        }
+      ],
+      "tag": "렌더를 막는 유일한 경계"
+    },
+    {
+      "id": "searchguard",
+      "type": "security",
+      "label": "search-chat layout",
+      "sublabel": "비로그인이면 홈으로 push",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/search-chat/layout.tsx",
+          "line": 10,
+          "label": "useEffect 로 router.push(HOME)",
+          "end_line": 19
+        }
+      ],
+      "tag": "렌더 뒤 이동"
+    },
+    {
+      "id": "submitgate",
+      "type": "security",
+      "label": "질문 제출 게이트",
+      "sublabel": "비회원 · 남은 질문 0 → login-required",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-submit-question.ts",
+          "line": 32,
+          "label": "submitQuestion",
+          "end_line": 45
+        },
+        {
+          "path": "apps/sena-web/app/_components/chat-content/ChatTextarea.tsx",
+          "line": 92,
+          "label": "login-required → LoginPromptDrawer"
+        }
+      ],
+      "tag": "제휴사는 통과"
+    },
+    {
+      "id": "consent",
+      "type": "security",
+      "label": "AI 동의 게이트",
+      "sublabel": "앱 iOS 동의 드로어 · 앱 비로그인 → signin",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-sena-consent-guard.ts",
+          "line": 42,
+          "label": "guardWithConsent",
+          "end_line": 58
+        },
+        {
+          "path": "apps/sena-web/app/_components/chat-content/ChatTextarea.tsx",
+          "line": 102,
+          "label": "제출 전에 먼저 부른다"
+        }
+      ],
+      "tag": "웹은 통과"
+    },
+    {
+      "id": "secure",
+      "type": "security",
+      "label": "임시 채팅 로그인 안내",
+      "sublabel": "?secure-chat=true · 비회원",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 103,
+          "label": "LoginRequiredDialog — 최초 1회",
+          "end_line": 115
+        }
+      ],
+      "tag": "취소하면 /chat"
+    },
+    {
+      "id": "unauth",
+      "type": "security",
+      "label": "인증 오류 코드",
+      "sublabel": "INVALID_TOKEN 등 4종",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/utils/auth-error-handler.ts",
+          "line": 1,
+          "label": "AUTH_ERROR_CODES"
+        },
+        {
+          "path": "apps/sena-web/lib/utils/auth-error-handler.ts",
+          "line": 19,
+          "label": "재진입 방지 플래그",
+          "end_line": 27
+        },
+        {
+          "path": "apps/sena-web/lib/utils/request.ts",
+          "line": 51,
+          "label": "실패 body.code 만 본다",
+          "end_line": 59
+        }
+      ],
+      "tag": "HTTP 401 이 아니라 code"
+    }
+  ],
+  "connections": [
+    {
+      "id": "root-router",
+      "from": "root",
+      "to": "router",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "router-auth",
+      "from": "router",
+      "to": "auth",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "auth-track",
+      "from": "auth",
+      "to": "track",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "track-banner",
+      "from": "track",
+      "to": "banner",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "banner-suspense",
+      "from": "banner",
+      "to": "suspense",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "suspense-overlays",
+      "from": "suspense",
+      "to": "overlays",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "overlays-survey",
+      "from": "overlays",
+      "to": "survey",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "survey-mainshell",
+      "from": "survey",
+      "to": "mainshell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "mainshell-page",
+      "from": "mainshell",
+      "to": "page",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "page-authguard",
+      "from": "page",
+      "to": "authguard",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "authguard-searchguard",
+      "from": "authguard",
+      "to": "searchguard",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "mainshell-submitgate",
+      "from": "mainshell",
+      "to": "submitgate",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "submitgate-consent",
+      "from": "submitgate",
+      "to": "consent",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "consent-secure",
+      "from": "consent",
+      "to": "secure",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "searchguard-unauth",
+      "from": "searchguard",
+      "to": "unauth",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "순서가 의미를 갖는 곳",
+      "items": [
+        "AnswerNotificationBannerList 는 EventTrackingProvider 바로 안, Suspense·Dialog 바깥이다. 어느 화면에서든 배너가 뜨고 노출·클릭 이벤트를 보낸다",
+        "SurveyGuard 는 NiceModal 안, SenaMainShell 바깥이다. 자식 렌더를 막지 않고 조건이 맞을 때 replace 만 한다",
+        "인증 오류 핸들러는 SenaMainShell 의 effect 에서 등록된다 — useWebPush 의 unsubscribePush 를 먼저 부르고 로그아웃한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "SurveyGuard 가 보내는 조건",
+      "items": [
+        "auth.isCurrentAppActive(세나 회원)일 때만 본다. 현재 경로가 /user-type-survey 면 건너뛴다",
+        "localStorage BZNAV_SENA_SURVEY_VISITED 가 'true' 면 다시 보내지 않는다 — 설문 화면이 진입 시 이 값을 쓴다",
+        "설문 status 가 completed 가 아니고 프로필 signUpAt 이 24시간 지났을 때만 router.replace"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "가드가 아닌 곳",
+      "items": [
+        "(login) · about · app-menu · 콘텐츠 · 홈 · 채팅에는 AuthGuard 가 없다. 채팅은 비회원도 쓴다(X-Device-Id)",
+        "인증 오류 판정은 HTTP 401 이 아니라 응답 body.code — INVALID_TOKEN · MISSING_USER_ID · USER_LOAD_ERROR · AUTH_REQUIRED"
+      ]
+    }
+  ]
+}

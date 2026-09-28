@@ -1,0 +1,584 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "세금 진단 심층",
+    "subtitle": "CTA → 간편인증 → 홈택스 수집 → 통합 분석 → 결과 · 차트",
+    "output": "tax-check.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      382
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "edc6fe3009325aab275a90e8fa9c8fb668aa14e0"
+    },
+    "views": [
+      {
+        "id": "auth",
+        "label": "간편인증",
+        "focus": [
+          "cta",
+          "authForm",
+          "authReq",
+          "confirm"
+        ],
+        "note": "yup 폼은 여기뿐이다. 카카오면 딥링크로 카카오톡을 연다."
+      },
+      {
+        "id": "collect",
+        "label": "수집 · 분석",
+        "focus": [
+          "exitFlag",
+          "hometax",
+          "analysis",
+          "error"
+        ],
+        "note": "tin 을 얻는 load 와 통합 분석 두 번 부른다. 나가면 abort 하고 이동을 막는다."
+      },
+      {
+        "id": "result",
+        "label": "결과 · 차트",
+        "focus": [
+          "resultC",
+          "drawers",
+          "charts"
+        ],
+        "note": "4진단 카드 → drawer. recharts 는 경영진단 drawer 에만 있다."
+      },
+      {
+        "id": "state",
+        "label": "상태",
+        "focus": [
+          "store"
+        ],
+        "note": "진단 상태 전부가 store/auth-store.ts 한 파일이다. lib/ 밖 루트에 있다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/tax-check — 간편인증 → 수집 → 결과",
+      "wraps": [
+        "cta",
+        "authForm",
+        "authReq",
+        "confirm",
+        "resultC",
+        "analysis",
+        "hometax",
+        "exitFlag",
+        "drawers",
+        "charts",
+        "error"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "recharts 는 여기뿐",
+      "wraps": [
+        "charts"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "cta",
+      "type": "frontend",
+      "label": "CTAButton",
+      "sublabel": "진입 5갈래 · ?tin 쿼리",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/button/CTAButton.tsx",
+          "line": 22,
+          "label": "?tin 이 있으면 tinAtom 에 넣는다",
+          "end_line": 26
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/button/CTAButton.tsx",
+          "line": 28,
+          "label": "nobman → ?tin → 결과 → tin → 입력 순서로 판정",
+          "end_line": 46
+        }
+      ]
+    },
+    {
+      "id": "authForm",
+      "type": "security",
+      "label": "정보입력 · 약관",
+      "sublabel": "yup resolver · SSO 프리필",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/_components/SimpleAuthContent.tsx",
+          "line": 60,
+          "label": "useForm + yupResolver(simpleAuthFormSchema)",
+          "end_line": 64
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/_components/SimpleAuthContent.tsx",
+          "line": 75,
+          "label": "initForm — atom 프리필, 없으면 B_AT 로 SSO 조회",
+          "end_line": 104
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/_components/TermsAgreementDrawer.tsx",
+          "line": 179,
+          "label": "upsertAppUser — 동의 저장"
+        }
+      ]
+    },
+    {
+      "id": "authReq",
+      "type": "messagebus",
+      "label": "useSimpleAuthRequest",
+      "sublabel": "토큰 요청 · 카카오 딥링크",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/simple-auth/use-simple-auth-request.ts",
+          "line": 25,
+          "label": "certType · deviceCode · browserCode 판정",
+          "end_line": 35
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/simple-auth/use-simple-auth-request.ts",
+          "line": 47,
+          "label": "token · userInfo · requestTime 저장 → confirm 이동",
+          "end_line": 55
+        },
+        {
+          "path": "apps/plus-web/lib/api/simple-auth-request.ts",
+          "line": 24,
+          "label": "POST /api/hometax/simple-auth"
+        }
+      ]
+    },
+    {
+      "id": "confirm",
+      "type": "security",
+      "label": "인증확인",
+      "sublabel": "status === 'completed'",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/confirm/_components/SimpleAuthConfirmContent.tsx",
+          "line": 91,
+          "label": "confirm 성공 → 수집및조회"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/simple-auth/use-simple-auth-confirm.ts",
+          "line": 32,
+          "label": "success && status completed 만 통과"
+        },
+        {
+          "path": "apps/plus-web/lib/api/simple-auth-confirm.ts",
+          "line": 14,
+          "label": "GET /api/hometax/auth-status/{token}"
+        }
+      ]
+    },
+    {
+      "id": "resultC",
+      "type": "frontend",
+      "label": "진단 결과",
+      "sublabel": "종합등급 없으면 null",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/result/_components/ResultContent.tsx",
+          "line": 22,
+          "label": "analysisResult?.종합등급 이 없으면 아무것도 안 그린다"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/result/_components/ResultCardList.tsx",
+          "line": 20,
+          "label": "환급 · 가산세 · 경영 · 장부품질 4진단"
+        },
+        {
+          "path": "apps/plus-web/lib/constants/tax-check/grade-variants.ts",
+          "line": 13,
+          "label": "GRADE_TO_EVENT_VALUE — 양호 · 주의 · 위험 (한글 키)"
+        }
+      ]
+    },
+    {
+      "id": "analysis",
+      "type": "backend",
+      "label": "통합 분석",
+      "sublabel": "tax-diagnosis-v2 · tin",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 69,
+          "label": "executeIntegratedAnalysis"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 81,
+          "label": "requestIntegratedAnalysis — abort signal 전달"
+        },
+        {
+          "path": "apps/plus-web/lib/api/integrated-analysis.ts",
+          "line": 15,
+          "label": "POST /api/tax-diagnosis-v2/ — data 가 any"
+        }
+      ]
+    },
+    {
+      "id": "hometax",
+      "type": "backend",
+      "label": "홈택스 수집",
+      "sublabel": "hometax/load → tin · 0→47%",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 112,
+          "label": "tin 이 이미 있으면 load 를 건너뛴다",
+          "end_line": 133
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 138,
+          "label": "fetchTin — requestHometaxLoad"
+        },
+        {
+          "path": "apps/plus-web/lib/api/hometax-load.ts",
+          "line": 16,
+          "label": "POST /api/hometax/load"
+        }
+      ]
+    },
+    {
+      "id": "exitFlag",
+      "type": "security",
+      "label": "수집 시작 · 가드",
+      "sublabel": "토큰·tin 확인 · abort · exited",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 115,
+          "label": "토큰도 tin 도 없으면 입력 화면으로 되돌린다",
+          "end_line": 121
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 28,
+          "label": "나가면 AbortController.abort()",
+          "end_line": 30
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 83,
+          "label": "응답 뒤 getDefaultStore 로 나감 여부를 다시 본다"
+        }
+      ]
+    },
+    {
+      "id": "drawers",
+      "type": "frontend",
+      "label": "상세 drawer 4",
+      "sublabel": "환급 · 가산세 · 경영 · 장부품질",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/result/_components/drawers/RefundDetailDrawer.tsx",
+          "line": 27,
+          "label": "RefundDetailDrawer — data: any"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/result/_components/drawers/ManagementDetailDrawer.tsx",
+          "line": 59,
+          "label": "ManagementDetailDrawer — 차트 2개"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/result/_components/drawers/BookQualityDetailDrawer.tsx",
+          "line": 38,
+          "label": "BookQualityDetailDrawer"
+        }
+      ]
+    },
+    {
+      "id": "charts",
+      "type": "frontend",
+      "label": "recharts 차트 2",
+      "sublabel": "ChartContainer 위 · hex 하드코딩",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/chart/index.tsx",
+          "line": 20,
+          "label": "ChartContainer — config 를 --color-* 변수로",
+          "end_line": 36
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/chart/ProfitMarginChart.tsx",
+          "line": 17,
+          "label": "ProfitMarginChart — LineChart · 영업이익률 3개년"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/chart/SalesCompareChart.tsx",
+          "line": 30,
+          "label": "SalesCompareChart — BarChart · 평균 대비"
+        }
+      ]
+    },
+    {
+      "id": "error",
+      "type": "frontend",
+      "label": "수집 오류",
+      "sublabel": "?error=nobman · 세션 오류 메시지",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        544,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/collection/_components/CollectionContent.tsx",
+          "line": 147,
+          "label": "errorCode E0010 → ?error=nobman",
+          "end_line": 153
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/error/_components/CollectionErrorContent.tsx",
+          "line": 31,
+          "label": "nobman 이면 NoBmanErrorContent",
+          "end_line": 32
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/error/_components/NoBmanErrorContent.tsx",
+          "line": 11,
+          "label": "atom 을 비우고 nobmanErrorSeen 을 켠다",
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "store/auth-store.ts",
+      "sublabel": "localStorage 기본 · session 2개 · 메모리 3개",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        1128,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/store/auth-store.ts",
+          "line": 11,
+          "label": "요청시각 · 수집오류 — sessionStorage",
+          "end_line": 21
+        },
+        {
+          "path": "apps/plus-web/store/auth-store.ts",
+          "line": 16,
+          "label": "token · tin · analysisResult(any) — localStorage",
+          "end_line": 23
+        },
+        {
+          "path": "apps/plus-web/store/auth-store.ts",
+          "line": 13,
+          "label": "simpleAuthUserInfoAtom — 메모리 atom"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "cta-authForm",
+      "from": "cta",
+      "to": "authForm",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "authForm-authReq",
+      "from": "authForm",
+      "to": "authReq",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "authReq-confirm",
+      "from": "authReq",
+      "to": "confirm",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "confirm-exitFlag",
+      "from": "confirm",
+      "to": "exitFlag",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "hometax-analysis",
+      "from": "hometax",
+      "to": "analysis",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "analysis-resultC",
+      "from": "analysis",
+      "to": "resultC",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "exitFlag-hometax",
+      "from": "exitFlag",
+      "to": "hometax",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "resultC-drawers",
+      "from": "resultC",
+      "to": "drawers",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "drawers-charts",
+      "from": "drawers",
+      "to": "charts",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "hometax-error",
+      "from": "hometax",
+      "to": "error",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "error-store",
+      "from": "error",
+      "to": "store",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "진입이 다섯 갈래다",
+      "items": [
+        "CTAButton 이 순서대로 본다 — nobmanErrorSeen → ?tin 쿼리 → analysisResult → tin → 간편인증 입력",
+        "?tin 쿼리가 있으면 tinAtom 에 넣고 무조건 다시 조회한다",
+        "simpleAuthToken 만 있는 경우는 신규 사용자처럼 입력 화면으로 보낸다(주석)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "API 두 번 · 진행률은 가짜 애니메이션",
+      "items": [
+        "1) POST /api/hometax/load → tin. 진행률은 30초 동안 0→47% 로 먼저 움직인다",
+        "2) POST /api/tax-diagnosis-v2/ (tin) → analysisResultAtom 저장 → /result 로 replace",
+        "hometax/load 가 errorCode E0010 이면 ?error=nobman, 그 밖의 실패는 collectionErrorAtom(session) 에 메시지를 담아 오류 화면으로",
+        "나가기를 누르면 collectionExitedAtom 을 켜고 abort 한다. 응답이 늦게 와도 결과로 끌려가지 않는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "타입이 느슨한 곳",
+      "items": [
+        "analysisResultAtom<any> · hometax-load / integrated-analysis 응답 data: any · drawer 4개 data: any",
+        "결과 키가 한글이다 — 종합등급 · 환급진단 · 가산세진단 · 경영진단 · 장부품질진단. 등급 값도 양호 · 주의 · 위험",
+        "차트 색은 hex 하드코딩(#0E72FF · #CBD1D7), CustomLabel(props: any)",
+        "로그인 정보는 SSO 에 직접 묻는다(B_AT 쿠키). 탈퇴고객이면 앱에서 onSignOut 네이티브 메시지를 보낸다"
+      ]
+    }
+  ]
+}

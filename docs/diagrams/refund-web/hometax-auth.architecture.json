@@ -1,0 +1,447 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "홈택스 인증 · 오류 23화면",
+    "subtitle": "/hometax-auth 7 · /error 15 · /404 — 전수",
+    "output": "hometax-auth.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      304
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "auth",
+        "label": "인증 3방식",
+        "focus": [
+          "select",
+          "idAuth",
+          "simpleIn",
+          "simpleCf",
+          "joint"
+        ],
+        "note": "select-method 가 type 쿼리로 나눈다. corps 는 ID·공동인증서, 그 외는 간편인증·공동인증서."
+      },
+      {
+        "id": "hometaxErr",
+        "label": "홈택스 오류",
+        "focus": [
+          "errLookup",
+          "errFix",
+          "errBiz"
+        ],
+        "note": "error/hometax 8 + temporary. 재시도 버튼은 대부분 lookup/request 로 되돌린다."
+      },
+      {
+        "id": "commonErr",
+        "label": "공통 · 결제 오류",
+        "focus": [
+          "errCommon",
+          "errPay",
+          "notFound"
+        ],
+        "note": "가드 없이 createErrorPageLayout 만 쓴다. nav-left/right-button 쿼리로 상단 버튼을 바꾼다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "hometax-auth · error · 404 — 23 화면 전수",
+      "wraps": [
+        "idAuth",
+        "select",
+        "simpleIn",
+        "simpleCf",
+        "notFound",
+        "joint",
+        "errLookup",
+        "errFix",
+        "errBiz",
+        "errCommon",
+        "errPay"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "idAuth",
+      "type": "security",
+      "label": "홈택스 ID 인증",
+      "sublabel": "법인 · id-auth",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/id-auth/index.tsx",
+          "line": 16,
+          "label": "/id-auth — 법인 홈택스 로그인"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "select",
+      "type": "security",
+      "label": "인증 방식 선택",
+      "sublabel": "select-method · ?type=",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/select-method/index.tsx",
+          "line": 15,
+          "label": "/select-method — corps 면 ID·공동인증서"
+        },
+        {
+          "path": "apps/refund-web/pages/hometax-auth/select-method/index.tsx",
+          "line": 45,
+          "label": "허용 type 이 아니면 404"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "simpleIn",
+      "type": "security",
+      "label": "간편인증 입력",
+      "sublabel": "simple-auth/input · ?from=",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/simple-auth/input/index.tsx",
+          "line": 32,
+          "label": "/simple-auth/input — BEFORE_AUTH 면 대기열"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/hometax-auth/api/use-hometax-auth.ts",
+          "line": 40,
+          "label": "useRequestSimpleAuthToken — 토큰 요청"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "simpleCf",
+      "type": "security",
+      "label": "간편인증 확인",
+      "sublabel": "confirm · confirm-auto",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/simple-auth/confirm/index.tsx",
+          "line": 31,
+          "label": "/simple-auth/confirm — 수동 확인"
+        },
+        {
+          "path": "apps/refund-web/pages/hometax-auth/simple-auth/confirm-auto/index.tsx",
+          "line": 31,
+          "label": "/simple-auth/confirm-auto — 자동 확인"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/hometax-auth/use-simple-auth-status-polling.ts",
+          "line": 25,
+          "label": "useSimpleAuthStatusPolling — 상태 폴링"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "notFound",
+      "type": "external",
+      "label": "404",
+      "sublabel": "ErrorBaseView · 뒤로가기",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/404.tsx",
+          "line": 13,
+          "label": "/404 — 뒤로가기 · 문의"
+        }
+      ],
+      "tag": "1 화면 · 가드 없음"
+    },
+    {
+      "id": "joint",
+      "type": "security",
+      "label": "공동인증서",
+      "sublabel": "install · select · 로컬 프로그램",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/joint-certificate/install/index.tsx",
+          "line": 13,
+          "label": "/joint-certificate/install — result 면 가드 없음"
+        },
+        {
+          "path": "apps/refund-web/pages/hometax-auth/joint-certificate/select/index.tsx",
+          "line": 13,
+          "label": "/joint-certificate/select — result 면 가드 없음"
+        },
+        {
+          "path": "apps/refund-web/lib/utils/joint-certificate.ts",
+          "line": 5,
+          "label": "127.0.0.1:16566 — axios 로컬 호출"
+        }
+      ],
+      "tag": "2 화면 · 조건부 AuthGuard"
+    },
+    {
+      "id": "errLookup",
+      "type": "backend",
+      "label": "조회 재시도형 오류",
+      "sublabel": "session · timeout · temporary",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/error/hometax/session.tsx",
+          "line": 38,
+          "label": "/error/hometax/session — 인증 방식별 재인증"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/timeout.tsx",
+          "line": 19,
+          "label": "/error/hometax/timeout — 조회 재요청"
+        },
+        {
+          "path": "apps/refund-web/pages/error/temporary.tsx",
+          "line": 20,
+          "label": "/error/temporary — 조회 재요청"
+        }
+      ],
+      "tag": "3 화면 · AuthGuard"
+    },
+    {
+      "id": "errFix",
+      "type": "backend",
+      "label": "점검 · 시간 · 과부하",
+      "sublabel": "server-fix · unavailable · overload",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/error/hometax/server-fix.tsx",
+          "line": 23,
+          "label": "/error/hometax/server-fix — 점검 (AuthGuard)"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/unavailable-time.tsx",
+          "line": 17,
+          "label": "/unavailable-time — lookup · 알림톡 분기"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/overload-control.tsx",
+          "line": 15,
+          "label": "/overload-control — 2초 스피너 뒤 안내"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "errBiz",
+      "type": "backend",
+      "label": "사업자 · TIN · 기타",
+      "sublabel": "no-bman · equal-tin · etc",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/error/hometax/no-bman.tsx",
+          "line": 7,
+          "label": "/no-bman — 광고 슬롯 Drawer 자동 오픈"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/equal-tin.tsx",
+          "line": 37,
+          "label": "/equal-tin — 재조회 전 이용 시간 확인"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/etc.tsx",
+          "line": 43,
+          "label": "/etc — source=message 면 가드 없음"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "errCommon",
+      "type": "backend",
+      "label": "공통 오류",
+      "sublabel": "network · unexpected · unauthorized",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/error/network.tsx",
+          "line": 14,
+          "label": "/error/network — return_url 로 복귀"
+        },
+        {
+          "path": "apps/refund-web/pages/error/unexpected.tsx",
+          "line": 8,
+          "label": "/error/unexpected — 채널톡 문의"
+        },
+        {
+          "path": "apps/refund-web/pages/error/unauthorized.tsx",
+          "line": 6,
+          "label": "/error/unauthorized — trr 로그아웃 목적지"
+        }
+      ],
+      "tag": "3 화면 · 가드 없음"
+    },
+    {
+      "id": "errPay",
+      "type": "backend",
+      "label": "결제 오류",
+      "sublabel": "fail · link-default · link-expired",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/error/payment/fail.tsx",
+          "line": 4,
+          "label": "/error/payment/fail — trp 0031 목적지"
+        },
+        {
+          "path": "apps/refund-web/pages/error/payment/link-default.tsx",
+          "line": 4,
+          "label": "/error/payment/link-default"
+        },
+        {
+          "path": "apps/refund-web/pages/error/payment/link-expired.tsx",
+          "line": 4,
+          "label": "/error/payment/link-expired"
+        }
+      ],
+      "tag": "3 화면 · 가드 없음"
+    }
+  ],
+  "connections": [
+    {
+      "id": "select-idAuth",
+      "from": "select",
+      "to": "idAuth",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "select-simpleIn",
+      "from": "select",
+      "to": "simpleIn",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "simpleIn-simpleCf",
+      "from": "simpleIn",
+      "to": "simpleCf",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "select-joint",
+      "from": "select",
+      "to": "joint",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "인증 방식은 쿼리로 갈린다",
+      "items": [
+        "select-method 는 gSSP 에서 type 을 검사해 허용값이 아니면 404 를 낸다. corps 면 ID·공동인증서, 나머지는 간편인증·공동인증서 선택을 그린다",
+        "simple-auth/input 은 홈택스 차단 설정이 대기열 사용 + BEFORE_AUTH 단계면 lookup/queue 로 바로 보낸다",
+        "공동인증서 install·select 는 type=result 일 때 AuthGuard 없이 렌더한다. 로컬 프로그램(127.0.0.1:16566)은 axios 로 부른다 — 앱에서 axios 를 쓰는 유일한 파일"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "오류 화면 15개의 공통 골격",
+      "items": [
+        "전부 createErrorPageLayout 을 쓴다. gSSP 가 있는 화면은 nav-left-button · nav-right-button 쿼리로 상단 버튼을 덮어쓸 수 있다",
+        "AuthGuard 가 있는 오류 화면은 session · timeout · server-fix · temporary 넷, etc 는 source=message 가 아닐 때만",
+        "/error/unauthorized 는 trr 의 AuthGuard 로그아웃 목적지, /error/payment/fail 은 trp/success 가 outStatCd 0031 일 때 303 으로 보내는 곳이다"
+      ]
+    }
+  ]
+}

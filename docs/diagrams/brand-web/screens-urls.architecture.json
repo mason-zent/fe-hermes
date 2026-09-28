@@ -1,0 +1,579 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "brand-web 화면 · URL 전수",
+    "subtitle": "page.tsx 4 개가 만드는 실제 URL — 약관 두 개는 CMS 레코드 수만큼 늘어난다",
+    "output": "screens-urls.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      400
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "7f052c0c3963c043ff02e1580b0959d91fab5aaf"
+    },
+    "views": [
+      {
+        "id": "files",
+        "label": "page.tsx 4",
+        "focus": [
+          "homeP",
+          "brandP",
+          "termsP",
+          "popupP"
+        ],
+        "note": "파일 기준 화면은 넷이다. 루트 app/page.tsx 는 없고 / 는 rewrite 로 /home 을 그린다."
+      },
+      {
+        "id": "urls",
+        "label": "만들어지는 URL",
+        "focus": [
+          "homeU",
+          "brandU",
+          "termsU",
+          "popupU"
+        ],
+        "note": "홈·브랜드는 고정 URL, 약관 둘은 DatoCMS 종류·레코드마다 URL 이 생긴다."
+      },
+      {
+        "id": "rules",
+        "label": "경로 규칙",
+        "focus": [
+          "rewrite",
+          "ping",
+          "redirRefund",
+          "redirSb"
+        ],
+        "note": "page 가 없는 경로도 응답한다 — rewrite 1 · redirect 3 · proxy 응답 2."
+      },
+      {
+        "id": "fallback",
+        "label": "폴백 · 변형",
+        "focus": [
+          "deeplinkU",
+          "nf",
+          "tailU",
+          "assetsU"
+        ],
+        "note": "같은 URL 이 쿼리 하나로 다른 화면이 되고, 없는 약관은 404 로 떨어진다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "app/ — page.tsx 4 개 전수",
+      "wraps": [
+        "homeP",
+        "brandP",
+        "termsP",
+        "popupP",
+        "homeU",
+        "brandU",
+        "termsU",
+        "popupU"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "rewrite",
+      "type": "backend",
+      "label": "/ → /home",
+      "sublabel": "rewrite · 주소창은 / 유지",
+      "pos": [
+        60,
+        42
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "경로 규칙",
+      "sources": [
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 38,
+          "end_line": 45,
+          "label": "rewrites — source / → /home"
+        }
+      ]
+    },
+    {
+      "id": "ping",
+      "type": "security",
+      "label": "/ping · devtools json",
+      "sublabel": "proxy.ts 가 JSON 응답",
+      "pos": [
+        392,
+        42
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "경로 규칙",
+      "sources": [
+        {
+          "path": "apps/brand-web/proxy.ts",
+          "line": 6,
+          "end_line": 8,
+          "label": "ping · devtools 요청만 가로챔"
+        }
+      ]
+    },
+    {
+      "id": "redirRefund",
+      "type": "external",
+      "label": "/tax/refund/* → 환급 웹",
+      "sublabel": "308 · reviews 와 landing 2건",
+      "pos": [
+        724,
+        42
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "경로 규칙",
+      "sources": [
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 53,
+          "end_line": 62,
+          "label": "redirect → NEXT_PUBLIC_REFUND_DOMAIN"
+        }
+      ]
+    },
+    {
+      "id": "redirSb",
+      "type": "external",
+      "label": "/storybook/* → chromatic",
+      "sublabel": "307 (permanent false)",
+      "pos": [
+        1056,
+        42
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "경로 규칙",
+      "sources": [
+        {
+          "path": "apps/brand-web/next.config.mjs",
+          "line": 48,
+          "end_line": 52,
+          "label": "redirect → chromatic"
+        }
+      ]
+    },
+    {
+      "id": "homeP",
+      "type": "frontend",
+      "label": "홈 page",
+      "sublabel": "Main · IMCBanner · Content 조립",
+      "pos": [
+        60,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "page.tsx 1/4",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/home/page.tsx",
+          "line": 5,
+          "end_line": 13,
+          "label": "HomePage — 섹션 3개 조립"
+        }
+      ]
+    },
+    {
+      "id": "brandP",
+      "type": "frontend",
+      "label": "브랜드 리소스 page",
+      "sublabel": "사이드바 앵커 4 · 자체 metadata",
+      "pos": [
+        392,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "page.tsx 2/4",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/brand-resource/page.tsx",
+          "line": 6,
+          "end_line": 38,
+          "label": "BrandResourcePage · metadata"
+        }
+      ]
+    },
+    {
+      "id": "termsP",
+      "type": "frontend",
+      "label": "약관 page",
+      "sublabel": "generateStaticParams · revalidate 3600",
+      "pos": [
+        724,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "page.tsx 3/4 · 클릭하면 이동",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/terms/[...terms]/page.tsx",
+          "line": 7,
+          "end_line": 34,
+          "label": "TermsPage — 사이드바 + 본문"
+        }
+      ]
+    },
+    {
+      "id": "popupP",
+      "type": "frontend",
+      "label": "팝업 약관 page",
+      "sublabel": "같은 함수 · 사이드바 없음",
+      "pos": [
+        1056,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "page.tsx 4/4 · 클릭하면 이동",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/popup/terms/[...terms]/page.tsx",
+          "line": 6,
+          "end_line": 26,
+          "label": "TermsPage(팝업) — 본문만"
+        }
+      ]
+    },
+    {
+      "id": "homeU",
+      "type": "frontend",
+      "label": "/  ·  /home",
+      "sublabel": "같은 화면 · sitemap 은 / 만",
+      "pos": [
+        60,
+        222
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "URL 2",
+      "sources": [
+        {
+          "path": "apps/brand-web/next-sitemap.config.mjs",
+          "line": 4,
+          "end_line": 4,
+          "label": "EXCLUDE_ROUTES = ['/home']"
+        },
+        {
+          "path": "apps/brand-web/next-sitemap.config.mjs",
+          "line": 31,
+          "end_line": 45,
+          "label": "additionalPaths — / 를 직접 추가"
+        }
+      ]
+    },
+    {
+      "id": "brandU",
+      "type": "frontend",
+      "label": "/brand-resource#…",
+      "sublabel": "#brand-logo 외 사이드바 앵커 4",
+      "pos": [
+        392,
+        222
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "URL 1 · 앵커 4",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/brand-resource/_components/ContentSection.tsx",
+          "line": 31,
+          "end_line": 147,
+          "label": "섹션 id 4개 — 사이드바 앵커 대상"
+        }
+      ]
+    },
+    {
+      "id": "termsU",
+      "type": "frontend",
+      "label": "/terms/<종류>[/<버전>]",
+      "sublabel": "종류 수 + 레코드 수만큼 빌드",
+      "pos": [
+        724,
+        222
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "URL = CMS 레코드 수",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 27,
+          "end_line": 39,
+          "label": "getTermsPaths — [key] · [key, version]"
+        }
+      ]
+    },
+    {
+      "id": "popupU",
+      "type": "frontend",
+      "label": "/popup/terms/<종류>[/<버전>]",
+      "sublabel": "버전을 바꾸면 replace",
+      "pos": [
+        1056,
+        222
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "URL = CMS 레코드 수",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/terms/TermContentSection.tsx",
+          "line": 39,
+          "end_line": 44,
+          "label": "버전 이동 — 팝업은 router.replace"
+        }
+      ]
+    },
+    {
+      "id": "deeplinkU",
+      "type": "security",
+      "label": "?referrer=deeplink_fallback",
+      "sublabel": "헤더 · 푸터 · 배너 · 버튼을 숨긴다",
+      "pos": [
+        60,
+        310
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "같은 URL 다른 화면",
+      "sources": [
+        {
+          "path": "apps/brand-web/hooks/useIsDeeplinkFallback.ts",
+          "line": 4,
+          "end_line": 7,
+          "label": "useIsDeeplinkFallback — 쿼리 한 개"
+        },
+        {
+          "path": "apps/brand-web/app/_components/layout-content/LayoutItems.tsx",
+          "line": 13,
+          "end_line": 13,
+          "label": "LogoHeader — deeplink 면 null"
+        },
+        {
+          "path": "apps/brand-web/app/home/_components/ContentSection.tsx",
+          "line": 47,
+          "end_line": 58,
+          "label": "서비스 버튼 숨김"
+        }
+      ]
+    },
+    {
+      "id": "assetsU",
+      "type": "external",
+      "label": "로고 이미지 · zip",
+      "sublabel": "리소스 센터 /brand/resource/*",
+      "pos": [
+        392,
+        310
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "앱 밖 파일",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/brand-resource/_components/ContentSection.tsx",
+          "line": 153,
+          "end_line": 185,
+          "label": "ImageCard — 다운로드 링크"
+        }
+      ]
+    },
+    {
+      "id": "nf",
+      "type": "security",
+      "label": "notFound → 404",
+      "sublabel": "종류 없음 · 레코드 없음 · 요청 실패",
+      "pos": [
+        724,
+        310
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "폴백",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/not-found.tsx",
+          "line": 8,
+          "end_line": 31,
+          "label": "NotFound — LogoLayout + InfoView"
+        },
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 56,
+          "end_line": 58,
+          "label": "term 없으면 null"
+        }
+      ]
+    },
+    {
+      "id": "tailU",
+      "type": "backend",
+      "label": "세그먼트 3번째부터 무시",
+      "sublabel": "/terms/a/b/c = /terms/a/b",
+      "pos": [
+        1056,
+        310
+      ],
+      "size": [
+        264,
+        54
+      ],
+      "tag": "확인 필요",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 42,
+          "end_line": 44,
+          "label": "terms[0] · terms[1] 만 읽는다"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "e1",
+      "from": "rewrite",
+      "to": "homeP",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "homeP",
+      "to": "homeU",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e3",
+      "from": "brandP",
+      "to": "brandU",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "e4",
+      "from": "termsP",
+      "to": "termsU",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e5",
+      "from": "popupP",
+      "to": "popupU",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e6",
+      "from": "homeU",
+      "to": "deeplinkU",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "e7",
+      "from": "brandU",
+      "to": "assetsU",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "e8",
+      "from": "termsU",
+      "to": "nf",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "e9",
+      "from": "popupU",
+      "to": "tailU",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "파일 넷, URL 은 CMS 가 정한다",
+      "items": [
+        "home · brand-resource 는 URL 하나씩이다. 루트 app/page.tsx 가 없고 / 는 /home 을 rewrite 로 보여준다",
+        "terms · popup/terms 는 catch-all 이라 /terms 자체(세그먼트 0)는 404 다",
+        "빌드 때 getTermsPaths 가 종류마다 [key], 레코드마다 [key, version] 을 만든다. 두 page 가 같은 목록을 쓴다",
+        "쿼리가 first: \"100\" 이라 100 개를 넘는 종류·레코드는 미리 만들어지지 않는다(요청 시 렌더되는지는 확인 필요)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "주소 하나로 달라지는 것",
+      "items": [
+        "?referrer=deeplink_fallback 이면 헤더 · 푸터 링크 · IMC 배너 · 서비스 버튼이 사라진다(앱에서 넘어온 폴백)",
+        "버전이 없는 /terms/<종류> 는 enforceTerm.version 으로 최신판을 찾는다. 못 찾으면 version '0' 으로 조회해 404",
+        "사이드바 링크는 /terms/service · /terms/privacy 로 고정이다. CMS 에 종류가 늘어도 사이드바는 그대로",
+        "팝업에서 버전을 바꾸면 router.replace — iframe 히스토리를 쌓지 않으려는 것(코드 주석)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "sitemap 에 무엇이 들어가나",
+      "items": [
+        "additionalPaths 는 app-paths-manifest 에서 [ 가 없는 경로만 더한다 — /  ·  /brand-resource",
+        "next-sitemap 4.2.3 은 그와 별개로 prerender-manifest 의 routes 를 기본으로 넣는다. 그래서 빌드된 /terms/* · /popup/terms/* 도 들어갈 수 있다(빌드 산출물로 확인 필요)",
+        "exclude 는 /home 하나뿐이다. 팝업 약관을 sitemap 에서 뺄 설정은 없다"
+      ]
+    }
+  ]
+}

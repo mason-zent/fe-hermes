@@ -1,0 +1,1020 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "refund-web 상세 아키텍처",
+    "subtitle": "진입 → 셸 → 가드 → 화면군 → 훅 → 데이터 관문. 가드는 전역이 아니라 화면마다 건다",
+    "output": "refund-web-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      760
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "gate",
+        "label": "진입과 게이트",
+        "focus": [
+          "clients",
+          "proxy",
+          "edgecfg",
+          "shell",
+          "guard"
+        ],
+        "note": "proxy.ts 가 점검을 판정하고 쿠키를 심는다. 렌더를 막는 인증 경계는 화면마다 거는 AuthGuard 다."
+      },
+      {
+        "id": "screens",
+        "label": "화면군 5",
+        "focus": [
+          "guard",
+          "refund",
+          "survey",
+          "account",
+          "landing",
+          "hometax"
+        ],
+        "note": "106 화면 전수. 점선 노드를 누르면 해당 탭으로 간다. 랜딩·외부 진입 군은 대부분 가드 밖이다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 관문 넷",
+        "focus": [
+          "relay",
+          "apir",
+          "sfetch",
+          "axios",
+          "gql",
+          "cert"
+        ],
+        "note": "클라이언트 Relay, 서버 raw fetch, API Route 2개, 공동인증서 로컬 axios."
+      },
+      {
+        "id": "state",
+        "label": "상태 · 폴링",
+        "focus": [
+          "relayp",
+          "pagec",
+          "stores"
+        ],
+        "note": "토큰이 바뀌면 Relay 환경을 새로 만들고, 홈택스 차단 설정을 5분마다 다시 읽는다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "refund-web (Next.js Pages Router)",
+      "wraps": [
+        "proxy",
+        "shell",
+        "authp",
+        "trackp",
+        "relayp",
+        "pagec",
+        "guard",
+        "refund",
+        "survey",
+        "account",
+        "landing",
+        "hometax",
+        "rhooks",
+        "shooks",
+        "stores",
+        "mhooks",
+        "hhooks",
+        "relay",
+        "apir",
+        "sfetch",
+        "axios"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "데이터 관문 4종",
+      "wraps": [
+        "relay",
+        "apir",
+        "sfetch",
+        "axios"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "사용자 채널",
+      "sublabel": "웹 · 앱 웹뷰 · 파트너 플랫폼",
+      "pos": [
+        60,
+        6
+      ],
+      "size": [
+        1260,
+        40
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "Next Proxy · proxy.ts",
+      "sublabel": "점검 판정 · 플랫폼·UTM·점검 쿠키",
+      "pos": [
+        60,
+        76
+      ],
+      "size": [
+        810,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/proxy.ts",
+          "line": 27,
+          "label": "proxy — 점검 판정 · 쿠키 3종"
+        },
+        {
+          "path": "apps/refund-web/proxy.ts",
+          "line": 20,
+          "label": "점검 중에도 열리는 경로 3개"
+        },
+        {
+          "path": "apps/refund-web/next.config.mjs",
+          "line": 55,
+          "label": "rewrite — / 를 /home/landing 으로"
+        }
+      ]
+    },
+    {
+      "id": "edgecfg",
+      "type": "cloud",
+      "label": "edge-config CDN",
+      "sublabel": "refund/management.json · 점검 설정",
+      "pos": [
+        900,
+        76
+      ],
+      "size": [
+        420,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/proxy.ts",
+          "line": 21,
+          "label": "점검 설정 URL — prd·dev 분리"
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "_app · RefundAppContents",
+      "sublabel": "Jotai → Router → ErrorBoundary → Auth → Tracking → Relay",
+      "pos": [
+        60,
+        162
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/_app.tsx",
+          "line": 32,
+          "label": "MyApp — 전역 Jotai · RouterProvider"
+        },
+        {
+          "path": "apps/refund-web/pages/_app.tsx",
+          "line": 19,
+          "label": "seoHead 우선 · 없으면 경로별 OG 맵"
+        },
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 43,
+          "label": "RefundAppContents — Provider 중첩 순서"
+        }
+      ]
+    },
+    {
+      "id": "authp",
+      "type": "security",
+      "label": "AuthProvider",
+      "sublabel": "@repo/user-session · signPaths",
+      "pos": [
+        60,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 29,
+          "label": "signPaths — 로그인·가입·CI 경로"
+        },
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 44,
+          "label": "AuthProvider — 토스면 CI 미사용"
+        }
+      ]
+    },
+    {
+      "id": "trackp",
+      "type": "messagebus",
+      "label": "EventTrackingProvider",
+      "sublabel": "Mixpanel · Airbridge · GA · 픽셀 · Datadog",
+      "pos": [
+        380,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 45,
+          "label": "전송 대상 설정"
+        },
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 28,
+          "label": "세션 리플레이 비율 — Remote Config"
+        }
+      ]
+    },
+    {
+      "id": "relayp",
+      "type": "backend",
+      "label": "RelayEdkForAccessToken",
+      "sublabel": "토큰이 바뀌면 환경 재생성",
+      "pos": [
+        700,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/components/common/RelayEdkForAccessTokenProvider.tsx",
+          "line": 13,
+          "label": "apiToken · 세션 id 를 환경에 주입"
+        },
+        {
+          "path": "apps/refund-web/lib/relay/relay-environment.ts",
+          "line": 34,
+          "label": "토큰이 다르면 새 Environment"
+        }
+      ]
+    },
+    {
+      "id": "pagec",
+      "type": "frontend",
+      "label": "PageContents",
+      "sublabel": "getLayout · 홈택스 설정 5분 폴링",
+      "pos": [
+        1020,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 95,
+          "label": "getLayout 호출 — 가드는 여기서 붙는다"
+        },
+        {
+          "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
+          "line": 97,
+          "label": "홈택스 차단 설정 폴링 켬"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/refund/control/api/use-hometax-block.ts",
+          "line": 55,
+          "label": "5분 간격 재조회"
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "AuthGuard · 화면마다 건다",
+      "sublabel": "106 화면 중 59 — 직접 39 · SurveyProvider 20",
+      "pos": [
+        60,
+        320
+      ],
+      "size": [
+        1260,
+        40
+      ],
+      "sources": [
+        {
+          "path": "packages/user-session/src/components/AuthGuard.tsx",
+          "line": 11,
+          "label": "AuthGuard — 로그아웃·가입 미완료 이동"
+        },
+        {
+          "path": "packages/user-session/src/components/AuthGuard.tsx",
+          "line": 36,
+          "label": "CiGuard — CI 필요 시 ci-request"
+        },
+        {
+          "path": "apps/refund-web/components/survey/common/SurveyProvider.tsx",
+          "line": 26,
+          "label": "SurveyProvider — 설문 20 화면 가드"
+        }
+      ]
+    },
+    {
+      "id": "refund",
+      "type": "frontend",
+      "label": "환급 조회·신청 21",
+      "sublabel": "/home · /tax/refund · /follow-up",
+      "pos": [
+        60,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/index.tsx",
+          "line": 73,
+          "label": "/home — 환급 홈"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/lookup/result/index.tsx",
+          "line": 24,
+          "label": "/lookup/result — 조회 결과"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/apply/complete/index.tsx",
+          "line": 26,
+          "label": "/apply/complete — 스냅샷 저장"
+        }
+      ]
+    },
+    {
+      "id": "survey",
+      "type": "frontend",
+      "label": "설문 25",
+      "sublabel": "/survey · 창업감면 · 고용증대",
+      "pos": [
+        316,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/start/index.tsx",
+          "line": 3,
+          "label": "/survey/start — 시작"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/signboard.tsx",
+          "line": 42,
+          "label": "/business/signboard — 문항 대표"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/reopen/index.tsx",
+          "line": 14,
+          "label": "/survey/reopen — 재설문"
+        }
+      ]
+    },
+    {
+      "id": "account",
+      "type": "frontend",
+      "label": "계정 · 메뉴 16",
+      "sublabel": "/auth · /menu · user-sign 위임",
+      "pos": [
+        572,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/sign-in/index.tsx",
+          "line": 10,
+          "label": "/auth/sign-in — user-sign"
+        },
+        {
+          "path": "apps/refund-web/pages/menu/index.tsx",
+          "line": 17,
+          "label": "/menu — 전체 메뉴"
+        },
+        {
+          "path": "apps/refund-web/pages/menu/my/index.tsx",
+          "line": 19,
+          "label": "/menu/my — 내 정보"
+        }
+      ]
+    },
+    {
+      "id": "landing",
+      "type": "frontend",
+      "label": "랜딩 · 외부 진입 21",
+      "sublabel": "콘텐츠 SSR · SEO · trr · trp · simple",
+      "pos": [
+        828,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/landing/index.tsx",
+          "line": 11,
+          "label": "/home/landing — 메인 랜딩"
+        },
+        {
+          "path": "apps/refund-web/pages/help/index.tsx",
+          "line": 156,
+          "label": "/help — ISR"
+        },
+        {
+          "path": "apps/refund-web/pages/trr/index.tsx",
+          "line": 34,
+          "label": "/trr — 알림톡 진입"
+        }
+      ]
+    },
+    {
+      "id": "hometax",
+      "type": "frontend",
+      "label": "홈택스 인증 · 오류 23",
+      "sublabel": "간편 · ID · 공동인증서 · /error",
+      "pos": [
+        1084,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/hometax-auth/select-method/index.tsx",
+          "line": 15,
+          "label": "/select-method — 방식 선택"
+        },
+        {
+          "path": "apps/refund-web/pages/hometax-auth/simple-auth/input/index.tsx",
+          "line": 32,
+          "label": "/simple-auth/input — 간편인증"
+        },
+        {
+          "path": "apps/refund-web/pages/error/hometax/session.tsx",
+          "line": 38,
+          "label": "/error/hometax/session — 재인증"
+        }
+      ]
+    },
+    {
+      "id": "rhooks",
+      "type": "messagebus",
+      "label": "환급 훅",
+      "sublabel": "lib/hooks/refund",
+      "pos": [
+        60,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/hooks/refund/api/use-search-refund.ts",
+          "line": 7,
+          "label": "useSearchRefund — 조회 요청"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/refund/api/use-apply-refund.ts",
+          "line": 8,
+          "label": "useApplyRefund — 신청 뮤테이션"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/refund/use-snapshot-data.ts",
+          "line": 10,
+          "label": "useSnapshotData — 스냅샷 저장·조회"
+        }
+      ]
+    },
+    {
+      "id": "shooks",
+      "type": "messagebus",
+      "label": "설문 Provider · 훅",
+      "sublabel": "SurveyInit → BusinessProvider",
+      "pos": [
+        316,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/components/survey/common/SurveyProvider.tsx",
+          "line": 33,
+          "label": "SurveyInitProvider — 초기 조회"
+        },
+        {
+          "path": "apps/refund-web/components/survey/common/BusinessProvider.tsx",
+          "line": 26,
+          "label": "BusinessProvider — 사업장 상태"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/survey/api/use-upsert-business-answer.ts",
+          "line": 25,
+          "label": "useUpsertBusinessAnswer — 답변 저장"
+        }
+      ]
+    },
+    {
+      "id": "stores",
+      "type": "database",
+      "label": "Jotai · sessionStorage",
+      "sublabel": "lib/stores · atomWithStorage",
+      "pos": [
+        572,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/stores/auth.ts",
+          "line": 12,
+          "label": "간편인증 atom — sessionStorage"
+        },
+        {
+          "path": "apps/refund-web/lib/stores/hometax-block.ts",
+          "line": 5,
+          "label": "hometaxBlockSettingsAtom — 차단 설정"
+        },
+        {
+          "path": "apps/refund-web/lib/stores/survey/common.ts",
+          "line": 7,
+          "label": "refundHistoryIdAtom — 설문 키"
+        }
+      ]
+    },
+    {
+      "id": "mhooks",
+      "type": "messagebus",
+      "label": "마케팅 훅",
+      "sublabel": "파트너 UTM · 어필리에이트 · 광고 슬롯",
+      "pos": [
+        828,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/hooks/marketing/use-partner-main-image.ts",
+          "line": 65,
+          "label": "getServerPartnerMainImage — SSR"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/marketing/use-affiliate.ts",
+          "line": 14,
+          "label": "useAffiliateQueryParams — 제휴 유입"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/marketing/use-ad-slots.ts",
+          "line": 16,
+          "label": "useAdSlots — 광고 슬롯"
+        }
+      ]
+    },
+    {
+      "id": "hhooks",
+      "type": "messagebus",
+      "label": "홈택스 인증 훅",
+      "sublabel": "토큰 요청 · 상태 폴링 · 계정 확인",
+      "pos": [
+        1084,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/hooks/hometax-auth/api/use-hometax-auth.ts",
+          "line": 40,
+          "label": "useRequestSimpleAuthToken"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/hometax-auth/use-simple-auth-status-polling.ts",
+          "line": 25,
+          "label": "useSimpleAuthStatusPolling"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/hometax-auth/api/use-check-hometax-account.ts",
+          "line": 14,
+          "label": "useCheckHometaxAccount"
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "type": "backend",
+      "label": "Relay 환경 · fetchRelay",
+      "sublabel": "Bearer · 세션 헤더 · FORBIDDEN 이면 로그아웃",
+      "pos": [
+        60,
+        558
+      ],
+      "size": [
+        492,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/relay/relay-environment.ts",
+          "line": 24,
+          "label": "initEnvironment — 싱글턴 · 서버는 캐시 안 함"
+        },
+        {
+          "path": "apps/refund-web/lib/relay/use-fetch-relay-factory.ts",
+          "line": 60,
+          "label": "Bearer · X-Zent-Session-Id 헤더"
+        },
+        {
+          "path": "apps/refund-web/lib/relay/use-fetch-relay-factory.ts",
+          "line": 85,
+          "label": "FORBIDDEN → setStatusSignOut"
+        }
+      ]
+    },
+    {
+      "id": "apir",
+      "type": "backend",
+      "label": "API Route 2개",
+      "sublabel": "sitemap · robots",
+      "pos": [
+        572,
+        558
+      ],
+      "size": [
+        212,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/api/sitemap.ts",
+          "line": 32,
+          "label": "sitemap — BE 목록 + 정적 엔트리"
+        },
+        {
+          "path": "apps/refund-web/pages/api/robots.ts",
+          "line": 8,
+          "label": "robots — AI 봇별 정책"
+        },
+        {
+          "path": "apps/refund-web/lib/seo-policy.mjs",
+          "line": 23,
+          "label": "ROBOTS_POLICIES · NOINDEX 정의"
+        }
+      ]
+    },
+    {
+      "id": "sfetch",
+      "type": "backend",
+      "label": "serverGraphQLFetch",
+      "sublabel": "gSSP · gSP 전용 · 토큰 없음",
+      "pos": [
+        828,
+        558
+      ],
+      "size": [
+        236,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/graphql/server-fetch.ts",
+          "line": 9,
+          "label": "serverGraphQLFetch — raw POST"
+        },
+        {
+          "path": "apps/refund-web/lib/content-page/server.ts",
+          "line": 34,
+          "label": "콘텐츠 페이지 gSSP 팩토리"
+        },
+        {
+          "path": "apps/refund-web/lib/content-page/api.ts",
+          "line": 70,
+          "label": "fetchRefundContentPage"
+        }
+      ]
+    },
+    {
+      "id": "axios",
+      "type": "backend",
+      "label": "axios · 로컬 호출",
+      "sublabel": "공동인증서 전용",
+      "pos": [
+        1084,
+        558
+      ],
+      "size": [
+        236,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/utils/joint-certificate.ts",
+          "line": 5,
+          "label": "hostString — 127.0.0.1:16566"
+        },
+        {
+          "path": "apps/refund-web/lib/utils/joint-certificate.ts",
+          "line": 13,
+          "label": "openSelectCertificate — 인증서 선택"
+        }
+      ]
+    },
+    {
+      "id": "gql",
+      "type": "cloud",
+      "label": "GraphQL API",
+      "sublabel": "NEXT_PUBLIC_GQL_API_SERVER",
+      "pos": [
+        60,
+        644
+      ],
+      "size": [
+        1004,
+        48
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/lib/relay/use-fetch-relay-factory.ts",
+          "line": 55,
+          "label": "클라이언트 Relay 가 부르는 주소"
+        },
+        {
+          "path": "apps/refund-web/lib/graphql/server-fetch.ts",
+          "line": 6,
+          "label": "서버 fetch 도 같은 주소"
+        }
+      ]
+    },
+    {
+      "id": "cert",
+      "type": "external",
+      "label": "공동인증서 프로그램",
+      "sublabel": "사용자 PC · https://127.0.0.1:16566",
+      "pos": [
+        1084,
+        644
+      ],
+      "size": [
+        236,
+        48
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "clients",
+      "to": "proxy",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "proxy",
+      "to": "edgecfg",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "c3",
+      "from": "proxy",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c4",
+      "from": "shell",
+      "to": "authp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c5",
+      "from": "shell",
+      "to": "pagec",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c6",
+      "from": "authp",
+      "to": "guard",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c7",
+      "from": "guard",
+      "to": "refund",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c8",
+      "from": "guard",
+      "to": "survey",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c9",
+      "from": "guard",
+      "to": "account",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c10",
+      "from": "guard",
+      "to": "hometax",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c11",
+      "from": "refund",
+      "to": "rhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c12",
+      "from": "survey",
+      "to": "shooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c13",
+      "from": "account",
+      "to": "stores",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c14",
+      "from": "landing",
+      "to": "mhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c15",
+      "from": "hometax",
+      "to": "hhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c16",
+      "from": "rhooks",
+      "to": "relay",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c17",
+      "from": "shooks",
+      "to": "relay",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c18",
+      "from": "mhooks",
+      "to": "sfetch",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c19",
+      "from": "hhooks",
+      "to": "axios",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "c20",
+      "from": "apir",
+      "to": "sfetch",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "c21",
+      "from": "relay",
+      "to": "gql",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c22",
+      "from": "sfetch",
+      "to": "gql",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c23",
+      "from": "axios",
+      "to": "cert",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "진입과 셸",
+      "items": [
+        "proxy.ts 는 edge-config CDN 의 refund/management.json 을 읽어 점검 중이면 /service-down 으로 보낸다. '/' · /service-down · /redirect 는 열어 두고, level 이 hometax 면 /trr 만 막는다",
+        "next.config 가 '/' 를 /home/landing 으로, /sitemap.xml · /robots.txt 를 API Route 로 rewrite 한다",
+        "_app 은 seoHead(콘텐츠 페이지 gSSP)가 있으면 그 메타를, 없으면 경로별 OG 맵을 쓴다",
+        "RefundAppContents 순서 — ErrorBoundary → AuthProvider → EventTrackingProvider → RelayEdkForAccessTokenProvider → PageContents(Dialog · Tooltip · NiceModal · Suspense)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "가드는 전역이 아니다",
+      "items": [
+        "AuthGuard 는 getLayout 이나 페이지 본문에서 화면마다 건다. 106 화면 중 직접 39 · SurveyProvider 경유 20 = 59 화면",
+        "나머지 47 화면(랜딩·도움말·오류·auth 대부분·trp·payment-card·reenactment 등)은 가드가 없다",
+        "공동인증서 install·select 는 type=result, error/hometax/etc 는 source=message 일 때 가드를 건너뛴다",
+        "106 화면 중 gSSP 32 · getStaticProps 8 · getLayout 82"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "데이터 관문이 넷이다",
+      "items": [
+        "Relay — 클라이언트 전용. Bearer · X-Zent-Session-Id 를 싣고, FORBIDDEN 이면 setStatusSignOut 한다",
+        "serverGraphQLFetch — gSSP · gSP 에서 토큰 없이 부른다. 콘텐츠 페이지 · /help 공지 · sitemap 이 쓴다",
+        "API Route 2개 — sitemap(BE 실패 시 정적 엔트리만) · robots(AI 봇별 정책)",
+        "axios — 공동인증서 로컬 프로그램(https://127.0.0.1:16566) 호출 전용"
+      ]
+    }
+  ]
+}

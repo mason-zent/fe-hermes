@@ -1,0 +1,1058 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "sena-web 상세 아키텍처",
+    "subtitle": "진입 → 셸 → 가드 → 화면군 → 훅 → 관문. 관문은 넷이고 그중 하나는 관문이 아니다",
+    "output": "sena-web-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      760
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "714b34495f963fc66e86601b5eced1d18e103615"
+    },
+    "views": [
+      {
+        "id": "gate",
+        "label": "진입과 게이트",
+        "focus": [
+          "clients",
+          "proxy",
+          "firebase",
+          "shell",
+          "guard"
+        ],
+        "note": "proxy.ts 는 matcher 없이 모든 요청에서 돈다. 렌더를 막는 인증 경계는 (authenticated) layout 의 AuthGuard 하나다."
+      },
+      {
+        "id": "shellv",
+        "label": "셸 안쪽",
+        "focus": [
+          "authp",
+          "trackp",
+          "banner",
+          "mainshell"
+        ],
+        "note": "답변 완료 배너는 Suspense·Dialog 바깥, 인증 오류 핸들러는 SenaMainShell 에서 등록된다."
+      },
+      {
+        "id": "chatv",
+        "label": "채팅과 알림",
+        "focus": [
+          "chat",
+          "chathooks",
+          "pushhooks",
+          "partner",
+          "sw"
+        ],
+        "note": "스트림이 done 되면 ACK 와 배너 판단이 같은 자리에서 불린다. 제휴사는 Next Route 를 거친다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 관문",
+        "focus": [
+          "senafetch",
+          "partner",
+          "sw",
+          "direct",
+          "senaapi",
+          "sso"
+        ],
+        "note": "lib/api 대부분은 requestSenaV2Fetch 를 쓰지만 terms.ts 와 system.ts 는 requestFetch 를 직접 부른다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "sena-web (Next.js App Router)",
+      "wraps": [
+        "proxy",
+        "shell",
+        "authp",
+        "trackp",
+        "banner",
+        "mainshell",
+        "guard",
+        "home",
+        "chat",
+        "etc",
+        "authed",
+        "login",
+        "ssr",
+        "chathooks",
+        "pushhooks",
+        "accounthooks",
+        "userpkg",
+        "senafetch",
+        "partner",
+        "sw",
+        "direct"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "AuthGuard",
+      "wraps": [
+        "authed"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "데이터 관문 4종",
+      "wraps": [
+        "senafetch",
+        "partner",
+        "sw",
+        "direct"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "사용자 채널",
+      "sublabel": "웹 · BZNAV 앱 웹뷰 · 제휴사 kbank · joins-hr",
+      "pos": [
+        60,
+        6
+      ],
+      "size": [
+        1260,
+        40
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "security",
+      "label": "proxy.ts",
+      "sublabel": "콘텐츠 gone → bypass → 점검 → 플랫폼·UTM 쿠키",
+      "pos": [
+        60,
+        76
+      ],
+      "size": [
+        810,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/proxy.ts",
+          "line": 83,
+          "label": "proxy — matcher 없이 모든 요청"
+        },
+        {
+          "path": "apps/sena-web/proxy.ts",
+          "line": 43,
+          "label": "isMissingContent — BE 조회 1.5초 제한",
+          "end_line": 81
+        },
+        {
+          "path": "apps/sena-web/proxy.ts",
+          "line": 117,
+          "label": "점검 level service·chat 리다이렉트",
+          "end_line": 131
+        }
+      ]
+    },
+    {
+      "id": "firebase",
+      "type": "cloud",
+      "label": "Firebase Storage",
+      "sublabel": "점검 설정 JSON (공개 URL)",
+      "pos": [
+        900,
+        76
+      ],
+      "size": [
+        420,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/constants/platform.ts",
+          "line": 13,
+          "label": "MAINTENANCE_SETTINGS_URL"
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "루트 셸 · app/layout.tsx → SenaAppContent",
+      "sublabel": "Jotai · Toaster · PageNavigationEvent → Router → Auth → Tracking",
+      "pos": [
+        60,
+        162
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/layout.tsx",
+          "line": 166,
+          "label": "JotaiProvider · Toaster · PageNavigation",
+          "end_line": 171
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 56,
+          "label": "Provider 중첩 시작",
+          "end_line": 102
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 50,
+          "label": "RN 브리지 · setSignInInitialRoute",
+          "end_line": 53
+        }
+      ]
+    },
+    {
+      "id": "authp",
+      "type": "security",
+      "label": "AuthProvider · CiGuard",
+      "sublabel": "@repo/user-session · isUseCI",
+      "pos": [
+        60,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 57,
+          "label": "AuthProvider isUseCI=true"
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 85,
+          "label": "CiGuard — Suspense 안"
+        }
+      ]
+    },
+    {
+      "id": "trackp",
+      "type": "messagebus",
+      "label": "EventTrackingProvider",
+      "sublabel": "Mixpanel · Airbridge · Datadog · GA",
+      "pos": [
+        380,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 58,
+          "label": "전송 대상 4종 설정",
+          "end_line": 82
+        }
+      ]
+    },
+    {
+      "id": "banner",
+      "type": "frontend",
+      "label": "답변 완료 배너 목록",
+      "sublabel": "Suspense · Dialog 바깥에 놓인다",
+      "pos": [
+        700,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 83,
+          "label": "AnswerNotificationBannerList 위치"
+        },
+        {
+          "path": "apps/sena-web/app/_components/answer-notification/AnswerNotificationBannerList.tsx",
+          "line": 26,
+          "label": "배너 목록 렌더"
+        }
+      ]
+    },
+    {
+      "id": "mainshell",
+      "type": "frontend",
+      "label": "SenaMainShell · PageContent",
+      "sublabel": "사이드바 · 인증 오류 · 웹 푸시",
+      "pos": [
+        1020,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 106,
+          "label": "SenaMainShell — 사이드바 판정",
+          "end_line": 113
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 115,
+          "label": "registerUnauthorizedHandler 등록",
+          "end_line": 125
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 135,
+          "label": "PageContent — 훅 · 오류 경계",
+          "end_line": 151
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "type": "security",
+      "label": "SurveyGuard (전역)",
+      "sublabel": "세나 회원 · 설문 미완료 · 가입 24시간 경과 · 미방문이면 설문으로 replace",
+      "pos": [
+        60,
+        320
+      ],
+      "size": [
+        1260,
+        40
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/SurveyGuard.tsx",
+          "line": 26,
+          "label": "판정 조건 4개",
+          "end_line": 45
+        },
+        {
+          "path": "apps/sena-web/app/_components/SurveyGuard.tsx",
+          "line": 30,
+          "label": "SURVEY_VISITED_KEY 면 다시 보내지 않음"
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 89,
+          "label": "NiceModal 안 · 메인 셸 바깥"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "홈 · 콘텐츠 3화면",
+      "sublabel": "/ · /contents/[id] · gone",
+      "pos": [
+        60,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/home/_components/MainChat.tsx",
+          "line": 7,
+          "label": "MainChat — 홈 입력창"
+        },
+        {
+          "path": "apps/sena-web/app/contents/(conversion)/layout.tsx",
+          "line": 6,
+          "label": "ConversionLayout — 콘텐츠 상세"
+        },
+        {
+          "path": "apps/sena-web/app/contents/gone/layout.tsx",
+          "line": 6,
+          "label": "gone — proxy 가 rewrite 하는 곳"
+        }
+      ]
+    },
+    {
+      "id": "chat",
+      "type": "frontend",
+      "label": "채팅 2화면",
+      "sublabel": "/chat · /search-chat",
+      "pos": [
+        316,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/layout.tsx",
+          "line": 7,
+          "label": "본문 ChatContent 를 layout 에서 렌더",
+          "end_line": 18
+        },
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 40,
+          "label": "ChatContent — 재연결 트리거"
+        },
+        {
+          "path": "apps/sena-web/app/search-chat/layout.tsx",
+          "line": 15,
+          "label": "비로그인이면 홈으로 push",
+          "end_line": 19
+        }
+      ]
+    },
+    {
+      "id": "etc",
+      "type": "frontend",
+      "label": "서비스 3화면",
+      "sublabel": "about · app-menu · 점검",
+      "pos": [
+        572,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/about/layout.tsx",
+          "line": 32,
+          "label": "about — 자체 헤더·푸터"
+        },
+        {
+          "path": "apps/sena-web/app/app-menu/layout.tsx",
+          "line": 6,
+          "label": "app-menu — BackButtonLayout"
+        },
+        {
+          "path": "apps/sena-web/app/system-maintenance/SystemMaintenanceMessage.tsx",
+          "line": 6,
+          "label": "점검 문구 — 쿠키 설정"
+        }
+      ]
+    },
+    {
+      "id": "authed",
+      "type": "frontend",
+      "label": "(authenticated) 6화면",
+      "sublabel": "my · 알림 · 약관 · 설문 · 탈퇴",
+      "pos": [
+        828,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/layout.tsx",
+          "line": 4,
+          "label": "AuthGuard logoutPagePath='/'",
+          "end_line": 6
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/my/_components/MyPageContent.tsx",
+          "line": 30,
+          "label": "MyPageContent"
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/withdraw/_components/WithdrawPageContent.tsx",
+          "line": 17,
+          "label": "WithdrawPageContent"
+        }
+      ]
+    },
+    {
+      "id": "login",
+      "type": "frontend",
+      "label": "(login) 6화면",
+      "sublabel": "signin · signup · ci · 중복",
+      "pos": [
+        1084,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/signin/layout.tsx",
+          "line": 4,
+          "label": "SignDefaultLayout — 패키지 레이아웃"
+        },
+        {
+          "path": "apps/sena-web/app/(login)/signup/layout.tsx",
+          "line": 4,
+          "label": "SignBackButtonLayout"
+        },
+        {
+          "path": "apps/sena-web/app/(login)/duplicate-account/layout.tsx",
+          "line": 14,
+          "label": "나가기 — 앱이면 about, 웹이면 signin",
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "ssr",
+      "type": "messagebus",
+      "label": "서버 fetch",
+      "sublabel": "콘텐츠 · 광고 카드",
+      "pos": [
+        60,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/contents.ts",
+          "line": 5,
+          "label": "getContent — no-store"
+        },
+        {
+          "path": "apps/sena-web/lib/api/contents.ts",
+          "line": 25,
+          "label": "getContents — revalidate 300"
+        },
+        {
+          "path": "apps/sena-web/lib/api/ad-slots.ts",
+          "line": 40,
+          "label": "getHomeAdCards"
+        }
+      ]
+    },
+    {
+      "id": "chathooks",
+      "type": "messagebus",
+      "label": "채팅 훅",
+      "sublabel": "전송 · 복구 · 제출",
+      "pos": [
+        316,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 60,
+          "label": "useChatMessage — 최대 훅"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 64,
+          "label": "useChatStreamRecovery"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-submit-question.ts",
+          "line": 20,
+          "label": "useSubmitQuestion — 진입 가드"
+        }
+      ]
+    },
+    {
+      "id": "pushhooks",
+      "type": "messagebus",
+      "label": "답변 알림 · 웹 푸시 훅",
+      "sublabel": "ack · 배너 · 구독 · 권한 CTA",
+      "pos": [
+        572,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-ack.ts",
+          "line": 30,
+          "label": "useAnswerAck — Final ACK"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 40,
+          "label": "useAnswerNotification"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 56,
+          "label": "useWebPush — 구독 생성·해제"
+        }
+      ]
+    },
+    {
+      "id": "accounthooks",
+      "type": "messagebus",
+      "label": "계정 · 설문 · 플랜 훅",
+      "sublabel": "프로필 · 설문 · 약관",
+      "pos": [
+        828,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-survey-flow.ts",
+          "line": 26,
+          "label": "useSurveyFlow — 단계 이동·제출"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-user-profile.ts",
+          "line": 13,
+          "label": "useUserProfile"
+        },
+        {
+          "path": "apps/sena-web/lib/api/terms.ts",
+          "line": 3,
+          "label": "getMarketingTerms — SSO 직접 호출"
+        }
+      ]
+    },
+    {
+      "id": "userpkg",
+      "type": "frontend",
+      "label": "@repo/user-sign",
+      "sublabel": "로그인 UI 는 패키지",
+      "pos": [
+        1084,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(login)/ci-authentication/layout.tsx",
+          "line": 1,
+          "label": "SignNoHeaderLayout import"
+        },
+        {
+          "path": "apps/sena-web/app/(authenticated)/withdraw/confirm/layout.tsx",
+          "line": 3,
+          "label": "SignBackButtonLayout import"
+        }
+      ]
+    },
+    {
+      "id": "senafetch",
+      "type": "backend",
+      "label": "requestSenaV2Fetch",
+      "sublabel": "request.ts · X-Platform",
+      "pos": [
+        60,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/utils/request.ts",
+          "line": 41,
+          "label": "requestSenaV2Fetch",
+          "end_line": 62
+        },
+        {
+          "path": "apps/sena-web/lib/utils/auth-error-handler.ts",
+          "line": 1,
+          "label": "AUTH_ERROR_CODES 4종"
+        },
+        {
+          "path": "apps/sena-web/lib/utils/auth-error-handler.ts",
+          "line": 19,
+          "label": "handleAuthErrorCode — 재진입 방지",
+          "end_line": 27
+        }
+      ]
+    },
+    {
+      "id": "partner",
+      "type": "backend",
+      "label": "제휴사 프록시 Route",
+      "sublabel": "Basic 토큰 은닉",
+      "pos": [
+        380,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/utils/request.ts",
+          "line": 13,
+          "label": "requestPartnerV2Fetch — 순수 fetch",
+          "end_line": 32
+        },
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/completions/route.ts",
+          "line": 7,
+          "label": "completions 프록시 · 120초"
+        },
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/streams/[requestUuid]/[action]/route.ts",
+          "line": 12,
+          "label": "live·status·cancel 프록시"
+        }
+      ]
+    },
+    {
+      "id": "sw",
+      "type": "messagebus",
+      "label": "Service Worker",
+      "sublabel": "public/sw.js",
+      "pos": [
+        700,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 42,
+          "label": "isSenaWindowVisible",
+          "end_line": 46
+        },
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 61,
+          "label": "push → showNotification",
+          "end_line": 64
+        },
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 86,
+          "label": "notificationclick → 방으로 이동",
+          "end_line": 89
+        }
+      ]
+    },
+    {
+      "id": "direct",
+      "type": "backend",
+      "label": "requestFetch 직접",
+      "sublabel": "SSO 약관 · 점검 조회",
+      "pos": [
+        1020,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/terms.ts",
+          "line": 5,
+          "label": "SSO /marketing/terms"
+        },
+        {
+          "path": "apps/sena-web/lib/api/system.ts",
+          "line": 5,
+          "label": "checkMaintenance → /api/maintenance"
+        },
+        {
+          "path": "apps/sena-web/app/api/maintenance/route.ts",
+          "line": 6,
+          "label": "Route — Firebase 점검 설정 프록시"
+        }
+      ]
+    },
+    {
+      "id": "senaapi",
+      "type": "cloud",
+      "label": "세나 API",
+      "sublabel": "NEXT_PUBLIC_SENA_API_SERVER · /api/bznav · /api/partner",
+      "pos": [
+        60,
+        644
+      ],
+      "size": [
+        620,
+        48
+      ]
+    },
+    {
+      "id": "pushsvc",
+      "type": "cloud",
+      "label": "브라우저 푸시 서비스",
+      "sublabel": "VAPID · 서버가 ACK 없으면 발송",
+      "pos": [
+        710,
+        644
+      ],
+      "size": [
+        280,
+        48
+      ]
+    },
+    {
+      "id": "sso",
+      "type": "cloud",
+      "label": "SSO API",
+      "sublabel": "약관 · 로그인 (패키지)",
+      "pos": [
+        1020,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "clients-proxy",
+      "from": "clients",
+      "to": "proxy",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-firebase",
+      "from": "proxy",
+      "to": "firebase",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "proxy-shell",
+      "from": "proxy",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "shell-authp",
+      "from": "shell",
+      "to": "authp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-trackp",
+      "from": "shell",
+      "to": "trackp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-banner",
+      "from": "shell",
+      "to": "banner",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-mainshell",
+      "from": "shell",
+      "to": "mainshell",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "authp-guard",
+      "from": "authp",
+      "to": "guard",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "guard-home",
+      "from": "guard",
+      "to": "home",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "guard-chat",
+      "from": "guard",
+      "to": "chat",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "guard-etc",
+      "from": "guard",
+      "to": "etc",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "guard-authed",
+      "from": "guard",
+      "to": "authed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "guard-login",
+      "from": "guard",
+      "to": "login",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "home-ssr",
+      "from": "home",
+      "to": "ssr",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "chat-chathooks",
+      "from": "chat",
+      "to": "chathooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "authed-accounthooks",
+      "from": "authed",
+      "to": "accounthooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "login-userpkg",
+      "from": "login",
+      "to": "userpkg",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "ssr-senafetch",
+      "from": "ssr",
+      "to": "senafetch",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "chathooks-partner",
+      "from": "chathooks",
+      "to": "partner",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "pushhooks-sw",
+      "from": "pushhooks",
+      "to": "sw",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "accounthooks-direct",
+      "from": "accounthooks",
+      "to": "direct",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "senafetch-senaapi",
+      "from": "senafetch",
+      "to": "senaapi",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "partner-senaapi",
+      "from": "partner",
+      "to": "senaapi",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "sw-pushsvc",
+      "from": "sw",
+      "to": "pushsvc",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "direct-sso",
+      "from": "direct",
+      "to": "sso",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "게이트가 세 층이다",
+      "items": [
+        "proxy.ts — /content(s)/:id 를 BE 에 1.5초 제한으로 물어보고 404·410 이면 /contents/gone 으로 rewrite(404 + noindex). 그다음 bypass → Firebase 점검(level service·chat) → 플랫폼·UTM·점검 쿠키",
+        "SurveyGuard — 셸 전역. 세나 회원이고 설문 미완료 · 가입 24시간 경과 · 설문 화면 미방문일 때만 /user-type-survey 로 replace 한다",
+        "AuthGuard — (authenticated) layout 한 곳. /search-chat 은 가드 대신 layout 에서 비로그인이면 홈으로 push 한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "관문이 하나가 아니다",
+      "items": [
+        "requestSenaV2Fetch — 대부분의 lib/api. 실패 응답 body.code 가 인증 오류 4종이면 전역 핸들러가 푸시 구독 해제 → 로그아웃 → /signin",
+        "requestPartnerV2Fetch — 제휴사(kbank · joins-hr). 브라우저는 /api/partner/** Route 만 부르고 Route 가 Basic 토큰을 붙인다",
+        "requestFetch 직접 — lib/api/terms.ts(SSO 약관)와 lib/api/system.ts(/api/maintenance). 인증 오류 코드 처리를 타지 않는다",
+        "Service Worker(public/sw.js) — 앱 코드가 아니라 브라우저가 띄운다. 인증 토큰이 없어 구독 재등록은 페이지에 맡긴다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이 앱 밖에서 정해지는 것",
+      "items": [
+        "로그인·회원가입·CI·탈퇴 확인 화면 본문은 @repo/user-sign 컴포넌트 그대로다",
+        "sitemap 은 next.config 의 rewrite 로 세나 API 가 준다. /calc/* 는 calc.bznav.com 으로 redirect 된다",
+        "웹 푸시를 실제로 보낼지는 서버가 정한다 — done 뒤 ACK 가 오지 않으면 발송한다"
+      ]
+    }
+  ]
+}

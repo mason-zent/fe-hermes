@@ -1,0 +1,788 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "답변 알림 · 웹 푸시",
+    "subtitle": "SENA-730 — done → ACK · 배너 · 네이티브 배너, 그리고 웹 푸시 구독 수명",
+    "output": "answer-push.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      464
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "714b34495f963fc66e86601b5eced1d18e103615"
+    },
+    "views": [
+      {
+        "id": "ackv",
+        "label": "ACK",
+        "focus": [
+          "done",
+          "ackhook",
+          "ackapi",
+          "server",
+          "enter"
+        ],
+        "note": "ACK 는 '사용자가 봤으니 알림 불필요' 신호다. 안 보고 있으면 보류했다가 5초 안에 그 방에 오면 보낸다."
+      },
+      {
+        "id": "bannerv",
+        "label": "인페이지 · 앱 배너",
+        "focus": [
+          "notify",
+          "native",
+          "atom",
+          "bannerlist"
+        ],
+        "note": "앱이면 네이티브 배너, 웹이면 그 방을 안 보고 있고 탭이 보일 때만 인페이지 배너다."
+      },
+      {
+        "id": "subv",
+        "label": "구독",
+        "focus": [
+          "ctahook",
+          "ctaui",
+          "prompt",
+          "subscribe",
+          "pushapi"
+        ],
+        "note": "CTA 는 권한을 언제 물을지만 정하고, 실제 구독은 useWebPush 가 한다."
+      },
+      {
+        "id": "lifev",
+        "label": "수명 · 해제",
+        "focus": [
+          "lifecycle",
+          "sw",
+          "logout"
+        ],
+        "note": "SW 는 인증 토큰이 없어 서버 재등록을 페이지에 맡긴다. 로그아웃은 토큰을 지우기 전에 구독을 지운다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "done 한 번에 갈라지는 두 갈래",
+      "wraps": [
+        "done",
+        "ackhook",
+        "ackapi",
+        "notify",
+        "native",
+        "atom",
+        "bannerlist"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "웹 푸시 — web · 비제휴 · 모바일 아님",
+      "wraps": [
+        "ctahook",
+        "ctaui",
+        "prompt",
+        "subscribe",
+        "lifecycle",
+        "pushapi",
+        "sw",
+        "enter"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "done",
+      "type": "frontend",
+      "label": "done 프레임",
+      "sublabel": "processStreamFrame · /status completed",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 344,
+          "label": "done — ACK 와 배너 판단을 같이 부름",
+          "end_line": 357
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 99,
+          "label": "/status completed 도 ACK",
+          "end_line": 101
+        }
+      ],
+      "tag": "/status blocked 는 ACK 없음"
+    },
+    {
+      "id": "ackhook",
+      "type": "security",
+      "label": "ackAnswerDelivery",
+      "sublabel": "회원 · 웹 · 비제휴 · 비임시만",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-ack.ts",
+          "line": 40,
+          "label": "isAckTarget — 앱 웹뷰 제외"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-ack.ts",
+          "line": 53,
+          "label": "보고 있으면 즉시, 아니면 보류",
+          "end_line": 68
+        },
+        {
+          "path": "apps/sena-web/lib/utils/answer-notification.ts",
+          "line": 10,
+          "label": "isViewingChatRoom — 탭 + 주소"
+        }
+      ],
+      "tag": "보류 5초"
+    },
+    {
+      "id": "ackapi",
+      "type": "backend",
+      "label": "ackChatStream",
+      "sublabel": "POST /v2/chat/streams/{uuid}/ack",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 52,
+          "label": "ackChatStream — keepalive",
+          "end_line": 53
+        }
+      ],
+      "tag": "qaHistoryId 는 보조"
+    },
+    {
+      "id": "server",
+      "type": "cloud",
+      "label": "세나 API",
+      "sublabel": "ACK 안 오면 웹 푸시 발송",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "tag": "판단은 서버"
+    },
+    {
+      "id": "notify",
+      "type": "security",
+      "label": "notifyAnswerCompleted",
+      "sublabel": "회원 · 비제휴 · 비임시 · 저장된 방",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 51,
+          "label": "notifyAnswerCompleted",
+          "end_line": 93
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 61,
+          "label": "앱이면 네이티브 배너",
+          "end_line": 70
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 73,
+          "label": "그 방을 보거나 탭이 숨었으면 생략"
+        }
+      ],
+      "tag": "isTargetRef 로 재확인"
+    },
+    {
+      "id": "native",
+      "type": "external",
+      "label": "앱 네이티브 배너",
+      "sublabel": "displayPushNotification",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 62,
+          "label": "sendBznavNativeMessage",
+          "end_line": 67
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 18,
+          "label": "type chat_answer_completed"
+        }
+      ],
+      "tag": "앱 웹뷰"
+    },
+    {
+      "id": "atom",
+      "type": "database",
+      "label": "answerNotificationsAtom",
+      "sublabel": "closeAt · remainingMs · isClosing",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/stores/answer-notification.ts",
+          "line": 3,
+          "label": "AnswerNotification",
+          "end_line": 17
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 20,
+          "label": "최대 3개 · 좁은 화면 2개",
+          "end_line": 23
+        }
+      ],
+      "tag": "오래된 것부터 밀어냄"
+    },
+    {
+      "id": "bannerlist",
+      "type": "frontend",
+      "label": "인페이지 배너",
+      "sublabel": "AnswerNotificationBannerList",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/answer-notification/AnswerNotificationBannerList.tsx",
+          "line": 26,
+          "label": "목록 · 노출 이벤트",
+          "end_line": 38
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 101,
+          "label": "useAnswerNotificationList — 7초 · 호버 정지",
+          "end_line": 144
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-notification.ts",
+          "line": 164,
+          "label": "openAnswer → /chat/[id]?qaHistoryId",
+          "end_line": 170
+        }
+      ],
+      "tag": "로그아웃하면 비움"
+    },
+    {
+      "id": "ctahook",
+      "type": "security",
+      "label": "usePushPermissionCta",
+      "sublabel": "/chat · 회원 · 대상 환경 · 서버 enabled",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-push-permission-cta.ts",
+          "line": 42,
+          "label": "isGateOpen 조건"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-push-permission-cta.ts",
+          "line": 64,
+          "label": "답변 시작 1.5초 뒤 첫 노출",
+          "end_line": 77
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-push-permission-cta.ts",
+          "line": 87,
+          "label": "허용 — denied 면 안내 드로어",
+          "end_line": 106
+        }
+      ],
+      "tag": "임시 채팅 제외"
+    },
+    {
+      "id": "ctaui",
+      "type": "frontend",
+      "label": "알림 받기 CTA",
+      "sublabel": "StickyChat 안 · 거부 안내 드로어",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/chat-content/StickyChat.tsx",
+          "line": 139,
+          "label": "StickyChat 안 위치"
+        },
+        {
+          "path": "apps/sena-web/app/_components/cta-content/notification/AnswerNotificationCta.tsx",
+          "line": 10,
+          "label": "AnswerNotificationCta"
+        },
+        {
+          "path": "apps/sena-web/app/_components/cta-content/notification/PushDeniedGuideDrawer.tsx",
+          "line": 15,
+          "label": "PushDeniedGuideDrawer"
+        }
+      ],
+      "tag": "브라우저별 안내"
+    },
+    {
+      "id": "prompt",
+      "type": "database",
+      "label": "권한 요청 유예",
+      "sublabel": "localStorage · 14일",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/utils/push-prompt.ts",
+          "line": 6,
+          "label": "REPROMPT_DELAY_MS 14일"
+        },
+        {
+          "path": "apps/sena-web/lib/utils/push-prompt.ts",
+          "line": 26,
+          "label": "canAskPushPermission",
+          "end_line": 31
+        },
+        {
+          "path": "apps/sena-web/lib/utils/push-prompt.ts",
+          "line": 37,
+          "label": "deferPushPrompt — 노출 기록도 지움",
+          "end_line": 40
+        }
+      ],
+      "tag": "denied 도 다시 유도"
+    },
+    {
+      "id": "subscribe",
+      "type": "security",
+      "label": "requestAndSubscribe",
+      "sublabel": "권한 → VAPID 키 → subscribe → 서버 저장",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 77,
+          "label": "requestAndSubscribe",
+          "end_line": 96
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 80,
+          "label": "Safari — requestPermission 을 먼저",
+          "end_line": 81
+        },
+        {
+          "path": "apps/sena-web/lib/utils/web-push.ts",
+          "line": 15,
+          "label": "대상 — web · 비제휴 · 모바일 아님",
+          "end_line": 16
+        }
+      ],
+      "tag": "저장 실패면 failed"
+    },
+    {
+      "id": "lifecycle",
+      "type": "frontend",
+      "label": "useWebPushLifecycle",
+      "sublabel": "PageContent 에서 1회",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 158,
+          "label": "부팅 시 sw.js 등록",
+          "end_line": 164
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 170,
+          "label": "로그인 → 로그아웃 전환에 구독 해제",
+          "end_line": 176
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 187,
+          "label": "SW 메시지 · 권한 변경에 재등록",
+          "end_line": 219
+        }
+      ],
+      "tag": "소유자를 현재 회원으로"
+    },
+    {
+      "id": "pushapi",
+      "type": "backend",
+      "label": "lib/api/push.ts",
+      "sublabel": "vapid-public-key · subscriptions POST/DELETE",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/push.ts",
+          "line": 20,
+          "label": "getPushConfig",
+          "end_line": 21
+        },
+        {
+          "path": "apps/sena-web/lib/api/push.ts",
+          "line": 26,
+          "label": "registerPushSubscription",
+          "end_line": 27
+        },
+        {
+          "path": "apps/sena-web/lib/api/push.ts",
+          "line": 32,
+          "label": "deletePushSubscription",
+          "end_line": 33
+        }
+      ],
+      "tag": "설정은 모듈 캐시"
+    },
+    {
+      "id": "sw",
+      "type": "messagebus",
+      "label": "public/sw.js",
+      "sublabel": "push · notificationclick · 구독 교체",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 48,
+          "label": "showAnswerNotification — 창 보이면 생략",
+          "end_line": 59
+        },
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 66,
+          "label": "openChatRoom — focus 후 navigate",
+          "end_line": 84
+        },
+        {
+          "path": "apps/sena-web/public/sw.js",
+          "line": 97,
+          "label": "pushsubscriptionchange → 페이지에 알림",
+          "end_line": 106
+        }
+      ],
+      "tag": "tag chat-<qaHistoryId>"
+    },
+    {
+      "id": "enter",
+      "type": "frontend",
+      "label": "방 진입 · 탭 복귀",
+      "sublabel": "ChatContent — 보류 ACK · 알림 닫기",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 130,
+          "label": "flushDeferredAcks · closeRoomNotifications",
+          "end_line": 135
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-ack.ts",
+          "line": 74,
+          "label": "flushDeferredAcks — 5초 지난 건 버림",
+          "end_line": 90
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 125,
+          "label": "closeRoomNotifications",
+          "end_line": 142
+        }
+      ],
+      "tag": "늦은 ACK 는 무효"
+    },
+    {
+      "id": "logout",
+      "type": "security",
+      "label": "로그아웃 경로 2곳",
+      "sublabel": "LogoutDrawer · 인증 오류 핸들러",
+      "pos": [
+        96,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/(authenticated)/my/_components/LogoutDrawer.tsx",
+          "line": 31,
+          "label": "handleLogout — 먼저 unsubscribePush",
+          "end_line": 33
+        },
+        {
+          "path": "apps/sena-web/app/_components/layout-content/SenaAppContent.tsx",
+          "line": 116,
+          "label": "인증 오류 → unsubscribePush",
+          "end_line": 119
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-web-push.ts",
+          "line": 102,
+          "label": "unsubscribePush — 서버 삭제 3초 제한",
+          "end_line": 120
+        }
+      ],
+      "tag": "토큰 지우기 전에"
+    }
+  ],
+  "connections": [
+    {
+      "id": "done-ackhook",
+      "from": "done",
+      "to": "ackhook",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ackhook-ackapi",
+      "from": "ackhook",
+      "to": "ackapi",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ackapi-server",
+      "from": "ackapi",
+      "to": "server",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "done-notify",
+      "from": "done",
+      "to": "notify",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "notify-native",
+      "from": "notify",
+      "to": "native",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "앱"
+    },
+    {
+      "id": "native-atom",
+      "from": "native",
+      "to": "atom",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "atom-bannerlist",
+      "from": "atom",
+      "to": "bannerlist",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "notify-ctahook",
+      "from": "notify",
+      "to": "ctahook",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "ctahook-ctaui",
+      "from": "ctahook",
+      "to": "ctaui",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "ctaui-prompt",
+      "from": "ctaui",
+      "to": "prompt",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "prompt-subscribe",
+      "from": "prompt",
+      "to": "subscribe",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "subscribe-enter",
+      "from": "subscribe",
+      "to": "enter",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "ctahook-lifecycle",
+      "from": "ctahook",
+      "to": "lifecycle",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "lifecycle-pushapi",
+      "from": "lifecycle",
+      "to": "pushapi",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "pushapi-sw",
+      "from": "pushapi",
+      "to": "sw",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "lifecycle-logout",
+      "from": "lifecycle",
+      "to": "logout",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "누가 알림을 띄우나",
+      "items": [
+        "앱 웹뷰 — notifyAnswerCompleted 가 sendBznavNativeMessage('displayPushNotification') 로 앱에 넘긴다. ACK 는 보내지 않는다(웹뷰 주소·visibility 로 봤는지 알 수 없음)",
+        "웹, 탭이 보임 · 다른 곳을 봄 — 인페이지 배너(최대 3개, 좁은 화면 2개, 7초, 호버 정지)",
+        "웹, 탭이 숨음 — 배너를 띄우지 않는다. ACK 가 보류돼 서버가 웹 푸시를 보내고 sw.js 가 OS 알림을 띄운다",
+        "세나 창이 하나라도 보이면 sw.js 는 OS 알림을 생략한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "구독을 맞추는 시점",
+      "items": [
+        "부팅 — 대상 환경이면 권한과 무관하게 sw.js 를 등록한다(updateViaCache none)",
+        "로그인 상태 — 권한이 granted 면 ensureRegistered 로 구독 소유자를 현재 회원으로 맞춘다",
+        "SW 의 pushsubscriptionchange · 브라우저 설정에서 권한을 바꿈 — 페이지가 듣고 있다가 재등록",
+        "로그아웃 — LogoutDrawer · 인증 오류 핸들러 · 로그인 상태 꺼짐 감지 세 군데서 unsubscribePush"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "대상이 아닌 경우",
+      "items": [
+        "제휴사(kbank · joins-hr) · 앱 웹뷰 · 모바일 브라우저 — 웹 푸시 대상이 아니다(isPushTargetPlatform)",
+        "임시 채팅 — ACK · 배너 · CTA 모두 제외. 새 채팅이 아직 방을 못 받은 경우도 배너 없음",
+        "서버 설정 enabled=false 또는 VAPID 키 없음 — CTA 가 뜨지 않고 구독도 만들지 않는다"
+      ]
+    }
+  ]
+}

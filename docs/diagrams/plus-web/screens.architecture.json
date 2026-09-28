@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "plus-web 화면 19",
+    "subtitle": "app/**/page.tsx 전수 — 계산기 10 · 진단 6 · 콘텐츠 1 · 운세 2",
+    "output": "screens.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      300
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "edc6fe3009325aab275a90e8fa9c8fb668aa14e0"
+    },
+    "views": [
+      {
+        "id": "calc",
+        "label": "계산기 10",
+        "focus": [
+          "root",
+          "hub",
+          "menu",
+          "sales",
+          "labor",
+          "tax"
+        ],
+        "note": "허브 · 메뉴 + 계산기 8종. 계산기는 전부 'use client' 다."
+      },
+      {
+        "id": "tc",
+        "label": "세금 진단 6",
+        "focus": [
+          "tcLanding",
+          "tcAuth",
+          "tcCollect",
+          "tcResult"
+        ],
+        "note": "랜딩 → 간편인증 2 → 수집 2 → 결과. PAGE_PATHS 순서 그대로다."
+      },
+      {
+        "id": "etc",
+        "label": "콘텐츠 · 운세",
+        "focus": [
+          "content",
+          "fortune"
+        ],
+        "note": "콘텐츠는 서버에서 Notion 을 읽는다. 운세 share 는 redirect 만 한다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "apps/plus-web/app — 19 화면 전수",
+      "wraps": [
+        "root",
+        "hub",
+        "menu",
+        "content",
+        "sales",
+        "labor",
+        "tax",
+        "fortune",
+        "tcLanding",
+        "tcAuth",
+        "tcCollect",
+        "tcResult"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "tax-check — PAGE_PATHS 6",
+      "wraps": [
+        "tcLanding",
+        "tcAuth",
+        "tcCollect",
+        "tcResult"
+      ],
+      "pad": 10
+    }
+  ],
+  "components": [
+    {
+      "id": "root",
+      "type": "backend",
+      "label": "루트 /",
+      "sublabel": "redirect → /calc (page 없음)",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/next.config.mjs",
+          "line": 15,
+          "label": "redirects — / → /calc, permanent false",
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "hub",
+      "type": "frontend",
+      "label": "계산기 허브",
+      "sublabel": "/calc · (home) route group",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/(home)/page.tsx",
+          "line": 28,
+          "label": "/calc — CALC_HOME_SECTIONS 4묶음 · 배너"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "menu",
+      "type": "frontend",
+      "label": "메뉴",
+      "sublabel": "/calc/menu · noindex · 약관 모달",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/menu/page.tsx",
+          "line": 17,
+          "label": "/calc/menu — 비즈넵 서비스 · 약관 iframe 모달"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "세금 콘텐츠",
+      "sublabel": "/tax-content/[slug] · 서버 컴포넌트",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-content/[slug]/page.tsx",
+          "line": 44,
+          "label": "/tax-content/[slug] — Notion 행 → recordMap 렌더"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "sales",
+      "type": "frontend",
+      "label": "매출 계산 2종",
+      "sublabel": "가게 매출 · 손익분기",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/sales/page.tsx",
+          "line": 24,
+          "label": "/calc/sales — useStoreSales · 3단계"
+        },
+        {
+          "path": "apps/plus-web/app/calc/bep/page.tsx",
+          "line": 25,
+          "label": "/calc/bep — useBreakeven · 3단계"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "labor",
+      "type": "frontend",
+      "label": "인건비 계산 3종",
+      "sublabel": "계약 연봉 · 실수령액 · 주휴수당",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/salary/(contract)/page.tsx",
+          "line": 23,
+          "label": "/calc/salary — useSalaryContract · 역산"
+        },
+        {
+          "path": "apps/plus-web/app/calc/salary/actual/page.tsx",
+          "line": 23,
+          "label": "/calc/salary/actual — useSalaryActual · 간이세액표"
+        },
+        {
+          "path": "apps/plus-web/app/calc/holidaypay/page.tsx",
+          "line": 23,
+          "label": "/calc/holidaypay — useHolidayPay · 2단계"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "tax",
+      "type": "frontend",
+      "label": "세금 계산 3종",
+      "sublabel": "부가세 · 간이과세 부가세 · 가산세",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/tax/vat/page.tsx",
+          "line": 23,
+          "label": "/calc/tax/vat — useVat · 2단계"
+        },
+        {
+          "path": "apps/plus-web/app/calc/tax/simplevat/page.tsx",
+          "line": 27,
+          "label": "/calc/tax/simplevat — useSimpleVat · 4단계"
+        },
+        {
+          "path": "apps/plus-web/app/calc/tax/penalty/page.tsx",
+          "line": 24,
+          "label": "/calc/tax/penalty — useTaxPenalty · 3단계"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "fortune",
+      "type": "frontend",
+      "label": "사업 운세",
+      "sublabel": "/fortune · /fortune/share",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/page.tsx",
+          "line": 3,
+          "label": "/fortune — FortunePage 를 감싸기만 한다"
+        },
+        {
+          "path": "apps/plus-web/app/fortune/share/page.tsx",
+          "line": 5,
+          "label": "/fortune/share — UTM 붙여 /fortune 으로 redirect"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "tcLanding",
+      "type": "frontend",
+      "label": "진단 랜딩",
+      "sublabel": "/tax-check · 서버 · CTA 5갈래",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/page.tsx",
+          "line": 10,
+          "label": "/tax-check — 서버 컴포넌트 · CTAButton"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "tcAuth",
+      "type": "security",
+      "label": "간편인증",
+      "sublabel": "정보입력 · 인증확인",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/page.tsx",
+          "line": 6,
+          "label": "/simple-auth — SimpleAuthContent (yup)"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/simple-auth/confirm/page.tsx",
+          "line": 4,
+          "label": "/simple-auth/confirm — 인증 완료 확인"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "tcCollect",
+      "type": "backend",
+      "label": "수집 · 조회",
+      "sublabel": "진행률 · 오류(nobman 포함)",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/collection/page.tsx",
+          "line": 6,
+          "label": "/collection — hometax-load → 통합분석"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/collection/error/page.tsx",
+          "line": 4,
+          "label": "/collection/error — ?error=nobman 분기"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "tcResult",
+      "type": "frontend",
+      "label": "진단 결과",
+      "sublabel": "/tax-check/result · client",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/tax-check/result/page.tsx",
+          "line": 6,
+          "label": "/result — ResultContent · 앱으로 나가기"
+        }
+      ],
+      "tag": "1 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "root-hub",
+      "from": "root",
+      "to": "hub",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "hub-menu",
+      "from": "hub",
+      "to": "menu",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "hub-labor",
+      "from": "hub",
+      "to": "labor",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "tcLanding-tcAuth",
+      "from": "tcLanding",
+      "to": "tcAuth",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "tcAuth-tcCollect",
+      "from": "tcAuth",
+      "to": "tcCollect",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "tcCollect-tcResult",
+      "from": "tcCollect",
+      "to": "tcResult",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 수",
+      "items": [
+        "계산기 10 — 허브 · 메뉴 + 매출 2 · 인건비 3 · 세금 3. 허브는 (home) route group, 계약 연봉은 (contract) route group 이라 URL 이 /calc · /calc/salary 다",
+        "세금 진단 6 — 랜딩 · 간편인증 정보입력 · 인증확인 · 수집 · 수집 오류 · 결과",
+        "콘텐츠 1 · 운세 2 — /fortune/share 는 UTM 을 붙여 /fortune 으로 redirect 만 한다",
+        "루트 / 는 page 가 없다. next.config 가 /calc 로 보낸다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "서버 · 클라이언트가 섞여 있다",
+      "items": [
+        "계산기 page 는 전부 'use client' 다. SEO 는 옆의 layout.tsx 가 metadata · JsonLd 로 맡는다",
+        "tax-check 는 result 를 뺀 5개 page 가 서버 컴포넌트이고 안의 *Content 가 client 다. result page 만 'use client'",
+        "tax-content page 는 async 서버 컴포넌트 — generateStaticParams · generateMetadata · revalidate 1800",
+        "허브 메뉴(CALC_HOME_SECTIONS)에는 계산기 8종과 /fortune 만 있다. /tax-check · /tax-content 는 허브에서 링크하지 않는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "색인 · 노출",
+      "items": [
+        "sitemap 은 exclude '/*' 뒤에 INDEXABLE_PATHS 11개를 수동으로 넣는다. /tax-content 는 목록에 없다",
+        "robots disallow — /tax-check/simple-auth · collection · result · /fortune/share · /calc/menu",
+        "/calc/menu layout 은 robots index false 를 따로 건다"
+      ]
+    }
+  ]
+}

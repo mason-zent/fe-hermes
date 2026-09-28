@@ -1,0 +1,856 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "채팅 스트림 심층",
+    "subtitle": "입력 → 4갈래 요청 → <ENDLINE> SSE → 프레임 처리 → 취소 · /live · /status 복구",
+    "output": "chat-stream.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      464
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "714b34495f963fc66e86601b5eced1d18e103615"
+    },
+    "views": [
+      {
+        "id": "send",
+        "label": "보내기",
+        "focus": [
+          "textarea",
+          "submit",
+          "send",
+          "run"
+        ],
+        "note": "동의 게이트 → 로그인 필요 판정 → 스트림 생성 → 점검 확인 → 4갈래 요청 순서다."
+      },
+      {
+        "id": "four",
+        "label": "4갈래 API",
+        "focus": [
+          "member",
+          "secret",
+          "guest",
+          "partnerchat"
+        ],
+        "note": "제휴사가 먼저, 그다음 회원(임시·일반), 마지막이 비회원이다. 제휴사만 Next Route 를 거친다."
+      },
+      {
+        "id": "stream",
+        "label": "스트림 상태",
+        "focus": [
+          "reader",
+          "frame",
+          "atoms",
+          "maps"
+        ],
+        "note": "스트림 데이터는 atom, AbortController 같은 비직렬 상태는 모듈 스코프 Map 에 둔다."
+      },
+      {
+        "id": "recover",
+        "label": "취소 · 복구",
+        "focus": [
+          "abort",
+          "live",
+          "poll",
+          "triggers",
+          "caller",
+          "streamroute"
+        ],
+        "note": "끊기면 /live 2회 → /status 폴링. 복구·취소 호출 주체는 3종(임시 채팅도 member)이다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "lib/api/chat.ts — completions 4갈래",
+      "wraps": [
+        "member",
+        "secret",
+        "guest",
+        "partnerchat"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "복구 — requestUuid 가 있어야 한다",
+      "wraps": [
+        "live",
+        "poll",
+        "caller",
+        "streamroute"
+      ],
+      "pad": 8
+    }
+  ],
+  "components": [
+    {
+      "id": "textarea",
+      "type": "frontend",
+      "label": "ChatTextarea",
+      "sublabel": "동의 게이트 → 제출 · 정지 버튼",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/_components/chat-content/ChatTextarea.tsx",
+          "line": 100,
+          "label": "handleSubmit → guardWithConsent",
+          "end_line": 106
+        },
+        {
+          "path": "apps/sena-web/app/_components/chat-content/ChatTextarea.tsx",
+          "line": 92,
+          "label": "login-required → 로그인 드로어"
+        },
+        {
+          "path": "apps/sena-web/app/_components/chat-content/ChatTextarea.tsx",
+          "line": 81,
+          "label": "답변 중(state loading)이면 정지"
+        }
+      ],
+      "tag": "입력 3곳: 홈 · about · 하단"
+    },
+    {
+      "id": "submit",
+      "type": "security",
+      "label": "useSubmitQuestion",
+      "sublabel": "비회원 · 남은 0 → login-required",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-submit-question.ts",
+          "line": 32,
+          "label": "submitQuestion",
+          "end_line": 45
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-new-chat.ts",
+          "line": 73,
+          "label": "채팅 밖이면 startNewChat"
+        }
+      ],
+      "tag": "/chat 이면 바로 전송"
+    },
+    {
+      "id": "send",
+      "type": "frontend",
+      "label": "sendMessage",
+      "sublabel": "스트림 생성 → 점검 확인 → 요청",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 521,
+          "label": "sendMessage — 같은 방 대기 중이면 막음",
+          "end_line": 526
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 554,
+          "label": "createStream — roomKey 는 'new'"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 560,
+          "label": "점검 확인 — zent=admin 이면 건너뜀",
+          "end_line": 568
+        }
+      ],
+      "tag": "방마다 하나"
+    },
+    {
+      "id": "run",
+      "type": "frontend",
+      "label": "runChatRequest",
+      "sublabel": "제휴사 → 회원(임시/일반) → 비회원",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 442,
+          "label": "runChatRequest",
+          "end_line": 487
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 451,
+          "label": "4갈래 분기",
+          "end_line": 467
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 478,
+          "label": "TypeError·오프라인 → 재전송 대기",
+          "end_line": 482
+        }
+      ],
+      "tag": "4갈래"
+    },
+    {
+      "id": "member",
+      "type": "backend",
+      "label": "requestChat",
+      "sublabel": "회원 · /v2/chat/completions · roomUuid",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 58,
+          "label": "requestChat",
+          "end_line": 76
+        }
+      ],
+      "tag": "방 생성 · 목록 반영"
+    },
+    {
+      "id": "secret",
+      "type": "backend",
+      "label": "requestSecretChat",
+      "sublabel": "회원 임시 · /v2/chat/secret/completions",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 81,
+          "label": "requestSecretChat — roomUuid 없음",
+          "end_line": 91
+        }
+      ],
+      "tag": "roomKey 'secret' 고정"
+    },
+    {
+      "id": "guest",
+      "type": "backend",
+      "label": "requestGuestChat",
+      "sublabel": "비회원 · X-Device-Id(B_GDI 쿠키)",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 119,
+          "label": "requestGuestChat",
+          "end_line": 137
+        },
+        {
+          "path": "apps/sena-web/lib/utils/guest-device-id.ts",
+          "line": 35,
+          "label": "getGuestDeviceId — 20년 쿠키",
+          "end_line": 46
+        }
+      ],
+      "tag": "guest 경로"
+    },
+    {
+      "id": "partnerchat",
+      "type": "backend",
+      "label": "requestPartnerChat",
+      "sublabel": "제휴사 · Next Route 경유",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 96,
+          "label": "requestPartnerChat",
+          "end_line": 114
+        },
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/completions/route.ts",
+          "line": 19,
+          "label": "Basic 토큰 붙여 프록시",
+          "end_line": 30
+        }
+      ],
+      "tag": "토큰은 서버에만"
+    },
+    {
+      "id": "reader",
+      "type": "messagebus",
+      "label": "readChatSseStream",
+      "sublabel": "구분자 <ENDLINE> · data: 제거 후 JSON",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/utils/chat-sse.ts",
+          "line": 20,
+          "label": "readChatSseStream",
+          "end_line": 49
+        },
+        {
+          "path": "apps/sena-web/lib/utils/chat-sse.ts",
+          "line": 34,
+          "label": "split('<ENDLINE>')"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 379,
+          "label": "startStreaming — 첫 청크에 streaming",
+          "end_line": 409
+        }
+      ],
+      "tag": "/completions · /live 공용"
+    },
+    {
+      "id": "frame",
+      "type": "frontend",
+      "label": "processStreamFrame",
+      "sublabel": "meta · progress · rate_limit · done · error",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 251,
+          "label": "processStreamFrame",
+          "end_line": 365
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 254,
+          "label": "meta — requestUuid · roomKey 갱신",
+          "end_line": 259
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 338,
+          "label": "done — ACK · 배너 · 목록 맨 위",
+          "end_line": 362
+        }
+      ],
+      "tag": "done·error 면 종결"
+    },
+    {
+      "id": "atoms",
+      "type": "database",
+      "label": "chatStreamsAtom",
+      "sublabel": "Record<streamId, ChatStream> · 파생 atom",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/stores/chat.ts",
+          "line": 40,
+          "label": "ChatStream — phase 3종",
+          "end_line": 52
+        },
+        {
+          "path": "apps/sena-web/lib/stores/chat.ts",
+          "line": 55,
+          "label": "currentRoomKeyAtom · currentRoomStreamAtom",
+          "end_line": 63
+        },
+        {
+          "path": "apps/sena-web/lib/utils/chat-stream-storage.ts",
+          "line": 34,
+          "label": "sessionStorage sena:pending-stream",
+          "end_line": 48
+        }
+      ],
+      "tag": "requestUuid 있는 것만 저장"
+    },
+    {
+      "id": "maps",
+      "type": "database",
+      "label": "모듈 스코프 Map · Set",
+      "sublabel": "AbortController · 재전송 · 활성 · 방 확정",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 50,
+          "label": "훅 인스턴스끼리 공유하는 이유",
+          "end_line": 58
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 25,
+          "label": "resumingStreamIds — 복귀 중복 방지"
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-answer-ack.ts",
+          "line": 15,
+          "label": "deferredAcks — 보류 ACK"
+        }
+      ],
+      "tag": "atom 에 두지 않는다"
+    },
+    {
+      "id": "abort",
+      "type": "security",
+      "label": "abortMessage",
+      "sublabel": "보이는 방만 · 화면 먼저 정리 → cancel",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 579,
+          "label": "abortMessage",
+          "end_line": 604
+        },
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 43,
+          "label": "cancelChatStream — POST keepalive",
+          "end_line": 44
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-new-chat.ts",
+          "line": 41,
+          "label": "새 채팅 — 미저장 방 생성만 cancel",
+          "end_line": 60
+        }
+      ],
+      "tag": "실제 중단까지 ~5초"
+    },
+    {
+      "id": "live",
+      "type": "backend",
+      "label": "recoverInterruptedStream",
+      "sublabel": "/live 재연결 최대 2회 · 1초 간격",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 194,
+          "label": "recoverInterruptedStream",
+          "end_line": 251
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 213,
+          "label": "404 — 소유권·만료, 바로 재질문",
+          "end_line": 217
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-message.ts",
+          "line": 423,
+          "label": "meta 없이 끊김 → 재질문 안내",
+          "end_line": 429
+        }
+      ],
+      "tag": "SSE 그대로 이어받기"
+    },
+    {
+      "id": "poll",
+      "type": "backend",
+      "label": "pollChatStatus",
+      "sublabel": "/status 2.5초 · 404 2회 · 최대 120회",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 121,
+          "label": "pollChatStatus",
+          "end_line": 191
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 82,
+          "label": "applyTerminalStatus — completed·blocked 등",
+          "end_line": 118
+        },
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-recovery.ts",
+          "line": 258,
+          "label": "checkStatusOnce — 복귀 직후 1회",
+          "end_line": 280
+        }
+      ],
+      "tag": "/live 실패 시 폴백"
+    },
+    {
+      "id": "triggers",
+      "type": "frontend",
+      "label": "ChatContent 재연결 트리거",
+      "sublabel": "방 진입 · visibilitychange · online/offline",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 124,
+          "label": "reconnectPendingStream(chatId)",
+          "end_line": 127
+        },
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 139,
+          "label": "탭 복귀 → resumeAnsweringOnReturn",
+          "end_line": 148
+        },
+        {
+          "path": "apps/sena-web/app/chat/_components/ChatContent.tsx",
+          "line": 152,
+          "label": "offline → reconnecting 표시",
+          "end_line": 162
+        }
+      ],
+      "tag": "새로고침 복구 포함"
+    },
+    {
+      "id": "caller",
+      "type": "security",
+      "label": "useChatStreamCaller",
+      "sublabel": "partner · member · guest 3종",
+      "pos": [
+        388,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/lib/hooks/use-chat-stream-caller.ts",
+          "line": 21,
+          "label": "buildStreamCaller — 인증 확인 전 null",
+          "end_line": 30
+        },
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 10,
+          "label": "ChatStreamCaller 타입",
+          "end_line": 13
+        },
+        {
+          "path": "apps/sena-web/lib/api/chat.ts",
+          "line": 15,
+          "label": "buildChatStreamPath",
+          "end_line": 19
+        }
+      ],
+      "tag": "임시 채팅도 member"
+    },
+    {
+      "id": "streamroute",
+      "type": "backend",
+      "label": "제휴사 스트림 Route",
+      "sublabel": "live · status · cancel 만 허용",
+      "pos": [
+        680,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/streams/[requestUuid]/[action]/route.ts",
+          "line": 8,
+          "label": "ALLOWED_ACTIONS"
+        },
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/streams/[requestUuid]/[action]/route.ts",
+          "line": 36,
+          "label": "요청 신호 + 5분 제한"
+        },
+        {
+          "path": "apps/sena-web/app/api/partner/v2/chat/streams/[requestUuid]/[action]/route.ts",
+          "line": 45,
+          "label": "클라이언트 이탈 → 499",
+          "end_line": 47
+        }
+      ],
+      "tag": "Basic 토큰"
+    },
+    {
+      "id": "senaapi",
+      "type": "cloud",
+      "label": "세나 API",
+      "sublabel": "/api/bznav/v2/chat/** · /api/partner/v2/**",
+      "pos": [
+        972,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "textarea-submit",
+      "from": "textarea",
+      "to": "submit",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "submit-send",
+      "from": "submit",
+      "to": "send",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "send-run",
+      "from": "send",
+      "to": "run",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "run-partnerchat",
+      "from": "run",
+      "to": "partnerchat",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "partnerchat-guest",
+      "from": "partnerchat",
+      "to": "guest",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "guest-secret",
+      "from": "guest",
+      "to": "secret",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "secret-member",
+      "from": "secret",
+      "to": "member",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "member-reader",
+      "from": "member",
+      "to": "reader",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "reader-frame",
+      "from": "reader",
+      "to": "frame",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "frame-atoms",
+      "from": "frame",
+      "to": "atoms",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "atoms-maps",
+      "from": "atoms",
+      "to": "maps",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "reader-abort",
+      "from": "reader",
+      "to": "abort",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "frame-live",
+      "from": "frame",
+      "to": "live",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "live-poll",
+      "from": "live",
+      "to": "poll",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "폴백"
+    },
+    {
+      "id": "maps-triggers",
+      "from": "maps",
+      "to": "triggers",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "live-caller",
+      "from": "live",
+      "to": "caller",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "caller-streamroute",
+      "from": "caller",
+      "to": "streamroute",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "streamroute-senaapi",
+      "from": "streamroute",
+      "to": "senaapi",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "스트림 하나의 수명",
+      "items": [
+        "createStream 이 streamId 를 만들고 AbortController 를 모듈 Map 에 넣는다. roomKey 는 처음에 'new'(임시 채팅은 'secret')",
+        "meta 프레임에서 requestUuid 를 받아야 복구할 수 있다. 새 방이면 roomUuid 도 와서 /chat/[id] 로 router.replace 한다(임시 채팅 제외)",
+        "done 프레임에서 ackAnswerDelivery · notifyAnswerCompleted · moveChatToTop 을 부르고 스트림을 지운다",
+        "스트림이 이미 지워졌는데 프레임이 오면(isStale) 버린다 — 종결된 턴을 덮지 않는다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "4갈래지만 복구는 3종",
+      "items": [
+        "completions — requestChat(회원) · requestSecretChat(회원 임시) · requestGuestChat(비회원 X-Device-Id) · requestPartnerChat(제휴사)",
+        "/live · /status · /cancel — ChatStreamCaller 가 partner · member · guest 3종이다. 임시 채팅은 member 경로로 복구한다",
+        "/ack 는 회원 전용이다(requestSenaV2Fetch 직접). 제휴사·비회원·임시 채팅·앱 웹뷰는 ACK 를 보내지 않는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "끊겼을 때",
+      "items": [
+        "요청이 서버에 닿지도 못하면(TypeError·오프라인) 같은 턴을 3초 뒤 또는 online 이벤트에 재전송한다",
+        "meta 전에 끊기면 복구 키가 없어 재질문 안내로 끝난다. meta 뒤에 끊기면 /live 최대 2회 → /status 2.5초 폴링",
+        "sessionStorage 에 requestUuid 있는 스트림을 배열로 저장해 새로고침 뒤 되살린다. 임시 채팅은 30분까지만",
+        "정지 버튼은 화면을 먼저 정리하고 cancel 을 keepalive 로 보낸다 — 서버 중단까지 약 5초 걸린다"
+      ]
+    }
+  ]
+}

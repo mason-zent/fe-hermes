@@ -1,0 +1,666 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "plus-web 상세 아키텍처",
+    "subtitle": "진입 → 셸 → 화면군 → 훅·스토어 → 관문. 서버가 넷이다",
+    "output": "plus-web-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      546
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "edc6fe3009325aab275a90e8fa9c8fb668aa14e0"
+    },
+    "views": [
+      {
+        "id": "gate",
+        "label": "진입과 셸",
+        "focus": [
+          "clients",
+          "proxy",
+          "seo",
+          "shell"
+        ],
+        "note": "proxy 는 플랫폼 쿠키만 다룬다. 인증 게이트가 없다. 루트는 force-dynamic 이다."
+      },
+      {
+        "id": "screens",
+        "label": "화면군 4",
+        "focus": [
+          "calc",
+          "taxcheck",
+          "content",
+          "fortune"
+        ],
+        "note": "19 화면. 계산기 10 · 진단 6 · 콘텐츠 1 · 운세 2."
+      },
+      {
+        "id": "logic",
+        "label": "훅 · 스토어",
+        "focus": [
+          "calcHooks",
+          "authHooks",
+          "notionLib",
+          "fortuneHooks"
+        ],
+        "note": "도메인마다 상태 보관 방식이 다르다 — RHF 로컬 · jotai storage · 모듈 캐시 · localStorage."
+      },
+      {
+        "id": "servers",
+        "label": "서버 넷",
+        "focus": [
+          "plusApi",
+          "sso",
+          "notionExt",
+          "sena"
+        ],
+        "note": "PLUS API 가 주 경로다. 운세만 세나 서버, 콘텐츠만 Notion 을 본다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "plus-web (Next.js App Router · port 3400)",
+      "wraps": [
+        "proxy",
+        "seo",
+        "shell",
+        "calc",
+        "taxcheck",
+        "content",
+        "fortune",
+        "calcHooks",
+        "authHooks",
+        "notionLib",
+        "fortuneHooks"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "사용자 채널",
+      "sublabel": "웹 · BZNAV 앱 웹뷰 · 에어브릿지 딥링크",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        1128,
+        54
+      ]
+    },
+    {
+      "id": "proxy",
+      "type": "backend",
+      "label": "proxy.ts · next.config",
+      "sublabel": "플랫폼 쿠키만 · redirect / → /calc",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        544,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/proxy.ts",
+          "line": 8,
+          "label": "proxy — 플랫폼 쿠키 읽고 다시 심는다. 인증 없음",
+          "end_line": 14
+        },
+        {
+          "path": "apps/plus-web/proxy.ts",
+          "line": 4,
+          "label": "matcher — api · _next · favicon · images 제외",
+          "end_line": 6
+        },
+        {
+          "path": "apps/plus-web/next.config.mjs",
+          "line": 15,
+          "label": "redirects — / → /calc 하나뿐",
+          "end_line": 23
+        }
+      ]
+    },
+    {
+      "id": "seo",
+      "type": "frontend",
+      "label": "루트 layout = SEO",
+      "sublabel": "force-dynamic · JsonLd · 수동 sitemap",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        544,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/layout.tsx",
+          "line": 33,
+          "label": "force-dynamic 이유 주석 — 요청마다 서버 렌더",
+          "end_line": 36
+        },
+        {
+          "path": "apps/plus-web/app/layout.tsx",
+          "line": 14,
+          "label": "metadata — metadataBase · robots(prd 만 index)",
+          "end_line": 31
+        },
+        {
+          "path": "apps/plus-web/next-sitemap.config.mjs",
+          "line": 9,
+          "label": "INDEXABLE_PATHS 11개 화이트리스트",
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "RootLayoutContent · Provider 5겹",
+      "sublabel": "PageNavigationEvent → Router → EventTracking → Dialog → NiceModal",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        1128,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/_components/RootLayoutContent.tsx",
+          "line": 20,
+          "label": "Provider 5겹 중첩 — Toaster 는 형제",
+          "end_line": 42
+        },
+        {
+          "path": "apps/plus-web/app/_components/RootLayoutContent.tsx",
+          "line": 24,
+          "label": "EventTrackingProvider — mixpanelProps 만",
+          "end_line": 33
+        },
+        {
+          "path": "packages/platform/src/hooks/use-app-router-adapter.ts",
+          "line": 10,
+          "label": "useSearchParams — force-dynamic 의 실제 원인"
+        }
+      ]
+    },
+    {
+      "id": "calc",
+      "type": "frontend",
+      "label": "계산기 10 화면",
+      "sublabel": "/calc 허브 · 메뉴 · 계산기 8종",
+      "pos": [
+        96,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/calc/layout.tsx",
+          "line": 13,
+          "label": "CalcLayout — calc.scss 스코프",
+          "end_line": 15
+        },
+        {
+          "path": "apps/plus-web/lib/constants/calc/home-menus.ts",
+          "line": 13,
+          "label": "CALC_HOME_SECTIONS — 허브 메뉴 4묶음"
+        },
+        {
+          "path": "apps/plus-web/app/_components/CommonTopNavigation.tsx",
+          "line": 76,
+          "label": "CommonTopNavigation — 공유 · 뒤로 · 로고 정책"
+        }
+      ],
+      "tag": "10 화면"
+    },
+    {
+      "id": "taxcheck",
+      "type": "frontend",
+      "label": "세금 진단 6 화면",
+      "sublabel": "/tax-check · 간편인증 → 수집 → 결과",
+      "pos": [
+        388,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/paths.ts",
+          "line": 2,
+          "label": "PAGE_PATHS — 키가 한글이다",
+          "end_line": 9
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/layout.tsx",
+          "line": 7,
+          "label": "layout — metadata 만, TopNav 없음"
+        },
+        {
+          "path": "apps/plus-web/app/tax-check/_components/ui/button/CTAButton.tsx",
+          "line": 28,
+          "label": "CTAButton — 진입 5갈래"
+        }
+      ],
+      "tag": "6 화면"
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "세금 콘텐츠 1 화면",
+      "sublabel": "/tax-content/[slug] · 서버 · ISR 30분",
+      "pos": [
+        680,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/get-notion-database-rows.ts",
+          "line": 68,
+          "label": "findRowBySlug — React cache()"
+        },
+        {
+          "path": "apps/plus-web/app/tax-content/_components/Renderer.tsx",
+          "line": 21,
+          "label": "Renderer — react-notion-x (client)"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "fortune",
+      "type": "frontend",
+      "label": "운세 2 화면",
+      "sublabel": "/fortune · /fortune/share(redirect)",
+      "pos": [
+        972,
+        288
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/app/fortune/_components/FortunePage.tsx",
+          "line": 17,
+          "label": "FortunePage — 폼 · 결과 · 스파클"
+        },
+        {
+          "path": "apps/plus-web/app/fortune/layout.tsx",
+          "line": 12,
+          "label": "layout — EntertainmentApplication JsonLd"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "calcHooks",
+      "type": "messagebus",
+      "label": "계산기 훅 3계층",
+      "sublabel": "use-*-form → use-* → utils/calc",
+      "pos": [
+        96,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat.ts",
+          "line": 9,
+          "label": "useVat — 상태 훅 (대표)"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/vat/use-vat-form.ts",
+          "line": 16,
+          "label": "useVatForm — watch · setValue 만"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/calc/use-calculator-dp-log.ts",
+          "line": 10,
+          "label": "useCalculatorDpLog — 결과 단계에서 DP 로그"
+        }
+      ]
+    },
+    {
+      "id": "authHooks",
+      "type": "messagebus",
+      "label": "간편인증 훅 · auth-store",
+      "sublabel": "jotai atomWithStorage · yup",
+      "pos": [
+        388,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/simple-auth/use-simple-auth-request.ts",
+          "line": 16,
+          "label": "useSimpleAuthRequest — 토큰 요청"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/simple-auth/use-simple-auth-confirm.ts",
+          "line": 14,
+          "label": "useSimpleAuthConfirm — 완료 확인"
+        },
+        {
+          "path": "apps/plus-web/store/auth-store.ts",
+          "line": 16,
+          "label": "token · tin · analysisResult atom",
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "notionLib",
+      "type": "messagebus",
+      "label": "노션 조회 2갈래",
+      "sublabel": "공식 API fetch · notion-client",
+      "pos": [
+        680,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/notion-client.ts",
+          "line": 3,
+          "label": "notionFetch — api.notion.com/v1 직접 fetch"
+        },
+        {
+          "path": "apps/plus-web/lib/api/get-notion-page-content.ts",
+          "line": 1,
+          "label": "notion-client 패키지 NotionAPI 를 import 한다"
+        }
+      ]
+    },
+    {
+      "id": "fortuneHooks",
+      "type": "messagebus",
+      "label": "운세 훅 · 저장소",
+      "sublabel": "useFortune → useFortuneQuery",
+      "pos": [
+        972,
+        370
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune.ts",
+          "line": 24,
+          "label": "useFortune — mode 3상태 · 부트스트랩"
+        },
+        {
+          "path": "apps/plus-web/lib/hooks/fortune/use-fortune-query.ts",
+          "line": 18,
+          "label": "useFortuneQuery — 조회 · 병합 저장 · DP 로그"
+        },
+        {
+          "path": "apps/plus-web/app/fortune/_store/fortune-storage.ts",
+          "line": 35,
+          "label": "mergeStoredFortuneWithNew — 일·월·연 갱신"
+        }
+      ]
+    },
+    {
+      "id": "plusApi",
+      "type": "external",
+      "label": "PLUS API 서버",
+      "sublabel": "NEXT_PUBLIC_PLUS_API_SERVER",
+      "pos": [
+        96,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/paths.ts",
+          "line": 15,
+          "label": "API_PATHS — hometax · 진단 v2 · dp-logs",
+          "end_line": 21
+        }
+      ]
+    },
+    {
+      "id": "sso",
+      "type": "external",
+      "label": "SSO API 서버",
+      "sublabel": "NEXT_PUBLIC_SSO_API_SERVER",
+      "pos": [
+        388,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/api/terms.ts",
+          "line": 11,
+          "label": "fetchTerms — /terms"
+        },
+        {
+          "path": "apps/plus-web/lib/api/upsert-app-user.ts",
+          "line": 15,
+          "label": "upsertAppUser — /app/upsert-app-user"
+        }
+      ]
+    },
+    {
+      "id": "notionExt",
+      "type": "external",
+      "label": "Notion",
+      "sublabel": "api.notion.com · notion-client",
+      "pos": [
+        680,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ]
+    },
+    {
+      "id": "sena",
+      "type": "external",
+      "label": "세나 API 서버",
+      "sublabel": "/api/open/saju",
+      "pos": [
+        972,
+        452
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/plus-web/lib/constants/paths.ts",
+          "line": 24,
+          "label": "FORTUNE_API_URL — NEXT_PUBLIC_SENA_API_SERVER"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "clients-proxy",
+      "from": "clients",
+      "to": "proxy",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "proxy-shell",
+      "from": "proxy",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "seo-shell",
+      "from": "seo",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-calc",
+      "from": "shell",
+      "to": "calc",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-taxcheck",
+      "from": "shell",
+      "to": "taxcheck",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-content",
+      "from": "shell",
+      "to": "content",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-fortune",
+      "from": "shell",
+      "to": "fortune",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "calc-calcHooks",
+      "from": "calc",
+      "to": "calcHooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "taxcheck-authHooks",
+      "from": "taxcheck",
+      "to": "authHooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "content-notionLib",
+      "from": "content",
+      "to": "notionLib",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fortune-fortuneHooks",
+      "from": "fortune",
+      "to": "fortuneHooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "calcHooks-plusApi",
+      "from": "calcHooks",
+      "to": "plusApi",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "authHooks-sso",
+      "from": "authHooks",
+      "to": "sso",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "notionLib-notionExt",
+      "from": "notionLib",
+      "to": "notionExt",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fortuneHooks-sena",
+      "from": "fortuneHooks",
+      "to": "sena",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "경계가 얇다",
+      "items": [
+        "proxy.ts 는 getMiddlewareWorkingPlatformCookie → setMiddlewareWorkingPlatformCookie 한 가지다. 로그인·가드가 없다",
+        "next.config 의 redirect 는 / → /calc 하나다. / 에 page 를 만들어도 닿지 않는다",
+        "루트 layout 은 force-dynamic 이다. 원인은 @repo/platform 의 useAppRouterAdapter 가 useSearchParams 를 쓰기 때문이다",
+        "@repo/user-session · user-sign 은 import 하지 않는다. 로그인 정보는 B_AT 쿠키를 직접 읽어 SSO 에 묻는다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "상태 보관이 도메인마다 다르다",
+      "items": [
+        "계산기 — RHF watch 값만. 새로고침하면 사라진다",
+        "세금 진단 — store/auth-store.ts 의 atomWithStorage. localStorage 기본, 요청시각·수집오류만 sessionStorage",
+        "운세 — lastBiznoAtom(getOnInit) + fortune-storage 가 localStorage 에 사업자번호별로 직접 쓴다",
+        "콘텐츠 — 서버에서 Notion 을 읽고 revalidate 1800 · DB id 는 모듈 변수 캐시"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "서버가 넷이다",
+      "items": [
+        "PLUS API — 홈택스 간편인증·수집, tax-diagnosis-v2, dp-logs",
+        "SSO API — /oauth/user(프리필·DP userId), /terms, /app/upsert-app-user",
+        "세나 API — /api/open/saju. 운세 전용",
+        "Notion — tax-content 전용. 공식 API(notionFetch)와 notion-client 패키지를 함께 쓴다"
+      ]
+    }
+  ]
+}

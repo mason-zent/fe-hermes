@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "랜딩 · SEO · 외부 진입 21화면",
+    "subtitle": "콘텐츠 SSR · 도움말 SSG · 알림톡·결제 링크 진입 — 전수",
+    "output": "landing-entry.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      304
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "content",
+        "label": "콘텐츠 SSR",
+        "focus": [
+          "main",
+          "content",
+          "share"
+        ],
+        "note": "메인·event·landing·home catch-all 이 같은 createContentPageServerSideProps 팩토리를 쓴다."
+      },
+      {
+        "id": "seo",
+        "label": "정적 SEO",
+        "focus": [
+          "helpSeo",
+          "reviews",
+          "deposit"
+        ],
+        "note": "help·guide·faq·reviews 는 getStaticProps. /help 만 BE 목록을 읽어 ISR 로 갱신한다."
+      },
+      {
+        "id": "entry",
+        "label": "외부 링크 진입",
+        "focus": [
+          "trr",
+          "trp",
+          "simple",
+          "gate"
+        ],
+        "note": "알림톡·결제 링크·간편 신청·로그인 콜백이 들어오는 곳. 쿠키·쿼리를 받아 다음 화면으로 넘긴다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "랜딩 · 콘텐츠 · 외부 진입 — 21 화면 전수",
+      "wraps": [
+        "main",
+        "content",
+        "helpSeo",
+        "reviews",
+        "share",
+        "deposit",
+        "gate",
+        "trr",
+        "trp",
+        "simple"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "main",
+      "type": "frontend",
+      "label": "메인 랜딩",
+      "sublabel": "/ → /home/landing",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/landing/index.tsx",
+          "line": 11,
+          "label": "/home/landing — 없으면 FE 메인 랜딩"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/marketing/use-partner-main-image.ts",
+          "line": 11,
+          "label": "파트너 UTM 3종 — 첫 이미지 교체"
+        },
+        {
+          "path": "apps/refund-web/next.config.mjs",
+          "line": 55,
+          "label": "rewrite — / 를 /home/landing 으로"
+        }
+      ],
+      "tag": "1 화면 · gSSP"
+    },
+    {
+      "id": "content",
+      "type": "frontend",
+      "label": "어드민 콘텐츠 catch-all",
+      "sublabel": "event · landing · home/[...content]",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/event/[...slug].tsx",
+          "line": 8,
+          "label": "/event/[...slug]"
+        },
+        {
+          "path": "apps/refund-web/pages/landing/[...slug].tsx",
+          "line": 8,
+          "label": "/landing/[...slug]"
+        },
+        {
+          "path": "apps/refund-web/pages/home/[...content].tsx",
+          "line": 10,
+          "label": "/home/[...content] — static 라우트가 우선"
+        }
+      ],
+      "tag": "3 화면 · gSSP"
+    },
+    {
+      "id": "helpSeo",
+      "type": "frontend",
+      "label": "도움말 SEO",
+      "sublabel": "help · guide/[slug] · faq",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/help/index.tsx",
+          "line": 156,
+          "label": "/help — ISR 1시간 · 실패 시 5분"
+        },
+        {
+          "path": "apps/refund-web/pages/help/guide/[slug].tsx",
+          "line": 121,
+          "label": "/help/guide/[slug] — getStaticPaths"
+        },
+        {
+          "path": "apps/refund-web/pages/help/faq/index.tsx",
+          "line": 27,
+          "label": "/help/faq — 정적"
+        }
+      ],
+      "tag": "3 화면 · getStaticProps"
+    },
+    {
+      "id": "reviews",
+      "type": "frontend",
+      "label": "고객 후기",
+      "sublabel": "/home/reviews · 정적",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/reviews/index.tsx",
+          "line": 40,
+          "label": "/home/reviews — 정적 · 메타는 _app 맵"
+        }
+      ],
+      "tag": "1 화면 · getStaticProps"
+    },
+    {
+      "id": "share",
+      "type": "frontend",
+      "label": "친구초대 이벤트",
+      "sublabel": "share · redirect · privacy",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/event/share/index.tsx",
+          "line": 28,
+          "label": "/home/event/share — 로그인 영역만 Suspense"
+        },
+        {
+          "path": "apps/refund-web/pages/home/event/share/redirect/index.tsx",
+          "line": 17,
+          "label": "/share/redirect — 코드 저장 후 / 로"
+        },
+        {
+          "path": "apps/refund-web/pages/home/event/share/terms/privacy/index.tsx",
+          "line": 37,
+          "label": "/share/terms/privacy — 정적 동의서"
+        }
+      ],
+      "tag": "3 화면 · 가드 없음"
+    },
+    {
+      "id": "deposit",
+      "type": "frontend",
+      "label": "입금 방법 안내",
+      "sublabel": "/help/deposit-method",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/help/deposit-method/index.tsx",
+          "line": 9,
+          "label": "/help/deposit-method — AuthGuard"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "gate",
+      "type": "security",
+      "label": "진입 분기 · 점검",
+      "sublabel": "redirect · service-down",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/redirect.tsx",
+          "line": 122,
+          "label": "/redirect — 로그인·파트너 진입 분기"
+        },
+        {
+          "path": "apps/refund-web/pages/service-down/index.tsx",
+          "line": 15,
+          "label": "/service-down — 점검 쿠키 문구"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "trr",
+      "type": "external",
+      "label": "알림톡 진입 (trr)",
+      "sublabel": "code · actionCode → 쿠키",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/trr/index.tsx",
+          "line": 34,
+          "label": "/trr — 알림톡 code 를 쿠키로"
+        },
+        {
+          "path": "apps/refund-web/components/tax-refund/trr/TrrEntryGuard.tsx",
+          "line": 23,
+          "label": "TrrEntryGuard — 이용 시간 · 대기열 검사"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "trp",
+      "type": "external",
+      "label": "결제 링크 (trp)",
+      "sublabel": "?token= · success · cancel",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/trp/index.tsx",
+          "line": 19,
+          "label": "/trp — token 없으면 /404"
+        },
+        {
+          "path": "apps/refund-web/pages/trp/success/index.tsx",
+          "line": 41,
+          "label": "/trp/success — POST 0031 이면 결제 실패"
+        },
+        {
+          "path": "apps/refund-web/pages/trp/cancel/index.tsx",
+          "line": 7,
+          "label": "/trp/cancel"
+        }
+      ],
+      "tag": "3 화면 · 가드 없음"
+    },
+    {
+      "id": "simple",
+      "type": "external",
+      "label": "알림톡 간편 신청",
+      "sublabel": "simple/[corpType] · timeout",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/simple/[corpType]/apply/index.tsx",
+          "line": 30,
+          "label": "/simple/[corpType]/apply — 만료 시 timeout"
+        },
+        {
+          "path": "apps/refund-web/pages/simple/[corpType]/apply/success.tsx",
+          "line": 8,
+          "label": "/simple/[corpType]/apply/success"
+        },
+        {
+          "path": "apps/refund-web/pages/simple/timeout.tsx",
+          "line": 8,
+          "label": "/simple/timeout — 토큰 만료"
+        }
+      ],
+      "tag": "3 화면"
+    }
+  ],
+  "connections": [
+    {
+      "id": "main-content",
+      "from": "main",
+      "to": "content",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "share-main",
+      "from": "share",
+      "to": "main",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "콘텐츠 페이지 네 개가 팩토리 하나",
+      "items": [
+        "createContentPageServerSideProps 가 BE 경로 해석(최대 3-depth) · variant 쿠키 · ?preview=true · seoHead 를 한 번에 만든다",
+        "BE 호출이 실패하면 네 곳 모두 FE 메인 랜딩으로 fallback 한다. '없음' 응답은 메인만 fallback, event·landing·home 은 404",
+        "메인은 파트너 UTM(imbank · kbcardevent · kakaopay) 첫 이미지를 SSR 에서 미리 정한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "외부 진입은 쿠키로 넘긴다",
+      "items": [
+        "trr 는 gSSP 에서 code · actionCode 를 쿠키로 굽고, TrrEntryGuard 가 홈택스 이용 시간과 대기열을 보고 오류 화면으로 돌린다",
+        "trp/success 는 gSSP 가 POST 본문을 직접 읽어 outStatCd 0031 이면 /error/payment/fail 로 303 한다. /trp/tax-refund/success 는 여기로 rewrite 된다",
+        "simple/[corpType] 은 getStaticPaths 로 indis · corps 두 경로만 만든다. AuthGuard 의 로그아웃 목적지가 /simple/timeout 이다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "/redirect 는 화면이 아니라 분기점",
+      "items": [
+        "로그인 뒤 accessType · 파트너 플랫폼 · 양도세 세션 값을 보고 환급 홈(또는 returnUrl) · 간편인증 · 조회 요청 중 하나로 replace 한다",
+        "?ext_id= 가 오면 세션에 저장하고 로그인으로 보낸다"
+      ]
+    }
+  ]
+}

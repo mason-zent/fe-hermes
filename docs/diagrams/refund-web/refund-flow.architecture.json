@@ -1,0 +1,466 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "환급 조회 · 신청 21화면",
+    "subtitle": "/home · /tax/refund 14 · /follow-up 6 — 전수",
+    "output": "refund-flow.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      304
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "apply",
+        "label": "조회 → 신청",
+        "focus": [
+          "home",
+          "lookup",
+          "result",
+          "payCard",
+          "bankPhone",
+          "applyDone"
+        ],
+        "note": "조회 결과에서 카드 등록 또는 계좌 입력 → 휴대폰 번호 → 신청 완료 → 결과."
+      },
+      {
+        "id": "after",
+        "label": "취소 · 재현",
+        "focus": [
+          "applyDone",
+          "cancel",
+          "reenact"
+        ],
+        "note": "완료 화면이 스냅샷을 저장하고 reenactment 가 snapshot_code 로 다시 그린다."
+      },
+      {
+        "id": "follow",
+        "label": "사후관리",
+        "focus": [
+          "followReq",
+          "followRes"
+        ],
+        "note": "follow-up 6 화면. 결과 3 화면은 같은 FollowUpResultContent 에 status 만 다르게 넘긴다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "환급 조회 · 신청 · 사후관리 — 21 화면 전수",
+      "wraps": [
+        "home",
+        "lookup",
+        "result",
+        "payCard",
+        "bankPhone",
+        "applyDone",
+        "cancel",
+        "reenact",
+        "followReq",
+        "followRes",
+        "test"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "home",
+      "type": "frontend",
+      "label": "환급 홈",
+      "sublabel": "/home · 조회 목록",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/home/index.tsx",
+          "line": 73,
+          "label": "/home — 환급 홈 (AuthGuard)"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "lookup",
+      "type": "frontend",
+      "label": "환급액 조회",
+      "sublabel": "lookup/request · queue",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/lookup/request/index.tsx",
+          "line": 18,
+          "label": "/lookup/request — 조회 진행 · indis·corps"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/lookup/queue/index.tsx",
+          "line": 13,
+          "label": "/lookup/queue — 홈택스 대기열"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "result",
+      "type": "frontend",
+      "label": "조회 결과",
+      "sublabel": "lookup/result · 템플릿 A/B",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/lookup/result/index.tsx",
+          "line": 24,
+          "label": "/lookup/result — labId 로 템플릿 선택"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/refund/use-lookup-result-lab.ts",
+          "line": 19,
+          "label": "FIXED_LAB_ID — EXPERIMENT_A 고정"
+        },
+        {
+          "path": "apps/refund-web/components/tax-refund/lookup/result/apply-possible/ApplyPossibleContent.tsx",
+          "line": 151,
+          "label": "조회 결과 → 카드 등록 또는 계좌 입력"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "payCard",
+      "type": "frontend",
+      "label": "결제 카드 등록",
+      "sublabel": "payment-card · input",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/payment-card/index.tsx",
+          "line": 8,
+          "label": "/payment-card — 카드 등록 (가드 없음)"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/payment-card/input/index.tsx",
+          "line": 8,
+          "label": "/payment-card/input — 카드 입력"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "bankPhone",
+      "type": "frontend",
+      "label": "환급 계좌 · 휴대폰",
+      "sublabel": "bank-account · phone-number",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/bank-account/index.tsx",
+          "line": 24,
+          "label": "/bank-account — 환급 계좌 입력"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/phone-number/index.tsx",
+          "line": 25,
+          "label": "/phone-number — 본인 휴대폰 번호"
+        },
+        {
+          "path": "apps/refund-web/components/tax-refund/common/drawers/CheckAccountNameDrawer.tsx",
+          "line": 171,
+          "label": "예금주 확인 Drawer → 휴대폰 입력"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "applyDone",
+      "type": "backend",
+      "label": "신청 완료 · 결과",
+      "sublabel": "apply/complete · apply/result",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/apply/complete/index.tsx",
+          "line": 26,
+          "label": "/apply/complete — 스냅샷 저장"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/apply/result/index.tsx",
+          "line": 59,
+          "label": "/apply/result — 양도세·종소세 분기"
+        },
+        {
+          "path": "apps/refund-web/lib/hooks/refund/use-both-apply-refund.ts",
+          "line": 95,
+          "label": "신청 뮤테이션 뒤 완료 화면으로"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "cancel",
+      "type": "frontend",
+      "label": "신청 취소",
+      "sublabel": "cancel/prevention · reason",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/cancel/prevention/index.tsx",
+          "line": 38,
+          "label": "/cancel/prevention — 취소 방어"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/cancel/reason/index.tsx",
+          "line": 40,
+          "label": "/cancel/reason — cancelData 검사"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "reenact",
+      "type": "backend",
+      "label": "결과 재현",
+      "sublabel": "lookup · apply reenactment",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/lookup/reenactment/index.tsx",
+          "line": 11,
+          "label": "/lookup/reenactment — snapshot_code"
+        },
+        {
+          "path": "apps/refund-web/pages/tax/refund/apply/reenactment/index.tsx",
+          "line": 9,
+          "label": "/apply/reenactment — snapshot_code"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "followReq",
+      "type": "frontend",
+      "label": "사후관리 신청",
+      "sublabel": "request · 인적공제 2",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/follow-up/request/index.tsx",
+          "line": 7,
+          "label": "/follow-up/request — 사후관리 신청"
+        },
+        {
+          "path": "apps/refund-web/pages/follow-up/personal-deduction/index.tsx",
+          "line": 22,
+          "label": "/personal-deduction — 소개 (가드 없음)"
+        },
+        {
+          "path": "apps/refund-web/pages/follow-up/personal-deduction/collect/index.tsx",
+          "line": 15,
+          "label": "/personal-deduction/collect — 수집"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "followRes",
+      "type": "backend",
+      "label": "사후관리 결과",
+      "sublabel": "success · wait · impossible",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/follow-up/result/success.tsx",
+          "line": 7,
+          "label": "/follow-up/result/success"
+        },
+        {
+          "path": "apps/refund-web/pages/follow-up/result/wait.tsx",
+          "line": 7,
+          "label": "/follow-up/result/wait"
+        },
+        {
+          "path": "apps/refund-web/pages/follow-up/result/impossible.tsx",
+          "line": 7,
+          "label": "/follow-up/result/impossible"
+        }
+      ],
+      "tag": "3 화면 · AuthGuard"
+    },
+    {
+      "id": "test",
+      "type": "external",
+      "label": "테스트 링크 모음",
+      "sublabel": "/tax/refund/test",
+      "pos": [
+        680,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/tax/refund/test/index.tsx",
+          "line": 16,
+          "label": "/tax/refund/test — 링크 모음 (가드 없음)"
+        }
+      ],
+      "tag": "1 화면 · 가드 없음"
+    }
+  ],
+  "connections": [
+    {
+      "id": "home-lookup",
+      "from": "home",
+      "to": "lookup",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "lookup-result",
+      "from": "lookup",
+      "to": "result",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "result-payCard",
+      "from": "result",
+      "to": "payCard",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "payCard-bankPhone",
+      "from": "payCard",
+      "to": "bankPhone",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "bankPhone-applyDone",
+      "from": "bankPhone",
+      "to": "applyDone",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "applyDone-cancel",
+      "from": "applyDone",
+      "to": "cancel",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "followReq-followRes",
+      "from": "followReq",
+      "to": "followRes",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "조회에서 신청까지",
+      "items": [
+        "조회 결과(ApplyPossibleContent)가 결제 카드 등록 또는 환급 계좌 입력으로 보낸다. 카드 등록 뒤에도 계좌 입력으로 이어진다",
+        "계좌 입력의 예금주 확인 Drawer 가 휴대폰 번호 입력으로 보내고, use-both-apply-refund 가 신청 뒤 완료 화면으로 보낸다",
+        "신청 완료 화면은 상태가 ApplyComplete 일 때 스냅샷을 저장한다. reenactment 두 화면이 snapshot_code 로 그대로 다시 그린다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "가드가 화면마다 다르다",
+      "items": [
+        "payment-card 2 · reenactment 2 · personal-deduction 소개 · /tax/refund/test 에는 AuthGuard 가 없다",
+        "cancel/reason 은 cancelData atom 이 없거나 사업자 유형이 다르면 '비정상적인 접근' 다이얼로그 뒤 신청 결과로 되돌린다",
+        "lookup/request · apply/result · cancel 두 화면은 getLayout 이 아니라 페이지 본문 안에서 AuthGuard 를 건다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "조회 결과 템플릿",
+      "items": [
+        "FIXED_LAB_ID = EXPERIMENT_A 로 고정돼 있다. 이 값은 템플릿 폴더 v-20260820/EXPERIMENT_B 를 가리킨다",
+        "template/ 아래 v-20260211 · v-20260527 · v-20260820 · v-20260909 · v-20260915 는 과거 스냅샷 재현용이라 지우지 않는다"
+      ]
+    }
+  ]
+}

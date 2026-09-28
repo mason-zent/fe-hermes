@@ -1,0 +1,327 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "계정 · 메뉴 16화면",
+    "subtitle": "/auth 10 · /menu 6 — 전수",
+    "output": "account-menu.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      260
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "auth",
+        "label": "로그인 · 가입",
+        "focus": [
+          "signIn",
+          "signUp",
+          "ci",
+          "pw"
+        ],
+        "note": "대부분 @repo/user-sign 컴포넌트를 그대로 렌더한다. 경로는 RefundAppContents 의 signPaths 로 넘긴다."
+      },
+      {
+        "id": "menu",
+        "label": "메뉴 · 내 정보",
+        "focus": [
+          "menu",
+          "my",
+          "withdraw",
+          "hist"
+        ],
+        "note": "menu 6 + 탈퇴 2. 가드는 화면마다 다르다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "auth · menu — 16 화면 전수",
+      "wraps": [
+        "signIn",
+        "signUp",
+        "ci",
+        "pw",
+        "menu",
+        "my",
+        "withdraw",
+        "hist"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "signIn",
+      "type": "security",
+      "label": "로그인 · 로그아웃",
+      "sublabel": "sign-in · sign-out",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/sign-in/index.tsx",
+          "line": 26,
+          "label": "/auth/sign-in — 웹뷰면 닫기 버튼"
+        },
+        {
+          "path": "apps/refund-web/pages/auth/sign-out/index.tsx",
+          "line": 25,
+          "label": "/auth/sign-out — web·app 이면 로그인으로"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "signUp",
+      "type": "security",
+      "label": "회원가입",
+      "sublabel": "sign-up/input · terms",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/sign-up/input/index.tsx",
+          "line": 5,
+          "label": "/auth/sign-up/input — user-sign"
+        },
+        {
+          "path": "apps/refund-web/pages/auth/sign-up/terms/index.tsx",
+          "line": 31,
+          "label": "/sign-up/terms — 늘 control 로 배정"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "ci",
+      "type": "security",
+      "label": "CI 본인확인",
+      "sublabel": "ci-request · ci-authentication",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/ci-request/index.tsx",
+          "line": 43,
+          "label": "/auth/ci-request — AuthGuard"
+        },
+        {
+          "path": "apps/refund-web/pages/auth/ci-authentication/index.tsx",
+          "line": 5,
+          "label": "/auth/ci-authentication — user-sign"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "pw",
+      "type": "security",
+      "label": "비밀번호 찾기 · 재설정",
+      "sublabel": "forgot-password · reset-password",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/forgot-password/index.tsx",
+          "line": 8,
+          "label": "/auth/forgot-password — user-sign"
+        },
+        {
+          "path": "apps/refund-web/pages/auth/reset-password/index.tsx",
+          "line": 8,
+          "label": "/auth/reset-password — user-sign"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "menu",
+      "type": "frontend",
+      "label": "전체 메뉴",
+      "sublabel": "/menu · useLazyLoadQuery",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/menu/index.tsx",
+          "line": 17,
+          "label": "/menu — 내 정보·이벤트·환급·도움말"
+        }
+      ],
+      "tag": "1 화면 · AuthGuard"
+    },
+    {
+      "id": "my",
+      "type": "frontend",
+      "label": "내 정보",
+      "sublabel": "my · notification · password",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/menu/my/index.tsx",
+          "line": 29,
+          "label": "/menu/my — CI 직후면 historyMode exit"
+        },
+        {
+          "path": "apps/refund-web/pages/menu/my/notification/index.tsx",
+          "line": 8,
+          "label": "/menu/my/notification — AuthGuard"
+        },
+        {
+          "path": "apps/refund-web/pages/menu/my/password/index.tsx",
+          "line": 33,
+          "label": "/menu/my/password — 가드 없음"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "withdraw",
+      "type": "backend",
+      "label": "회원 탈퇴",
+      "sublabel": "withdraw/reason · confirm",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/auth/withdraw/reason/index.tsx",
+          "line": 9,
+          "label": "/auth/withdraw/reason — 앱 로컬 화면"
+        },
+        {
+          "path": "apps/refund-web/pages/auth/withdraw/confirm/index.tsx",
+          "line": 10,
+          "label": "/auth/withdraw/confirm — user-sign"
+        }
+      ],
+      "tag": "2 화면 · AuthGuard"
+    },
+    {
+      "id": "hist",
+      "type": "frontend",
+      "label": "환급 내역 · 약관",
+      "sublabel": "refund-history · terms",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/menu/refund-history/index.tsx",
+          "line": 19,
+          "label": "/menu/refund-history — 토큰 있을 때 조회"
+        },
+        {
+          "path": "apps/refund-web/pages/menu/terms/index.tsx",
+          "line": 8,
+          "label": "/menu/terms — 약관"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    }
+  ],
+  "connections": [
+    {
+      "id": "signIn-signUp",
+      "from": "signIn",
+      "to": "signUp",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "signUp-ci",
+      "from": "signUp",
+      "to": "ci",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "menu-my",
+      "from": "menu",
+      "to": "my",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "my-withdraw",
+      "from": "my",
+      "to": "withdraw",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "로그인 화면은 공유 패키지가 그린다",
+      "items": [
+        "auth 10 화면 중 8 화면이 @repo/user-sign 의 컴포넌트(SignInContent · SignUpInput · SignTerms · CIAuthentication 등)를 그대로 쓴다. 앱 로컬 화면은 sign-out · withdraw/reason 둘",
+        "AuthGuard 는 로그아웃이면 signPaths.signOut, 로그인했지만 이 앱 가입이 없으면 signUpTerms 로 보낸다. CiGuard 는 CI 가 필요하면 ci-request 로 보낸다",
+        "sign-up/terms 는 실험 쿠키를 읽지만 Math.random() < 1 이라 새 방문자는 늘 control 이다. experiment 쿠키가 있으면 지우고 control 로 되돌린다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "메뉴의 가드가 제각각이다",
+      "items": [
+        "AuthGuard 가 있는 곳 — menu · menu/my · notification · withdraw 둘 · ci-request",
+        "menu/my/password · menu/terms 에는 가드가 없다. menu/refund-history 는 가드 대신 RefundItemFetchGuard 가 auth.apiToken 이 있을 때만 조회한다"
+      ]
+    }
+  ]
+}

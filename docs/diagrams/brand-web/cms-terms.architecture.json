@@ -1,0 +1,474 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DatoCMS · 약관 URL 과 본문",
+    "subtitle": "CMS 모델 두 개 → 쿼리 셋 → 함수 둘 → 약관 page 두 개. brand-web 의 데이터는 이게 전부다",
+    "output": "cms-terms.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      390
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "7f052c0c3963c043ff02e1580b0959d91fab5aaf"
+    },
+    "views": [
+      {
+        "id": "build",
+        "label": "빌드 · 경로",
+        "focus": [
+          "genSP",
+          "qPath",
+          "request",
+          "datocms"
+        ],
+        "note": "빌드 때 종류마다 [key], 레코드마다 [key, version] 경로를 만든다."
+      },
+      {
+        "id": "req",
+        "label": "요청 · 본문",
+        "focus": [
+          "latest",
+          "detailFn",
+          "qLatest",
+          "qDetail",
+          "request"
+        ],
+        "note": "버전이 없으면 시행 버전을 먼저 찾고, '<종류>-<버전>' key 로 본문을 가져온다."
+      },
+      {
+        "id": "render",
+        "label": "렌더",
+        "focus": [
+          "section",
+          "article",
+          "fail"
+        ],
+        "note": "본문은 markdown → HTML 문자열이다. 표만 손봐서 innerHTML 로 넣는다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "apps/brand-web — lib/utils · lib/constants · _components/terms",
+      "wraps": [
+        "genSP",
+        "latest",
+        "detailFn",
+        "section",
+        "qPath",
+        "qLatest",
+        "qDetail",
+        "article",
+        "request",
+        "fail"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "genSP",
+      "type": "backend",
+      "label": "빌드 · getTermsPaths",
+      "sublabel": "generateStaticParams 가 부른다 · try 없음",
+      "pos": [
+        60,
+        42
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "빌드 시",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 27,
+          "end_line": 39,
+          "label": "getTermsPaths — types + terms 합침"
+        }
+      ]
+    },
+    {
+      "id": "latest",
+      "type": "backend",
+      "label": "최신판 찾기",
+      "sublabel": "버전 세그먼트가 없을 때만",
+      "pos": [
+        392,
+        42
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "요청 시 · ISR",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 49,
+          "end_line": 52,
+          "label": "enforceTerm.version 조회"
+        }
+      ]
+    },
+    {
+      "id": "detailFn",
+      "type": "backend",
+      "label": "본문 조회 · getTermsDetail",
+      "sublabel": "key 디코드 → 조회 → 실패는 null",
+      "pos": [
+        724,
+        42
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "요청 시 · ISR",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 41,
+          "end_line": 47,
+          "label": "key = decodeURIComponent(terms[0])"
+        },
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 54,
+          "end_line": 63,
+          "label": "version 없으면 '0' 으로 조회"
+        },
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 64,
+          "end_line": 67,
+          "label": "catch — term null 반환"
+        }
+      ]
+    },
+    {
+      "id": "section",
+      "type": "frontend",
+      "label": "TermContentSection",
+      "sublabel": "rich 여부로 본문 선택 · 버전 드롭다운",
+      "pos": [
+        1056,
+        42
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "tag": "use client",
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/terms/TermContentSection.tsx",
+          "line": 12,
+          "end_line": 13,
+          "label": "isrichcontent ? richcontent : content"
+        },
+        {
+          "path": "apps/brand-web/app/_components/terms/TermContentSection.tsx",
+          "line": 29,
+          "end_line": 35,
+          "label": "versions 필터 — key 끝 3조각 버림"
+        },
+        {
+          "path": "apps/brand-web/app/_components/terms/TermContentSection.tsx",
+          "line": 39,
+          "end_line": 44,
+          "label": "버전 이동 — 팝업만 replace"
+        }
+      ]
+    },
+    {
+      "id": "qPath",
+      "type": "database",
+      "label": "TERMS_PATH_QUERY",
+      "sublabel": "allBznavTermTypes · allBznavTerms (first 100)",
+      "pos": [
+        60,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/constants/graph-ql-query.ts",
+          "line": 1,
+          "end_line": 22,
+          "label": "경로용 — 종류 key · 레코드 version"
+        }
+      ]
+    },
+    {
+      "id": "qLatest",
+      "type": "database",
+      "label": "TERMS_LATEST_VERSION_QUERY",
+      "sublabel": "bznavTermType(key eq) → enforceTerm",
+      "pos": [
+        392,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/constants/graph-ql-query.ts",
+          "line": 24,
+          "end_line": 36,
+          "label": "시행 중 버전 — 종류 key 로 필터"
+        }
+      ]
+    },
+    {
+      "id": "qDetail",
+      "type": "database",
+      "label": "TERMS_DETAIL_QUERY",
+      "sublabel": "term key = \"<종류>-<버전>\" · versions matches",
+      "pos": [
+        724,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/constants/graph-ql-query.ts",
+          "line": 45,
+          "end_line": 48,
+          "label": "versions — key matches pattern"
+        },
+        {
+          "path": "apps/brand-web/lib/constants/graph-ql-query.ts",
+          "line": 49,
+          "end_line": 62,
+          "label": "term — key eq 종류-버전 · markdown"
+        }
+      ]
+    },
+    {
+      "id": "article",
+      "type": "frontend",
+      "label": "ArticleView",
+      "sublabel": "표를 스크롤 래퍼로 감싸 innerHTML",
+      "pos": [
+        1056,
+        130
+      ],
+      "size": [
+        264,
+        58
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/app/_components/terms/ArticleView.tsx",
+          "line": 19,
+          "end_line": 29,
+          "label": "table → table-container 치환"
+        },
+        {
+          "path": "apps/brand-web/app/_components/terms/ArticleView.tsx",
+          "line": 84,
+          "end_line": 84,
+          "label": "dangerouslySetInnerHTML(.prose)"
+        },
+        {
+          "path": "apps/brand-web/styles/default.scss",
+          "line": 103,
+          "end_line": 103,
+          "label": ".prose — 약관 본문 전역 스타일"
+        }
+      ]
+    },
+    {
+      "id": "request",
+      "type": "backend",
+      "label": "requestDatoCms",
+      "sublabel": "POST graphql.datocms.com · Bearer DATO_ACCESS_TOKEN · !ok 면 throw",
+      "pos": [
+        60,
+        218
+      ],
+      "size": [
+        928,
+        50
+      ],
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 5,
+          "end_line": 25,
+          "label": "requestDatoCms — requestPostFetch"
+        }
+      ]
+    },
+    {
+      "id": "fail",
+      "type": "security",
+      "label": "404 로 떨어지는 길",
+      "sublabel": "빈 key · term 없음 · 요청 실패",
+      "pos": [
+        1056,
+        218
+      ],
+      "size": [
+        264,
+        50
+      ],
+      "tag": "page 가 notFound()",
+      "sources": [
+        {
+          "path": "apps/brand-web/lib/utils/dato-cms.ts",
+          "line": 45,
+          "end_line": 47,
+          "label": "key 없으면 null"
+        }
+      ]
+    },
+    {
+      "id": "datocms",
+      "type": "cloud",
+      "label": "DatoCMS",
+      "sublabel": "bznavTermType(name · key · enforceTerm) · bznavTerm(termType · key · version · content · richcontent)",
+      "pos": [
+        60,
+        298
+      ],
+      "size": [
+        1260,
+        48
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "d1",
+      "from": "genSP",
+      "to": "qPath",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "d2",
+      "from": "latest",
+      "to": "qLatest",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "d3",
+      "from": "detailFn",
+      "to": "qDetail",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "d4",
+      "from": "latest",
+      "to": "detailFn",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "버전"
+    },
+    {
+      "id": "d5",
+      "from": "detailFn",
+      "to": "section",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis",
+      "label": "term"
+    },
+    {
+      "id": "d6",
+      "from": "section",
+      "to": "article",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "d7",
+      "from": "qPath",
+      "to": "request",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "d8",
+      "from": "qLatest",
+      "to": "request",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "d9",
+      "from": "qDetail",
+      "to": "request",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "d10",
+      "from": "request",
+      "to": "fail",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed",
+      "label": "실패"
+    },
+    {
+      "id": "d11",
+      "from": "request",
+      "to": "datocms",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "CMS 모델과 페이지 매핑",
+      "items": [
+        "bznavTermType 하나 = /terms/<key> 하나. enforceTerm 이 가리키는 레코드가 버전 없는 주소의 본문이다",
+        "bznavTerm 하나 = /terms/<종류 key>/<version> 하나. 레코드 key 는 '<종류 key>-<version>' 이어야 조회된다",
+        "같은 URL 목록이 /popup/terms/* 에도 그대로 쓰인다 — 두 page 가 getTermsPaths 를 따로 부른다",
+        "드롭다운 필터가 레코드 key 에서 끝 3조각을 버리고 종류 key 와 비교한다. version 이 YYYY-MM-DD 꼴이라는 전제로 보인다(추측 — CMS 데이터 미확인)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "실패가 어디서 멈추나",
+      "items": [
+        "요청 시(getTermsDetail)는 try/catch 로 삼키고 term null → page 가 notFound() 한다",
+        "빌드 시(getTermsPaths)는 try 가 없다. requestDatoCms 가 throw 하거나 data 가 비면 generateStaticParams 가 실패해 빌드가 깨진다",
+        "revalidate = 3600 — CMS 에서 고쳐도 최대 한 시간 늦게 보인다. on-demand revalidate 경로는 없다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "고칠 때 조심할 것",
+      "items": [
+        "쿼리가 variables 를 쓰지 않고 key · version 을 문자열로 끼운다. URL 에서 온 key 가 그대로 들어간다(영향 범위 확인 필요)",
+        "versions 는 matches pattern 이라 부분 일치로 더 많이 온다. 화면에서 다시 거른다 — 필터를 지우면 다른 약관 버전이 섞인다",
+        "requestDatoCms 의 preview 인자는 받기만 하고 쓰지 않는다. variables 타입이 any 다"
+      ]
+    }
+  ]
+}

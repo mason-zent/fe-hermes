@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "설문 25화면",
+    "subtitle": "/survey — 창업감면 · 고용증대 · 재설문, 전수",
+    "output": "survey.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1260,
+      304
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-web",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+    },
+    "views": [
+      {
+        "id": "emp",
+        "label": "고용 문항",
+        "focus": [
+          "start",
+          "emp1",
+          "emp2",
+          "hub"
+        ],
+        "note": "start 는 직원이 있으면 대표 특수관계자부터, 없으면 intro 또는 사업장별 질문으로 보낸다."
+      },
+      {
+        "id": "biz",
+        "label": "사업장 문항",
+        "focus": [
+          "hub",
+          "biz1",
+          "biz2",
+          "biz3",
+          "loc",
+          "loc2"
+        ],
+        "note": "intro → 창업 여부 → … → 근무 여부 → 자가 구매 → 주소 이전 → 사업장별 질문으로 돌아온다."
+      },
+      {
+        "id": "outside",
+        "label": "SurveyProvider 밖",
+        "focus": [
+          "end",
+          "reopen"
+        ],
+        "note": "완료·만료는 가드가 없고, reopen 3 화면은 AuthGuard 만 건다. 나머지 20 화면이 SurveyProvider 안이다."
+      }
+    ]
+  },
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "pages/survey — 25 화면 전수",
+      "wraps": [
+        "start",
+        "emp1",
+        "emp2",
+        "hub",
+        "biz1",
+        "biz2",
+        "biz3",
+        "loc",
+        "loc2",
+        "end",
+        "reopen"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "start",
+      "type": "frontend",
+      "label": "설문 시작",
+      "sublabel": "start · 첫 분기",
+      "pos": [
+        96,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/start/index.tsx",
+          "line": 17,
+          "label": "/survey/start — SurveyLayout"
+        },
+        {
+          "path": "apps/refund-web/components/survey/start/StartSurveyContainer.tsx",
+          "line": 40,
+          "label": "nextPage — 직원 있으면 고용 문항 먼저"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "emp1",
+      "type": "frontend",
+      "label": "대표 특수관계자",
+      "sublabel": "special-relationships 3",
+      "pos": [
+        388,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/employment/special-relationships/index.tsx",
+          "line": 7,
+          "label": "/special-relationships — 여부"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/employment/special-relationships/past-to-currently/index.tsx",
+          "line": 7,
+          "label": "/special-relationships/past-to-currently"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/employment/special-relationships/currently/index.tsx",
+          "line": 7,
+          "label": "/special-relationships/currently"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "emp2",
+      "type": "frontend",
+      "label": "직원 입력 · 근로계약서",
+      "sublabel": "currently/form · contracts",
+      "pos": [
+        680,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/employment/special-relationships/currently/form.tsx",
+          "line": 22,
+          "label": "/currently/form — ?id= 직원 입력"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/employment/contracts/index.tsx",
+          "line": 21,
+          "label": "/employment/contracts — 근로계약서"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "hub",
+      "type": "frontend",
+      "label": "사업장별 질문",
+      "sublabel": "intro · home",
+      "pos": [
+        972,
+        42
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/intro/index.tsx",
+          "line": 29,
+          "label": "/survey/intro — 사업장 소개"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/home/index.tsx",
+          "line": 29,
+          "label": "/survey/home — 사업장별 진행"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "biz1",
+      "type": "frontend",
+      "label": "창업 · 동종업종 · 소사장",
+      "sublabel": "start-business 외 2",
+      "pos": [
+        972,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/business/start-business.tsx",
+          "line": 37,
+          "label": "/business/start-business — 직접 창업"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/same-industry-before.tsx",
+          "line": 36,
+          "label": "/business/same-industry-before"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/small-boss-machine-owner.tsx",
+          "line": 36,
+          "label": "/business/small-boss-machine-owner"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "biz2",
+      "type": "frontend",
+      "label": "간판 · 공동사업자 · 승계",
+      "sublabel": "signboard · partner · takeover",
+      "pos": [
+        680,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/business/signboard.tsx",
+          "line": 36,
+          "label": "/business/signboard — 새 간판"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/partner.tsx",
+          "line": 36,
+          "label": "/business/partner — 공동사업자"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/takeover-employee.tsx",
+          "line": 37,
+          "label": "/business/takeover-employee — 승계 직원"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "biz3",
+      "type": "frontend",
+      "label": "근무 여부 · 자가 구매",
+      "sublabel": "work-location-check · office-type",
+      "pos": [
+        388,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/business/work-location-check.tsx",
+          "line": 37,
+          "label": "/business/work-location-check"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/office-type.tsx",
+          "line": 36,
+          "label": "/business/office-type — 사업장 자가 구매"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "loc",
+      "type": "frontend",
+      "label": "주소 이전 ①",
+      "sublabel": "is-original · move-year",
+      "pos": [
+        96,
+        124
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/business/first-location/is-original.tsx",
+          "line": 23,
+          "label": "/first-location/is-original"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/first-location/move-year.tsx",
+          "line": 23,
+          "label": "/first-location/move-year"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "loc2",
+      "type": "frontend",
+      "label": "주소 이전 ②",
+      "sublabel": "all-locations · form",
+      "pos": [
+        96,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/business/first-location/all-locations.tsx",
+          "line": 23,
+          "label": "/first-location/all-locations — 목록"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/business/first-location/form.tsx",
+          "line": 23,
+          "label": "/first-location/form — 추가·수정"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "end",
+      "type": "backend",
+      "label": "완료 · 만료",
+      "sublabel": "completed · expired",
+      "pos": [
+        388,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/completed/index.tsx",
+          "line": 4,
+          "label": "/survey/completed — 광고 슬롯 Drawer"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/expired/index.tsx",
+          "line": 8,
+          "label": "/survey/expired — 만료"
+        }
+      ],
+      "tag": "2 화면 · 가드 없음"
+    },
+    {
+      "id": "reopen",
+      "type": "security",
+      "label": "재설문 (reopen)",
+      "sublabel": "intro · [questionCode] · complete",
+      "pos": [
+        972,
+        206
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/refund-web/pages/survey/reopen/index.tsx",
+          "line": 14,
+          "label": "/survey/reopen — 소개"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/reopen/[questionCode].tsx",
+          "line": 25,
+          "label": "/survey/reopen/[questionCode] — 문항"
+        },
+        {
+          "path": "apps/refund-web/pages/survey/reopen/complete/index.tsx",
+          "line": 12,
+          "label": "/survey/reopen/complete — 완료"
+        }
+      ],
+      "tag": "3 화면 · AuthGuard 만"
+    }
+  ],
+  "connections": [
+    {
+      "id": "start-emp1",
+      "from": "start",
+      "to": "emp1",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "emp1-emp2",
+      "from": "emp1",
+      "to": "emp2",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "emp2-hub",
+      "from": "emp2",
+      "to": "hub",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "hub-biz1",
+      "from": "hub",
+      "to": "biz1",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "biz1-biz2",
+      "from": "biz1",
+      "to": "biz2",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "biz2-biz3",
+      "from": "biz2",
+      "to": "biz3",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "biz3-loc",
+      "from": "biz3",
+      "to": "loc",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "loc-loc2",
+      "from": "loc",
+      "to": "loc2",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "SurveyProvider 가 20 화면을 감싼다",
+      "items": [
+        "SurveyProvider = AuthGuard → 스코프 JotaiProvider → SurveyInitProvider. 초기화는 refundHistoryId 를 fetchQuery 로 받은 뒤 surveyInitQuery 를 loadQuery 한다",
+        "사업장 문항 14 화면(intro·home·business 12)은 BusinessProvider 를 한 겹 더, first-location 4 화면은 LocationProvider 를 또 한 겹 더 쓴다",
+        "문항 페이지는 useQueryLoader + fetchPolicy network-only 로 부르고, queryRef 가 없으면 Spinner 를 그린다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "흐름은 컨테이너가 정한다",
+      "items": [
+        "다음 화면은 페이지가 아니라 components/survey/**/*Container 안의 router.push(SURVEY_PAGES.…) 가 정한다. 경로 키는 한글이다",
+        "고용 문항: 특수관계자 → (과거→)현재 → 근로계약서 → intro 또는 사업장별 질문",
+        "reopen 은 SurveyProvider 를 쓰지 않는다. 문항 정의·대상을 reopenSurveyDefinitionAtom · reopenSurveyTargetAtom 에서 읽고, 이 atom 은 use-reopen-survey 의 useReopenSurveyAutomation 이 채운다"
+      ]
+    }
+  ]
+}

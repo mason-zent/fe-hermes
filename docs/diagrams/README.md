@@ -12,6 +12,8 @@ open docs/diagrams/index.html
 
 서비스마다 **보는 각도를 셋으로 나누고**, 그 위에 **레포를 가로지르는 구조** 세 장을 뒀다.
 
+> 목록(`index.html`)에는 **구조 · 화면 맵 · 요청 흐름**(비즈넵 웹 5개는 심층 추가 — `<앱>/<앱>-architecture.html` 탭 번들, 원본 JSON 과 `build-bundle.py` 가 같은 폴더에 있다)만 올린다. lifecycle(화면 상태)과 가로지르는 장(`data-sources` 등)은 2026-09-28 목록에서 뺐고, 파일과 원본 JSON 은 이 폴더에 남아 있다.
+
 | 타입 | 무엇을 보나 | 파일 |
 |---|---|---|
 | architecture | 무엇으로 이루어져 있는가 (파일 근거 포함) | `<서비스>.architecture.json` → `<서비스>.html` |
@@ -28,7 +30,7 @@ open docs/diagrams/index.html
 | bznav care-web | ✅ | ✅ | ✅ | `app/(my-info)/my-book` |
 | bznav brand-web | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
 | bznav sena-web | ✅ | ✅ | ✅ | 챗 스트림 |
-| bznav plus-web | ✅ | ✅ | ✅ | `app/calc/holiday-pay` (계산기마다 단계가 다르다) |
+| bznav plus-web | ✅ | ✅ | ✅ | `app/calc/holidaypay` (계산기마다 단계가 다르다. 훅·유틸 파일명은 `holiday-pay`) |
 
 ⚠️ **sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
 다르게 동작한다(care 콘솔의 promotion 과 bmans, hub 의 messages 와 admin 이 그렇다). 일반화해서 옮기지 않는다.
