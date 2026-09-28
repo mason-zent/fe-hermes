@@ -371,7 +371,10 @@ let updatedAt = 0
 const clients = new Set()
 
 const refresh = async () => {
+  const collectStarted = Date.now()
   const state = await collect()
+  const collectMs = Date.now() - collectStarted
+  if (collectMs > 1500) console.log(`⚠️ 현황판 재계산 ${collectMs}ms`)
   const hash = createHash('sha1').update(JSON.stringify(state)).digest('hex')
   if (hash === snapshotHash) return
   snapshot = state
@@ -643,6 +646,12 @@ const allowed = (request) => {
 createServer(async (request, response) => {
   const url = new URL(request.url, `http://localhost:${PORT}`)
   if (url.pathname === '/events') {
+    // 기동 번호 없이 붙는 건 옛 페이지 — 204 를 주면 EventSource 가 재연결을 멈춘다(연결 한도를 잡아먹지 않게)
+    if (!url.searchParams.get('boot')) {
+      response.writeHead(204)
+      response.end()
+      return
+    }
     response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
     if (snapshot) response.write(`data: ${JSON.stringify({ ...snapshot, updatedAt, boot: BOOT })}\n\n`)
     clients.add(response)
@@ -651,6 +660,12 @@ createServer(async (request, response) => {
       clearInterval(keepAlive)
       clients.delete(response)
     })
+    return
+  }
+  // board.sh 가 이미 보고 있는 탭이 있는지 묻는다 — 있으면 새 탭을 열지 않는다
+  if (url.pathname === '/api/viewers') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+    response.end(JSON.stringify({ viewers: clients.size }))
     return
   }
   if (url.pathname === '/api/state') {

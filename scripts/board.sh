@@ -55,4 +55,15 @@ print(found[0]["pane_id"] if found else "")
   echo "$URL ($PLACE)"
 fi
 
-command -v open >/dev/null 2>&1 && open "$URL"
+# 이미 보고 있는 탭이 있으면 새로 열지 않는다 — 탭마다 실시간 연결을 잡아 브라우저 연결 한도(6)를 채우면 요청이 멈춘다
+viewers() { curl -s --max-time 1 "$URL/api/viewers" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("viewers",0))' 2>/dev/null || echo 0; }
+VIEWERS="$(viewers)"
+# 방금 띄웠으면 열려 있던 탭이 다시 붙을 때까지 잠깐 기다린다(자동 재연결은 몇 초 걸린다)
+if [ "${VIEWERS:-0}" = 0 ] && [ -n "${PLACE:-}" ]; then
+  for _ in 1 2 3 4 5 6; do sleep 1; VIEWERS="$(viewers)"; [ "${VIEWERS:-0}" -gt 0 ] && break; done
+fi
+if [ "${VIEWERS:-0}" -gt 0 ]; then
+  echo "  (이미 열린 탭 ${VIEWERS}개 — 새 탭은 열지 않는다. 그 탭은 서버가 다시 뜨면 저절로 새로고침된다)"
+else
+  command -v open >/dev/null 2>&1 && open "$URL"
+fi

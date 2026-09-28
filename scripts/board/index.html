@@ -469,8 +469,27 @@
     document.getElementById('sync').textContent = state.header?.sync ? `마지막 sync ${new Date(state.header.sync).toLocaleString('ko-KR')}` : '';
   };
 
+  // 탭이 여러 개면 가장 최근에 앞으로 온 탭 하나만 실시간 연결을 쓴다 — 브라우저는 한 서버에 연결 6개까지라
+  // 탭마다 SSE 를 잡으면 아카이브 같은 요청이 자리가 날 때까지 멈춘다
+  let source = null;
+  const tabId = Math.random().toString(36).slice(2);
+  let channel = null;
+  try { channel = new BroadcastChannel('hermes-board'); } catch { /* 지원 안 하면 탭마다 연결 */ }
+  const pause = () => {
+    if (source) { source.close(); source = null; }
+    document.getElementById('live-dot').className = 'dot';
+    document.getElementById('live-text').innerHTML = '다른 탭에서 보고 있어요 · <a href="#" id="take-over">여기서 보기</a>';
+    document.getElementById('take-over').onclick = (event) => { event.preventDefault(); claim(); };
+  };
+  const claim = () => {
+    channel?.postMessage({ type: 'claim', tabId });
+    if (!source) connect();
+  };
+  if (channel) channel.onmessage = (event) => { if (event.data?.type === 'claim' && event.data.tabId !== tabId) pause(); };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !source) claim(); });
+
   const connect = () => {
-    const source = new EventSource('/events');
+    source = new EventSource(`/events?boot=${BOOT}`);
     source.onopen = () => {
       document.getElementById('live-dot').className = 'dot on';
       document.getElementById('live-text').textContent = '실시간';
@@ -491,7 +510,7 @@
   if (new URLSearchParams(location.search).has('once')) {
     fetch('/api/state').then((response) => response.json()).then(render);
   } else {
-    connect();
+    claim();
   }
 </script>
 </body>
