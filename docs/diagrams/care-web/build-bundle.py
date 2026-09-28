@@ -24,7 +24,7 @@ TABS = [
     ("온보딩 (auth)",      "auth-onboarding.architecture.html",                "30화면 · 홈택스·결제·4대보험"),
     ("게이트웨이 · 파일",  "gateway-file.architecture.html",                   "27화면 · 앱 밖에서 드나드는 길"),
     ("마이 · 랜딩 · 요금제","my-landing.architecture.html",                    "34화면 · 이용제한 9 포함"),
-    ("그 외 53화면",       "care-rest.architecture.html",                      "종소세 나머지 · 연말정산 · 로그인"),
+    ("그 외 54화면",       "care-rest.architecture.html",                      "종소세 나머지 · 연말정산 · 로그인"),
 ]
 
 # 기준 커밋은 문구로 박지 않고 첫 탭 JSON 의 meta.repository.revision 에서 읽는다 (다시 고정해도 안 낡게)

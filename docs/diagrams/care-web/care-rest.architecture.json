@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "종소세 나머지 · 연말정산 · 로그인 등 53화면",
+    "title": "종소세 나머지 · 연말정산 · 로그인 등 54화면",
     "subtitle": "care-web 266 화면 중 앞선 다섯 장에 담기지 않은 전부",
     "output": "care-rest.html",
     "quality_profile": "showcase",
@@ -66,7 +66,7 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "care-web — 나머지 53 화면",
+      "label": "care-web — 나머지 54 화면",
       "wraps": [
         "giMain",
         "giHist",
@@ -86,7 +86,8 @@
         "misc",
         "misc2",
         "misc3",
-        "misc4"
+        "misc4",
+        "giFlow"
       ]
     }
   ],
@@ -678,6 +679,28 @@
         }
       ],
       "tag": "1 화면"
+    },
+    {
+      "id": "giFlow",
+      "type": "frontend",
+      "label": "종소세 · 진행 단계",
+      "sublabel": "신고 흐름 상태",
+      "pos": [
+        968,
+        366
+      ],
+      "size": [
+        252,
+        54
+      ],
+      "sources": [
+        {
+          "path": "apps/care-web/app/global-income/(auth)/flowstatus/page.tsx",
+          "line": 17,
+          "label": "/global-income/flowstatus — 단계 화면"
+        }
+      ],
+      "tag": "1 화면"
     }
   ],
   "connections": [
@@ -806,6 +829,13 @@
       "to": "misc2",
       "fromSide": "bottom",
       "toSide": "top"
+    },
+    {
+      "id": "misc4-giFlow",
+      "from": "misc4",
+      "to": "giFlow",
+      "fromSide": "right",
+      "toSide": "left"
     }
   ],
   "cards": [
