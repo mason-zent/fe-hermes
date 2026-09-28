@@ -668,6 +668,21 @@ createServer(async (request, response) => {
     })
     return
   }
+  // 카드 상세 — 누를 때만 읽는다(실시간 갱신에 싣지 않는다). plans/·issues/ 안의 md 만
+  if (url.pathname === '/api/card') {
+    const id = String(url.searchParams.get('id') ?? '')
+    const dir = id.startsWith('issues/') ? 'issues' : 'plans'
+    const path = safePath(id, dir)
+    response.writeHead(path ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' })
+    if (!path) return response.end(JSON.stringify({ error: '파일을 찾지 못했어요' }))
+    const text = readFileSync(path, 'utf8')
+    let plan = null
+    if (dir === 'issues') {
+      const planId = text.match(/^plan:\s*(\S+\.md)/m)?.[1]
+      if (planId && existsSync(join(ROOT, planId))) plan = { id: planId, text: readFileSync(join(ROOT, planId), 'utf8') }
+    }
+    return response.end(JSON.stringify({ id, text, plan }))
+  }
   // board.sh 가 이미 보고 있는 탭이 있는지 묻는다 — 있으면 새 탭을 열지 않는다
   if (url.pathname === '/api/viewers') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
