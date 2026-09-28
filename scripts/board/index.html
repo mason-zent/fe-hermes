@@ -141,7 +141,6 @@
       in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`]],
       blocked: [['막힌 것 풀기', (card) => `${card.id} 가 막혀 있다(${card.blocked}). 무엇이 필요한지 정리해줘.`]],
       ready_for_review: [['리뷰 요청', (card) => `${card.id} 를 reviewer 로 검증해줘. 계획서 경로와 대상 레포를 넘겨.`]],
-      done: [['정리', (card) => `${card.id} 작업이 끝났다. 커밋·PR 여부 확인하고 plans/archive 로 옮겨줘.`]],
     },
   };
 
@@ -288,10 +287,10 @@
       .map(([label], index) => `<button class="btn" data-act="${index}" data-id="${esc(card.id)}">${label}</button>`)
       .join('');
     const movable = !card.archived;
+    // 완료 칸은 현황판이 바로 처리하는 [아카이브] 하나만 — 끝난 일에 지시할 것은 없다
+    if (card.column === 'done') return `<div class="actions"><button class="btn" data-archive="${esc(card.id)}" title="끝난 일을 보관하고 보드에서 치워요" style="margin-left:auto">아카이브</button></div>`;
     return `<div class="actions">${actions}<button class="btn" data-act="free" data-id="${esc(card.id)}">직접 지시</button>
-      ${card.column === 'done'
-        ? `<button class="btn" data-archive="${esc(card.id)}" title="끝난 일을 보관하고 보드에서 치워요" style="margin-left:auto">아카이브</button>`
-        : movable ? `<button class="btn danger" data-delete="${esc(card.id)}" title="휴지통으로 옮겨요">삭제</button>` : ''}</div>`;
+      ${movable ? `<button class="btn danger" data-delete="${esc(card.id)}" title="휴지통으로 옮겨요">삭제</button>` : ''}</div>`;
   };
 
   const agentCard = (item) => {
