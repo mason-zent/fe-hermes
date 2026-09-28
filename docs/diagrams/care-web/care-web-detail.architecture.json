@@ -14,7 +14,7 @@
       "url": "https://github.com/zenterprise-inc/bznav-web",
       "provider": "github",
       "link_mode": "local-only",
-      "revision": "bb53fbaff8ec2f94a323dbdc4076ac3026e68c6a"
+      "revision": "bdc96ff26bd4bfed853752b75992728cba0df14c"
     },
     "views": [
       {
@@ -213,7 +213,7 @@
         },
         {
           "path": "apps/care-web/app/layout.tsx",
-          "line": 57,
+          "line": 56,
           "label": "RootLayout — Toaster · Registry 장착"
         },
         {
@@ -316,12 +316,12 @@
           "label": "CareEventTrackingProvider — 전송 대상 설정"
         },
         {
-          "path": "apps/care-web/libs/eventLogger/useCareEventLogger.ts",
+          "path": "apps/care-web/libs/event-logger/useCareEventLogger.ts",
           "line": 19,
           "label": "useCareEventLogger — 업무 이벤트"
         },
         {
-          "path": "apps/care-web/libs/eventLogger/eventLogger.ts",
+          "path": "apps/care-web/libs/event-logger/eventLogger.ts",
           "line": 1,
           "label": "eventLogger — 전송 구현"
         }
@@ -407,7 +407,7 @@
       "sources": [
         {
           "path": "apps/care-web/app/vat/(status)/org-status/page.tsx",
-          "line": 19,
+          "line": 18,
           "label": "/vat/org-status — 사업장 상태"
         },
         {
@@ -500,11 +500,11 @@
       "sources": [
         {
           "path": "apps/care-web/app/(my-info)/my-book/page.tsx",
-          "line": 31,
+          "line": 30,
           "label": "/my-book — 장부 (대표 화면)"
         },
         {
-          "path": "apps/care-web/app/cs-center/lib/get-notion-record-map.ts",
+          "path": "apps/care-web/app/cs-center/libs/get-notion-record-map.ts",
           "line": 25,
           "label": "getNotionRecordMap — 도움말 콘텐츠"
         },
@@ -837,7 +837,7 @@
       ],
       "sources": [
         {
-          "path": "apps/care-web/libs/eventLogger/useCareEventLogger.ts",
+          "path": "apps/care-web/libs/event-logger/useCareEventLogger.ts",
           "line": 19,
           "label": "이벤트 전송"
         }
