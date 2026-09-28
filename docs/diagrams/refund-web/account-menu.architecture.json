@@ -14,7 +14,7 @@
       "url": "https://github.com/zenterprise-inc/bznav-web",
       "provider": "github",
       "link_mode": "local-only",
-      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+      "revision": "5bcf139731538b8ee948f151335247c73d8905a0"
     },
     "views": [
       {
@@ -79,7 +79,7 @@
         },
         {
           "path": "apps/refund-web/pages/auth/sign-out/index.tsx",
-          "line": 25,
+          "line": 29,
           "label": "/auth/sign-out — web·app 이면 로그인으로"
         }
       ],

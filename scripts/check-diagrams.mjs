@@ -9,11 +9,13 @@
  *
  *   node scripts/check-diagrams.mjs            # 전체 점검, 마크다운 보고
  *   node scripts/check-diagrams.mjs --strict   # 어긋남이 있으면 exit 1
+ *   node scripts/check-diagrams.mjs --repin    # 근거가 그대로인 장만 revision 을 기준 ref 로 올린다
+ *                                              (HTML 은 다시 만들어야 한다 — docs/diagrams/AUTHORING.md)
  *
  * 기준 ref 는 hermes.config.json 의 branch (bznav-web 은 sources 경로의 앱으로 prd-<앱>).
  * sync 1단계에서 fetch 한 origin/<branch> 를 읽는다. 로컬 작업 트리는 읽지 않는다.
  */
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
@@ -22,6 +24,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 const DIAGRAM_DIR = join(ROOT, 'docs/diagrams')
 const config = JSON.parse(readFileSync(join(ROOT, 'hermes.config.json'), 'utf8'))
 const strict = process.argv.includes('--strict')
+const repin = process.argv.includes('--repin')
+const repinned = []
 
 const git = (repoDir, args) => {
   try {
@@ -154,6 +158,13 @@ for (const file of listJson(DIAGRAM_DIR)) {
       if (found.status === 'gone') issues.push(`줄 내용 사라짐 ${path}:${line} "${found.text.slice(0, 50)}"`)
     }
   }
+  // 근거(path·line)가 그대로면 revision 만 올려도 된다. 운영에 없는 커밋에 고정된 것도 근거가 멀쩡하면 같다
+  const evidenceIssues = issues.filter((issue) => !issue.startsWith('고정 커밋'))
+  if (repin && !evidenceIssues.length) {
+    const text = readFileSync(file, 'utf8')
+    writeFileSync(file, text.split(revision).join(target))
+    repinned.push(name)
+  }
   results.push({ ...base, verdict: issues.length ? `❌ 어긋남 ${issues.length}` : '🟡 커밋만 뒤처짐', issues })
 }
 
@@ -171,5 +182,6 @@ lines.push(
   '',
   '범례: ✅ 고정 커밋 = 운영 기준 · 🟡 커밋은 뒤처졌지만 근거는 그대로(revision 만 올려 다시 고정하면 된다) · ❌ 근거가 어긋남(내용 확인 후 JSON 수정·재생성)',
 )
+if (repin) lines.push('', `## --repin: revision 을 올린 장 ${repinned.length}개`, ...repinned.map((name) => `- ${name}`), '', 'HTML 을 다시 만든다(validate → deliver, 탭 번들은 build-bundle.py).')
 console.log(lines.join('\n'))
 if (strict && drifted.length) process.exit(1)

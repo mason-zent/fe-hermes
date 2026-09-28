@@ -29,6 +29,10 @@ TABS = [
     ("답변 알림 · 웹 푸시","answer-push.architecture.html",     "SENA-730 · ACK · 배너 · 구독 수명"),
 ]
 
+# 기준 커밋은 문구로 박지 않고 첫 탭 JSON 의 meta.repository.revision 에서 읽는다 (다시 고정해도 안 낡게)
+with open(os.path.join(D, TABS[0][1].replace(".html", ".json")), encoding="utf-8") as f:
+    REV = json.load(f)["meta"]["repository"]["revision"][:8]
+
 buttons, panels = [], []
 for i, (name, fn, desc) in enumerate(TABS):
     with open(os.path.join(D, fn), encoding="utf-8") as f:
@@ -134,7 +138,7 @@ page = """<!doctype html>
 <body>
 <header>
   <h1>sena-web 아키텍처 다이어그램</h1>
-  <p class="sub">Archify 로 생성 · 저장소 리비전 714b3449 (origin/prd-sena) 기준 · <b>20화면 전수</b> · <b>점선 테두리 노드</b>를 클릭하면 Semantic passport 안에 <b>상세 보기 버튼</b>이 뜹니다</p>
+  <p class="sub">Archify 로 생성 · 저장소 리비전 __REV__ (origin/prd-sena) 기준 · <b>20화면 전수</b> · <b>점선 테두리 노드</b>를 클릭하면 Semantic passport 안에 <b>상세 보기 버튼</b>이 뜹니다</p>
   <nav>__BUTTONS__</nav>
 </header>
 <main>__PANELS__</main>
@@ -168,5 +172,5 @@ page = """<!doctype html>
 """
 out = os.path.join(D, "sena-web-architecture.html")
 with open(out, "w", encoding="utf-8") as f:
-    f.write(page.replace("__BUTTONS__", "\n".join(buttons)).replace("__PANELS__", "\n".join(panels)))
+    f.write(page.replace("__BUTTONS__", "\n".join(buttons)).replace("__PANELS__", "\n".join(panels)).replace("__REV__", REV))
 print(out, round(os.path.getsize(out) / 1024 / 1024, 2), "MB")

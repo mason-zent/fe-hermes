@@ -14,7 +14,7 @@
       "url": "https://github.com/zenterprise-inc/bznav-web",
       "provider": "github",
       "link_mode": "local-only",
-      "revision": "06c3fbfc330597e6a418db38b5ec74cd4ff44853"
+      "revision": "5bcf139731538b8ee948f151335247c73d8905a0"
     },
     "views": [
       {
@@ -227,7 +227,7 @@
         {
           "path": "apps/refund-web/components/layout/RefundAppContents.tsx",
           "line": 44,
-          "label": "AuthProvider — 토스면 CI 미사용"
+          "label": "AuthProvider — 토스 계열이면 CI 미사용"
         }
       ]
     },
