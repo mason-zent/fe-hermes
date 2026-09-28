@@ -377,12 +377,14 @@ const refresh = async () => {
   snapshot = state
   snapshotHash = hash
   updatedAt = Date.now()
-  const payload = `data: ${JSON.stringify({ ...snapshot, updatedAt })}\n\n`
+  const payload = `data: ${JSON.stringify({ ...snapshot, updatedAt, boot: BOOT })}\n\n`
   for (const client of clients) client.write(payload)
 }
 
 const TOKEN = randomBytes(16).toString('hex')
-const page = readFileSync(join(ROOT, 'scripts/board/index.html'), 'utf8').replace('__BOARD_TOKEN__', TOKEN)
+// 서버가 다시 뜨면 토큰이 바뀐다 — 열려 있던 브라우저가 알아채고 새로고침하도록 기동 번호를 따로 준다(토큰은 SSE 로 내보내지 않는다)
+const BOOT = randomBytes(6).toString('hex')
+const page = readFileSync(join(ROOT, 'scripts/board/index.html'), 'utf8').replace('__BOARD_TOKEN__', TOKEN).replace('__BOARD_BOOT__', BOOT)
 
 // ── 쓰기: 카드 이동 ──────────────────────────────────────────────────────
 const PLAN_STATUS_OF = { plan: 'planned', doing: 'in_progress', review: 'ready_for_review', done: 'done' }
@@ -642,7 +644,7 @@ createServer(async (request, response) => {
   const url = new URL(request.url, `http://localhost:${PORT}`)
   if (url.pathname === '/events') {
     response.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' })
-    if (snapshot) response.write(`data: ${JSON.stringify({ ...snapshot, updatedAt })}\n\n`)
+    if (snapshot) response.write(`data: ${JSON.stringify({ ...snapshot, updatedAt, boot: BOOT })}\n\n`)
     clients.add(response)
     const keepAlive = setInterval(() => response.write(': ping\n\n'), 20_000)
     request.on('close', () => {
@@ -653,7 +655,7 @@ createServer(async (request, response) => {
   }
   if (url.pathname === '/api/state') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
-    response.end(JSON.stringify({ ...snapshot, updatedAt }))
+    response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
   if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/worktree-remove', '/api/delete', '/api/archive'].includes(url.pathname)) {

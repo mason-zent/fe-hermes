@@ -114,6 +114,7 @@
 <div class="toast" id="toast"></div>
 <script>
   const TOKEN = '__BOARD_TOKEN__';
+  const BOOT = '__BOARD_BOOT__';
   const COLUMNS = [
     ['issue', '이슈', 'var(--col-issue)'],
     ['plan', '계획', 'var(--col-plan)'],
@@ -474,7 +475,12 @@
       document.getElementById('live-dot').className = 'dot on';
       document.getElementById('live-text').textContent = '실시간';
     };
-    source.onmessage = (event) => render(JSON.parse(event.data));
+    source.onmessage = (event) => {
+      const state = JSON.parse(event.data);
+      // 서버가 다시 떴다 — 이 페이지의 토큰은 더 이상 안 통하니 새로 불러온다
+      if (state.boot && state.boot !== BOOT) return location.reload();
+      render(state);
+    };
     source.addEventListener('job', (event) => renderJob(JSON.parse(event.data)));
     source.onerror = () => {
       document.getElementById('live-dot').className = 'dot off';

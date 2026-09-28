@@ -6,7 +6,7 @@ agent: bznav-plus-fe
 kind: check
 severity: low
 source: 현황판 흐름 테스트 2026-09-28
-plan: plans/task/20260928-bznav-plus-fe-테스트-plus-web-계산기-훅이-8세트-모두-짝-use-이름-use-.md
+plan: plans/archive/task/20260928-bznav-plus-fe-테스트-plus-web-계산기-훅이-8세트-모두-짝-use-이름-use-.md
 ---
 
 현황판 [처리 시작] → 경량 계획서 생성 → 이슈 워크트리 → 담당 에이전트 pane → 결과 기록 → 완료 가능 배지까지 한 바퀴 도는지 보려는 **테스트 이슈**다. 코드는 읽기만 한다.
