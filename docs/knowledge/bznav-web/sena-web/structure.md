@@ -8,7 +8,7 @@
 | `chat/[[...chatId]]/page.tsx` | optional catch-all. 내용은 `PageViewEventLogger`만 |
 | **`chat/layout.tsx`** | 채팅 본문 `<ChatContent/>`를 **layout에서 렌더**(`/chat` ↔ `/chat/[id]` 전환 시 리마운트 방지) |
 | `chat/_components/` | `ChatContent.tsx`(코어), `ChatItems.tsx`, `DislikeFeedbackDrawer.tsx` |
-| `(authenticated)/` | `layout.tsx` = `<AuthGuard logoutPagePath="/">`. `my/`, `notification/`, `policies/`, `withdraw/`, `user-type-survey/`(5단계) |
+| `(authenticated)/` | `layout.tsx` = `<AuthGuard logoutPagePath="/">`. `my/`, `notification/`, `policies/`, `withdraw/`, `user-type-survey/`(5단계. `app/_components/SurveyGuard.tsx`가 설문 미완료 + 가입 24시간 경과 회원을 이리로 `replace`하되, 설문 화면을 한 번 연 적이 있으면(`SURVEY_VISITED_KEY`) 다시 보내지 않는다 — `5cc858b`에서 강제 진행 제거) |
 | `(login)/` | `signin`, `signup/{terms,input}`, `ci-request`, `ci-authentication`, `duplicate-account` — 본문은 `@repo/user-sign` 컴포넌트 그대로 |
 | `contents/` | `(conversion)/[id]` 상세, `gone/`, `_components/` |
 | `about/`(+`_hooks/`) · `app-menu/` · `search-chat/` · `system-maintenance/` · `not-found.tsx` | |
@@ -16,7 +16,7 @@
 | `_components/` | `chat-content/`(13), `chat-list/`(8), `sidebar/`, `layout-content/{Layouts,LayoutItems,HeaderItems,ChatTitleHeader,SenaAppContent}`, `ads/`, `cta-content/`, `menu-drawer/`, `GlobalErrorBoundary`, `LoginRequiredDialog`, `SenaIntroduceModal`, `SurveyGuard` |
 
 ## 디렉터리
-`lib/api/`(9: `chat.ts` 최대, contents, user, survey, plan, terms, withdraw, system, ad-slots) · `lib/stores/`(5: `chat.ts` 최대, home, user, plan, survey) · `lib/hooks/`(26, kebab `use-*`, 채팅 8개) · `lib/utils/`(17, `request.ts` 관문, `chat-sse.ts`, `chat-stream-storage.ts`, `page-control.ts`, `strings.ts`(marked), `server/platform.ts` `'use server'`) · `lib/constants/`(10, `paths.ts` `PATHS`) · `styles/{default,markdown,variables}.scss` · `public/robots.txt`(커밋)
+`lib/api/`(10: `chat.ts` 최대, contents, user, survey, plan, terms, withdraw, system, ad-slots, push) · `lib/stores/`(6: `chat.ts` 최대, home, user, plan, survey, answer-notification) · `lib/hooks/`(31, kebab `use-*`, 채팅 8개, 답변 알림·웹 푸시 4개 `use-web-push`·`use-answer-notification`·`use-answer-ack`·`use-push-permission-cta`) · `lib/utils/`(19, `request.ts` 관문, `chat-sse.ts`, `chat-stream-storage.ts`, `page-control.ts`, `strings.ts`(marked), `server/platform.ts` `'use server'`) · `lib/constants/`(10, `paths.ts` `PATHS`) · `styles/{default,markdown,variables}.scss` · `public/robots.txt`(커밋)
 
 ## 스크립트·설정
 - `dev`: `pnpm gen:env && next dev -p 3300 --turbo`(**gen:env 자동**, SSM loc). **`postbuild` 없음, next-sitemap 없음** — sitemap은 API 서버가 제공(rewrite)

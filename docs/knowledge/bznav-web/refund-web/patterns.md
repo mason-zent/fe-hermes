@@ -57,7 +57,7 @@ Page.getLayout = (page: ReactElement) => (
 
 ## P13. 설문 — `SurveyProvider` = `AuthGuard` → 스코프 `JotaiProvider` → `SurveyInitProvider`(`fetchQuery(refundHistoryIdQuery)` → `loadQuery(surveyInitQuery)` → atom 주입). 문항 페이지 `getLayout = <SurveyProvider><BusinessProvider>…` + `useQueryLoader`/`network-only` + `PageViewEventLogger`. 공용 UI `components/survey/common/ui/`. 경로 `SURVEY_PAGES`(한글 키)
 
-## P14. A/B·롤아웃 — `use-lookup-result-lab.ts`(`FIXED_LAB_ID = 'EXPERIMENT_A'`, 템플릿 폴더 매핑, 과거 버전 유지), variant 쿠키, `feature-rollout.ts`(djb2 버킷), Firebase RC `useRemoteConfig`
+## P14. A/B·롤아웃 — `use-lookup-result-lab.ts`(`FIXED_LAB_ID = 'EXPERIMENT_A'`, 템플릿 폴더 매핑, 과거 버전 유지), variant 쿠키, Firebase RC `useRemoteConfig`
 
 ## 사용 적은 라이브러리
 xstate 0 · jspdf/html2canvas 0 · axios 1 · bignumber.js 1 · cmdk 1 · react-markdown 1 · react-error-boundary 1 · firebase 6 · es-toolkit 9 · date-fns 9 · react-use 15

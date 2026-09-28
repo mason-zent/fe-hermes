@@ -33,10 +33,10 @@
 `composeMiddleware(...)`가 `reduceRight` → **인자 앞쪽이 먼저 실행**: `withServiceMaintenanceMiddleware` → `withLandingRedirectMiddleware` → `withSetWorkingPlatform` → `withSafeReturnUrlMiddleware` → `withAbTestMiddleware` → `withVatRedirectMiddleware` → `withPricingRedirectMiddleware`. 구현 `libs/hoc/`
 
 ## 루트 폴더
-- `components/common/`: `appSideBar/`(shadcn 복사본 sidebar·sheet), `auth/CareAuthGuard.tsx`, `errors/`, `eventLogger/ViewEventLogger`, `guard/HometaxGuard`, `layout/CareLayout`, `logoTopNavigation/`, `pdfComponents/`, `topNavigation/` 등. 빈도: `ClickEventLogger` 248 · `CareLayout` 216 · `ViewEventLogger` 161 · `CareAuthGuard` 15
+- `components/common/`: `app-side-bar/`(shadcn 복사본 sidebar·sheet), `auth/CareAuthGuard.tsx`, `errors/`, `event-logger/ViewEventLogger`, `guard/HometaxGuard`, `layout/CareLayout`, `logo-top-navigation/`, `pdf-components/`, `top-navigation/`, `loading-dot/`, `loading-fallback/`, `file-upload-dialog/` 등. **폴더명은 kebab-case**(NEWCARE-649, 파일명은 그대로). 빈도: `ClickEventLogger` 248 · `CareLayout` 216 · `ViewEventLogger` 161 · `CareAuthGuard` 15
 - `constants/`(20): **`paths.ts`**(430줄, `CARE_PATHS` 한글 키 + 도메인별 `*_PATHS` 객체, 참조 264파일), `careEvent`, `storageKey`(`STORAGE_KEYS`), `formSchema`, `metadata`, `abTestValue`, `vatPeriod` …
 - `hooks/`(30 공용) · `store/`(루트 atom 5) — 도메인 atom은 라우트 옆 `store/`(트리 전체 95파일)
-- `libs/`: `relay/`(`relayEnvironment`, `fetchRelayFactory`), `provider/`(Care*Provider 7), `hoc/`(미들웨어 7 + compose), `eventLogger/`(`useCareEventLogger`, `ClickEventLogger` 등), `channelTalk/`(`openChannelTalk`, `nativeBridge`), `kakao/`, `social/`, `imageResizer/`
+- `libs/`: `relay/`(`relayEnvironment`, `fetchRelayFactory`), `provider/`(Care*Provider 7), `hoc/`(미들웨어 7 + compose), `event-logger/`(`useCareEventLogger`, `ClickEventLogger` 등), `channel-talk/`(`openChannelTalk`, `nativeBridge`), `kakao/`, `social/`, `image-resizer/`
 - GraphQL: 정의는 **라우트 옆 `graphql/`**(경로에 `/graphql/` 236파일) + 루트 `graphql/`(공용 6). `schema/schema-care.graphql`(커밋). `__generated__/`(`.gitignore`, md만)
 - 테스트: `__test__/unit/`(10, util 함수만), `jest.config.mjs`(next/jest, jsdom), `__mocks__/svgrMock.js`
 

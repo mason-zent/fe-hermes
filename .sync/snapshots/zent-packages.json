@@ -4,9 +4,9 @@
     "packages-fe"
   ],
   "branch": "origin/main",
-  "sha": "c3a342ed5b91",
+  "sha": "bfa6be4c4a75",
   "shaDate": "2026-09-16",
-  "subject": "Merge pull request #94 from zenterprise-inc/release/v.26.09.201",
+  "subject": "Merge pull request #101 from zenterprise-inc/changeset-release/main",
   "package": {
     "name": "@zenterprise-inc/zent-packages",
     "version": "0.0.0",
@@ -41,7 +41,7 @@
     ]
   },
   "docs": {
-    "README.md": "8101d587e9be",
+    "README.md": "f151767d3906",
     ".prettierrc": "ccd71bd3ee61",
     ".nvmrc": "a3b7a31ee830"
   },

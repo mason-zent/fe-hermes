@@ -9,9 +9,9 @@
     "bznav-packages-fe"
   ],
   "branch": "origin/dev",
-  "sha": "cce5eaa1b53c",
-  "shaDate": "2026-09-17",
-  "subject": "feat(seo-health): 세나 점검 재개 및 대용량 sitemap 수집 보강 (#1906)",
+  "sha": "c08dbd87dfd9",
+  "shaDate": "2026-09-23",
+  "subject": "fix(plus): SENA-0 계산기·운세 유저 이벤트 정비",
   "package": {
     "name": "bznav-web",
     "version": null,
@@ -45,7 +45,7 @@
   "nvmrc": "v24.15.0",
   "dirs": {},
   "docs": {
-    "README.md": "8a3c874f831d",
+    "README.md": "bf706118ecfd",
     "AGENTS.md": "8b830f38c748",
     ".ai/basic-rule.md": "3222e260e03c",
     ".prettierrc": "cb20e6ff9867",
@@ -107,7 +107,7 @@
     "care-web": {
       "agent": "bznav-care-fe",
       "branch": "origin/prd-care",
-      "sha": "631c155a77a1",
+      "sha": "bdc96ff26bd4",
       "name": "care-web",
       "dev": "pnpm relay && next dev -p 3100 --turbo",
       "port": 3100,
@@ -243,7 +243,7 @@
     "refund-web": {
       "agent": "bznav-refund-fe",
       "branch": "origin/prd-refund",
-      "sha": "4be90b5eb088",
+      "sha": "06c3fbfc3305",
       "name": "refund-web",
       "dev": "pnpm gen:env && pnpm gen:relay && next dev -p 3200 --webpack",
       "port": 3200,
@@ -311,7 +311,7 @@
     "sena-web": {
       "agent": "bznav-sena-fe",
       "branch": "origin/prd-sena",
-      "sha": "d7a5807cfcac",
+      "sha": "714b34495f96",
       "name": "sena-web",
       "dev": "pnpm gen:env && next dev -p 3300 --turbo",
       "port": 3300,
@@ -392,6 +392,17 @@
     "react-relay": "18.2.0",
     "tailwindcss": "3.4.19",
     "relay-runtime": "20.1.1",
-    "yup": "1.7.1"
+    "yup": "1.7.1",
+    "@aws-crypto/sha256-js": "5.2.0",
+    "@channel.io/channel-web-sdk-loader": "2.0.0",
+    "@ebay/nice-modal-react": "1.2.13",
+    "@svgr/webpack": "8.1.0",
+    "@types/crypto-js": "4.2.2",
+    "@types/isomorphic-fetch": "0.0.39",
+    "@types/node": "22.9.0",
+    "@types/react": "19.2.10",
+    "@types/react-dom": "19.2.3",
+    "@types/react-relay": "18.2.1",
+    "@types/relay-runtime": "20.1.1"
   }
 }

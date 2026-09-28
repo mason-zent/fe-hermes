@@ -2,7 +2,7 @@
 - **루트 `index.ts` 미등록으로 "있는데 못 쓰는" 컴포넌트**: `AppSidebar`, `Sidebar`, `Sheet`, `Step`, `TabItem`, `Overlay`, `BasicStepper`, `ProgressStepper`, `StepperTitle`, `DialogContext`
 - **패키지 내부 파일 직접 import 위반 0건** — ESLint `import/no-restricted-paths` + `no-internal-modules`가 막음. 허용 `@repo/project-config/lint/*`, `@repo/ui/globals.css`, `@repo/ui/tailwind.config`, `@zenterprise-inc/ui/*`. 단 `@repo/platform/server`는 allow 목록에 없는데 4앱 6파일이 사용(exports엔 정식 서브패스 → 동작은 OK, lint 경고 여부 미확인)
 - **의존 방향은 단순 사슬이 아님**: `ui → common-utils`만, `user-session → common-utils·platform·ui`(tracking 아님), `tracking-service`는 ui/user-session을 모른다. 위반 없음
-- **2026-09 `TopNavigationInquiryButton`·`openChannelTalk` 제거**(커밋 `e995bd193`, NEWCARE-629) → care-web `libs/channelTalk`로 이관. `packages/ui/src/constant/url.ts`의 `CHANNEL_TALK_URL`은 잔존. **`@repo/channel-talk` 패키지는 2026-09-08 제거**(`a98c21e0a`)
+- **2026-09 `TopNavigationInquiryButton`·`openChannelTalk` 제거**(커밋 `e995bd193`, NEWCARE-629) → care-web `libs/channelTalk`(현 `libs/channel-talk`, NEWCARE-649)로 이관. `packages/ui/src/constant/url.ts`의 `CHANNEL_TALK_URL`은 잔존. **`@repo/channel-talk` 패키지는 2026-09-08 제거**(`a98c21e0a`)
 - **`ui-deprecated`(`@zenterprise-inc/ui`) 신규 금지**지만 care 38·refund 27파일 잔존 + 두 앱 tailwind preset. 제거는 preset까지. 패키지명≠디렉터리명이라 grep 주의
 - **devDependencies로만 선언하고 런타임 사용**: brand/plus/sena의 `@repo/ui`, `@repo/common-utils`(care·refund만 올바름). 현재는 workspace 링크로 동작. 이 앱들 작업 시 별도 제안으로 보고
 - **Chromatic 토큰 소스 하드코딩**: `packages/ui/package.json` `chromatic --project-token=chpt_…`. CI secret이 무시될 소지(추측). 루트/CI 영역 → 보고 후 정리

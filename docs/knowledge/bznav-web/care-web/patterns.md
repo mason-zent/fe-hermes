@@ -27,12 +27,12 @@
 - 영속(33파일) 3종 세트: `safeSessionStorage`(`@toss/storage`)로 `getInitialValue()` + `createJSONStorage<T>(() => sessionStorage, { reviver })` + `atomWithStorage(STORAGE_KEYS.X, getInitialValue(), storage)`. **키는 `constants/storageKey.ts`의 `STORAGE_KEYS`**
 - 파일명 `store/<name>Atom.ts` 권장(일부 `atoms/`, `currentOrg.ts` 혼재). 전역은 루트 `store/`, `libs/provider/GlobalAtomProvider.tsx`
 
-## P7. 이벤트 로깅 (`libs/eventLogger`) — 가장 자주 쓰는 패턴
+## P7. 이벤트 로깅 (`libs/event-logger`) — 가장 자주 쓰는 패턴
 - 클릭 `<ClickEventLogger careEvent={{ category:'care', object:'app-install' }} attributes={{…}}><BoxButton/></ClickEventLogger>`(248파일, `cloneElement`로 onClick 래핑)
 - 뷰 `<ViewEventLogger careEvent>`(161) 또는 `useCareViewEventLogger({careEvent, attributes, isVisible})`. 스크롤 `ScrollEventLogger`
 - 코어 `useCareEventLogger()` → `useUserEventLogger().sendEvent(name, attrs, { sendTargets: SEND_TARGETS.MIXPANEL_DATADOG })`. **이벤트명 `[category, object, detail, action].filter(Boolean).join('_')`**, AB테스트 정보 자동 머지. 카테고리 `constants/careEvent.ts`(한글 키)
 
-## P8. 채널톡 (`libs/channelTalk`) — `useChannelTalk().showMessenger` / `openChannelTalk()`(84파일). `openChannelTalk.ts`: 앱 웹뷰면 `nativeBridge`(`sendBznavNativeMessage('openChannelTalk', {type:'messenger'|'chat'|'bot'})`, 브릿지 없으면 `false` → 웹 폴백 `window.open(CHANNEL_TALK_URL)`. 초기화 `components/common/init-channeltalk/InitChannelTalk.tsx` 1회. **`@repo/ui`의 문의 버튼은 제거되어 `app/pricing/components/TopNavigationInquiryButton.tsx`로 이관**
+## P8. 채널톡 (`libs/channel-talk`) — `useChannelTalk().showMessenger` / `openChannelTalk()`(84파일). `openChannelTalk.ts`: 앱 웹뷰면 `nativeBridge`(`sendBznavNativeMessage('openChannelTalk', {type:'messenger'|'chat'|'bot'})`, 브릿지 없으면 `false` → 웹 폴백 `window.open(CHANNEL_TALK_URL)`. 초기화 `components/common/init-channeltalk/InitChannelTalk.tsx` 1회. **`@repo/ui`의 문의 버튼은 제거되어 `app/pricing/components/TopNavigationInquiryButton.tsx`로 이관**
 
 ## P9. 카카오 (`libs/kakao`) — `openKakaoTalk(cxId)`(모바일+카톡 인앱만 `kakaotalk://me/cert/sign`), `isKakaoInAppBrowser`, `useKakaoPixel`. 홈택스 간편인증 카카오 UI `app/(auth)/(homeTax)/components/Kakao*`
 
@@ -40,7 +40,7 @@
 
 ## P11. 결제·구독 (`(auth)/billing`) — `checkout/(stage|complete|alreadyFinish)`, `payment-method/[bizNo]/card`(+`context/CardFormContext.tsx`), `renewal/*`, `unpaid/*`, **`refactor/*`(신 UI, 신구 공존)**. 가드 `RegisterGuard`, `RenewalGuard`. PG 복귀 `(gateway)/payment-gateway/*` + `api/my-account-result/*`
 
-## P12. 모달·시트 — `@repo/ui` `Drawer`/`Dialog` 압도적(`XxxDrawer.tsx`, `XxxDialog.tsx`, 에러는 `XxxErrorDialog`). 상태는 atom으로 관리하는 경우 많음(`paymentModalStatusAtom`). radix 직접은 `appSideBar/sheet.tsx`만. **nice-modal은 Provider만(useModal 0)**, `@radix-ui/react-accordion` 0
+## P12. 모달·시트 — `@repo/ui` `Drawer`/`Dialog` 압도적(`XxxDrawer.tsx`, `XxxDialog.tsx`, 에러는 `XxxErrorDialog`). 상태는 atom으로 관리하는 경우 많음(`paymentModalStatusAtom`). radix 직접은 `app-side-bar/sheet.tsx`만. **nice-modal은 Provider만(useModal 0)**, `@radix-ui/react-accordion` 0
 
 ## P13. 폼 — RHF(90) + yup(48) + resolvers(43). 스키마 `constants/formSchema.ts`, 정규식·메시지 `utils/reg.ts`(`*Reg`). 페이지가 `FormProvider`, 하위 `XxxForm`이 `useFormContext<T>()`. **필드 키 한글**(`'담당자이름'`). `setValue` + `getFieldState().isTouched && trigger()` 관용구
 

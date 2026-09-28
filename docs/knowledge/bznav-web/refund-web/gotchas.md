@@ -1,5 +1,6 @@
 # bznav-web apps/refund-web 함정·이력
 
+- **`lib/utils/feature-rollout.ts`(djb2 버킷 롤아웃) 삭제**(REF-3643 `8027105`, 결정확인 폴링 100% 도입). 점진 롤아웃이 필요하면 새로 설계해야 한다. 조회결과 A/B는 `use-lookup-result-lab.ts`의 `FIXED_LAB_ID`(현재 `'EXPERIMENT_A'`, REF-3843 3차 실험 종료로 고정)
 - **Relay 아티팩트 미커밋** — `graphql/__generated__/`에 md만. clone/스키마 변경 후 `pnpm --filter refund-web gen:relay` 안 하면 import 전부 깨짐. `build`·`dev`엔 포함, `lint`/`tsc` 단독엔 없음
 - **`next.config.mjs`의 relay 블록은 실물과 어긋남**: `schemaExtensions: ['schema/schemaExtensions/']` 디렉터리 없음, `src: '.'`/`schema: 'schema/schema.graphql'`도 실제 위치(`graphql/schema/`)와 다름. **동작하는 것은 `relay.config.json`** — next.config를 근거로 경로를 바꾸지 말 것
 - **Pages Router 전용** — `app/`, `page.tsx`, `'use client'`, `next/navigation`, Route Handler 금지. `next/router`, `getLayout`, gSSP/gSP
