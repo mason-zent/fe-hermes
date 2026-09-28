@@ -91,7 +91,7 @@ bznav-web 은 **모노레포**다. `bznav:care-web` 으로 딴 워크트리에�
 ### 5. 그 경로에서 에이전트를 띄운다
 
 ```bash
-scripts/delegate.sh refund-fe --cwd .worktrees/client-brics-refund/feature-REF-3820
+scripts/delegate.sh refund-fe --cwd .worktrees/client-brics-refund/feature-REF-3820 --plan plans/feature/20260928-REF-3820.md
 ```
 
 pane 하단 상태바에 `📁 client-brics-refund  🌿 feature/REF-3820  ⧉worktree` 로 뜬다. `⧉` 가 워크트리 표시다.

@@ -1,5 +1,7 @@
 # 작업계획서 템플릿
 
+> 이 문서는 **정식** 계획서(md + 결정 콘솔 html)다. 문구 수정·버그 하나·확인·조사·긴급 수정은 **경량** 계획서(`docs/plan-template-light.md`, `node scripts/new-plan.mjs`)를 쓴다. 모든 작업은 둘 중 하나에 묶인다.
+
 파일명: `plans/작업유형/YYYYMMDD-제목.md` (+ 같은 이름의 `.html`)
 
 ## ⚠️ md + html 동시 생성 (필수)

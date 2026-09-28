@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # 에이전트를 **보이는 herdr pane** 에서 연다. 헤르메스가 Agent 도구(백그라운드) 대신 쓴다.
 #
+# **계획서 없이는 띄우지 않는다** — 모든 작업은 계획서 하나에 묶인다 (AGENTS.md 5절)
+#   --plan <plans/…md>          이미 있는 계획서(정식·경량)에 묶는다
+#   --plan new "<한 줄 요약>"     경량 계획서를 새로 만들어 묶는다 (scripts/new-plan.mjs → plans/task/…)
+# 띄운 뒤 계획서 Checkpoint 의 Work ref 에 워크트리·브랜치·pane 을 적고, 에이전트 지시 맨 앞에 계획서 경로를 넣는다.
+#
 # 사용:
-#   scripts/delegate.sh <에이전트명>                      # 담당 레포 workspace 의 새 탭에 연다 (기본)
+#   scripts/delegate.sh <에이전트명> --plan <경로>         # 담당 레포 workspace 의 새 탭에 연다 (기본)
 #   scripts/delegate.sh <에이전트명> --cwd <워크트리>       # 그 워크트리에서 연다
 #   scripts/delegate.sh <에이전트명> --here                # 레포 workspace 로 보내지 않고 지금 탭에 쪼갠다 (단발 조사용)
 #
@@ -19,9 +24,11 @@
 set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-AGENT=""; PROMPT=""; DIR="right"; WORKDIR=""; HERE=0
+AGENT=""; PROMPT=""; DIR="right"; WORKDIR=""; HERE=0; PLAN=""; PLAN_NEW=""
 while [ $# -gt 0 ]; do
   case "$1" in
+    --plan)
+      if [ "${2:-}" = new ]; then PLAN_NEW="${3:-}"; shift 3; else PLAN="${2:-}"; shift 2; fi ;;
     --down) DIR="down"; shift ;;
     --here) HERE=1; shift ;;
     --cwd)  WORKDIR="${2:-}"; shift 2 ;;
@@ -30,7 +37,13 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-[ -n "$AGENT" ] || { echo "사용: $0 <에이전트명> [\"<프롬프트>\"] [--cwd <경로>] [--here] [--down]"; exit 2; }
+[ -n "$AGENT" ] || { echo "사용: $0 <에이전트명> --plan <plans/…md | new \"<요약>\"> [\"<프롬프트>\"] [--cwd <경로>] [--here] [--down]"; exit 2; }
+
+# 계획서 필수 — 없으면 띄우지 않는다
+if [ -z "$PLAN" ] && [ -z "$PLAN_NEW" ]; then
+  echo "계획서 없이는 에이전트를 띄우지 않는다. --plan <plans/…md> 또는 --plan new \"<한 줄 요약>\" 을 준다 (docs/plan-template-light.md)" >&2
+  exit 2
+fi
 
 # 에이전트 이름 검증 — 오타로 엉뚱한 세션이 뜨는 것을 막는다
 if [ ! -f "$HERMES_DIR/.claude/agents/$AGENT.md" ]; then
@@ -38,6 +51,18 @@ if [ ! -f "$HERMES_DIR/.claude/agents/$AGENT.md" ]; then
   echo "가능한 이름: $(ls "$HERMES_DIR/.claude/agents" | sed 's/\.md$//' | tr '\n' ' ')"
   exit 2
 fi
+
+if [ -n "$PLAN_NEW" ]; then
+  PROMPT_TMP="$(mktemp -t hermes-plan-prompt)"; printf '%s' "$PROMPT" > "$PROMPT_TMP"
+  PLAN="$(node "$HERMES_DIR/scripts/new-plan.mjs" --agent "$AGENT" --summary "$PLAN_NEW" --prompt-file "$PROMPT_TMP")" || { rm -f "$PROMPT_TMP"; echo "경량 계획서를 만들지 못했다" >&2; exit 1; }
+  rm -f "$PROMPT_TMP"
+fi
+PLAN="${PLAN#"$HERMES_DIR"/}"
+case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 한다: $PLAN" >&2; exit 2 ;; esac
+[ -f "$HERMES_DIR/$PLAN" ] || { echo "계획서가 없다: $PLAN" >&2; exit 2; }
+# 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
+PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). "
+PROMPT="$PLAN_HEADER${PROMPT}"
 
 GIVEN_PROMPT="$PROMPT"
 GIVEN_CWD="$WORKDIR"
@@ -199,8 +224,14 @@ PANE_TITLE="🤖 $AGENT"
 [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ] && PANE_TITLE="$PANE_TITLE · $BRANCH_NAME"
 herdr pane rename "$PANE" "$PANE_TITLE" >/dev/null 2>&1 || true
 
-if [ -n "$GIVEN_PROMPT" ]; then
-  echo "$PANE  ($AGENT — 프롬프트 전달됨 · $PLACEMENT · cwd: $WORKDIR)"
-else
-  echo "$PANE  ($AGENT — 대기 중 · $PLACEMENT · cwd: $WORKDIR)"
-fi
+# 계획서 Work ref 에 어디서 누가 도는지 적는다 — 현황판이 이 pane 을 카드에 붙인다
+python3 - "$HERMES_DIR/$PLAN" "$WORKDIR" "${BRANCH_NAME:-?}" "$PANE" "$AGENT" <<'PYEOF'
+import sys, re, pathlib
+plan, cwd, branch, pane, agent = sys.argv[1:6]
+path = pathlib.Path(plan); text = path.read_text(encoding='utf-8')
+line = f"- Work ref: {cwd} · 🌿 {branch} · pane {pane} ({agent})"
+text = re.sub(r'^- Work ref:.*$', line, text, count=1, flags=re.M) if re.search(r'^- Work ref:', text, re.M) else text
+path.write_text(text, encoding='utf-8')
+PYEOF
+
+echo "$PANE  ($AGENT — 계획서 $PLAN · $PLACEMENT · cwd: $WORKDIR)"

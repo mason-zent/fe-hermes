@@ -136,7 +136,7 @@ for target in "${TARGETS[@]}"; do
       if git -C "$dir" worktree add "$wt" -b "$BRANCH" "origin/$base" >/dev/null 2>&1; then
         echo "✅ $label — origin/$base ($head) → $BRANCH${stale}"
         echo "        워크트리: $wt"
-        echo "        디스패치: scripts/delegate.sh <에이전트> --cwd $wt"
+        echo "        디스패치: scripts/delegate.sh <에이전트> --cwd $wt --plan <계획서>"
       else
         echo "❌ $label — 워크트리 생성 실패 (git worktree add)"; skipped=$((skipped+1)); continue
       fi
