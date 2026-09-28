@@ -18,16 +18,6 @@ const TYPES = [
 ];
 
 // 서비스 전체를 가로지르는 것 — 타입 4종 패턴이 아니라 한 장짜리다
-// 서비스 심층 번들 — 한 HTML 에 탭으로 여러 장이 들어 있다
-const DEEP = [
-  {
-    file: 'care-web/care-web-architecture.html',
-    name: 'bznav care-web 심층',
-    sub: '탭 10장 · 266화면 전수',
-    desc: 'care-web 의 화면 266개를 하나도 빠짐없이 담았다. 상세 아키텍처 + Provider 14겹 + 도메인별 8장. 노드를 클릭하면 실제 page.tsx 경로가 뜨고, 점선 노드는 패스포트에서 상세 탭으로 넘어간다.',
-  },
-];
-
 const CROSS = [
   {
     file: 'data-sources.html',
@@ -80,7 +70,9 @@ const GROUPS = [
         base: 'bznav-care-web',
         name: 'bznav care-web',
         sub: '비즈넵 케어 · 3100',
-        desc: 'route group · CARE_PATHS 한글 키 · CareAuthGuard · 유일하게 type-check·test:unit 보유',
+        desc: 'route group · CARE_PATHS 한글 키 · CareAuthGuard · 유일하게 type-check·test:unit 보유. 심층은 화면 266개 전수(탭 10장)',
+        // 4종 밖에 따로 있는 장 — 같은 카드에 붙인다 (심층 칸을 따로 두지 않는다)
+        extra: [{ file: 'care-web/care-web-architecture.html', label: '심층 · 266화면' }],
       },
       {
         base: 'bznav-brand-web',
@@ -114,6 +106,11 @@ const section = (group) => {
         total++;
         return `<a class="pill" href="${item.base}${type.suffix}">${type.label}</a>`;
       });
+      for (const extra of item.extra ?? []) {
+        if (!existsSync(join(DIR, extra.file))) continue;
+        total++;
+        pills.push(`<a class="pill" href="${extra.file}">${esc(extra.label)}</a>`);
+      }
       if (!pills.length) return '';
       return `      <div class="card">
         <div class="t">${esc(item.name)}</div>
@@ -125,20 +122,6 @@ const section = (group) => {
     .filter(Boolean);
   return `    <h2>${esc(group.title)}</h2>\n    <div class="grid">\n${cards.join('\n')}\n    </div>`;
 };
-const deepCards = DEEP.filter((item) => existsSync(join(DIR, item.file)))
-  .map((item) => {
-    total++;
-    return `      <div class="card">
-        <div class="t">${esc(item.name)}</div>
-        <div class="s">${esc(item.sub)}</div>
-        <div class="d">${esc(item.desc)}</div>
-        <div class="pills"><a class="pill" href="${item.file}">열기</a></div>
-      </div>`;
-  });
-const deepSection = deepCards.length
-  ? `    <h2>서비스 심층 (탭 번들)</h2>\n    <div class="grid">\n${deepCards.join('\n')}\n    </div>`
-  : '';
-
 const crossCards = CROSS.filter((item) => existsSync(join(DIR, item.file)))
   .map((item) => {
     total++;
@@ -153,7 +136,7 @@ const crossSection = crossCards.length
   ? `    <h2>서비스 전체를 가로지르는 것</h2>\n    <div class="grid">\n${crossCards.join('\n')}\n    </div>`
   : '';
 
-const body = [deepSection, crossSection, ...GROUPS.map(section)].filter(Boolean).join('\n');
+const body = [crossSection, ...GROUPS.map(section)].filter(Boolean).join('\n');
 
 const html = `<!doctype html>
 <html lang="ko">
