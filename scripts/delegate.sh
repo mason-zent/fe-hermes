@@ -78,7 +78,15 @@ for repo in cfg['repos']:
     if hit: print(f'bznav:{hit[0]}'); break
 PYEOF
 )"
-  PLAN_HEADER="${PLAN_HEADER}아직 브랜치·워크트리가 없다. 순서대로 한다: ① 담당 레포 메인 체크아웃(repos/…)의 브랜치·미커밋 상태를 git status --short --branch 로 한 줄 보고한다(체크아웃·stash 하지 않는다) ② 사용자에게 작업 브랜치 이름(티켓 번호 또는 fix/설명)을 묻는다 — 임의로 짓지 않는다 ③ 답을 받으면 $HERMES_DIR/scripts/new-branch.sh <이름> ${BRANCH_TARGET:-<대상>} 로 워크트리를 만든다. '⚠️ 이미 있다' 가 나오면 그 내용(로컬·원격·마지막 커밋·체크아웃 위치)을 그대로 전하고 '그대로 이어 쓸까요?' 라고 묻는다 — 그렇다면 같은 명령에 --reuse 를 붙여 다시 실행하고, 아니면 새 이름을 묻는다. 만든(또는 이어 쓰는) 워크트리에서 이후 모든 읽기·수정은 그 워크트리 절대경로 안에서만 한다(메인 체크아웃은 수정하지 않는다). 계획서 Checkpoint 의 Work ref 줄에서 앞의 경로·🌿 브랜치를 새 워크트리·브랜치로 고친다(뒤의 'pane … (에이전트)' 는 그대로 둔다). 검증 스크립트는 HERMES_VERIFY_DIR=<워크트리> 를 붙여 돌린다 ④ 그다음 사용자의 요청을 기다린다. "
+  # 느리지 않게 — 브랜치 상태와 후보는 여기서 미리 뽑아 넘긴다. 에이전트의 첫 동작은 곧바로 선택지 질문이다
+  REPO_NAME_FOR_BRANCH="$(python3 -c "import json,sys; c=json.load(open(sys.argv[1])); a=sys.argv[2]; print(next((r['name'] for r in c['repos'] if a in (r.get('agents') or []) or r.get('packagesAgent')==a or any(x.get('agent')==a for x in (r.get('apps') or {}).values())), ''))" "$HERMES_DIR/hermes.config.json" "$AGENT")"
+  MAIN_STATE=""; MAIN_DIRTY=""; CANDIDATES=""
+  if [ -n "$REPO_NAME_FOR_BRANCH" ] && [ -d "$HERMES_DIR/repos/$REPO_NAME_FOR_BRANCH" ]; then
+    MAIN_STATE="$(git -C "$HERMES_DIR/repos/$REPO_NAME_FOR_BRANCH" status --short --branch 2>/dev/null | head -1)"
+    MAIN_DIRTY="$(git -C "$HERMES_DIR/repos/$REPO_NAME_FOR_BRANCH" status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+    CANDIDATES="$("$HERMES_DIR/scripts/branch-candidates.sh" "$REPO_NAME_FOR_BRANCH" 3 2>/dev/null | awk -F'\t' '{printf "%s(%s · %s · 체크아웃 %s); ", $1, $2, $3, $4}')"
+  fi
+  PLAN_HEADER="${PLAN_HEADER}아직 브랜치·워크트리가 없다. 메인 체크아웃 상태: ${MAIN_STATE:-?} · 미커밋 ${MAIN_DIRTY:-?}개. 최근 작업 브랜치 후보: ${CANDIDATES:-없음}. 첫 동작으로 곧바로 AskUserQuestion 을 띄운다 — 계획서 읽기·git status 같은 다른 도구를 먼저 부르지 않는다. 질문은 '어느 브랜치로 작업할까요?'(header '브랜치'), 선택지는 위 후보마다 '<브랜치> 이어 쓰기'(description 에 로컬/원격·마지막 커밋) 와 '새 브랜치 만들기'(description 'Other 에 티켓 번호나 fix/설명을 적어 주세요'). 메인 체크아웃 상태는 질문 앞에 한 줄로 알린다. 답을 받으면 후보를 골랐을 때 $HERMES_DIR/scripts/new-branch.sh <브랜치> ${BRANCH_TARGET:-<대상>} --reuse, 새 이름이면 --reuse 없이 실행한다. 새 이름인데 '⚠️ 이미 있다' 가 나오면 그 내용을 전하고 AskUserQuestion 으로 '그대로 이어 쓰기 / 다른 이름' 을 다시 묻는다. 워크트리가 생기면 이후 모든 읽기·수정은 그 워크트리 절대경로 안에서만 한다(메인 체크아웃은 수정하지 않는다). 검증 스크립트는 HERMES_VERIFY_DIR=<워크트리> 를 붙인다. 그다음 '무엇을 할까요?' 로 요청을 기다린다. 계획서(Work ref 의 경로·브랜치, 제목, ## 지시)는 요청을 받은 뒤 한 번에 고친다 — 그 전에는 계획서를 건드리지 않는다. "
 fi
 [ -z "$PROMPT" ] && PLAN_HEADER="${PLAN_HEADER}지금은 지시가 없다. 브랜치·미커밋 상태만 확인해 한 줄로 보고하고 사용자의 요청을 기다린다. 첫 요청을 받으면 계획서의 제목(# 줄)과 '## 지시' 절을 그 요청으로 바꿔 적고 진행한다. 요청이 여러 레포·API 변경으로 커지면 멈추고 정식 계획서가 필요하다고 알린다. "
 PROMPT="$PLAN_HEADER${PROMPT}"
