@@ -12,6 +12,7 @@
 #   scripts/new-branch.sh fix/qa-로그인 care            # 슬래시가 있으면 그 이름 그대로
 #   scripts/new-branch.sh REF-3820 refund --in-place   # 워크트리 없이 메인 체크아웃에서 분기
 #   scripts/new-branch.sh REF-3820 refund --dry-run
+#   scripts/new-branch.sh REF-3820 refund --reuse     # 이미 있는 브랜치를 이어 쓴다 (있으면 기본은 알려 주고 멈춘다)
 #
 # 대상은 레포 이름 일부로 매칭한다 (refund / hub / care / op / packages=zent-packages /
 # bznav:<앱> / bznav:packages).
@@ -23,12 +24,13 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="$ROOT/hermes.config.json"
 WT_ROOT="${HERMES_WORKTREE_ROOT:-$ROOT/.worktrees}"
-DRY_RUN=0; IN_PLACE=0
+DRY_RUN=0; IN_PLACE=0; REUSE=0
 TICKET=""; TARGETS=()
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run)  DRY_RUN=1 ;;
+    --reuse)    REUSE=1 ;;
     --in-place|--no-worktree) IN_PLACE=1 ;;
     -h|--help)  grep '^#' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) if [ -z "$TICKET" ]; then TICKET="$arg"; else TARGETS+=("$arg"); fi ;;
@@ -102,11 +104,53 @@ for target in "${TARGETS[@]}"; do
     fi
   fi
 
-  # 이미 있는 브랜치면 어디에 체크아웃돼 있는지 알려준다
-  if git -C "$dir" show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  # 이미 있는 브랜치 — 로컬 또는 원격(origin). 기본은 어디에 어떤 상태로 있는지 알려 주고 멈춘다.
+  # 이어 쓰려면 --reuse (사용자에게 "그대로 쓸까요?" 를 물은 뒤)
+  local_ref=0; remote_ref=0
+  git -C "$dir" show-ref --verify --quiet "refs/heads/$BRANCH" && local_ref=1
+  if GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10" git -C "$dir" ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1 \
+    || GIT_TERMINAL_PROMPT=0 git -C "$dir" -c url.https://github.com/.insteadOf=git@github.com: ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+    remote_ref=1
+  fi
+  if [ $local_ref = 1 ] || [ $remote_ref = 1 ]; then
     where="$(git -C "$dir" worktree list --porcelain 2>/dev/null | awk -v b="refs/heads/$BRANCH" '/^worktree /{w=$2} $0=="branch "b{print w}')"
-    echo "⏭  $label — 브랜치 $BRANCH 가 이미 있다${where:+ (체크아웃: $where)}"
-    skipped=$((skipped+1)); continue
+    main_dir="$(cd "$dir" && pwd -P)"
+    if [ $REUSE = 0 ]; then
+      state="로컬 $([ $local_ref = 1 ] && echo 있음 || echo 없음) · 원격 $([ $remote_ref = 1 ] && echo 있음 || echo 없음)"
+      [ $local_ref = 1 ] && state="$state · 마지막 커밋 $(git -C "$dir" log -1 --format='%h %ad %s' --date=short "$BRANCH" 2>/dev/null | cut -c1-60)"
+      echo "⚠️  $label — 브랜치 $BRANCH 가 이미 있다 ($state)${where:+ · 체크아웃: $where}"
+      echo "        그대로 이어 쓰려면 --reuse 를 붙여 다시 실행한다. 새로 따려면 다른 이름을 쓴다"
+      skipped=$((skipped+1)); continue
+    fi
+    # --reuse
+    if [ -n "$where" ] && [ "$(cd "$where" && pwd -P)" = "$main_dir" ]; then
+      echo "⚠️  $label — $BRANCH 는 메인 체크아웃(repos/$repo)에 올라가 있어 워크트리로 이어 쓸 수 없다. 메인 체크아웃에서 할지 다른 이름으로 딸지 정한다"
+      skipped=$((skipped+1)); continue
+    fi
+    if [ -n "$where" ]; then
+      echo "♻️  $label — 이어서: 이미 있는 워크트리를 그대로 쓴다"
+      echo "        워크트리: $where"
+      created=$((created+1)); continue
+    fi
+    wt="$WT_ROOT/$repo/$SLUG"
+    [ -e "$wt" ] && { echo "⏭  $label — 워크트리 경로가 이미 있다: $wt"; skipped=$((skipped+1)); continue; }
+    [ $DRY_RUN = 1 ] && { echo "[DRY] $label — 이어서: $BRANCH ($([ $local_ref = 1 ] && echo 로컬 || echo 원격 추적))"; echo "        워크트리: $wt"; created=$((created+1)); continue; }
+    mkdir -p "$(dirname "$wt")"
+    if [ $local_ref = 1 ]; then
+      ok="$(git -C "$dir" worktree add "$wt" "$BRANCH" >/dev/null 2>&1 && echo 1)"
+    else
+      GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10" git -C "$dir" fetch --quiet origin "$BRANCH" 2>/dev/null \
+        || GIT_TERMINAL_PROMPT=0 git -C "$dir" -c url.https://github.com/.insteadOf=git@github.com: fetch --quiet origin "$BRANCH" 2>/dev/null
+      ok="$(git -C "$dir" worktree add --track -b "$BRANCH" "$wt" "origin/$BRANCH" >/dev/null 2>&1 && echo 1)"
+    fi
+    if [ "$ok" = 1 ]; then
+      echo "♻️  $label — 이어서: $BRANCH ($([ $local_ref = 1 ] && echo 로컬 브랜치 || echo 원격 추적)) 로 워크트리를 만들었다"
+      echo "        워크트리: $wt"
+      created=$((created+1))
+    else
+      echo "❌ $label — 이어 쓸 워크트리를 만들지 못했다 (git worktree add)"; skipped=$((skipped+1))
+    fi
+    continue
   fi
 
   head="$(git -C "$dir" rev-parse --short "origin/$base")"

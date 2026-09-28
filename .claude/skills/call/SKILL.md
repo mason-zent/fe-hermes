@@ -17,7 +17,7 @@ argument-hint: "<에이전트> — 예: bznav-plus-fe · refund-fe"
    scripts/delegate.sh <에이전트> --plan new "<에이전트> 작업 (pane 에서 지시)" --ask-branch
    ```
    - 경량 계획서(`plans/task/…`)를 빈 지시로 만들고, 담당 레포 workspace 에 pane 을 지시 없이 띄운다
-   - `--ask-branch`: 에이전트가 ① 메인 체크아웃 브랜치·미커밋 상태를 한 줄 보고 ② **브랜치 이름(티켓)을 사용자에게 묻고** ③ `scripts/new-branch.sh <이름> <대상>` 으로 워크트리를 만든 뒤 그 안에서만 작업하고 계획서 Work ref 를 고친다 ④ 요청을 기다린다
+   - `--ask-branch`: 에이전트가 ① 메인 체크아웃 브랜치·미커밋 상태를 한 줄 보고 ② **브랜치 이름(티켓)을 사용자에게 묻고** ③ `scripts/new-branch.sh <이름> <대상>` 으로 워크트리를 만든다. **브랜치가 이미 있으면**(로컬·원격) 어디에 어떤 상태로 있는지 알려 주고 "그대로 이어 쓸까요?" 를 묻는다 → 예면 `--reuse`, 아니면 새 이름. 그 뒤 그 안에서만 작업하고 계획서 Work ref 를 고친다 ④ 요청을 기다린다
    - 첫 요청을 받으면 에이전트가 계획서 제목·`## 지시` 를 그 요청으로 채운다. 끝나면 Status `ready_for_review`
 3. pane id · workspace · 계획서 경로를 한 줄씩 알리고 "그 pane 에서 브랜치 이름과 요청을 답하면 된다" 한 줄
 
