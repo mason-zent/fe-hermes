@@ -63,7 +63,7 @@ PLAN="${PLAN#"$HERMES_DIR"/}"
 case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 한다: $PLAN" >&2; exit 2 ;; esac
 [ -f "$HERMES_DIR/$PLAN" ] || { echo "계획서가 없다: $PLAN" >&2; exit 2; }
 # 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
-PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). "
+PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
 # 지시 없이 띄우면(/call) 사용자가 pane 에서 직접 요청한다 — 첫 요청으로 계획서를 채우게 한다
 # /call — 브랜치를 사용자에게 물어 에이전트가 워크트리를 만든다. new-branch.sh 대상 이름은 config 에서
 if [ "$ASK_BRANCH" = 1 ]; then

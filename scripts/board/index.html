@@ -315,6 +315,7 @@
     const typeLabel = card.type === 'task' ? '경량' : card.type;
     const tags = [`<span class="pill">${esc(typeLabel)}</span>`, `<span class="pill">${esc(card.status)}</span>`];
     if (card.blocked) tags.push(`<span class="pill bad">막힘</span>`);
+    if (card.working && card.status !== 'in_progress') tags.push('<span class="pill working">에이전트 작업 중</span>');
     const running = (card.agents || []).map((id) => panes.find((pane) => pane.id === id)).filter(Boolean);
     for (const pane of running) tags.push(`<span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`);
     const progress = card.progress ? `<div class="progress" title="${card.progress.checked}/${card.progress.total}"><i style="width:${Math.round((card.progress.checked / card.progress.total) * 100)}%"></i></div><div class="line">진행 ${card.progress.checked}/${card.progress.total}</div>` : '';

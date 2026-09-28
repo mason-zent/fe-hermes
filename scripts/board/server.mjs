@@ -349,6 +349,10 @@ const collect = async () => {
     plan.agents = panes
       .filter((pane) => pane.role === 'agent' && (plan.workRef.includes(`pane ${pane.id} `) || plan.workRef.endsWith(`pane ${pane.id}`) || (pane.branch && plan.workRef.includes(pane.branch))))
       .map((pane) => pane.id)
+    // 에이전트가 지금 일하고 있으면 진행 중 칸에 — 요청을 여러 번 주고받으면 계획서 Status 가 리뷰에 머물러 있어도
+    // 실제로는 작업 중이다. 파일은 바꾸지 않고 보여 주는 칸만 (끝나 대기로 돌아가면 다시 리뷰 칸)
+    plan.working = plan.agents.some((id) => panes.find((pane) => pane.id === id)?.status === 'working')
+    if (plan.working && (plan.column === 'review' || plan.column === 'done')) plan.column = 'doing'
   }
   // 이슈에 연결된 계획서는 카드를 따로 만들지 않고 이슈 카드 안에 합친다 — 같은 일이 두 장으로 보이지 않게
   const merged = new Set()
@@ -359,6 +363,8 @@ const collect = async () => {
     issue.linkedPlan = { id: plan.id, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
     // 계획서가 리뷰 단계면 이슈 카드도 리뷰 칸에
     if (issue.status === 'in_progress' && plan.status === 'ready_for_review') issue.column = 'review'
+    if (plan.working && issue.column !== 'done') issue.column = 'doing'
+    issue.linkedPlan.working = plan.working
     if (plan.status === 'blocked') issue.blocked = plan.blocked || '막힘'
   }
   return { header: readHeader(), herdr: available, agents: [...AGENT_NAMES].sort(), cards: [...issues, ...plans.filter((plan) => !merged.has(plan.id))], panes, subagents, worktrees }
