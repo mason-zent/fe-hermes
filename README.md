@@ -26,6 +26,7 @@ claude
 ```
 - `/feature 기능 설명` — 계획서 → 승인 → 병렬 디스패치 → 리뷰 → 보고
 - `/bugfix 버그 설명`
+- `/call 에이전트 브랜치` — 담당 에이전트를 pane 으로 먼저 띄우고 요청은 그 pane 에서 직접 쓴다(브랜치 확인 → 워크트리 → 빈 지시 경량 계획서)
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
@@ -44,7 +45,7 @@ hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 12개
 .claude/rules/            언어·코드·Git·디스패치 규칙
-.claude/skills/           /feature /bugfix /branch /review /status /monitor /board /sync /guide
+.claude/skills/           /feature /bugfix /call /branch /review /status /monitor /board /sync /guide
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/diagrams/            다이어그램 (Archify 생성. index.html 이 목록, 원본은 *.json, 재생성법은 그 폴더 README)
 docs/services.md          서비스 비교표

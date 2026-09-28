@@ -91,7 +91,9 @@ for target in "${TARGETS[@]}"; do
   # SSH 키가 없거나 오프라인일 때 작업 자체를 막을 이유는 없다. 다만 base 가
   # 낡았을 수 있다는 사실은 반드시 알린다.
   stale=""
-  if ! git -C "$dir" fetch origin "$base" --quiet 2>/dev/null; then
+  # 비대화형으로 — ssh 키 암호를 묻다 멈추지 않게. ssh 가 안 되면 https 로 재시도(sync·현황판과 같은 방식)
+  fetch_quiet() { GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10" git -C "$dir" "$@" fetch origin "$base" --quiet 2>/dev/null; }
+  if ! fetch_quiet && ! fetch_quiet -c url.https://github.com/.insteadOf=git@github.com:; then
     if git -C "$dir" rev-parse --verify --quiet "origin/$base" >/dev/null; then
       stale=" ⚠️ fetch 실패 — 로컬 origin/$base 로 분기했다. 최신이 아닐 수 있다"
     else
