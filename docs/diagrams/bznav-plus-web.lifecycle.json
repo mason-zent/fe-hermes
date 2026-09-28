@@ -3,7 +3,7 @@
   "diagram_type": "lifecycle",
   "meta": {
     "title": "bznav plus-web 화면 상태",
-    "subtitle": "대표 화면 app/calc/holiday-pay · 단계가 둘인 가장 단순한 계산기",
+    "subtitle": "대표 화면 app/calc/holidaypay · 단계가 둘인 가장 단순한 계산기",
     "output": "docs/diagrams/bznav-plus-web.lifecycle.html",
     "viewBox": [
       1030,
@@ -60,7 +60,7 @@
       "id": "enter",
       "type": "start",
       "label": "진입",
-      "sublabel": "app/calc/holiday-pay",
+      "sublabel": "app/calc/holidaypay",
       "lane": "main",
       "col": 0,
       "step": "01"

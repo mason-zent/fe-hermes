@@ -46,7 +46,7 @@
           "fortune",
           "calchome"
         ],
-        "note": "tax-check 는 간편인증까지 붙은 진단 흐름이고, tax-content 는 Notion catch-all 이다."
+        "note": "tax-check 는 간편인증까지 붙은 진단 흐름이고, tax-content 는 Notion 동적 세그먼트 [slug] 다."
       }
     ]
   },
@@ -213,7 +213,7 @@
       "col": 0,
       "label": "tax-content",
       "sublabel": "1 화면",
-      "tag": "Notion catch-all",
+      "tag": "Notion [slug]",
       "size": [
         128,
         54
@@ -251,7 +251,7 @@
         "단계 수가 다르다 — holidaypay 2단계(input·result), sales 3단계(revenue·cost·result), simplevat 4단계(sales·deduction·paid·result)",
         "반환 shape 도 다르다 — salary/actual 은 sections 대신 salarySection, parsedInput 대신 monthlyGrossSalary 를 내보낸다",
         "새로 만들 때는 가장 가까운 기존 세트를 골라 맞춘다",
-        "tax-content 는 파일 1개지만 Notion catch-all 이라 실제 페이지는 DB 행 수만큼 늘어난다"
+        "tax-content 는 파일 1개([slug])지만 실제 페이지는 DB 행 수만큼 늘어난다"
       ]
     }
   ]

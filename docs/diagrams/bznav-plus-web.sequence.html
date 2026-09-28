@@ -5083,7 +5083,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>bznav plus-web 요청 흐름</h1>
       </div>
-      <p class="subtitle">대표 화면 app/calc/holiday-pay · layout 은 SEO, page 는 UI, 계산은 순수 함수</p>
+      <p class="subtitle">대표 화면 app/calc/holidaypay · layout 은 SEO, page 는 UI, 계산은 순수 함수</p>
     </div>
 
     <script id="archify-guided-views-data" type="application/json">[{"id":"seo","label":"진입할 때","focus":["user","layout","page","logger"],"note":"layout 이 metadata·JsonLd·TopNavigation 을 붙이고 page 는 UI 만 맡는다."},{"id":"input","label":"입력할 때","focus":["user","page","form"],"note":"RHF 를 쓰지만 handleSubmit 과 resolver 는 쓰지 않는다. watch 와 setValue 만 쓴다."},{"id":"calc","label":"계산할 때","focus":["page","hook","calc","dp"],"note":"step 이 result-step 이 되어야 순수 함수를 부른다."}]</script>
@@ -5133,7 +5133,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
       <svg viewBox="0 0 1040 900" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="showcase">
         <title id="archify-diagram-title">bznav plus-web 요청 흐름</title>
-        <desc id="archify-diagram-description">대표 화면 app/calc/holiday-pay · layout 은 SEO, page 는 UI, 계산은 순수 함수</desc>
+        <desc id="archify-diagram-description">대표 화면 app/calc/holidaypay · layout 은 SEO, page 는 UI, 계산은 순수 함수</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5627,7 +5627,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>계산은 React 밖에서</h3>
         </div>
         <ul>
-          <li>&bull; 대표는 app/calc/holiday-pay 다. 계산기 폼 훅은 watch/setValue/reset 만 쓰고 handleSubmit 과 resolver 를 쓰지 않는다 — 앱 전체 규칙은 아니다</li>
+          <li>&bull; 대표는 app/calc/holidaypay 다(훅·유틸 이름은 holiday-pay). 계산기 폼 훅은 watch/setValue/reset 만 쓰고 handleSubmit 과 resolver 를 쓰지 않는다 — 앱 전체 규칙은 아니다</li>
           <li>&bull; 최종 result 는 결과 단계에서만 만든다. 다만 store-sales 의 중간 계산이나 simple-vat 의 공제 미리보기처럼 입력 중에도 도는 계산이 있다</li>
           <li>&bull; 계산 함수는 lib/utils/calc/ 에 React 와 무관하게 두고 요율·공식 근거를 JSDoc 에 적는다</li>
           <li>&bull; 계산기는 8세트이고 반환 shape 이 대체로 비슷하지만 똑같지는 않다 — salary-actual 처럼 필드 이름이 다른 것도 있다</li>

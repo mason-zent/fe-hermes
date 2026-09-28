@@ -1003,7 +1003,7 @@
         "AuthGuard 는 getLayout 이나 페이지 본문에서 화면마다 건다. 106 화면 중 직접 39 · SurveyProvider 경유 20 = 59 화면",
         "나머지 47 화면(랜딩·도움말·오류·auth 대부분·trp·payment-card·reenactment 등)은 가드가 없다",
         "공동인증서 install·select 는 type=result, error/hometax/etc 는 source=message 일 때 가드를 건너뛴다",
-        "106 화면 중 gSSP 32 · getStaticProps 8 · getLayout 82"
+        "106 화면 중 gSSP 33 · getStaticProps 8 · getLayout 82"
       ]
     },
     {

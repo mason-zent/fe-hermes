@@ -404,7 +404,7 @@
       "id": "terms",
       "type": "frontend",
       "label": "약관",
-      "sublabel": "/terms/[...terms] · ISR 3600",
+      "sublabel": "/terms/[...terms] · revalidate 선언",
       "pos": [
         572,
         394
@@ -907,7 +907,7 @@
       "dot": "rose",
       "title": "앱 밖에서 정해지는 것",
       "items": [
-        "약관 본문 · 시행 버전(enforceTerm) · 종류 목록은 DatoCMS 레코드다. 코드 배포 없이 바뀌고 revalidate 3600 초 뒤 반영",
+        "약관 본문 · 시행 버전(enforceTerm) · 종류 목록은 DatoCMS 레코드다. 코드 배포 없이 바뀐다. 반영 주기는 revalidate 3600 선언과 루트의 cookies() 동적 렌더가 겹쳐 확인 필요",
         "로고 · 배너 · OG 이미지는 리소스 센터 CDN(NEXT_PUBLIC_RESOURCE_CENTER_URL), 메인 슬라이드 · Lottie 는 public/images",
         "헤더 · 홈 버튼은 환급 · 케어 · 세나 · 계산기 외부 도메인으로 나간다. 이 앱에서 구현하지 않는다",
         "home/_components/CareInductionModal.tsx 는 어디서도 import 하지 않는다 — 현재 렌더되지 않는 파일"

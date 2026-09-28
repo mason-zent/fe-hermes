@@ -3,7 +3,7 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "bznav refund-web 화면 맵",
-    "subtitle": "pages/ 아래 104개 · 5개 앱 중 유일한 Pages Router",
+    "subtitle": "pages/ 아래 106개 · 5개 앱 중 유일한 Pages Router",
     "output": "docs/diagrams/bznav-refund-web.domains.html",
     "viewBox": [
       1080,
@@ -185,7 +185,7 @@
       "col": 3,
       "label": "trp",
       "sublabel": "3",
-      "tag": "알림톡 진입",
+      "tag": "결제 링크 ?token",
       "size": [
         128,
         54
@@ -249,7 +249,7 @@
       "row": 3,
       "col": 3,
       "label": "help",
-      "sublabel": "2",
+      "sublabel": "4",
       "tag": "도움말",
       "size": [
         128,
@@ -261,9 +261,9 @@
       "type": "backend",
       "row": 3,
       "col": 4,
-      "label": "service-down",
-      "sublabel": "1",
-      "tag": "점검",
+      "label": "기타 루트",
+      "sublabel": "3",
+      "tag": "service-down · 404 · redirect",
       "size": [
         128,
         54

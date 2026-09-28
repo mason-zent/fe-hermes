@@ -5878,7 +5878,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         &lt;ul&gt;
           &lt;li&gt;&amp;bull; 이름이 비슷한 카드·자료·예상세액도 query·atom·오류 타입이 도메인마다 따로다 — 종소세 globalIncomeCardList, 부가세 vatCardList&lt;/li&gt;
           &lt;li&gt;&amp;bull; card-expense 화면 세트(detail·input-password·masked-cardlist·summary·upload-file)가 두 도메인에 각각 복제돼 있다. 한 항목을 고치면 두 곳을 봐야 한다&lt;/li&gt;
-          &lt;li&gt;&amp;bull; 폴더 이름 규칙도 다르다 — vat 는 constants·types·utils(복수), payroll 은 constant·type·util(단수)&lt;/li&gt;
+          &lt;li&gt;&amp;bull; 폴더 이름 — 공통·기능 폴더는 NEWCARE-638 에서 kebab·복수형(constants·types·utils)으로 맞췄지만 라우트 폴더에는 camelCase 가 남아 있다(alreadyFinish·(simpleAuth))&lt;/li&gt;
           &lt;li&gt;&amp;bull; graphql 디렉터리가 라우트 옆에 흩어져 있다. 전체 236건이고 그중 루트가 6건이다&lt;/li&gt;
         &lt;/ul&gt;
       &lt;/div&gt;

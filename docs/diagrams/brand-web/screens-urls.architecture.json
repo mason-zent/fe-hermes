@@ -222,7 +222,7 @@
       "id": "termsP",
       "type": "frontend",
       "label": "약관 page",
-      "sublabel": "generateStaticParams · revalidate 3600",
+      "sublabel": "generateStaticParams · revalidate 선언",
       "pos": [
         724,
         130
