@@ -8,9 +8,9 @@
 `RouterProvider` → `AuthProvider(isUseCI: true)` → `EventTrackingProvider`(**mixpanel+airbridge+datadog+google**, datadog `appVersion: packageJSON.version`) → `Suspense` → `CiGuard` → `TooltipProvider` → `DialogProvider` → `NiceModal.Provider` → `SurveyGuard` → `SenaMainShell` → `PageContent`(`GlobalErrorBoundary`). `initializeReactNativeBridge(SERVICE_APP_ID)` + `sendBznavNativeMessage('setSignInInitialRoute')`, `registerUnauthorizedHandler(() => { setStatusSignOut(); router.push(PATHS.SIGN_IN) })`, `useForceAppUpdate()`, `import '@/styles/markdown.scss'`
 
 ## 데이터 — axios 없음, fetch 래퍼 2개가 관문 (`lib/utils/request.ts`)
-- `requestSenaV2Fetch(endpoint, platform, data?, options?)`: `NEXT_PUBLIC_SENA_API_SERVER`, `X-Platform` 헤더, 실패 body `code` → `handleAuthErrorCode`(401 전역)
+- `requestSenaV2Fetch(endpoint, platform, data?, options?)`: `NEXT_PUBLIC_SENA_API_SERVER`, `X-Platform` 헤더, 실패 body `code` → `handleAuthErrorCode` — HTTP 401 이 아니라 `code` 가 `INVALID_TOKEN`·`MISSING_USER_ID`·`USER_LOAD_ERROR`·`AUTH_REQUIRED` 일 때만(`lib/utils/auth-error-handler.ts`). 핸들러는 `SenaAppContent` 에서 등록되며 **푸시 구독 해제(`unsubscribePush`) 후 로그아웃**
 - `requestPartnerV2Fetch`: 순수 fetch → `app/api/partner/...` 내부 Route
-- `lib/api/*.ts`는 이 둘만 호출. **컴포넌트에서 직접 fetch 금지**가 사실상 규칙. API마다 회원/비회원(`X-Device-Id`)/임시(secret)/제휴사 4갈래 반복(`requestChat`/`requestGuestChat`/`requestSecretChat`/`requestPartnerChat`), 스트림 경로는 `ChatStreamCaller {variant}` + `buildChatStreamPath`
+- `lib/api/*.ts`는 대부분 이 둘만 호출. 예외: `terms.ts`(SSO)·`system.ts`(`/api/maintenance`)는 `@repo/common-utils` `requestFetch` 직접 — 인증 오류 코드 처리를 타지 않는다. **컴포넌트에서 직접 fetch 금지**가 사실상 규칙. **채팅 요청(completions)만** 회원/비회원(`X-Device-Id`)/임시(secret)/제휴사 4갈래(`requestChat`/`requestGuestChat`/`requestSecretChat`/`requestPartnerChat`), `/live`·`/status`·`/cancel` 은 `ChatStreamCaller` 3종(member·guest·partner, 임시는 member 경로), `/ack` 는 회원 전용. 스트림 경로는 `ChatStreamCaller {variant}` + `buildChatStreamPath`
 
 ## Jotai (`lib/stores/chat.ts`가 표준)
 - `export const xxxAtom = atom<T>(init)` 나열, **`atomWithStorage` 미사용**(plus와 대비). **파생 atom 적극**(`allChatListAtom`, `currentRoomKeyAtom`, `isAnsweringCurrentRoomAtom`). 스트림 `chatStreamsAtom: Record<streamId, ChatStream>`(`phase: 'loading'|'streaming'|'reconnecting'`). 상수 `NEW_CHAT_ROOM_KEY='new'`, `SECRET_CHAT_ROOM_KEY='secret'`도 스토어 파일에

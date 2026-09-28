@@ -23,7 +23,7 @@ Page.getLayout = (page: ReactElement) => (
 ## P3. Jotai (`useAtom` 71 · `useAtomValue` 64 · `useSetAtom` 20)
 - `export const xxxAtom = atom<T>(init)` / 파생 `atom(get => …)`(`lib/stores/survey/common.ts`)
 - **storage atom은 전부 sessionStorage**: `atomWithStorage('bznav_refund-token', null, createJSONStorage(() => sessionStorage))` — 5파일(`ads, auth, biz-message, cancel-data, survey/common`). localStorage 선례 없음
-- Provider: `_app.tsx` 전역 + **survey는 `SurveyProvider` 안 중첩 `JotaiProvider`**(스코프 격리, 추측)
+- Provider: `_app.tsx` 전역 + **survey는 `SurveyProvider` 안 중첩 `JotaiProvider`**(`components/survey/common/SurveyProvider.tsx`: AuthGuard → JotaiProvider → SurveyInitProvider 순서로 스코프 격리)
 - 함수형 sessionStorage 모듈도 공존: `lib/stores/refund/result-refund-data.ts`(TODO). `sessionStorage.getItem` 생 접근 여럿
 
 ## P4. xstate — **사용 0(설치만)**. 간편인증 폴링 등은 React state + Jotai. jspdf/html2canvas도 0

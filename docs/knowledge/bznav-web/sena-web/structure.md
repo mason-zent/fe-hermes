@@ -1,5 +1,5 @@
 # bznav-web apps/sena-web 구조 맵
-기준 `origin/prd-sena` `67795fe08`, 파일 236개, 최근 180일 커밋 220건(가장 활발). 경로 `apps/sena-web/` 기준. 레포 공통 `../common.md`.
+기준 `origin/prd-sena` `714b344`(2026-09-28 sync), 파일 249개. 최근 180일 커밋 220건(가장 활발, `67795fe08` 기준 집계). 경로 `apps/sena-web/` 기준. 레포 공통 `../common.md`.
 
 ## app/
 | 경로 | 역할 |
@@ -20,5 +20,5 @@
 
 ## 스크립트·설정
 - `dev`: `pnpm gen:env && next dev -p 3300 --turbo`(**gen:env 자동**, SSM loc). **`postbuild` 없음, next-sitemap 없음** — sitemap은 API 서버가 제공(rewrite)
-- `next.config.mjs`: assetPrefix `${CDN}/bznav-sena-web/${BUILD_ID}`(**유일하게 빌드 ID**), rewrite `/sitemap*.xml` → `NEXT_PUBLIC_SENA_API_SERVER`, redirect `/home` → `/`, `/calc/*` → `calc.bznav.com`
+- `next.config.mjs`: assetPrefix `${NEXT_PUBLIC_CDN_BASE_URL}/bznav-sena-web`(loc 은 `''`. 빌드 ID 는 붙지 않는다), rewrite `/sitemap*.xml` → `NEXT_PUBLIC_SENA_API_SERVER`, redirect `/home` → `/`, `/calc/*` → `calc.bznav.com`
 - `proxy.ts`(3앱 중 가장 무거움): ① `/content(s)/:id` BE 조회(1.5s) → 404/410이면 `/contents/gone` rewrite(404 + noindex) ② `bypassActionResponse` ③ Firebase 점검 설정 → `level: 'service'|'chat'` 리다이렉트 ④ working-platform·UTM·maintenance 쿠키. `matcher` 없음
