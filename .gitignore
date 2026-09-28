@@ -21,3 +21,6 @@ repos/
 
 # 작업 워크트리 (scripts/new-branch.sh 가 생성)
 .worktrees/
+
+# 현황판 휴지통 (삭제한 이슈·계획서 — 되살릴 수 있게 지우지 않는다)
+.board-trash/

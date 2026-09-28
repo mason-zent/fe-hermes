@@ -29,6 +29,7 @@ claude
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
+- `/board` — 현황판. 로컬 서버(`localhost:4700`)를 띄워 브라우저에서 실시간으로 본다 — 지금 동작 중인 에이전트, 계획서 칸반(계획·진행 중·리뷰·완료), `issues/` 의 이슈. 카드를 끌어 상태를 바꾸고 버튼으로 헤르메스에게 지시를 보낸다
 - `/branch` — 작업 브랜치·워크트리를 만든다. 레포별 PR base(`hermes.config.json` 의 `prBase`)에서 분기하고, 기본이 워크트리라 메인 체크아웃을 건드리지 않는다(여러 작업 동시 진행 가능). 디스패치 전에 쓴다
 - `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`. 다이어그램 근거 점검은 `node scripts/check-diagrams.mjs`
 - `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide 그림`은 다이어그램 목록(`docs/diagrams/index.html`)을 브라우저로 연다 — 작업 흐름 + 담당 서비스 9개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개는 심층 추가. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
@@ -43,7 +44,7 @@ hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 12개
 .claude/rules/            언어·코드·Git·디스패치 규칙
-.claude/skills/           /feature /bugfix /branch /review /status /monitor /sync /guide
+.claude/skills/           /feature /bugfix /branch /review /status /monitor /board /sync /guide
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/diagrams/            다이어그램 (Archify 생성. index.html 이 목록, 원본은 *.json, 재생성법은 그 폴더 README)
 docs/services.md          서비스 비교표
@@ -51,11 +52,13 @@ docs/knowledge/           지식 베이스: common/(팀 공통 규칙) · <레�
 docs/extending.md         스킬·에이전트 추가 방법 (/guide)
 docs/plan-template.*      계획서 템플릿 (md + 결정 콘솔 html)
 plans/{feature,bugfix,refactor,archive}/   작업계획서 (gitignore)
+issues/                   sync·다이어그램·리뷰에서 찾은 이슈 — 한 이슈 = 파일 하나 (형식은 그 폴더 README). 현황판 이슈 칸
 scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)
 scripts/verify/<레포>.sh   표준 검증 스크립트 (에이전트·reviewer 공용, 표 요약 출력)
 scripts/delegate.sh       위임을 herdr pane 에서 보이게 실행 (claude --agent <이름>)
 scripts/agent-monitor.py  백그라운드 서브에이전트 로그 실시간 모니터 (렌더러)
 scripts/monitor-pane.sh   모니터를 pane 에 띄움·재사용 (/monitor)
+scripts/board.sh          현황판 서버를 pane 에 띄우고 브라우저로 연다 (/board). 서버·화면은 scripts/board/
 scripts/archive-plans.sh  오래된 계획서 정리
 scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)
 scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)

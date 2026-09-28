@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>헤르메스 현황판</title>
+<style>
+  :root {
+    --bg: #f5f3ee; --panel: #ffffff; --line: #e4e0d6; --text: #23211d; --muted: #77726a;
+    --accent: #3b6fd8; --ok: #2f9e62; --warn: #c98a12; --bad: #d1463b; --idle: #9a958c;
+    --col-issue: #d1463b; --col-plan: #7a62c9; --col-doing: #3b6fd8; --col-review: #c98a12; --col-done: #2f9e62;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #16171a; --panel: #1f2125; --line: #2e3137; --text: #e8e6e1; --muted: #9a968e; --idle: #6d6a64; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, "Apple SD Gothic Neo", "Pretendard", system-ui, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+  header h1 { font-size: 16px; margin: 0; }
+  .live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--idle); display: inline-block; flex: none; }
+  .dot.on { background: var(--ok); box-shadow: 0 0 0 0 var(--ok); animation: pulse 1.6s infinite; }
+  .dot.off { background: var(--bad); }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); } 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+  .meta { margin-left: auto; font-size: 12px; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+  main { padding: 16px 20px 40px; display: grid; gap: 18px; }
+  h2 { font-size: 13px; margin: 0 0 8px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+  .agents { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .agent { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 4px; }
+  .agent .row { display: flex; align-items: center; gap: 8px; }
+  .agent .name { font-weight: 600; }
+  .agent .sub { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .pill.working { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .pill.blocked, .pill.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+  .pill.ready { color: #fff; background: var(--ok); border-color: var(--ok); }
+  .checks { font-size: 12px; color: var(--muted); display: grid; gap: 1px; }
+  .checks .ok { color: var(--ok); }
+  .pill.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .empty { color: var(--muted); font-size: 13px; padding: 10px 2px; }
+  .board { display: grid; grid-template-columns: repeat(5, minmax(220px, 1fr)); gap: 12px; align-items: start; overflow-x: auto; }
+  .col { background: color-mix(in srgb, var(--panel) 55%, var(--bg)); border: 1px solid var(--line); border-radius: 12px; padding: 10px; min-height: 120px; }
+  .col-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-weight: 600; font-size: 13px; }
+  .col-head .bar { width: 4px; height: 14px; border-radius: 2px; }
+  .col-head .count { margin-left: auto; color: var(--muted); font-weight: 500; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; margin-bottom: 8px; display: grid; gap: 5px; }
+  .card.flash { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { box-shadow: 0 0 0 2px var(--accent); } to { box-shadow: 0 0 0 0 transparent; } }
+  .card .title { font-weight: 600; line-height: 1.35; }
+  .card .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .card .line { font-size: 12px; color: var(--muted); }
+  .card .line b { color: var(--text); font-weight: 600; }
+  .card a { color: var(--accent); text-decoration: none; font-size: 12px; }
+  .progress { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--col-doing); }
+  .worktrees { display: flex; flex-wrap: wrap; gap: 8px; }
+  .wt { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
+  .card[draggable="true"] { cursor: grab; }
+  .card.dragging { opacity: .45; }
+  .col.drop { outline: 2px dashed var(--accent); outline-offset: -4px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  button, select, textarea { font: inherit; color: inherit; }
+  .btn { font-size: 12px; padding: 3px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .steps { display: grid; gap: 3px; margin-top: 8px; font-size: 12px; }
+  .steps .done { color: var(--ok); } .steps .running { color: var(--accent); } .steps .error { color: var(--bad); } .steps .warn { color: var(--warn); } .steps .wait, .steps .skip { color: var(--muted); }
+  .btn.danger { color: var(--bad); border-color: transparent; background: transparent; margin-left: auto; }
+  .btn.danger:hover { border-color: var(--bad); }
+  .btn:disabled { opacity: .5; cursor: progress; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .target { font-size: 12px; display: flex; align-items: center; gap: 6px; color: var(--muted); }
+  .target select { padding: 2px 6px; border-radius: 7px; border: 1px solid var(--line); background: var(--panel); }
+  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); width: min(640px, calc(100vw - 32px)); padding: 16px; }
+  dialog::backdrop { background: rgba(0,0,0,.35); }
+  dialog h3 { margin: 0 0 6px; font-size: 15px; }
+  dialog textarea { width: 100%; min-height: 130px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); line-height: 1.5; }
+  dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 720px) { header { flex-wrap: wrap; } .meta { margin-left: 0; } main { padding: 12px 16px 32px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>헤르메스 현황판</h1>
+  <span class="live"><span id="live-dot" class="dot"></span><span id="live-text">연결 중…</span></span>
+  <label class="target">지시 보낼 곳 <select id="target"></select></label>
+  <div class="meta"><span id="updated"></span><span id="sync"></span></div>
+</header>
+<main>
+  <section>
+    <h2>지금 동작 중</h2>
+    <div id="agents" class="agents"></div>
+  </section>
+  <section>
+    <h2>칸반</h2>
+    <div id="board" class="board"></div>
+  </section>
+  <section>
+    <h2>워크트리 (.worktrees)</h2>
+    <div id="worktrees" class="worktrees"></div>
+  </section>
+</main>
+<dialog id="ask">
+  <h3 id="ask-title">헤르메스에게 보내기</h3>
+  <div class="line" id="ask-to" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+  <textarea id="ask-text"></textarea>
+  <div class="line" id="ask-status" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+  <div class="row"><button class="btn" id="ask-cancel">취소</button><button class="btn primary" id="ask-send">보내기</button></div>
+</dialog>
+<dialog id="confirm">
+  <h3 id="confirm-title"></h3>
+  <div class="line" id="confirm-message" style="font-size:13px;margin-bottom:6px"></div>
+  <div class="steps" id="confirm-items"></div>
+  <div class="row"><button class="btn" id="confirm-no">취소</button><button class="btn primary" id="confirm-yes"></button></div>
+</dialog>
+<div class="toast" id="toast"></div>
+<script>
+  const TOKEN = '__BOARD_TOKEN__';
+  const COLUMNS = [
+    ['issue', '이슈', 'var(--col-issue)'],
+    ['plan', '계획', 'var(--col-plan)'],
+    ['doing', '진행 중', 'var(--col-doing)'],
+    ['review', '리뷰', 'var(--col-review)'],
+    ['done', '완료', 'var(--col-done)'],
+  ];
+  const STATUS_LABEL = { working: '작업 중', idle: '대기', blocked: '입력 대기', done: '끝남', unknown: '?' };
+  const esc = (value) => String(value ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+  const ago = (sec) => (sec < 60 ? `${sec}초 전` : sec < 3600 ? `${Math.round(sec / 60)}분 전` : `${Math.round(sec / 3600)}시간 전`);
+  let previous = new Map();
+  let lastState = null;
+  let targetPane = localStorage.getItem('board-target') || '';
+
+  // 카드 상태별 액션 — 헤르메스에게 보낼 지시문 초안. 보내기 전에 창에서 고칠 수 있다
+  const ACTIONS = {
+    issue: {
+      // 헤르메스가 직접 하지 않는다 — 라우팅 → 브랜치 확인 → 담당 에이전트 pane 디스패치 순서를 지시문에 박는다
+      open: [['처리 시작', (card) => `${card.id} 이슈를 맡는다. 순서대로 한다: ① git status --short --branch 로 담당 레포의 현재 브랜치·미커밋 변경을 먼저 보고한다(체크아웃·stash 하지 않는다) ② 이슈의 근거를 기준 ref 에서 git show·ls-tree 로 확인한다 ③ ${card.type === 'check' ? '확인 결과를 이슈 파일 끝에 "## 확인 결과 (날짜 · 에이전트)" 절로 파일:줄 근거와 함께 적는다' : '원인과 고칠 범위를 정리해 보고한다 — 코드는 수정하지 않는다(계획서 승인 뒤 헤르메스가 브랜치를 만들어 다시 맡긴다)'}. 이슈 파일 말고는 수정하지 않는다. 커밋하지 않는다.`, 'dispatch']],
+      planned: [['계획 보기', (card) => `${card.id} 이슈에 연결된 계획서${card.plan ? ` ${card.plan}` : ''} 상태를 알려줘.`]],
+      in_progress: [['진행 상황', (card) => `${card.id} 이슈 진행 상황을 알려줘.`]],
+    },
+    plan: {
+      planned: [['진행 지시', (card) => `${card.id} 계획서대로 진행하자. 결정 사항이 확정됐는지, 대상 레포 브랜치·미커밋 상태를 먼저 확인해 보고하고, 내 확인 뒤 /branch 로 워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄워줘(scripts/delegate.sh --cwd). 헤르메스가 직접 코드를 고치지 않는다.`]],
+      in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`]],
+      blocked: [['막힌 것 풀기', (card) => `${card.id} 가 막혀 있다(${card.blocked}). 무엇이 필요한지 정리해줘.`]],
+      ready_for_review: [['리뷰 요청', (card) => `${card.id} 를 reviewer 로 검증해줘. 계획서 경로와 대상 레포를 넘겨.`]],
+      done: [['정리', (card) => `${card.id} 작업이 끝났다. 커밋·PR 여부 확인하고 plans/archive 로 옮겨줘.`]],
+    },
+  };
+
+  const api = async (path, body) => {
+    const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Board-Token': TOKEN }, body: JSON.stringify(body) });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || response.status);
+    return result;
+  };
+  const toast = (message) => {
+    const element = document.getElementById('toast');
+    element.textContent = message;
+    element.classList.add('show');
+    setTimeout(() => element.classList.remove('show'), 2200);
+  };
+  // 브라우저 기본 confirm 대신 현황판 안의 확인 창 — 무엇이 남았는지 ✓/✗ 로 보여 준다
+  const askConfirm = ({ title, message = '', items = [], yes }) =>
+    new Promise((resolve) => {
+      const dialog = document.getElementById('confirm');
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-message').textContent = message;
+      document.getElementById('confirm-items').innerHTML = items.map((item) => `<span class="${item.ok ? 'done' : 'error'}">${item.ok ? '✓' : '✗'} ${esc(item.label)}</span>`).join('');
+      document.getElementById('confirm-yes').textContent = yes;
+      const finish = (answer) => { dialog.close(); resolve(answer); };
+      document.getElementById('confirm-yes').onclick = () => finish(true);
+      document.getElementById('confirm-no').onclick = () => finish(false);
+      dialog.oncancel = () => resolve(false);
+      dialog.showModal();
+    });
+
+  const moveTo = async (id, column) => {
+    // 완료는 사람이 옮긴다 — 조건이 덜 찼으면 무엇이 남았는지 보여 주고 한 번 더 묻는다
+    const target = (lastState?.cards || []).find((entry) => entry.id === id);
+    if (column === 'done' && target?.kind === 'issue' && target.doneCheck && !target.doneCheck.ready) {
+      const go = await askConfirm({
+        title: '아직 완료 조건이 다 채워지지 않았어요',
+        message: '아래 ✗ 항목이 남아 있습니다. 그래도 완료로 옮기시겠어요?',
+        items: target.doneCheck.checks,
+        yes: '그래도 완료로 옮기기',
+      });
+      if (!go) return render(lastState);
+    }
+    try {
+      await api('/api/move', { id, column });
+      toast(`'${COLUMNS.find((entry) => entry[0] === column)[1]}' 칸으로 옮겼어요`);
+      // 끝난 이슈의 워크트리 정리 — 미커밋 변경이 있으면 서버가 거부한다
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      if (column === 'done' && card?.kind === 'issue' && card.worktree?.exists) {
+        const remove = await askConfirm({
+          title: '이 이슈의 워크트리도 정리할까요?',
+          message: `${card.worktree.rel} — 커밋하지 않은 변경이 있으면 지우지 않고 알려 드려요.`,
+          yes: '워크트리 지우기',
+        });
+        if (remove) await api('/api/worktree-remove', { id, agent: card.agent }).then(() => toast('워크트리를 정리했어요')).catch((error) => toast(`워크트리를 지우지 못했어요: ${error.message}`));
+      }
+    } catch (error) {
+      toast(`옮기지 못했어요: ${error.message}`);
+    }
+  };
+
+  // 지시문 창
+  let pending = null; // { mode: 'pane' | 'dispatch', agent }
+  let currentJob = '';
+  const ICON = { wait: '○', running: '⏳', done: '✓', skip: '–', warn: '!', error: '✗' };
+  // 디스패치 단계 진행 — 팝업 안에 단계별로 그린다
+  const renderJob = (job) => {
+    if (job.id !== currentJob) return;
+    const box = document.getElementById('ask-status');
+    box.innerHTML = `<div class="steps">${job.steps.map((item) => `<span class="${item.state}">${ICON[item.state] || '·'} ${esc(item.label)}${item.detail ? ` — ${esc(item.detail)}` : ''}${item.sec != null && item.state !== 'wait' ? ` <span style="color:var(--muted)">(${item.sec}s)</span>` : ''}</span>`).join('')}</div>`;
+    if (job.state === 'done') {
+      currentJob = '';
+      setTimeout(() => {
+        document.getElementById('ask').close();
+        toast(`${job.agent} 에게 맡겼어요 · ${(job.result?.pane || '').split(' ')[0]}`);
+      }, 900);
+    } else if (job.state === 'error') {
+      currentJob = '';
+      box.innerHTML += `<div style="color:var(--bad);margin-top:6px">맡기지 못했어요: ${esc(job.error)}</div>`;
+      document.getElementById('ask-send').disabled = false;
+    }
+  };
+  let pendingId = '';
+  const ask = (title, text, mode = 'pane', agent = '', id = '') => {
+    pendingId = id;
+    const dialog = document.getElementById('ask');
+    const to = document.getElementById('ask-to');
+    if (mode === 'dispatch') {
+      const names = lastState?.agents || [];
+      to.innerHTML = `→ 담당 에이전트 <select id="ask-agent">${names.map((name) => `<option ${name === agent ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select> 를 그 레포 workspace 에 새 pane 으로 띄워요`;
+      if (!agent) to.innerHTML += ' — <b>이슈에 담당이 정해져 있지 않아요. 골라 주세요</b>';
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      if (card?.worktree) to.innerHTML += `<br>워크트리 <code>${esc(card.worktree.rel)}</code> ← ${esc(card.worktree.ref)} (detached${card.worktree.exists ? ', 이미 있어서 그대로 써요' : ', 새로 만들어요'}) · 담당을 바꾸면 그 에이전트의 레포에 만들어요`;
+    } else {
+      const pane = (lastState?.panes || []).find((entry) => entry.id === targetPane);
+      if (!pane) return toast('지시를 보낼 pane 이 없어요. 위쪽 "지시 보낼 곳" 에서 골라 주세요');
+      to.textContent = `→ ${pane.agent} (${pane.id})${pane.status === 'working' ? ' · 지금 작업 중이에요 — 끝난 뒤 이어서 처리돼요' : ''}`;
+    }
+    pending = { mode, id: pendingId };
+    setStatus('', '');
+    document.getElementById('ask-send').disabled = false;
+    document.getElementById('ask-title').textContent = title;
+    document.getElementById('ask-text').value = text;
+    dialog.showModal();
+  };
+  document.getElementById('ask-cancel').onclick = () => document.getElementById('ask').close();
+  // 팝업 안에 진행·오류를 보여 준다 — 알림(toast)은 모달 뒤에 가려 안 보인다
+  const setStatus = (message, tone) => {
+    const element = document.getElementById('ask-status');
+    element.textContent = message;
+    element.style.color = tone === 'error' ? 'var(--bad)' : tone === 'busy' ? 'var(--accent)' : 'var(--muted)';
+  };
+  document.getElementById('ask-send').onclick = async () => {
+    const text = document.getElementById('ask-text').value;
+    const sendButton = document.getElementById('ask-send');
+    if (sendButton.disabled) return;
+    sendButton.disabled = true;
+    setStatus('보내는 중이에요…', 'busy');
+    try {
+      if (pending?.mode === 'dispatch') {
+        const agent = document.getElementById('ask-agent').value;
+        const result = await api('/api/dispatch', { id: pending.id, agent, text });
+        // 202 — 진행은 SSE event: job 으로 온다 (renderJob)
+        currentJob = result.job;
+        setStatus('', '');
+        return;
+      }
+      await api('/api/action', { pane: targetPane, text });
+      document.getElementById('ask').close();
+      toast('보냈어요');
+    } catch (error) {
+      setStatus(`보내지 못했어요: ${error.message}`, 'error');
+      sendButton.disabled = false;
+    }
+  };
+  document.getElementById('target').onchange = (event) => {
+    targetPane = event.target.value;
+    try { localStorage.setItem('board-target', targetPane); } catch { /* 저장 못 해도 동작한다 */ }
+  };
+
+  const controls = (card) => {
+    const actions = ((ACTIONS[card.kind] || {})[card.status] || [])
+      .map(([label], index) => `<button class="btn" data-act="${index}" data-id="${esc(card.id)}">${label}</button>`)
+      .join('');
+    const movable = !card.archived;
+    return `<div class="actions">${actions}<button class="btn" data-act="free" data-id="${esc(card.id)}">직접 지시</button>
+      ${card.column === 'done'
+        ? `<button class="btn" data-archive="${esc(card.id)}" title="끝난 일을 보관하고 보드에서 치워요" style="margin-left:auto">아카이브</button>`
+        : movable ? `<button class="btn danger" data-delete="${esc(card.id)}" title="휴지통으로 옮겨요">삭제</button>` : ''}</div>`;
+  };
+
+  const agentCard = (item) => {
+    const status = item.status || 'unknown';
+    const dotClass = status === 'working' ? 'dot on' : status === 'blocked' ? 'dot off' : 'dot';
+    const where = item.kind === 'pane'
+      ? `${esc(item.id)} · ${esc(item.cwd)}${item.branch ? ` · 🌿 ${esc(item.branch)}` : ''}`
+      : `백그라운드 · ${ago(item.ageSec)}`;
+    const detail = item.kind === 'pane' ? item.title : item.lastTool || item.title;
+    return `<div class="agent">
+      <div class="row"><span class="${dotClass}"></span><span class="name">${esc(item.agent)}</span>
+        <span class="pill ${status === 'working' ? 'working' : status === 'blocked' ? 'blocked' : ''}">${STATUS_LABEL[status] || esc(status)}</span>
+        ${item.tool ? `<span class="pill">${esc(item.tool)}</span>` : ''}</div>
+      <div class="sub">${where}</div>
+      ${detail ? `<div class="sub" title="${esc(detail)}">${esc(detail)}</div>` : ''}
+      ${item.kind === 'subagent' && item.title && item.lastTool ? `<div class="sub">${esc(item.title)}</div>` : ''}
+    </div>`;
+  };
+
+  const planCard = (card, panes) => {
+    const typeLabel = card.type === 'task' ? '경량' : card.type;
+    const tags = [`<span class="pill">${esc(typeLabel)}</span>`, `<span class="pill">${esc(card.status)}</span>`];
+    if (card.blocked) tags.push(`<span class="pill bad">막힘</span>`);
+    const running = (card.agents || []).map((id) => panes.find((pane) => pane.id === id)).filter(Boolean);
+    for (const pane of running) tags.push(`<span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`);
+    const progress = card.progress ? `<div class="progress" title="${card.progress.checked}/${card.progress.total}"><i style="width:${Math.round((card.progress.checked / card.progress.total) * 100)}%"></i></div><div class="line">진행 ${card.progress.checked}/${card.progress.total}</div>` : '';
+    return `<div class="card" data-key="${esc(card.id)}" draggable="${!card.archived}">
+      <div class="title">${esc(card.title)}</div>
+      <div class="tags">${tags.join('')}</div>
+      ${card.statusNote ? `<div class="line">${esc(card.statusNote)}</div>` : ''}
+      ${progress}
+      ${card.blocked ? `<div class="line"><b>막힘</b> ${esc(card.blocked)}</div>` : ''}
+      ${card.next && card.column !== 'done' ? `<div class="line"><b>다음</b> ${esc(card.next)}</div>` : ''}
+      ${card.workRef ? `<div class="line">🌿 ${esc(card.workRef)}</div>` : ''}
+      <div class="line">${esc(card.id)}${card.updated ? ` · ${esc(card.updated)}` : ''}</div>
+      ${card.html ? `<a href="/${esc(card.html)}" target="_blank">결정 콘솔 열기 ↗</a>` : ''}
+      ${controls(card)}
+    </div>`;
+  };
+
+  // 이슈 카드 안에 합친 계획서 — 경로·진행·막힘·에이전트
+  const linkedPlan = (card, panes) => {
+    const plan = card.linkedPlan;
+    if (!plan) return '';
+    const running = (plan.agents || []).map((id) => panes.find((pane) => pane.id === id)).filter(Boolean);
+    const bar = plan.progress ? `<div class="progress"><i style="width:${Math.round((plan.progress.checked / plan.progress.total) * 100)}%"></i></div>` : '';
+    return `<div class="line">📋 <b>계획</b> ${esc(plan.status)}${plan.progress ? ` · 진행 ${plan.progress.checked}/${plan.progress.total}` : ''}${running.map((pane) => ` · <span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`).join('')}</div>
+      ${bar}
+      ${plan.blocked ? `<div class="line"><b>막힘</b> ${esc(plan.blocked)}</div>` : ''}
+      <div class="line" title="${esc(plan.id)}">${esc(plan.id.replace('plans/', ''))}</div>`;
+  };
+
+  const issueCard = (card, panes = []) => {
+    const tags = [];
+    if (card.repo) tags.push(`<span class="pill">${esc(card.repo)}</span>`);
+    tags.push(`<span class="pill">${card.agent ? `🤖 ${esc(card.agent)}` : '담당 미정'}</span>`);
+    const check = card.doneCheck;
+    if (check?.ready && card.column !== 'done') tags.push('<span class="pill ready">완료 가능</span>');
+    if (card.type) tags.push(`<span class="pill">${esc(card.type)}</span>`);
+    if (card.severity) tags.push(`<span class="pill ${card.severity === 'high' ? 'bad' : card.severity === 'medium' ? 'warn' : ''}">${esc(card.severity)}</span>`);
+    return `<div class="card" data-key="${esc(card.id)}" draggable="true">
+      <div class="title">${esc(card.title)}</div>
+      <div class="tags">${tags.join('')}</div>
+      ${card.summary ? `<div class="line">${esc(card.summary)}</div>` : ''}
+      <div class="line">${esc(card.source)}</div>
+      ${linkedPlan(card, panes)}
+      ${check && card.column !== 'done' && card.column !== 'issue' ? `<div class="checks">${check.checks.map((item) => `<span class="${item.ok ? 'ok' : ''}">${item.ok ? '✓' : '·'} ${esc(item.label)}</span>`).join('')}</div>` : ''}
+      <div class="line">${esc(card.id)}</div>
+      ${controls(card)}
+    </div>`;
+  };
+
+  const render = (state) => {
+    lastState = state;
+    const agents = [...(state.panes || []), ...(state.subagents || [])];
+    document.getElementById('agents').innerHTML = agents.length
+      ? agents.map(agentCard).join('')
+      : `<div class="empty">${state.herdr ? '지금 돌고 있는 에이전트가 없어요' : 'herdr 를 찾지 못했어요 — herdr 안에서 현황판을 띄우면 pane 이 보여요'}</div>`;
+
+    const cards = state.cards || [];
+    document.getElementById('board').innerHTML = COLUMNS.map(([key, label, color]) => {
+      const inColumn = cards.filter((card) => card.column === key).sort((left, right) => right.mtime - left.mtime);
+      const body = inColumn.map((card) => (card.kind === 'plan' ? planCard(card, state.panes || []) : issueCard(card, state.panes || []))).join('') || '<div class="empty">비어 있어요</div>';
+      return `<div class="col" data-col="${key}"><div class="col-head"><span class="bar" style="background:${color}"></span>${label}<span class="count">${inColumn.length}</span></div>${body}</div>`;
+    }).join('');
+
+    const worktrees = state.worktrees || [];
+    document.getElementById('worktrees').innerHTML = worktrees.length
+      ? worktrees.map((wt) => `<div class="wt">📁 ${esc(wt.repo)} · 🌿 ${esc(wt.branch)}${wt.dirty ? ` · ✎${wt.dirty}` : ''}</div>`).join('')
+      : '<div class="empty">비어 있어요</div>';
+
+    // 바뀐 카드만 잠깐 반짝인다
+    const next = new Map(cards.map((card) => [card.id, JSON.stringify(card)]));
+    if (previous.size) {
+      for (const [key, value] of next) {
+        if (previous.get(key) !== value) document.querySelector(`[data-key="${CSS.escape(key)}"]`)?.classList.add('flash');
+      }
+    }
+    previous = next;
+
+    // 지시 보낼 곳: 헤르메스 pane 먼저, 그다음 위임 에이전트 pane
+    const candidates = (state.panes || []).filter((pane) => pane.role !== 'other').sort((left, right) => (left.role === 'hermes' ? -1 : 1) - (right.role === 'hermes' ? -1 : 1));
+    if (!candidates.some((pane) => pane.id === targetPane)) targetPane = (candidates.find((pane) => pane.role === 'hermes') || candidates[0] || {}).id || '';
+    document.getElementById('target').innerHTML = candidates.length
+      ? candidates.map((pane) => `<option value="${esc(pane.id)}" ${pane.id === targetPane ? 'selected' : ''}>${esc(pane.agent)} · ${esc(pane.id)}</option>`).join('')
+      : '<option value="">(없음)</option>';
+
+    const findCard = (id) => (state.cards || []).find((card) => card.id === id);
+    document.querySelectorAll('[data-act]').forEach((button) => {
+      button.onclick = () => {
+        const card = findCard(button.dataset.id);
+        if (!card) return;
+        if (button.dataset.act === 'free') return ask('직접 지시', `${card.id} `);
+        const [label, build, mode] = ACTIONS[card.kind][card.status][Number(button.dataset.act)];
+        ask(label, build(card), mode || 'pane', card.agent || '', card.id);
+      };
+    });
+    document.querySelectorAll('[data-delete]').forEach((button) => {
+      button.onclick = async () => {
+        const card = findCard(button.dataset.delete);
+        if (!card) return;
+        const items = [{ label: card.id, ok: false }];
+        if (card.kind === 'issue' && card.linkedPlan?.id?.startsWith('plans/task/')) items.push({ label: `연결된 경량 계획서 ${card.linkedPlan.id}`, ok: false });
+        if (card.kind === 'issue' && card.worktree?.exists) items.push({ label: `이슈 워크트리 ${card.worktree.rel} (커밋 안 된 변경이 있으면 남겨요)`, ok: false });
+        if (card.kind === 'plan' && card.html) items.push({ label: `결정 콘솔 ${card.html}`, ok: false });
+        const go = await askConfirm({
+          title: `'${card.title}' 을(를) 삭제할까요?`,
+          message: '아래 항목을 휴지통(.board-trash/날짜/)으로 옮겨요. 필요하면 거기서 되살릴 수 있어요. 떠 있는 에이전트 pane 은 닫지 않아요.',
+          items,
+          yes: '휴지통으로 옮기기',
+        });
+        if (!go) return;
+        try {
+          const result = await api('/api/delete', { id: card.id });
+          toast(`휴지통으로 옮겼어요 (${result.moved.length}개)${result.notes?.length ? ` · ${result.notes.join(' · ')}` : ''}`);
+        } catch (error) {
+          toast(`삭제하지 못했어요: ${error.message}`);
+        }
+      };
+    });
+    document.querySelectorAll('[data-archive]').forEach((button) => {
+      button.onclick = async () => {
+        const card = findCard(button.dataset.archive);
+        if (!card) return;
+        const isIssue = card.kind === 'issue';
+        const items = [{ label: `${card.id} → ${isIssue ? card.id.replace('issues/', 'issues/archive/') : card.id.replace(/^plans\/([^/]+)\//, 'plans/archive/$1/')}`, ok: true }];
+        if (isIssue && card.linkedPlan?.id?.startsWith('plans/task/')) items.push({ label: `${card.linkedPlan.id} → plans/archive/task/`, ok: true });
+        if (isIssue && card.worktree?.exists) items.push({ label: `이슈 워크트리 ${card.worktree.rel} 정리 (커밋 안 된 변경이 있으면 남겨요)`, ok: true });
+        if (!isIssue && card.html) items.push({ label: `결정 콘솔 ${card.html} 도 함께`, ok: true });
+        const go = await askConfirm({
+          title: `'${card.title}' 을(를) 아카이브할까요?`,
+          message: '끝난 일을 보관 폴더로 옮기고 보드에서 치워요. 파일은 그대로 남아요.',
+          items,
+          yes: '아카이브',
+        });
+        if (!go) return;
+        try {
+          const result = await api('/api/archive', { id: card.id });
+          toast(`아카이브했어요 (${result.moved.length}개)${result.notes?.length ? ` · ${result.notes.join(' · ')}` : ''}`);
+        } catch (error) {
+          toast(`아카이브하지 못했어요: ${error.message}`);
+        }
+      };
+    });
+    document.querySelectorAll('.card[draggable="true"]').forEach((element) => {
+      element.ondragstart = (event) => { event.dataTransfer.setData('text/plain', element.dataset.key); element.classList.add('dragging'); };
+      element.ondragend = () => element.classList.remove('dragging');
+    });
+    document.querySelectorAll('.col[data-col]').forEach((column) => {
+      column.ondragover = (event) => { event.preventDefault(); column.classList.add('drop'); };
+      column.ondragleave = () => column.classList.remove('drop');
+      column.ondrop = (event) => {
+        event.preventDefault();
+        column.classList.remove('drop');
+        const id = event.dataTransfer.getData('text/plain');
+        const card = findCard(id);
+        if (card && card.column !== column.dataset.col) moveTo(id, column.dataset.col);
+      };
+    });
+
+    document.getElementById('updated').textContent = `마지막 변화 ${new Date(state.updatedAt).toLocaleTimeString('ko-KR')}`;
+    document.getElementById('sync').textContent = state.header?.sync ? `마지막 sync ${new Date(state.header.sync).toLocaleString('ko-KR')}` : '';
+  };
+
+  const connect = () => {
+    const source = new EventSource('/events');
+    source.onopen = () => {
+      document.getElementById('live-dot').className = 'dot on';
+      document.getElementById('live-text').textContent = '실시간';
+    };
+    source.onmessage = (event) => render(JSON.parse(event.data));
+    source.addEventListener('job', (event) => renderJob(JSON.parse(event.data)));
+    source.onerror = () => {
+      document.getElementById('live-dot').className = 'dot off';
+      document.getElementById('live-text').textContent = '서버 끊김 — 다시 연결 중';
+    };
+  };
+  // ?once — SSE 없이 한 번만 그린다 (캡처·확인용)
+  if (new URLSearchParams(location.search).has('once')) {
+    fetch('/api/state').then((response) => response.json()).then(render);
+  } else {
+    connect();
+  }
+</script>
+</body>
+</html>
