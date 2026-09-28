@@ -156,7 +156,7 @@ scripts/verify/bznav-web.sh <앱|packages/<pkg>>
 scripts/verify/zent-packages.sh <패키지명...>
 ```
 
-실행 전 확인할 것과 결과 해석은 `docs/knowledge/common/verify.md`에 있다. 요약하면 Node 버전을 레포 `.nvmrc`에 맞추고(`nvm use`), 생성물(Orval·Relay)이 없으면 타입 검사가 건너뛰어진다는 점이다. **실행하지 못한 검증을 통과한 것처럼 보고하지 않는다.**
+실행 전 확인할 것과 결과 해석은 `docs/knowledge/common/verify.md`에 있다. 요약하면 Node 버전을 레포 `.nvmrc`에 맞추고(`nvm use`), 생성물(Orval·Relay)이 없으면 타입 검사가 건너뛰어진다는 점이다. 워크트리를 검증할 때는 `HERMES_VERIFY_DIR=<워크트리>`를 붙인다(없으면 메인 체크아웃을 검증한다). **실행하지 못한 검증을 통과한 것처럼 보고하지 않는다.**
 
 ## 5. 작업 규칙 (2.2의 **필수 규칙** — 작업 종류와 무관하게 항상 적용)
 

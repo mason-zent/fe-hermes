@@ -18,3 +18,6 @@ plans/**/*.html
 
 # 팀원별 로컬 레포 링크 (scripts/setup.sh 가 생성)
 repos/
+
+# 작업 워크트리 (scripts/new-branch.sh 가 생성)
+.worktrees/

@@ -16,7 +16,7 @@ argument-hint: "<티켓번호 또는 브랜치명> <대상...> — 예: REF-3820
 
 ## 기본은 워크트리다
 
-메인 체크아웃(`repos/<레포>`)을 건드리지 않고 `~/orca/workspaces/<레포>/<브랜치 슬러그>` 에 별도 작업 공간을 만든다.
+메인 체크아웃(`repos/<레포>`)을 건드리지 않고 `.worktrees/<레포>/<브랜치 슬러그>` 에 별도 작업 공간을 만든다.
 
 - **레포가 지저분해도 시작할 수 있다.** 미커밋 변경이 있거나 남이 다른 브랜치를 물고 있어도 무관하다
 - **한 레포에서 여러 작업을 동시에** 돌릴 수 있다 (bznav-web 은 이미 이 방식으로 워크트리 여러 개가 돌고 있다)
@@ -85,13 +85,13 @@ bznav-web 은 **모노레포**다. `bznav:care-web` 으로 딴 워크트리에�
 
 ```markdown
 - Work ref: refund `feature/REF-3820` (origin/dev 1eb6e63)
-            ~/orca/workspaces/client-brics-refund/feature-REF-3820
+            .worktrees/client-brics-refund/feature-REF-3820
 ```
 
 ### 5. 그 경로에서 에이전트를 띄운다
 
 ```bash
-scripts/delegate.sh refund-fe --cwd ~/orca/workspaces/client-brics-refund/feature-REF-3820
+scripts/delegate.sh refund-fe --cwd .worktrees/client-brics-refund/feature-REF-3820
 ```
 
 pane 하단 상태바에 `📁 client-brics-refund  🌿 feature/REF-3820  ⧉worktree` 로 뜬다. `⧉` 가 워크트리 표시다.
@@ -103,7 +103,7 @@ pane 하단 상태바에 `📁 client-brics-refund  🌿 feature/REF-3820  ⧉wo
 3. 작업이 끝나면 워크트리를 지운다
 
 ```bash
-git -C repos/<레포> worktree remove ~/orca/workspaces/<레포>/<슬러그>
+git -C repos/<레포> worktree remove .worktrees/<레포>/<슬러그>
 ```
 
 ## 주의
@@ -111,4 +111,4 @@ git -C repos/<레포> worktree remove ~/orca/workspaces/<레포>/<슬러그>
 - 이 스킬은 **브랜치와 작업 공간만** 만든다. 커밋·push·PR 은 사용자가 정한다 (`AGENTS.md` 5절)
 - bznav-web 은 앱이 여러 개여도 **레포가 하나**다. 두 앱을 같이 작업해도 워크트리는 하나만 만든다
 - 워크트리와 메인이 **같은 브랜치를 동시에** 물 수 없다. 이미 쓰는 브랜치면 건너뛴다
-- 워크트리 위치는 `HERMES_WORKTREE_ROOT` 로 바꿀 수 있다 (기본 `~/orca/workspaces`)
+- 워크트리 위치는 `HERMES_WORKTREE_ROOT` 로 바꿀 수 있다 (기본 hermes 의 `.worktrees/`. gitignore 되어 있다)
