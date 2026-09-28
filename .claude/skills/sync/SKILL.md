@@ -70,6 +70,26 @@ node scripts/sync-fingerprint.mjs --repo hub # 특정 레포
 
 6. **문서가 코드와 다르면 코드가 맞다.** 어느 쪽이 맞는지 확인할 수 없으면 고치지 말고 "확인 필요"로 남긴다.
 
+### 3.5단계: 다이어그램 근거 점검
+
+다이어그램은 커밋(`meta.repository.revision`)에 고정돼 있어 archify validate 는 계속 통과한다. 운영 코드가 바뀌어도 **그림만 조용히 낡는다**(2026-09-28 care-web 폴더 개명 때 실제로 그랬다). 그래서 sync 마다 근거를 다시 대조한다:
+
+```bash
+node scripts/check-diagrams.mjs
+```
+
+`sources` 가 있는 architecture JSON 전부를 운영 기준 ref(`origin/<branch>`, bznav 는 sources 경로의 앱으로 `prd-<앱>`)와 비교한다. 결과는 셋이다.
+
+| 결과 | 할 일 |
+|---|---|
+| ✅ 최신 | 없음 |
+| 🟡 커밋만 뒤처짐 (근거는 그대로) | `revision` 을 기준 ref 전체 SHA 로 올리고 validate → deliver 로 다시 만든다. 기계적인 일이라 이번 sync 에서 해도 된다 |
+| ❌ 어긋남 (경로 변경 · 줄 이동 · 줄 내용 사라짐 · 운영에 없는 커밋에 고정) | 코드를 읽고 JSON 을 고친 뒤 다시 만든다. 내용 판단이 필요하면 고치지 말고 보고서에 "확인 필요"로 남긴다 |
+
+- 다시 만드는 명령과 `--repo-root`(기준 ref 체크아웃)는 `docs/diagrams/README.md` "다시 만들기". 탭 번들은 그 폴더의 `build-bundle.py` 를 다시 돌린다
+- sequence·lifecycle·domains 처럼 `sources` 가 없는 장은 이 스크립트가 보지 못한다. 2단계 커밋 목록에서 그 화면이 바뀌었으면 사람이 본다
+- 다이어그램은 baseline 이 아니므로 **accept 를 막지 않는다.** 대신 5단계 보고에 이 표를 붙인다
+
 ### 4단계: baseline 확정
 문서 갱신이 끝나면:
 ```bash
@@ -98,6 +118,7 @@ ls .sync/pending/          # 무엇이 확정될지 눈으로 본다
 성공으로 보고하고 accept 하는 일이 가장 위험하다. 다음 sync 에서 같은 diff 를 다시 보지 못하게 되고, 문서는 틀린 채로 남는다.
 
 ### 5단계: 보고
+- 3.5단계 다이어그램 점검 표와 ❌ 항목 처리 결과(고침 / 확인 필요)
 - 레포별: 기준 브랜치 커밋 범위, 문서에 반영한 사실 목록(파일:항목), "확인 필요"로 남긴 항목
 - 변경 없는 레포는 한 줄로
 - 첫 실행(baseline 없음)이면: 지문 전체를 각 md 와 대조해 틀린 사실을 고친 결과를 보고하고 accept

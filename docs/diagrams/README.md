@@ -109,6 +109,8 @@ node $A/bin/archify.mjs deliver  architecture docs/diagrams/client-brics-refund.
   docs/diagrams/client-brics-refund.html --quality showcase --repo-root repos/client-brics-refund --json
 ```
 
+**근거 점검**: `node scripts/check-diagrams.mjs` 가 고정 커밋과 운영 기준 ref 를 비교해 경로 변경·줄 이동·운영에 없는 커밋을 알려준다. `/sync` 3.5단계에서 돈다.
+
 다이어그램을 추가하면 **`node scripts/build-diagram-index.mjs`** 를 돌린다. `index.html` 은 실제 파일 목록에서 생성되므로 손으로 카드를 늘리지 않는다.
 
 **`validate` 가 9개 검사를 모두 통과해야 showcase 합격이다.** 4개만 나오면 기본 검증이지 합격이 아니다. `deliver` 가 0 이 아닌 종료 코드를 내면 실패이며, 이전 HTML 이 그대로 남는다.
