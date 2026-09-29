@@ -298,7 +298,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
-      <span>agents 13 · skills 7</span>
+      <span>agents 13 · skills 11</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
 <!-- END:generated:last-sync -->
@@ -567,6 +567,19 @@ claude
           </dl>
 <pre><code>/board          # 띄우고 브라우저 열기
 /board stop     # 끄기</code></pre>
+        </article>
+
+        <article class="cmd">
+          <div class="cmd-head"><kbd>/diagram <span class="arg">서비스 · 점검 (선택)</span></kbd><span class="tag plain">다이어그램</span></div>
+          <p class="what">담당 서비스의 다이어그램을 <strong>운영 기준 브랜치 코드로 다시 그립니다.</strong> 서비스마다 작업자 하나가 <code>docs/diagrams/AUTHORING.md</code>(공통)와 <code>guides/&lt;서비스&gt;.md</code>(서비스별)를 읽고 구조 · 화면 맵 · 요청 흐름을, 비즈넵 웹 5개와 모바일 앱은 화면 전수 심층 번들까지 고칩니다. 헤르메스가 archify 검사(9/9) · 화면 전수 대조 · 근거 점검을 다시 돌리고 목록을 갱신합니다. <strong>그리다 찾은 코드 문제는 <code>issues/</code> 에 등록</strong>돼 현황판에 뜹니다. 서비스를 안 주면 전체(작업자 10개, 5개씩 두 번)라 오래 걸립니다.</p>
+          <div class="flow"><span>기준 ref 체크아웃</span><span>서비스별 작업자</span><span class="hi">검증 · 목록 · 이슈</span></div>
+          <dl>
+            <dt>언제</dt><dd>구조가 크게 바뀐 서비스를 다시 그릴 때, 코드 문제를 훑어 이슈로 모을 때. 변경만 따라가려면 <code>/diagram 점검</code> 이나 <code>/sync</code></dd>
+            <dt>결과</dt><dd>서비스별 validate · 화면 전수 표, 등록한 이슈. 커밋은 확인 후</dd>
+          </dl>
+<pre><code>/diagram brand      # brand-web 만
+/diagram            # 전체 10개
+/diagram 점검       # 다시 그리지 않고 근거만</code></pre>
         </article>
 
         <article class="cmd wide">

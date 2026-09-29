@@ -34,6 +34,7 @@ claude
 - `/board` — 현황판. 로컬 서버(`localhost:4700`)를 띄워 브라우저에서 실시간으로 본다 — 지금 동작 중인 에이전트, 계획서 칸반(계획·진행 중·리뷰·완료), `issues/` 의 이슈. 카드를 끌어 상태를 바꾸고 버튼으로 헤르메스에게 지시를 보낸다
 - `/branch` — 작업 브랜치·워크트리를 만든다. 레포별 PR base(`hermes.config.json` 의 `prBase`)에서 분기하고, 기본이 워크트리라 메인 체크아웃을 건드리지 않는다(여러 작업 동시 진행 가능). 디스패치 전에 쓴다
 - `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`. 다이어그램 근거 점검은 `node scripts/check-diagrams.mjs`
+- `/diagram` — 다이어그램 다시 그리기. 서비스를 주면(`/diagram brand`) 그 서비스만, 비우면 전체. 운영 기준 코드로 그리고 검증·목록 갱신, 그리다 찾은 문제는 `issues/` 등록. `/diagram 점검` 은 근거만 점검
 - `/guide` — 사용·확장 가이드를 터미널에 표시. `/guide 그림`은 다이어그램 목록(`docs/diagrams/index.html`)을 브라우저로 연다 — 작업 흐름 + 담당 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가. `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 에이전트/라우팅 · git 현황 · 문서)를 띄움(herdr / tmux), `/guide 열기`는 `docs/playbook.html`을 브라우저로
 
 에이전트를 직접 부를 수도 있다: "hub-fe로 메시지 큐 화면 컬럼 하나 추가해줘" (계획서 규칙은 헤르메스가 판단).
@@ -46,7 +47,7 @@ hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 13개
 .claude/rules/            언어·코드·Git·디스패치 규칙
-.claude/skills/           /feature /bugfix /call /branch /review /status /monitor /board /sync /guide
+.claude/skills/           /feature /bugfix /call /branch /review /status /monitor /board /sync /diagram /guide
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/diagrams/            다이어그램 (Archify 생성. index.html 이 목록, 원본은 *.json, 재생성법은 그 폴더 README)
 docs/services.md          서비스 비교표
