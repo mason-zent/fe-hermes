@@ -34,7 +34,7 @@
   - 토큰 평문 저장 → **반영됨**: 액세스 토큰은 `expo-secure-store`(`src/utils/secureStorage.ts`)
   - 탭 웹뷰 메시지 origin 검증 → **반영됨**: `*.bznav.com` + sender 3종(`webViewMessageHandler.ts`)
   - `originWhitelist: ["*"]` → **그대로**(`src/config/webView.ts`)
-  - `WebViewModal` 의 `onMessage` 는 **origin·sender 검증 없이** `closeWebView`·`onSignOut` 을 처리한다. 딥링크 v2 `OPEN_WEB_MODAL` 은 url 도메인을 검사하지 않는다(v1 `open` 은 `bznav.com` 만). 모달에 새 액션을 붙일 때 이 점을 고려한다
+  - `WebViewModal` 의 `onMessage` 는 **origin·sender 검증 없이** `closeWebView`·`onSignOut` 을 처리한다. 딥링크 v2 `OPEN_WEB_MODAL` 은 url 도메인을 검사하지 않는다(`src/handlers/deepLinkHandler.ts:188-200`). v1 도 도메인이 `bznav.com` 으로 **끝나는지가 아니라 그 문자열이 들어 있는지만** 본다(`deepLinkHandler.ts:287` `domain.includes("bznav.com")`). 같은 부분 문자열 검사가 **웹뷰 안 링크 클릭 분류**에도 따로 있다 — `src/utils/linkHandler.ts:127` `handleLinkClick`(호출: `BottomTabWebView.tsx:333`·`WebViewModal.tsx:142`·`useChannelTalk.ts:195`). 둘 다 탭 웹뷰 메시지의 `hostname.endsWith(".bznav.com")`(`webViewMessageHandler.ts:66`)보다 느슨하다. 모달에 새 액션을 붙일 때 이 점을 고려한다
   - 로그 노출 → `APP_VARIANT=production` 번들은 babel·metro 가 `console.log` 를 제거. development 변형은 남는다 — 브릿지 메시지 `data` 는 무조건 로그, axios 요청 헤더(`Authorization` 포함)·바디는 `__DEV__`(디버그 번들)에서 찍힌다
   - 401·토큰 만료 처리는 없다(`src/config/axios.ts` `// TODO`)
 

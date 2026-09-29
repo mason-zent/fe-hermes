@@ -63,6 +63,19 @@ skip_step() {
   fi
 }
 
+# mark_skipped <단계 번호> <이유> — 이미 돈 단계를 그 자리에서 "건너뜀"으로 바꾼다(예: 도구 설정 오류로 실행 자체가 안 된 경우).
+# 배열을 지웠다 다시 만들지 않는다(bash 3.2 + set -u 에서 빈 배열 펼치기가 죽는다). 엄격 모드 판정은 skip_step 과 같다
+mark_skipped() {
+  local index="$1" reason="$2" result
+  if [ "${HERMES_VERIFY_STRICT:-0}" = 1 ] && ! printf '%s' "${HERMES_VERIFY_ALLOW_SKIP:-}" | tr '|' '\n' | grep -qxF "${STEP_NAMES[$index]}"; then
+    STEP_RESULTS[$index]="❌ 건너뜀(엄격 모드) — $reason"
+  else
+    STEP_RESULTS[$index]="⏭ 건너뜀 — $reason"
+  fi
+  VERIFY_FAILED=0
+  for result in "${STEP_RESULTS[@]}"; do case "$result" in ❌*) VERIFY_FAILED=1 ;; esac; done
+}
+
 print_summary() { # print_summary <레포명> <레포경로>
   local repo="$1" path="$2" sha branch
   sha="$(git -C "$path" rev-parse --short HEAD 2>/dev/null || echo '?')"
