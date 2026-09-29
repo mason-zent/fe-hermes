@@ -237,7 +237,7 @@ draw() {
     fi
     ROW_OF[$i]=$row
     printf -v num '%2d' $((i+1))
-    desc=""; [ "$wide" = 1 ] && desc="  ·  ${DESCS[$i]}"
+    desc=""   # 항목 옆에 파일 경로를 붙이지 않는다 — 제목만 보여 준다(경로는 아래 설명에 있다)
     if [ "$i" -eq "$sel" ]; then
       frame+="  ${HL} ▶ ${num}  ${ICONS[$i]} ${TITLES[$i]}${desc} ${RESET}"$'\n'
     else
