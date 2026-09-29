@@ -315,8 +315,113 @@ const readHeader = () => {
   } catch {
     // sync 기록 없음
   }
-  return { sync }
+  return { sync, usage: readUsage() }
 }
+
+// ── AI 사용량 ──────────────────────────────────────────────────────────
+// 설치된 AI CLI 를 PATH 에서 찾아, 사용량(요금제 한도 %)을 로컬에 남기는 CLI 만 그 값을 읽어 보여 준다.
+// 새 CLI 는 읽는 함수를 만들어 AI_CLIS 에 한 줄 추가하면 된다
+// resets_at 은 ISO 문자열 또는 epoch 초로 올 수 있어 ms 로 맞춘다
+const toMs = (value) => {
+  if (typeof value === 'number') return value < 1e12 ? value * 1000 : value
+  const parsed = Date.parse(value ?? '')
+  return Number.isNaN(parsed) ? null : parsed
+}
+// 창 길이(분) → 표시 이름
+const windowLabel = (minutes) => {
+  if (minutes === 300) return '5시간'
+  if (minutes === 10080) return '주간'
+  if (minutes % 1440 === 0) return `${minutes / 1440}일`
+  if (minutes % 60 === 0) return `${minutes / 60}시간`
+  return `${minutes}분`
+}
+// at 은 분 단위로 내려 값이 들어올 때마다 화면을 다시 그리지 않게 한다
+const toMinute = (ms) => Math.floor(ms / 60_000) * 60_000
+
+// Claude — scripts/board/statusline.sh 가 statusline 입력에서 떨군 파일
+const readClaudeUsage = () => {
+  try {
+    const { at, rate_limits: limits } = JSON.parse(readFileSync(join(ROOT, '.board-usage.json'), 'utf8'))
+    const windows = [['five_hour', '5시간'], ['seven_day', '주간']]
+      .filter(([key]) => typeof limits?.[key]?.used_percentage === 'number')
+      .map(([key, label]) => ({ label, percent: Math.round(limits[key].used_percentage), resetsAt: toMs(limits[key].resets_at) }))
+    return windows.length ? { at: toMinute(at * 1000), windows } : null
+  } catch {
+    return null // 아직 statusline 이 한 번도 안 돌았거나 래퍼가 연결되지 않음
+  }
+}
+
+// Codex — 가장 최근 세션 로그(~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl)의 마지막 token_count 이벤트
+// 로그가 커질 수 있어 끝부분만 읽고, 파일이 그대로면 이전 결과를 쓴다
+const CODEX_SESSIONS = join(homedir(), '.codex/sessions')
+let codexCache = { key: '', value: null }
+const newestChild = (dir, filter) => {
+  try {
+    return readdirSync(dir).filter(filter).sort().pop() ?? null
+  } catch {
+    return null
+  }
+}
+const newestCodexLog = () => {
+  let dir = CODEX_SESSIONS
+  for (let depth = 0; depth < 3; depth += 1) {
+    const child = newestChild(dir, (name) => /^\d+$/.test(name))
+    if (!child) return null
+    dir = join(dir, child)
+  }
+  const file = newestChild(dir, (name) => name.endsWith('.jsonl'))
+  return file ? join(dir, file) : null
+}
+const readCodexUsage = () => {
+  const path = newestCodexLog()
+  if (!path) return null
+  try {
+    const { mtimeMs, size } = statSync(path)
+    const key = `${path}:${mtimeMs}:${size}`
+    if (codexCache.key === key) return codexCache.value
+    const text = readFileSync(path, 'utf8')
+    const lines = text.slice(Math.max(0, text.length - 512 * 1024)).split('\n').reverse()
+    let value = null
+    for (const line of lines) {
+      if (!line.includes('"rate_limits"')) continue
+      try {
+        const entry = JSON.parse(line)
+        const limits = entry.payload?.rate_limits
+        const windows = [limits?.primary, limits?.secondary]
+          .filter((win) => typeof win?.used_percent === 'number')
+          .map((win) => ({ label: windowLabel(win.window_minutes), minutes: win.window_minutes, percent: Math.round(win.used_percent), resetsAt: toMs(win.resets_at) }))
+          .sort((left, right) => left.minutes - right.minutes)
+        if (windows.length) value = { at: toMinute(Date.parse(entry.timestamp) || mtimeMs), windows }
+        break
+      } catch {
+        // 잘린 줄 — 다음 줄
+      }
+    }
+    codexCache = { key, value }
+    return value
+  } catch {
+    return null
+  }
+}
+
+const AI_CLIS = [
+  { id: 'claude', label: 'Claude', bin: 'claude', read: readClaudeUsage },
+  { id: 'codex', label: 'Codex', bin: 'codex', read: readCodexUsage },
+]
+// PATH 에서 실행 파일 찾기 — 1분마다만 다시 본다
+const PATH_DIRS = [...new Set([...(process.env.PATH ?? '').split(':'), join(homedir(), '.local/bin'), '/opt/homebrew/bin', '/usr/local/bin'])].filter(Boolean)
+let installedCache = { at: 0, ids: [] }
+const installedClis = () => {
+  if (Date.now() - installedCache.at > 60_000) {
+    installedCache = { at: Date.now(), ids: AI_CLIS.filter((cli) => PATH_DIRS.some((dir) => existsSync(join(dir, cli.bin)))).map((cli) => cli.id) }
+  }
+  return AI_CLIS.filter((cli) => installedCache.ids.includes(cli.id))
+}
+const readUsage = () =>
+  installedClis().map((cli) => {
+    const usage = cli.read()
+    return { id: cli.id, label: cli.label, at: usage?.at ?? null, windows: usage?.windows.map(({ label, percent, resetsAt }) => ({ label, percent, resetsAt })) ?? [] }
+  })
 
 // ── 모으기 ──────────────────────────────────────────────────────────────
 const collect = async () => {
