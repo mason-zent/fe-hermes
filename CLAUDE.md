@@ -73,7 +73,7 @@
 
 ### 6단계: 정리
 - 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 계획서 `plans/archive/<유형>/`(md+html), 이슈 `issues/archive/`(+ 연결 경량 계획서), 이슈 워크트리 정리(미커밋·push 안 된 커밋이 있으면 남긴다)
-- 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지. **완료로 옮기는 건 사용자**
+- 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
 - 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
 ---
