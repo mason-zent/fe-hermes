@@ -1,9 +1,9 @@
 # bznav-web apps/care-web 구조 맵
 
-기준 `origin/prd-care` `631c155a7` (2026-09-16), 파일 2,470개. 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
+기준 `origin/prd-care` `bdc96ff26` (2026-09-29 점검 · 지문과 같음). 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
 
 ## 앱 성격
-- Next 16.2.5 App Router, `output: 'standalone'`, dev 3100 `--turbo`. **모든 라우트가 동적 렌더**: `app/layout.tsx`의 `await getServerWorkingPlatform()`(sena와 같은 관례, 랜딩 SEO용 서버 HTML)
+- App Router(버전은 지문·catalog), `output: 'standalone'`, dev 3100 `--turbo`. **모든 라우트가 동적 렌더**: `app/layout.tsx`의 `await getServerWorkingPlatform()`(sena와 같은 관례, 랜딩 SEO용 서버 HTML)
 - `'use client'` **1,376파일** — 클라이언트 컴포넌트가 기본. 서버 컴포넌트는 `cs-center`, `api/*`, 메타데이터 전용 layout
 
 ## app/ 라우트 (파일 수)
@@ -35,7 +35,7 @@
 ## 루트 폴더
 - `components/common/`: `app-side-bar/`(shadcn 복사본 sidebar·sheet), `auth/CareAuthGuard.tsx`, `errors/`, `event-logger/ViewEventLogger`, `guard/HometaxGuard`, `layout/CareLayout`, `logo-top-navigation/`, `pdf-components/`, `top-navigation/`, `loading-dot/`, `loading-fallback/`, `file-upload-dialog/` 등. **`components/common`·`libs`·기능 폴더는 kebab-case**(NEWCARE-638, `event-logger` 는 649. 파일명은 그대로). **라우트 폴더에는 camelCase 가 남아 있다**(`alreadyFinish`·`(simpleAuth)`·`(submitMaterial)`·`bankMaintenance` 등) — URL 세그먼트는 바뀌지 않았다. 빈도: `ClickEventLogger` 248 · `CareLayout` 216 · `ViewEventLogger` 161 · `CareAuthGuard` 15
 - `constants/`(20): **`paths.ts`**(430줄, `CARE_PATHS` 한글 키 + 도메인별 `*_PATHS` 객체, 참조 264파일), `careEvent`, `storageKey`(`STORAGE_KEYS`), `formSchema`, `metadata`, `abTestValue`, `vatPeriod` …
-- `hooks/`(30 공용) · `store/`(루트 atom 5) — 도메인 atom은 라우트 옆 `store/`(트리 전체 95파일)
+- `hooks/`(여러 라우트가 쓰는 공용 훅) · `store/`(루트 atom) — 도메인 atom은 라우트 옆 `store/`(트리 전체 95파일)
 - `libs/`: `relay/`(`relayEnvironment`, `fetchRelayFactory`), `provider/`(Care*Provider 7), `hoc/`(미들웨어 7 + compose), `event-logger/`(`useCareEventLogger`, `ClickEventLogger` 등), `channel-talk/`(`openChannelTalk`, `nativeBridge`), `kakao/`, `social/`, `image-resizer/`
 - GraphQL: 정의는 **라우트 옆 `graphql/`**(경로에 `/graphql/` 236파일) + 루트 `graphql/`(공용 6). `schema/schema-care.graphql`(커밋). `__generated__/`(`.gitignore`, md만)
 - 테스트: `__test__/unit/`(10, util 함수만), `jest.config.mjs`(next/jest, jsdom), `__mocks__/svgrMock.js`

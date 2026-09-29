@@ -3,9 +3,9 @@
 - **redirect `/` → `/calc`** — 실질 루트는 `/calc`. `/`에 페이지 만들어도 도달 불가
 - **`export const dynamic = 'force-dynamic'`가 루트 layout** — `RootLayoutContent` 가 쓰는 `@repo/platform` `useAppRouterAdapter`(`packages/platform/src/hooks/use-app-router-adapter.ts`) 안의 `useSearchParams` 때문에 정적 프리렌더 불가(layout 주석은 RootLayoutContent 자체가 쓴다고 적지만 파일에는 없다), Suspense로 감싸면 CSR로 빠져 SEO 손실(주석). **정적화 시도 전에 주석 필독**
 - **sitemap 화이트리스트 수동**(`INDEXABLE_PATHS`, `exclude: ['/*']`). 새 페이지는 기본적으로 sitemap에 없음
-- devDependencies `@repo/ui`(93, 최다)·`common-utils`(26)·`next-sitemap`(postbuild) 런타임 사용. `@types/recharts` 불필요 가능(추측)
+- devDependencies `@repo/ui`·`common-utils`·`next-sitemap`(postbuild) 런타임 사용. `@types/recharts` 불필요 가능(추측)
 - **`notion-client` 이름이 둘이다** — npm 패키지 `notion-client`(`NotionAPI`)는 `lib/api/get-notion-page-content.ts` 가 페이지 본문 조회에 쓰고, 동명의 자체 파일 `lib/api/notion-client.ts`(공식 API 순수 fetch)는 DB 행 조회에만 쓴다. 혼동 주의
 - `any` 잔존: `analysisResultAtom<any>`, `Renderer.tsx` `recordMap: any`, 차트 `CustomLabel(props: any)`. 확산 금지
 - **`주의`가 한글 등급 키**(`grade-variants.ts`) — 경고 주석이 아니라 도메인 값. grep 혼동
-- TODO 4: `CommonTopNavigation.tsx:56`(모바일 pressed 잔상), `CalcPriceUnit.tsx:18`(임시처리), `salary-contract.ts:30`(세액표 선형 탐색, 미이행 머지), `dp-logs/user-id.ts:7`
+- `lib/utils/calc/salary-contract.ts` 세액표는 선형 탐색(TODO, 미이행 상태로 머지)
 - agent.md "폼은 resolver 유지" → 실제 계산기는 resolver 없음(watch/setValue만), yup 은 간편인증과 운세(`use-fortune.ts` `yupResolver(biznoSchema)`)만. 코드 우선

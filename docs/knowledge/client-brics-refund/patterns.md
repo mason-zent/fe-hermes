@@ -17,7 +17,7 @@
 ## P2. 목록 / 테이블 / 페이지네이션
 - `partner/discount/_components/{Containers,ListTable}.tsx`
 - `const { data } = useXControllerGetList({ page: pageNo, pageSize: LIST_PAGE_PER_COUNT })` → `Table*` + 빈 상태 `<TableCell colSpan={N}>데이터가 존재하지 않습니다.</TableCell>` 또는 `<SkeletonTableBody rows cols/>` → `<Pagination className="mt-8" current totalItemsCount pagePerItemsCount onPageChange={p => router.push(`${pathname}?page=${p}`)}/>`
-- `LIST_PAGE_PER_COUNT`(=20, `lib/constants/common.ts`) 29파일. 응답은 `{ result, data, totalCount }` 래퍼가 흔함(`data?.data`, `data?.totalCount`)
+- `LIST_PAGE_PER_COUNT`(=20, `lib/constants/common.ts`) 26파일. 응답은 `{ result, data, totalCount }` 래퍼가 흔함(`data?.data`, `data?.totalCount`)
 - 행 클릭 이동 시 `?id=…&page=${searchParams.get('page') || 1}`로 페이지 보존
 
 ## P3. 필터·URL 상태 = URLSearchParams + router.push (URL이 단일 소스)
@@ -68,7 +68,7 @@ export default async function layout({ children }: { children: ReactNode }) {
 - ⚠️ `PERMISSION_PRIVATE_ACCESS` 권한 + 서버 쿠키(30분) + sessionStorage(`brics.privateAccess.expiresAt`) 3중 상태. **403 폴백 필수**
 
 ## P10. 업로드
-- xlsx: `app/_components/BaseFileUploader.tsx`(유일한 xlsx 사용처, `config.requiredColumns/transformData`, `onFileProcessed`)
+- xlsx: 공용은 `app/_components/BaseFileUploader.tsx`(`config.requiredColumns/transformData`, `onFileProcessed`). hometax-block은 전용 파서 `_components/FileParser.ts`(`await import('xlsx')`)
 - CSV 대량: `business-message/crm/_components/FileUploader.tsx`(검증만, 첫 8KB 헤더) + `lib/crmListUploadHelper.ts`(presign → XHR PUT(`text/csv`, 403=만료) → complete. axios 미의존 목적으로 XHR)
 - ZIP: `advertisement/landing-seo/_lib/landing-seo-zip.ts`(fflate + htmlparser2). 이미지 presigned POST. ad-slots는 `@resource-manager` `uploadResource`
 
@@ -94,7 +94,7 @@ export default async function layout({ children }: { children: ReactNode }) {
 ## 설치만 됨 / 도메인 전용 (관례로 적지 말 것)
 | 패키지 | 사용 파일 | 판정 |
 |---|---|---|
-| `xlsx` | 1 | BaseFileUploader 래퍼로만 |
+| `xlsx` | 2 | BaseFileUploader(공용)·hometax-block `FileParser`(동적 import) |
 | `react-dropzone` | 2 | 래퍼로만 |
 | `tailwind-merge` | 1 | 관례 아님(clsx 22) |
 | `@lottiefiles/react-lottie-player`, `uuid` | 1~2 | 관례 아님 |

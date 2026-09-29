@@ -7,7 +7,7 @@
 4. 메타데이터: 같은 폴더 `metadata.ts` + 서버 `layout.tsx` `export const metadata`
 5. 뷰 이벤트 `<ViewEventLogger careEvent={{category, object}}>`, 카테고리는 `constants/careEvent.ts`
 6. **전용 파일은 라우트 폴더 옆 `components/`, `hooks/`, `graphql/`, `store/`, `constants/`, `utils/`, `types/`**(NEWCARE-633 규칙). 루트 공용 폴더에 두지 말 것
-7. 검증: **Relay 아티팩트를 먼저 만든다** (`pnpm --filter care-web relay`) → `scripts/verify/bznav-web.sh care-web`. 스크립트는 **lint(항상) → 아티팩트가 있을 때만 type-check, 그리고 같은 분기 안에서 canvas 까지 있으면 test:unit** 순으로 돌고. ⚠️ 아티팩트가 없으면 canvas 가 있어도 `test:unit` 까지 통째로 건너뛴다, **Relay 를 생성해 주지 않는다.** 아티팩트가 없으면 타입 검증을 건너뛰고 그 사실을 표에 남긴다
+7. 검증: 아래 H
 
 ## B. 새 경로 상수
 1. `constants/paths.ts`에서 소속 객체 선택(`CARE_PATHS` / 도메인별 `*_PATHS`)
@@ -18,11 +18,11 @@
 1. `pnpm --filter care-web gen:schema:dev`(dev2/prd) → `schema/schema-care.graphql`(**커밋**)
 2. 라우트 옆 `graphql/<name>.ts`에 `graphql\`query <name>Query…\`` — union 응답은 `__typename` + `... on BaseError/TemporaryError`
 3. `pnpm --filter care-web relay` → `__generated__/`(커밋 안 함)
-4. 같은 도메인 `hooks/use<Name>.ts`(`'use client'`) 래퍼. 타입 `@/__generated__/<name>Query.graphql`
+4. 같은 도메인 `hooks/` 에 `'use client'` 래퍼 훅(새 파일은 `use-<name>.ts` kebab-case, 기존 `useXxx.ts` 는 개명하지 않는다). 타입 `@/__generated__/<name>Query.graphql`
 5. 호출 컴포넌트는 `Suspense` 안
 
 ## D. atom 추가
-- 라우트 `store/<name>Atom.ts`(전역은 루트 `store/`). 휘발 `atom<T>`, 영속은 P6의 3종 세트 + **`STORAGE_KEYS`에 키 추가**. 도메인 훅(`hooks/use<X>`)으로 감싸는 사례 많음
+- 라우트 `store/`(전역은 루트 `store/`). 새 파일은 `<name>-atom.ts` kebab-case(기존 `XxxAtom.ts` 는 그대로). 휘발 `atom<T>`, 영속은 P6의 3종 세트 + **`STORAGE_KEYS`에 키 추가**. 도메인 훅(`hooks/use<X>`)으로 감싸는 사례 많음
 
 ## E. 테스트 — `__test__/unit/<domain>/<name>.test.ts`, `@jest/globals`, `@/` alias, 순수 함수만. `pnpm --filter care-web test:unit`. 컴포넌트 테스트는 선례 없음(도입 시 합의)
 
@@ -32,9 +32,5 @@
 - `proxy.ts`의 `composeMiddleware` 인자 **앞쪽이 먼저**. 리다이렉트 시 `url.search = ''`로 쿼리를 비워 뒤쪽 미들웨어의 중복 리다이렉트를 막는다(NEWCARE-550). UTM은 점검 미들웨어가 쿠키로 저장해 유실 없음. **루프·쿼리 유실 반드시 확인**
 
 ## H. 검증
-```bash
-pnpm --filter care-web relay        # 먼저
-pnpm --filter care-web type-check
-pnpm --filter care-web lint
-pnpm --filter care-web test:unit
-```
+- `pnpm --filter care-web relay`(먼저 — 스크립트가 Relay 를 만들어 주지 않는다) → `scripts/verify/bznav-web.sh care-web`
+- 스크립트는 lint(항상) → 아티팩트가 있을 때만 `type-check` → 같은 분기에서 canvas 바이너리까지 있으면 `test:unit`. **아티팩트가 없으면 `test:unit` 까지 통째로 건너뛴다** — 표의 건너뜀을 그대로 보고

@@ -1,12 +1,12 @@
 # bznav-web apps/sena-web 함정
-- **`apps/sena-web/firebase-key.json`이 커밋되어 있음**(611B, 커밋 `9f5eca2de`). gitignore 규칙 없음. 코드 참조 0(앱은 공개 Storage URL `MAINTENANCE_SETTINGS_URL` 사용) → 런타임 미사용으로 보임(추측). **내용 출력·수정 금지, 사람이 자격증명 노출 여부 판단**
-- **`gen:env` 자동 실행**(SSM loc) — 자격증명 없으면 dev 실패
+- **`firebase-key.json`**(커밋 상태는 `../gotchas.md`): 코드 참조 0 — 앱은 공개 Storage URL `MAINTENANCE_SETTINGS_URL` 을 쓴다. 런타임 미사용으로 보임(추측)
 - redirect `/home` → `/`(`PATHS.HOME = '/'`). `/calc/*` → calc.bznav.com — sena 안에 `/calc` 라우트 만들면 도달 불가
 - **sitemap은 프론트가 만들지 않음** — next-sitemap 없음, API 서버 rewrite. 색인 조정은 `robots.txt`·백엔드
 - **`ChatContent`는 `layout.tsx`에서 렌더** — page로 옮기면 `/chat`↔`/chat/[id]` 전환 때 리마운트되어 스트리밍 로딩 깜빡임(주석)
 - **SSE 구분자 `<ENDLINE>`** — 표준 SSE 가정으로 파서 바꾸면 깨짐
-- `NEXT_PUBLIC_PARTNER_API_TOKEN`이 `NEXT_PUBLIC_` 접두인데 서버 Route에서만 사용 — 클라 번들 인라인 소지(추측, 번들 확인 필요)
+- `NEXT_PUBLIC_PARTNER_API_TOKEN`이 `NEXT_PUBLIC_` 접두인데 서버 Route 두 곳(`app/api/partner/v2/chat/completions/route.ts`, `.../streams/[requestUuid]/[action]/route.ts`)에서만 읽는다 — 클라 번들 인라인 소지(추측, 번들 확인 필요). **클라이언트 코드에서 참조하지 않는다.** 이름 변경은 env 소유자와 협의
+- **답변 ACK·웹 푸시는 대상 환경이 좁다**: `use-answer-ack.ts` 는 세나 회원(`isCurrentAppActive`) + 웹(`workingPlatformType === 'web'`) + 비제휴만 ACK 를 보내고 임시(secure) 채팅은 뺀다 — 앱 웹뷰는 탭을 옮겨도 주소·`visibilityState` 가 그대로라 "봤다"를 판정할 수 없어서다(주석). 웹 푸시(`lib/utils/web-push.ts` `isPushTargetPlatform`)는 여기에 모바일까지 뺀다. 앱 알림은 앱과 서버가 정한다(주석) — 대상 조건을 넓히기 전에 확인
 - **`auth.isCurrentAppActive`가 로그인 판정** — `auth.status`만 보면 세나 미가입자 오처리
-- devDependencies `@repo/ui`(71)·`common-utils`(19) 런타임 사용
-- `react-error-boundary` 1곳. 주석 경고 `ContentFooter.tsx:15`(spacing 토큰이 커스텀 값). TODO 0
+- devDependencies `@repo/ui`·`common-utils` 런타임 사용 — 임의로 옮기지 말 것
+- 주석 경고 `ContentFooter.tsx`(spacing 토큰이 커스텀 값)
 - agent.md는 `gen:env`·`app/chat` 상태만 언급. 레이아웃 렌더 위치, proxy 점검·gone 로직, 4갈래 API는 문서에 없음 → 코드 우선

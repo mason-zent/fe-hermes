@@ -23,10 +23,10 @@
 
 ## 3. 모달 — nice-modal-react는 쓰지 않는다 (사용처 0건)
 - `app/provider/NiceModalProvider.tsx`만 존재, `NiceModal.show` 0건
-- **제어형 Dialog(권장)**: `app/messages/templates/_components/TemplateCreateModal.tsx` — props `{ isOpen, onClose(values?), defaultValues?, isSubmitting? }`, `useId()`로 `formId` 만들어 푸터 `<Button form={formId} type="submit">`, `key={defaultValues?.key ?? 'new'}`로 폼 재마운트
+- **제어형 Dialog(권장)**: `app/messages/templates/_components/TemplateCreateModal.tsx` — props `{ isOpen, onClose(values?), defaultValues?, isSubmitting? }`, `useId()`로 `formId` 만들어 푸터 `<Button form={formId} type="submit">`, `key={defaultValues?.templateKey ?? 'new'}`로 폼 재마운트
 - 트리거 내장형(구형): `app/admin/@tabs/users/_components/UserCreateModalWithTrigger.tsx`
 - 확인 모달: `@ui/components/ConfirmModal` (`open/title/confirmLabel/cancelLabel/confirmButtonVariant/onClose/onClickConfirm`)
-- 제출 중 `onOpenChange`에서 닫기 차단. 열 때 초기화는 `{isOpen && <Form/>}` 또는 `useEffect(…, [target?.id])`
+- 제출 중 `onOpenChange`에서 닫기 차단(⚠️ 복사 원본 `TemplateCreateModal`은 버튼 `disabled`만 있고 `onOpenChange`에 `isSubmitting` 가드가 없다 — 복사 시 추가). 열 때 초기화는 `{isOpen && <Form/>}` 또는 `useEffect(…, [target?.id])`
 
 ## 4. 폼 (RHF + Zod)
 - **보고 따라라**: `app/messages/templates/_components/templateFormSchema.ts` + `TemplateCreateForm.tsx`
@@ -34,7 +34,7 @@
 - `useForm({ resolver: zodResolver(schema), defaultValues })` → `<Form {...form}><form id={formId}>` → `<FormField render={…<FormItem><FormLabel/><FormControl/><FormMessage/>}/>`
 - enum은 손으로 적지 않고 `import { CreateTemplateDtoChannel } from '@/generated/models'` + `z.nativeEnum(...)`
 - 폼 컴포넌트는 API를 모른다. `formId` + `onSubmit(values)`만 받고 mutation은 모달/페이지가 한다
-- ⚠️ 스키마·헬퍼에서 **값**을 가져올 땐 `@/swr` 배럴 말고 `@/generated/models`(배럴은 런타임 의존을 끌어와 jest가 깨진다). 타입만이면 `import type … from '@/swr'` OK
+- ⚠️ 스키마·헬퍼에서 **값**을 가져올 땐 `@/swr` 배럴 말고 `@/generated/models`(배럴은 런타임 의존을 끌어온다 — gotchas 참고). 타입만이면 `import type … from '@/swr'` OK
 
 ## 5. mutation + revalidate + 토스트
 - **보고 따라라**: `app/messages/templates/page.tsx`(기본) · `app/messages/queue/page.tsx`(광역 무효화)

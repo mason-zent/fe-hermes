@@ -7,7 +7,7 @@
 4. 필터가 많으면 `stores/use<Domain>Filters.ts`(zustand, setter에 `page: 1` 리셋. 유지 필요 시 `persist` + sessionStorage)
 5. `schemas/schemas.ts`(zod) → `_components/XxxForm.tsx`(`mode` 판별 유니온, zodResolver, 저장 확인 다이얼로그, `trigger()` → toast → `router.push`)
 6. `create/page.tsx`, `edit/[id]/page.tsx` — `'use client'` 얇은 래퍼
-7. 사이드바 메뉴는 이 레포에 없다(`@ui` RootWrapper/hub DB) → 보고에 "메뉴 등록 필요"
+7. 사이드바 메뉴는 이 레포 코드가 아니다 — `app/layout.tsx`의 `@ui` `RootWrapper` → zent-packages `brics/ui/src/components/RootSidebar`에 콘솔 URL로 **하드코딩**. 메뉴 추가는 packages-fe 선행 + 이 레포의 `brics-fe-ui` 버전 올림 → 보고에 "메뉴 추가 필요(packages-fe)"
 8. 검증 `scripts/verify/client-brics-care.sh`
 
 ## B. 컬럼·필터 추가
@@ -18,14 +18,14 @@
 ```bash
 pnpm genapi:local    # .env.local 의 NEXT_PUBLIC_API_URL 필요. rm -rf __generated__ → orval → mv
 ```
-- 생성물은 커밋한다. mutator는 `lib/orval-fetcher.ts` 직접 선언 유지. 갱신 후 `pnpm lint`
+- 생성물은 커밋한다. mutator는 `lib/orval-fetcher.ts` 직접 선언 유지. 갱신 후 `scripts/verify/client-brics-care.sh`(`pnpm lint`는 전 파일 `--fix`·`prettier --write`라 쓰지 않는다)
 
 ## D. env 생성 (`gen:env`, SSM)
 ```bash
 pnpm gen:env                                            # --env=dev --app=care → 루트 .env
 node generate-env.mjs --env=prd --app=care              # 다른 환경
 ```
-- 자격증명 `DEV_SSM_ACCESS_KEY_ID`/`..._SECRET_KEY_ID`(prd는 `PRD_*`). **자격증명이 없어도 빈 `.env`를 만들고 exit 0** → 변수 개수 로그 확인
+- 자격증명 `DEV_SSM_ACCESS_KEY_ID`/`..._SECRET_KEY_ID`(prd는 `PRD_*`). **SSM 조회가 실패해도 기본 변수 2개만 쓴 `.env`를 만들고 exit 0** → 개수만 보지 말고 필수 변수 키가 있는지 확인(값은 출력하지 않는다)
 - `genapi:local`은 `.env.local`을 본다. 두 파일이 다르니 최초 세팅 시 주의
 
 ## E. 권한 가드 추가

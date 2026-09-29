@@ -1,11 +1,11 @@
 # client-brics-refund 구조 맵
 
-기준 `origin/prd` `34966dd` (2026-09-14). `/sync`가 사실 부분을 갱신한다. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `1eb6e63`. `/sync`가 사실 부분을 갱신한다. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## 루트
 | 경로 | 역할 |
 |---|---|
-| `app/` | Next 15 App Router. page 52개, layout 26개. **전 화면이 `app/refund-service/<도메인>/<화면>`** 아래 |
+| `app/` | Next 15 App Router. page 52개, layout 26개. **업무 화면은 전부 `app/refund-service/<도메인>/<화면>`** 아래(시스템 라우트는 `app/` 바로 아래) |
 | `app/_components/` | 전역 공통 9개(DialogProvider, UnmaskToggle, BaseFileUploader, LoadingSpinner, NiceModalProvider, PrivateAccessDialog, SigninCard, AuthForm, PaginationLimitSelector) + `modals/UserSearchModal.tsx` |
 | `app/_lib/` | `masking.ts`, `privateAccess.ts`, `usePrivateAccessState.ts`, `hooks/`(useUnmaskedEndpoints, useCsvDownload 등 3개) |
 | `lib/` | `constants/`(common·advertisement·landing-seo·partner) · `types/`(도메인별 **zod 스키마** 15파일) · `utils/`(datetime·strings·api-error·image) · `swr/`(수동 훅 틀) · `orval-fetcher.ts` · `formdata.ts` · `crmListUploadHelper.ts` |
@@ -37,7 +37,7 @@
 | `research/{history,register}` | 조회/등록 | `PAGE_REFUND_RESEARCH` |
 | `simple-apply/create-link` | 검색→숏링크 | `PAGE_REFUND_SIMPLE_APPLY_LINK` |
 | `qa/{alimtalk,auto-login-link,hometaxerror,test-account}` | QA 도구 | 각 `PAGE_REFUND_QA_*` |
-| `api/{auth,logout,ping}` · `unauthorized` · `not-found` · `logout` | 시스템 | — |
+| (`refund-service` 밖) `app/api/{auth,logout,ping}` · `app/unauthorized` · `app/logout` · `app/not-found.tsx` | 시스템 | — |
 
 ## 스크립트
 | 명령 | 내용 |

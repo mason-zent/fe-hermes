@@ -1,6 +1,6 @@
 # bznav-web apps/refund-web 대표 패턴 파일
 
-경로 `apps/refund-web/` 기준, `origin/dev` `0b713b4`. **Pages Router 앱** — App Router 패턴(`app/`, `'use client'`, 서버 컴포넌트, `next/navigation`) 금지.
+경로 `apps/refund-web/` 기준, 운영 `origin/prd-refund`(기준 커밋은 `structure.md`). **Pages Router 앱** — App Router 패턴(`app/`, `'use client'`, 서버 컴포넌트, `next/navigation`) 금지.
 
 ## P1. 페이지 골격 — 함수 컴포넌트 + `Page.getLayout` + (필요시) 얇은 gSSP
 - `getLayout` 85파일(`_app.tsx`의 `PageContents`가 호출). gSSP 33/109, gSP 8/109, 나머지 순수 CSR
@@ -14,7 +14,7 @@ Page.getLayout = (page: ReactElement) => (
 `AuthGuard` 40파일, `DefaultLayout` 59파일. gSP에 데이터 없으면 `emptyStaticProps`(`lib/utils/common-ssr.ts`)
 
 ## P2. Relay
-- 정의는 **항상 `graphql/query|mutation/**`**, 페이지는 import만: `export const applyPossibleContentQuery = graphql\`query applyPossibleQuery($refundId: String!) {…}\``(`graphql\`` 66파일). 타입은 `@/graphql/__generated__/<opName>.graphql`(haste)
+- 정의는 **주로 `graphql/query|mutation/**`**, 페이지는 import만(예외: 컴포넌트에 query·fragment 를 직접 둔 곳이 몇 있다 — `components/event/share/InviteOverview.tsx`, `components/tax-refund/home/CorpsSection.tsx` 등): `export const applyPossibleContentQuery = graphql\`query applyPossibleQuery($refundId: String!) {…}\``(`graphql\`` 66파일). 타입은 `@/graphql/__generated__/<opName>.graphql`(haste)
 - 훅 빈도: `useMutation` 29 > `useLazyLoadQuery` 22 > `useQueryLoader`/`usePreloadedQuery` 19 > `useFragment` 3(홈 3곳)
 - **`useQueryLoader` + `usePreloadedQuery` 쌍이 survey 표준**: 페이지 `const [queryRef, loadQuery] = useQueryLoader(q)` → `useEffect`에서 `loadQuery(vars, { fetchPolicy: 'network-only' })` → `if (!queryRef) return <Spinner/>` → 자식 Container가 `usePreloadedQuery`(`pages/survey/business/signboard.tsx` + `components/survey/business/signboard/SignboardContainer.tsx`)
 - 명령형 `fetchQuery(relayEnvironment, q, vars).toPromise()`(`lib/hooks/refund/api/use-check-search-status.ts`). 뮤테이션은 `lib/hooks/**/api/use-*.ts` 래퍼로 commit + onCompleted/onError + toast/dialog(`use-apply-refund.ts`)
@@ -22,7 +22,7 @@ Page.getLayout = (page: ReactElement) => (
 
 ## P3. Jotai (`useAtom` 71 · `useAtomValue` 64 · `useSetAtom` 20)
 - `export const xxxAtom = atom<T>(init)` / 파생 `atom(get => …)`(`lib/stores/survey/common.ts`)
-- **storage atom은 전부 sessionStorage**: `atomWithStorage('bznav_refund-token', null, createJSONStorage(() => sessionStorage))` — 5파일(`ads, auth, biz-message, cancel-data, survey/common`). localStorage 선례 없음
+- **storage atom은 대부분 sessionStorage**: `atomWithStorage('bznav_refund-token', null, createJSONStorage(() => sessionStorage))`(`auth`, `biz-message`, `survey/common`). **예외 `lib/stores/ads.ts` `adLabIdsAtom` 은 localStorage**(광고 실험 배정 유지). 새 atom 은 데이터 수명으로 고른다
 - Provider: `_app.tsx` 전역 + **survey는 `SurveyProvider` 안 중첩 `JotaiProvider`**(`components/survey/common/SurveyProvider.tsx`: AuthGuard → JotaiProvider → SurveyInitProvider 순서로 스코프 격리)
 - 함수형 sessionStorage 모듈도 공존: `lib/stores/refund/result-refund-data.ts`(TODO). `sessionStorage.getItem` 생 접근 여럿
 
@@ -52,6 +52,8 @@ Page.getLayout = (page: ReactElement) => (
 ## P10. 폼 — RHF + yup **6파일만**(`simple-terms/*`, `phone-number`, `simple-auth/input`). 스키마 `lib/regex/*.ts`. 나머지 입력은 `useState` + `@repo/ui` `TextField`
 
 ## P11. 패키지 사용 — `@repo/ui` 201(Button/BoxButton, MainTitle, List, Svg, TextField, StickyBottomWrapper, `useToast`, `useDialog`, BaseTopNavigation) · `@repo/user-session` 63(`AuthProvider/AuthGuard/useAuthContext`) · `@repo/common-utils` 60 · `@repo/platform` 50(`useUTM`, `useWorkingPlatform`, `usePageRouterAdapter`) · `@repo/user-sign` 21 · `@zenterprise-inc/ui`(deprecated) 27 — 신규는 `@repo/ui`. 모달 nice-modal 30. 라우팅 `next/router` `useRouter` 123(`useCommonRouter` 1). 이미지는 생 `<img>` + CDN(`next/image` 4)
+
+## P11-1. 플랫폼 분기 — 토스 계열은 `useWorkingPlatform().isTossPlatform`(`@repo/platform`, `toss`·`tossincome`)으로 판정한다. `workingPlatform === 'toss'` 단일 비교를 새로 쓰지 않는다. 서버(gSSP)에서는 쿠키 `WORKING_PLATFORM_KEY` + `TOSS_APP_LIST.includes()`(`pages/auth/sign-out/index.tsx`). 토스 계열의 뒤로가기·헤더 숨김은 `components/layout/Layout.tsx` 가 처리하고, `RefundAppContents.tsx` 가 `AuthProvider isUseCI={!isTossPlatform}` 로 CI 인증을 끈다 — 페이지에서 따로 숨기지 않는다. 내 정보(`components/menu/**`)의 CI 인증·휴대폰 변경·회원탈퇴 진입도 토스 계열에서 뺀다(prd-refund `06c3fbf` 이후 REF-3652)
 
 ## P12. 홈택스 인증 — `select-method` → 간편(`simple-auth/input` → `confirm`|`confirm-auto`) / ID / 공동인증서(`install` → `select`). 훅 `lib/hooks/hometax-auth/api/use-hometax-auth.ts`(`useRequestSimpleAuthToken/PollingToken/ConfirmToken`), `use-simple-auth-status-polling.ts`. `?from=` → `simpleAuthFromTypeAtom` + `FROM_TYPE_CONFIG`. 자동 폴링은 `simpleAuthAuto*Atom` 분리. 대기열 `hometaxBlockSettingsAtom`. 공동인증서만 axios(`lib/utils/joint-certificate.ts`). 에러 매핑 `components/tax-refund/common/error/error.ts`
 

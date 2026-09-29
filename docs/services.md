@@ -11,7 +11,7 @@
 |---|---|---|---|---|---|
 | 에이전트 | refund-fe | hub-fe | care-fe | bznav-refund-fe, bznav-care-fe, bznav-brand-fe, bznav-sena-fe, bznav-plus-fe, bznav-packages-fe | op-fe |
 | 기준 브랜치 | `prd` | `prd` | `prd` | 앱별 brand `prd-brand` · care `prd-care` · plus `prd-plus` · refund `prd-refund` · sena `prd-sena` · packages `dev` | `prd` |
-| 기준 커밋 | `1eb6e63` (2026-09-14) | `fb5c7e3` (2026-09-03) | `8ed10df` (2026-08-20) | brand `7f052c0` · care `bdc96ff` · plus `edc6fe3` · refund `06c3fbf` · sena `714b344` | `4ac5be7` (2026-09-16) |
+| 기준 커밋 | `1eb6e63` (2026-09-14) | `fb5c7e3` (2026-09-03) | `8ed10df` (2026-08-20) | brand `7f052c0` · care `bdc96ff` · plus `edc6fe3` · refund `cf69fdb` · sena `714b344` | `4ac5be7` (2026-09-16) |
 | Next.js | 15.5.22 | 15.5.22 | 15.5.22 | 16.2.5 (app / pages) | 16.2.9 |
 | React | 19.2.8 | 19.2.8 | 19.2.8 | 19.2.6 | 19.2.7 |
 | Node / pnpm | 24.14.1 / 8.15.6 | 24.14.1 / 8.15.6 | 24.14.1 / 8.15.6 | 24.15.0 / 10.33.0 | >=24 / 10.20.0 |

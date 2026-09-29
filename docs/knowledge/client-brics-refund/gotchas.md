@@ -1,20 +1,23 @@
 # client-brics-refund 함정·이력
 
 - **README는 create-next-app 기본 템플릿 그대로**(포트 3000 안내). 실제 dev 포트 **13002**. 로그인·권한·Orval 설명 전무 → 신뢰하지 말 것
+- **`.github/` 지침 두 파일은 이름과 내용이 뒤바뀌어 있다** — 커밋 규칙은 `copilot-instructions.md`, Copilot 코드 규칙은 `git-commit-instructions.md`. 코드 규칙 쪽의 스택 버전·`@/swr`·nuqs·루트 `CLAUDE.md` 언급은 hub/care에서 옮겨 온 잔재라 이 레포와 맞지 않는다(버전은 지문, 코드 우선)
+- 원문 코드 규칙은 "항상 화살표 함수(`function` 선언 금지)"지만 `layout.tsx`·`page.tsx`는 `export default async function` 이 관례다. 같은 종류 파일의 기존 형태를 따른다
+- **eslint가 `any`를 허용한다**(`.eslintrc.js` `no-explicit-any: off`, 기존 코드에도 있음) → 검증 통과가 `any` 없음을 뜻하지 않는다. 새 코드는 `unknown` + narrowing
 - **코드 주석의 `pnpm genapi`는 존재하지 않는 스크립트**(hub 이름). 이 레포는 `gen:api:local` 하나뿐(dev용 없음)
-- **`__generated__`는 git 추적 대상**인데 `pnpm clean`·`gen:api:local`이 `rm -rf __generated__`로 시작 → 실패 시 대량 삭제 상태. `git checkout -- __generated__`
+- **`__generated__`는 git 추적 대상**인데 `pnpm clean`·`gen:api:local`이 `rm -rf __generated__`로 시작 → 실패 시 대량 삭제 상태. 복구 절차는 workflows C
 - **`typecheck`·`test` 스크립트 없음.** 타입 오류는 `pnpm build`에서만 드러나 "fix: 빌드에러 수정" 커밋이 반복됨. 표준 검증 스크립트가 `tsc --noEmit`을 대신 돌린다
 - `landing-seo/_lib/landing-seo-zip.test.ts`(node:test)는 실행 경로가 없어 방치 상태
 - **`axios`가 직접 의존성에 없음**(hoisted) → `import axios from 'axios'` 추가 금지. `crmListUploadHelper`가 XHR을 쓰고 `api-error.ts`가 `isAxiosError` 플래그를 검사하는 이유
 - **`AuthFunction` 값 추가는 이 레포에서 불가**(`@zent-auth` enum). landing-seo가 그래서 로그인만 검사 + TODO 상태. `advertisement/promotion/layout.tsx`는 landing-modals 권한을 그대로 검사(복붙 추정)
-- **모달 3방식 혼재**(`useDialog` 34 / shadcn Dialog 15 / nice-modal 7). 같은 도메인의 기존 방식을 따른다. `@ebay/nice-modal-react`를 관례로 적었던 기존 문서는 오류
+- **모달은 3방식 혼재** — 같은 도메인의 기존 방식을 따른다(개수·우선순위는 patterns P4). `@ebay/nice-modal-react`를 관례로 적었던 기존 문서는 오류
 - **별칭은 `@/generated/*`**. hub의 `@/swr`는 없다. 엔드포인트 디렉터리명이 **한글**이라 경로 자동완성·grep 시 주의
 - **시간대 함정**: `lib/utils/datetime.ts`의 `convertTimezoneISOString`은 종료일을 `hour-1:59:59`로 세팅, `convertToKSTISOString`은 입력에 `'Z'`를 붙여 UTC 가정(오프셋 있는 값에 쓰면 깨짐). `partner/discount` 목록은 `toISOString().substring(0,10)`(UTC)이라 KST 자정 근처 날짜가 하루 밀릴 수 있음. hometax-block·refund-overview는 `date-fns-tz`. 도메인마다 다르니 그 화면 관례를 따른다
-- **prd에서 `user/all`은 검색 조건(ern·name·email·phone)이 없으면 목록 대신 안내 문구를 보여 준다** — 조회 자체는 한다(`_components/Containers.tsx` `shouldShowSearchNotice`, 목록 훅은 `UserHandlerContext.tsx` 에서 마스킹 토글로만 켜고 끈다). 로컬/dev 에서는 전체 목록이 보여 버그 재현 시 혼동. `refund-overview` 도 같은지는 확인 필요
+- **prd에서 `user/all`·`refund-overview`는 검색 조건이 없으면 목록 대신 안내 문구를 보여 준다** — 조회 자체는 한다(상세는 patterns P3). 로컬/dev 에서는 전체 목록이 보여 버그 재현 시 혼동
 - `lib/orval-fetcher.ts`: orval은 re-export를 인식 못 함 → `fetcher`/`ErrorType`/`BodyType` 직접 선언 유지
 - `emergency/maintenance/_components/EditForm.tsx`의 `config[env]?.maintenanceSetting`은 임시 마이그레이션 코드(v.25.09.200 이후 제거 예정, 아직 남음)
-- `landing-seo-api.ts`: 버킷 CORS 미설정으로 업로드 `response.ok` 검사 생략 중(실패가 미리보기 깨짐으로만 드러남)
+- `landing-seo-api.ts`: 버킷 CORS 미설정으로 `verify` 없이 부르는 일반 업로드는 `response.ok`를 확인하지 않는다(실패가 미리보기 깨짐으로만 드러남). ZIP 임포트는 `verify: true`로 ok + CDN 이미지 로드까지 확인한다
 - `app/_components/PaginationLimitSelector.tsx`: `setLimit: SetStateAction<any>` 타입 오류 + `useEffect`·`onValueChange` 중복 호출
 - `hometax-block/m/page.tsx`는 `fixed inset-0 z-40` + body 스크롤 잠금 → Dialog(z-50) 외 전역 UI와 z-index 충돌 주의
 - `business-message/crm/_components/FileUploader.tsx` 주석은 필수 컬럼 4개라 하지만 코드는 3개(`name, phoneNumber, userErn`). 코드 우선
-- 공유 패키지 버전이 hub와 엇갈림: refund `brics-fe-ui ^0.3.3`/`zent-auth ^0.3.0`, hub `ui 0.2.4`/`zent-auth 0.4.0` → 한쪽 화면 코드를 그대로 옮기면 prop이 안 맞을 수 있음(추측)
+- 공유 패키지(`brics-fe-ui`·`zent-auth`) 버전대가 hub와 다르다(버전은 지문) → 한쪽 화면 코드를 그대로 옮기면 prop이 안 맞을 수 있음(추측)

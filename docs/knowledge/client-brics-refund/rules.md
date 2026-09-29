@@ -1,6 +1,6 @@
 # client-brics-refund 레포 규칙
 
-공통 규칙(`docs/knowledge/common/`)에 더해, 이 레포에서 다른 점과 고유 규칙. 레포 자체 규칙 문서는 없다(README만 — `gotchas.md` 참고: 기본 템플릿이라 신뢰하지 말 것).
+공통 규칙(`docs/knowledge/common/`)에 더해, 이 레포에서 다른 점과 고유 규칙. 레포 원문은 `.github/` 두 파일뿐인데 **이름과 내용이 뒤바뀌어 있다** — `copilot-instructions.md` = 커밋 규칙, `git-commit-instructions.md` = Copilot 코드 규칙(스택 표기 등 낡음). README는 기본 템플릿. 둘 다 `gotchas.md` 참고.
 
 ## 필수 — 작업 크기와 무관하게 항상 적용
 
@@ -17,7 +17,7 @@
 ## 구조·패턴
 - App Router. 도메인 화면은 `app/refund-service/<도메인>/`, 화면 전용 컴포넌트는 그 라우트의 `_components/`, 공통은 `app/_components/`, 공통 훅 `app/_lib/hooks/`
 - 클라이언트 컴포넌트는 `'use client'` 명시. `page.tsx`/`layout.tsx` 분리
-- **권한 가드는 `layout.tsx`에 둔다** (`middleware.ts`가 없다). `origin/prd` 확인 결과 `refund-service/**/layout.tsx` 25개 중 24개가 `auth()` → `session.user.functions.includes(AuthFunction.X)`(`advertisement/landing-seo/layout.tsx` 1개는 로그인 여부만 본다) → `redirect('/unauthorized')` 패턴이고 `page.tsx`에 가드를 둔 화면은 **0개**다. 복사 원본은 `partner/discount/layout.tsx`
+- **권한 가드는 `layout.tsx`에 둔다** (`middleware.ts`가 없다, `page.tsx` 가드 없음). 복사 원본 `partner/discount/layout.tsx`, 상세·예외는 patterns P8
 
 ## API
 - 손으로 API 클라이언트를 쓰지 않는다. `__generated__/`(Orval, 별칭 `@/generated/*`)에 있으면 그것을 쓰고, 없으면 `pnpm gen:api:local`(서버 기동 + `.env.local`)로 재생성
@@ -25,7 +25,7 @@
 
 ## 상태·모달·UI import
 - 전역 스토어 없음. URL 쿼리가 단일 소스(`useSearchParams` + `router.push`), 화면 공유는 `_components` 안 Context. nuqs·zustand·jotai 미설치
-- 모달은 도메인의 기존 방식을 따른다: `useDialog().showDialog` > shadcn Dialog > nice-modal(레거시 2곳)
+- 모달은 도메인의 기존 방식을 따른다: `useDialog().showDialog` > shadcn Dialog > nice-modal(레거시 — 모달 2종 LoadingSpinner·UserSearchModal)
 - 공용 UI는 `@ui/components/ui` **배럴 import**가 관례(hub와 반대). 신규 스타일은 Tailwind만, 병합은 `clsx`
 
 ## 공유 패키지
@@ -35,4 +35,4 @@
 ## Git
 - **문서·지식의 기준 브랜치는 `origin/prd`**(운영 반영분, 정본은 `hermes.config.json`). 이 폴더의 사실은 거기서 읽은 것이다
 - **개발 브랜치는 별개다** — PR base `dev`, 릴리즈 `release/v.YY.MM.NNN`. 두 개를 같은 것으로 취급하지 않는다
-- 커밋 `feat: REF-#### 설명` (레포 `.github/git-commit-instructions.md`: 한글, type만, 브랜치에 지라 번호가 있으면 2행 `Jira: REF-123`)
+- 커밋 메시지는 레포 `.github/copilot-instructions.md`(파일명과 내용 뒤바뀜): 한글, 제목은 `feat: 설명`(type만), 브랜치에 지라 번호가 있으면 2행 `Jira: REF-123`

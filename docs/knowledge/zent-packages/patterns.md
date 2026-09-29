@@ -1,6 +1,6 @@
 # zent-packages frontend/ 대표 패턴 파일
 
-경로는 레포 루트 기준, `origin/main` `b22d000`. brics(React 18 계열, 세미콜론 없음)와 bznav(React 19, 세미콜론 있음) **두 라인을 섞지 않는다**.
+경로는 레포 루트 기준, `origin/main` `bfa6be4`. brics(React 18 계열, 세미콜론 없음)와 bznav(React 19, 세미콜론 있음) **두 라인을 섞지 않는다**.
 
 ## P1. brics-fe-ui 컴포넌트 — 2계층
 - `src/components/ui/*` = shadcn 원본. 대표 `frontend/brics/ui/src/components/ui/button.tsx`: `cva()` variants → `interface ButtonProps extends …, VariantProps<typeof buttonVariants> { asChild? }` → `forwardRef` + `Slot` → `cn(buttonVariants({…}))` → `displayName` → **named export** `{ Button, buttonVariants }`
@@ -18,9 +18,9 @@
 
 ## P3. brics-fe-zent-auth
 - `lib/AuthOption.ts`: `serverAuthOptions satisfies NextAuthConfig`. Cognito(`checks:['state','nonce']`), 쿠키 `brics.session-token.<ZENT_ENV>`, domain loc=`localhost`/그 외 `.zent.kr`. **`MAX_AGE = 2h`, `UPDATE_AGE = 5m`**(슬라이딩은 updateAge가 만든다). `callbacks.redirect` 오픈 리다이렉트 차단 + `BASE_PATH`. `jwt`에서 `getMyInfo(id_token)`(`/users/zent/me`) → `{id,name,zenv,email,image,role,functions}`, 만료 시 Cognito refresh, 실패 `error:'RefreshAccessTokenError'`. `declare module 'next-auth'`로 `Session.id_token`·`User.{zenv,role,functions}` 보강
-- `lib/fetcher.ts`: 모듈 싱글턴 `AXIOS_INSTANCE`(baseURL `NEXT_PUBLIC_API_URL`, `qs.stringify(indices:false)`). request 인터셉터 `X-Requested-From` + `createDatadogTraceHeaders()`. response: **401 → `_retry` 1회 `/api/auth/session` 재조회 → 헤더 주입 → 재시도**, 실패 시 `handleSessionExpired()`(300ms 디바운스 alert + `signOut`). **인플라이트 디듀핑**(`inflightSessionRequest`). 인터셉터는 모듈 로드 1회
+- `lib/fetcher.ts`: 모듈 싱글턴 `AXIOS_INSTANCE`(baseURL `NEXT_PUBLIC_API_URL`, `qs.stringify(indices:false)`). request 인터셉터(**async**, 0.5.1~) `X-Requested-From` + `createDatadogTraceHeaders()`. 브라우저 요청에 `Authorization` 이 없으면 세션 부트스트랩(`sessionBootstrap`, 탭 수명당 1회 — 로그아웃 상태 반복 조회 방지)을 기다려 `defaults` 와 **이번 요청 `config.headers`** 에 직접 싣는다. 이후 토큰 갱신은 소비처 defaults 세팅과 401 복구가 맡는다. 불변 테스트 `fetcher.invariant.spec.ts`. response: **401 → `_retry` 1회 `/api/auth/session` 재조회 → 헤더 주입 → 재시도**, 실패 시 `handleSessionExpired()`(300ms 디바운스 alert + `signOut`). **인플라이트 디듀핑**(`inflightSessionRequest`). 인터셉터는 모듈 로드 1회
 - `hooks/useSessionTimeout(options?) → { session, status }`: `activityDebounceMs`(1000), `extendThrottleMs`(5분), `checkIntervalMs`(60초). 이벤트 `mousedown/keydown/scroll/touchstart` — **`visibilitychange` 없음**(next-auth와 중복, ⚠️ 주석), `keydown`(한글 IME). 리스너 1회 등록 + `latestRef`
-- `AuthFunction` 74개: 값=키가 원칙, **예외 1건** `PAGE_REFUND_ALLOWED_MINIMUM_APP_VERSION = 'PAGE_REFUND_APP_VERSION'`. 접두사 `PAGE_`/`COMPONENT_`/`FUNCTION_`/`PERMISSION_`. 시간순 추가(알파벳 아님)
+- `AuthFunction`: 값=키가 원칙, **예외 1건** `PAGE_REFUND_ALLOWED_MINIMUM_APP_VERSION = 'PAGE_REFUND_APP_VERSION'`. 접두사 `PAGE_`/`COMPONENT_`/`FUNCTION_`/`PERMISSION_`. 시간순 추가(알파벳 아님)
 - `ConsoleAuthGuard`는 FE에 없다(`backend/zent-auth` NestJS). FE 게이트는 `functions.includes` 패턴만
 
 ## P4. resource-manager
@@ -36,7 +36,7 @@
 - `frontend/bznav/ui/src/components/button/BoxButton.tsx`: variant 맵 상수 → `cva`, size 4단계, `forwardRef`, 로딩 오버레이 `LOADING_COLOR[variant]`(테마 토큰), `displayName`, **named export**. `BaseButton → BoxButton/TextButton/IconButton` 2층
 - 토큰 클래스 `bg-primary-background-main`, `label-medium-semibold`, `rounded-bzc-small`, `px-normal-large`. 토큰은 `src/theme/*.ts` + `tailwind.config.ts`
 - 스토리: `Meta/StoryObj`(`@storybook/react`) + `fn`(`@storybook/test`), `title: 'Bznav-UI/<그룹>/<이름>'`, `tags:['autodocs']`, 한국어 description/argTypes, `Default` + `Sizes/Variants/States` render 스토리
-- **배럴 2단**: `src/components/index.ts`에 `export *` + 루트 `index.ts` named 목록 둘 다 추가해야 외부 노출. ⚠️ `src/components/index.ts`에 중복 `export *` 7군데
+- **배럴 2단**: `src/components/index.ts`에 `export *` + 루트 `index.ts` named 목록 둘 다 추가해야 외부 노출(중복 `export *` 주의 — `gotchas.md`)
 
 ## P7. bznav-fe-platform
 - `client.ts`/`server.ts`가 엔트리. `server.ts`는 `from './src/constants.ts'` **확장자 명시**. `RouterProvider`/`useCommonRouter` + `useAppRouterAdapter`/`usePageRouterAdapter`(App/Pages Router 흡수), RN 브릿지 4종

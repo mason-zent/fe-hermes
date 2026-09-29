@@ -1,6 +1,6 @@
 # bznav-web apps/care-web 대표 패턴 파일
 
-경로 `apps/care-web/` 기준. 조사 시점 기준은 `origin/dev` `0b713b4`이고, 이 앱의 **운영 기준은 `origin/prd-care`**(`structure.md` 참고)다. 두 ref 가 다르므로 여기 경로가 운영에도 유효한지 확인이 필요한 항목은 `structure.md` 의 최신 구조와 대조한다 — 기준이 다르다는 것만으로 내용이 틀렸다고 보지는 않는다. 문서(`.github/agents/care-web.agent.md`, `.ai/basic-rule.md`)는 `constant/`라 낡았다 — **코드 우선**.
+경로 `apps/care-web/` 기준. 기준은 운영 `origin/prd-care`(기준 커밋은 `structure.md`) — 2026-09-29 점검에서 경로를 그 커밋으로 대조했다.
 
 ## P1. 페이지 골격 — `'use client'` + `Suspense` + `CareLayout`
 - `app/(my-info)/my-book/page.tsx`: `'use client'` → 상태 가드(`useEffect` + `replace(CARE_PATHS.홈)`) → `<Suspense fallback><AccountBook/></Suspense>`. 내부에서 Relay `useLazyLoadQuery` → 바깥 Suspense 필수
@@ -25,7 +25,7 @@
 ## P6. Jotai — 라우트 옆 `store/*Atom.ts`
 - 단순 `export const selectedOrgAtom = atom<string>('')`
 - 영속(33파일) 3종 세트: `safeSessionStorage`(`@toss/storage`)로 `getInitialValue()` + `createJSONStorage<T>(() => sessionStorage, { reviver })` + `atomWithStorage(STORAGE_KEYS.X, getInitialValue(), storage)`. **키는 `constants/storageKey.ts`의 `STORAGE_KEYS`**
-- 파일명 `store/<name>Atom.ts` 권장(일부 `atoms/`, `currentOrg.ts` 혼재). 전역은 루트 `store/`, `libs/provider/GlobalAtomProvider.tsx`
+- 기존 파일명은 `store/<name>Atom.ts` 가 다수(일부 `atoms/`, `currentOrg.ts` 혼재). **새 파일은 원문 [필수] kebab-case**(`<name>-atom.ts`), 기존 파일은 개명하지 않는다. 전역은 루트 `store/`, `libs/provider/GlobalAtomProvider.tsx`
 
 ## P7. 이벤트 로깅 (`libs/event-logger`) — 가장 자주 쓰는 패턴
 - 클릭 `<ClickEventLogger careEvent={{ category:'care', object:'app-install' }} attributes={{…}}><BoxButton/></ClickEventLogger>`(248파일, `cloneElement`로 onClick 래핑)
@@ -46,7 +46,7 @@
 
 ## P14. SEO/AEO — JSON-LD 공용 `app/cs-center/components/JsonLd.tsx`(3곳). 통이미지 카피 sr-only: `app/(landing)/constants/landingSeo.ts`의 `CARE_LANDING_SEO`(alt 포함). robots/noindex: `next.config.mjs` `headers()`가 `INDEXABLE_PATHS=['cs-center']` + 루트 외 전부 `X-Robots-Tag: noindex`. sitemap `next-sitemap.config.mjs`(`exclude: ['/*']` + `additionalPaths` 랜딩·cs-center 노션 lastmod)
 
-## P15. 노션 (`cs-center`) — 서버 컴포넌트 `force-dynamic`. `lib/get-notion-record-map` → `sanitize-notion-record-map`(allowlist, 유일한 도메인 테스트) → `components/Renderer.tsx`(`react-notion-x`). 실제 노션 픽스처 커밋 금지(합성만)
+## P15. 노션 (`cs-center`) — 서버 컴포넌트 `force-dynamic`. `app/cs-center/libs/get-notion-record-map.ts` → `app/cs-center/libs/sanitize-notion-record-map.ts`(allowlist, 유일한 도메인 테스트) → `app/cs-center/components/Renderer.tsx`(`react-notion-x`). 실제 노션 픽스처 커밋 금지(합성만)
 
 ## P16. 소켓 — 1곳 `app/vat/service-connect/(connect)/connect-account/hooks/useGetSocketStatus.ts`(`socket.io-client`, `store/SocketStatusAtom`)
 

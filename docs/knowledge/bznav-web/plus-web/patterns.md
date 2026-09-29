@@ -6,11 +6,11 @@
 ## 계산기 3계층 (가장 반복, **8세트**: breakeven · holiday-pay · salary-actual · salary-contract · simple-vat · store-sales · tax-penalty · vat)
 ⚠️ 반환 shape 이 **완전히 같지는 않다** — `{parsedInput, sections}` 로 통일된 건 vat·holiday-pay·simple-vat·tax-penalty 4종뿐. `salary-actual`(`monthlyGrossSalary`·`salarySection`), `salary-contract`(`netSalary`·`salarySection`), `breakeven`(`annualFixedCost`·`targetMargin`), `store-sales`(`intermediates`)는 제각각이다. `Step` 도 계산기마다 다르다(`holiday-pay` 2단계, `store-sales` 3단계, `simple-vat` 4단계). 새로 만들 때는 가장 가까운 기존 세트를 보고 맞춘다.
 1. `lib/hooks/calc/<name>/use-<name>-form.ts` — `useForm<Form>({defaultValues})`의 `watch/setValue/reset`만(**`handleSubmit`·resolver 미사용**). `const form = watch()`, `parsedInput`(`parseInteger`) `useMemo`, `setters = createFormSetter(setValue, FIELD_LIMITS.x, {format:true})`, `validation: { isInputValid }`
-2. `lib/hooks/calc/<name>/use-<name>.ts` — `useWindowSize().isOverTablet`, `step: 'input-step'|'result-step'`, `openSections`, `result = useMemo(() => step==='result-step' ? calcX(parsedInput) : null)`, `useCalculatorDpLog('calc_vat', …)`, `actions: { calculate, reset }`. **반환 `{form, setters, parsedInput, validation, result, sections, actions}` 통일**
+2. `lib/hooks/calc/<name>/use-<name>.ts` — `useWindowSize().isOverTablet`, `step: 'input-step'|'result-step'`, `openSections`, `result = useMemo(() => step==='result-step' ? calcX(parsedInput) : null)`, `useCalculatorDpLog('calc_vat', …)`, `actions: { calculate, reset }`. 반환 키는 계산기마다 다르다(위 ⚠️)
 3. `lib/utils/calc/<name>.ts` — React 무관 순수 함수 + JSDoc 세법 규칙(`Math.floor` 등). 요율·한계는 `lib/constants/calc/<name>.ts`
 - 페이지: 구조분해 → `<Accordion value={openSections}>` + 입력 Section + `step==='result-step' && <XResultSection ref/>` + `useScrollToResult`
 
-## 폼 두 갈래(섞지 말 것) — 계산기 RHF **without resolver** / 간편인증 `yup`(`lib/regex/schema/simple-auth.ts`) + `@hookform/resolvers`(6파일)
+## 폼 두 갈래(섞지 말 것) — 계산기 RHF **without resolver** / 간편인증·운세는 `yup` + `@hookform/resolvers`(`yupResolver` — `app/tax-check/simple-auth/_components/SimpleAuthContent.tsx`, `lib/hooks/fortune/use-fortune.ts`. 스키마 `lib/regex/schema/{simple-auth,bizno-schema}.ts`)
 
 ## Jotai — sena와 다름
 - `store/auth-store.ts`: **`atomWithStorage` 중심**(기본 localStorage, 세션은 `createJSONStorage(() => sessionStorage)`). `simpleAuthTokenAtom`, `tinAtom`, `analysisResultAtom`(`any`), `collectionErrorAtom`(session)

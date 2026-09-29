@@ -1,11 +1,6 @@
 {
-  "acceptedAt": "2026-09-28T00:54:03.236Z",
+  "acceptedAt": "2026-09-29T05:40:42.002Z",
   "repos": [
-    "bznav-web",
-    "client-brics-care",
-    "client-brics-hub",
-    "client-brics-refund",
-    "web-op",
-    "zent-packages"
+    "bznav-rn-app"
   ]
 }

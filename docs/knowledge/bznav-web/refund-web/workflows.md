@@ -21,7 +21,7 @@
 5. 타입 `@/graphql/__generated__/<opName>.graphql`
 
 ## C. 스토어 추가
-- `lib/stores/<name>.ts` 또는 `<domain>/<name>.ts`. 휘발 `atom`, 파생 `atom(get => …)`, 복구 필요 시 `atomWithStorage(key, init, createJSONStorage(() => sessionStorage))`(localStorage 선례 없음). 키는 최근 관례 `refund_<도메인>_<항목>`. 스코프 필요 시 Provider 안 `JotaiProvider` 중첩
+- `lib/stores/<name>.ts` 또는 `<domain>/<name>.ts`. 휘발 `atom`, 파생 `atom(get => …)`, 복구 필요 시 `atomWithStorage(key, init, createJSONStorage(() => sessionStorage))`. 탭을 넘어 유지해야 하면 localStorage(선례 `lib/stores/ads.ts`) — 데이터 수명으로 고른다. 키는 최근 관례 `refund_<도메인>_<항목>`. 스코프 필요 시 Provider 안 `JotaiProvider` 중첩
 
 ## D. 파트너 UTM 케이스
 1. `lib/hooks/marketing/use-partner-main-image.ts` `PARTNER_UTM_SOURCES`에 소문자 소스
@@ -32,9 +32,5 @@
 - 어드민 페이지: 어드민 입력만 · 정적 라우트: `OgMetaHead.tsx` · 색인 제외: `seo-policy.mjs` `NOINDEX_PATH_PREFIXES/EXACT_PATHS`(헤더·canonical 동시 반영) · sitemap: `SITEMAP_PUBLIC_ENTRIES` · JSON-LD: `pages/help/*` 복제(`\\u003c` 이스케이프 유지)
 
 ## F. 검증
-```bash
-pnpm --filter refund-web gen:relay          # 아티팩트 없으면 타입 에러 폭발
-scripts/verify/bznav-web.sh refund-web      # lint + tsc --noEmit (아티팩트 유무 확인 포함)
-pnpm exec prettier --check <변경파일>
-```
-- 루트 `pnpm gen:relay`는 refund-web에 `compile:relay`가 없어 no-op → 반드시 `--filter refund-web gen:relay`
+- `pnpm --filter refund-web gen:relay` → `scripts/verify/bznav-web.sh refund-web`(아티팩트가 없으면 타입 검증을 건너뛴다)
+- 루트 `pnpm gen:relay` 는 쓰지 않는다 — 스키마만 네트워크로 덮어쓰고 아티팩트는 안 만든다(`../gotchas.md`)

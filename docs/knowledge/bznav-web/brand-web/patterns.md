@@ -1,5 +1,5 @@
 # bznav-web apps/brand-web 대표 패턴
-- **페이지 골격**: `layout.tsx`(서버) → `LogoLayout`(Suspense) → 섹션 컴포넌트. 페이지는 조립만. 섹션이 `'use client'`(13파일)
+- **페이지 골격**: `layout.tsx`(서버) → `LogoLayout`(Suspense) → 섹션 컴포넌트. 페이지는 조립만. 섹션이 `'use client'`
 - **클라이언트 셸** `app/_components/layout-content/BrandAppContents.tsx`: `RouterProvider(useAppRouterAdapter)` → `EventTrackingProvider(appId 'bznav-brand', isUseAuthPackages: false, mixpanel만)` → `DialogProvider` → `GlobalErrorBoundary` → `NiceModal.Provider`. `useUTM()`, `useBznavAppVersion()`. SSR 시 `if (!IS_CLIENT) updateWorkingPlatform(server)`(3앱 공통 관용구)
 - **데이터**: fetch/axios 없음. **DatoCMS GraphQL 단일 경로** `lib/utils/dato-cms.ts`의 `requestDatoCms({query, variables})`(`requestPostFetch`, `DATO_ACCESS_TOKEN`). 쿼리 `lib/constants/graph-ql-query.ts`. 실패 시 `{term:null, versions:[]}` → `notFound()`
 - **Jotai 사용 0** — `app/layout.tsx`의 `JotaiProvider` 1건뿐. 스토어 선례 없음

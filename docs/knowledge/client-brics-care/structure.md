@@ -1,11 +1,11 @@
 # client-brics-care 구조 맵
 
-기준 `origin/prd` `1457d83` (2026-08-20). 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `8ed10df`. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## 루트
 | 경로 | 역할 |
 |---|---|
-| `app/` | Next 15.5 App Router. **라우트 그룹·병렬 라우트·middleware 없음** |
+| `app/` | App Router(버전은 지문). **라우트 그룹·병렬 라우트·middleware 없음** |
 | `app/_components/` | AuthForm, LoadingIndicator, PaginationLimitSelector, SigninCard · `app/_hooks/useDebounce.ts` |
 | `lib/` | `auth.ts`(사실상 미사용), `orval-fetcher.ts`, `formdata.ts`, `file.ts`(`downloadFile`), `string.ts` |
 | `__generated__/` | Orval, **커밋됨**. 별칭 `@/generated/*`(배럴은 `@/generated/index`로 명시). `endpoints/{admin,bman,mkt-event,overdue-payment,payment-method,payment,promotion,qa,txpr,user,vat}` (vat·admin은 사용 0~1) |

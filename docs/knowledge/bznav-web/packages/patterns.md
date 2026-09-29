@@ -16,7 +16,8 @@
 ## `@repo/platform` client/server
 - `client.ts` 훅 11(`useCommonRouter`, `usePageNavigationEvent`, `useAppRouterAdapter`, `usePageRouterAdapter`, `useUTM`, `useWindowOpen`, `useWorkingPlatform`, `useBlockBackNavigation` …) + middleware 유틸 8 + RN 브릿지 4. `server.ts`는 `getServerWorkingPlatform(Type)`, `BROWSER_TYPE`
 - `useCommonRouter`(`RouterProvider.tsx`): App/Pages Router를 `RouterAdapter`로 흡수. Provider 밖 호출 시 throw
-- `useWorkingPlatform`: 모듈 로드 시 `getClientWorkingPlatform()` 1회로 jotai atom 4개 초기화. 값 `'web'|'app'|'kbank'|'toss'|'joins-hr'|'cashnote'|'app-deprecated'`
+- `useWorkingPlatform`: 모듈 로드 시 `getClientWorkingPlatform()` 1회로 jotai atom 들을 초기화하고 `{workingPlatform, workingPlatformType, browserType, isPartnerPlatform, isTossPlatform, updateWorkingPlatform}` 을 돌려준다. 값 목록은 `src/types.ts` `WorkingPlatform`(2026-09 REF-3652 로 `tossincome` 추가)
+- **토스 계열 판정은 `isTossPlatform` / `TOSS_APP_LIST`(`toss`·`tossincome`)**, 제휴 앱은 `isPartnerPlatform` / `PARTNER_APP_LIST`(`src/constants.ts`, `client.ts` export). 앱에서 `'toss'` 문자열 비교로 분기하지 않게 한다
 
 ## `@repo/tracking-service`
 - `BaseService`(abstract, `commonAttributes`) → 8 Service. `EventTrackingController`: 키 있을 때만 lazy 생성, `IS_IFRAME`이면 전부 early return. `sendEvent` 기본 타깃 `['mixpanel']`, mixpanel/airbridge 전송 시 MSK producer(`NEXT_PUBLIC_MSK_API_SERVER`)로 재전송(`loc` 제외)

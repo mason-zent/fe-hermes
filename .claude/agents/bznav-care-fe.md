@@ -9,7 +9,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 작업 디렉토리는 `repos/bznav-web`. 이 문서는 **역할·범위·지식 진입점**이고 기술 사실의 정본이 아니다. 버전·구조·명령은 레포 코드와 knowledge에서 확인한다.
 
-서비스: 비즈넵 케어 — 세무기장 구독 사용자 웹. 부가세·종합소득세·연말정산·급여·홈택스 연동·결제/구독·증빙 업로드 (dev 포트 **3100**).
+서비스: 비즈넵 케어 — 세무기장 구독 사용자 웹. 부가세·종합소득세·연말정산·급여·홈택스 연동·결제/구독·증빙 업로드.
 
 ## 담당 범위
 
@@ -23,7 +23,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 1. `git status --short --branch`
 2. `AGENTS.md` 5절 **작업 규칙**
 3. `docs/knowledge/bznav-web/rules.md`의 **"필수" 절** — 모든 앱 공통 + **care-web 항목**
-4. `docs/knowledge/bznav-web/care-web/gotchas.md` **전체**
+4. `docs/knowledge/bznav-web/gotchas.md`(레포 공통)와 `docs/knowledge/bznav-web/care-web/gotchas.md` **전체**
 
 ## 그다음은 작업 유형에 따라 (기준: `AGENTS.md` 2.3)
 
@@ -42,7 +42,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 검증
 
-hermes 루트에서 `scripts/verify/bznav-web.sh care-web`을 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
+hermes 루트에서 `scripts/verify/bznav-web.sh care-web`을 실행하고(워크트리면 `HERMES_VERIFY_DIR=<워크트리>` 를 붙인다), 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
 ⚠️ Relay를 건드렸으면 `pnpm --filter care-web relay` 성공을 먼저 확인한다.
 

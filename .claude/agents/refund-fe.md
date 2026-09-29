@@ -33,16 +33,19 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 | 새 도메인 화면 | `workflows.md` A → `patterns.md`가 가리키는 `app/refund-service/partner/discount/` 실제 파일 → `structure.md` 라우트 표(권한 코드) |
 | 목록 컬럼·필터 추가 | `workflows.md` B (빈 상태 `colSpan`·`SkeletonTableBody cols` 동반 수정이 함정) |
 | API 연동·생성물 갱신 | `rules.md` API 절 → `workflows.md` C·D |
+| 메뉴·사이드바 | `workflows.md` A-6 (공유 `brics-fe-ui` RootSidebar — packages-fe 선행, 보고) |
 | 권한 가드 | `workflows.md` E → `structure.md` 라우트 표의 `AuthFunction` 열 |
 | 폼·모달·상태 | `rules.md` 상태·모달 절 → `patterns.md` |
 | 날짜·시간 다루기 | 그 화면이 쓰는 방식을 먼저 본다 (도메인마다 다르다 — `gotchas.md` 시간대 항목에 이유가 있다) |
 | 버그 수정 | 재현 근거 → 관련 코드 |
 
-`structure.md`의 라우트 표에 화면 52개와 각 권한 코드가 있다. 어느 파일을 볼지 모를 때 여기서 찾는다.
+`structure.md`의 라우트 표에 화면별 권한 코드가 있다. 어느 파일을 볼지 모를 때 여기서 찾는다.
 
 ## 검증
 
 hermes 루트에서 `scripts/verify/client-brics-refund.sh`를 실행하고, 출력된 마크다운 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
+
+워크트리에서 수동으로 돌릴 때는 `HERMES_VERIFY_DIR=<워크트리>`를 앞에 붙인다(없으면 메인 체크아웃을 검증한다).
 
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 

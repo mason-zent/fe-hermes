@@ -7,7 +7,7 @@
 4. 타입체크 `pnpm build --filter @zenterprise-inc/brics-fe-ui`. **brics 3종은 CI lint 제외** → lint 결과에 의존하지 말 것
 5. `pnpm changeset` → 패키지 선택 → bump. main PR에 changeset 없으면 `changeset-check` 실패(문서만이면 `--empty`)
 6. 소비 레포 확인: `pnpm pkg:link` → `pnpm dev` → `pnpm pkg:unlink`. 소비 `tailwind.config`의 `content`에 `node_modules/@zenterprise-inc/brics-fe-ui/src/components/**` 필요
-7. PR → CI → main 머지 → "Version Packages" PR 머지 → `@latest` → 소비 레포 `pnpm install` lockfile 커밋
+7. (사용자 요청 시) `scripts/commit.sh` 로 커밋 → push·PR 은 헤르메스. 이후 CI → main 머지 → "Version Packages" PR 머지 → `@latest` → 소비 레포는 **선언 범위를 먼저 확인**한다(hub·care 는 정확한 버전 고정, `^0.x` 는 다음 minor 를 포함하지 않는다) → 필요한 버전을 명시해 올리고 lockfile 커밋
 
 ## B. `AuthFunction` 권한 코드 추가
 1. BE `/users/zent/me`의 `functions` 문자열 값 확정. **enum 값은 BE 문자열과 정확히 일치**(키는 자유)
@@ -22,7 +22,7 @@
 3. `<Name>.stories.tsx` 같은 폴더(`Bznav-UI/<그룹>/<이름>`, autodocs, 한국어)
 4. `pnpm --filter @zenterprise-inc/bznav-fe-ui storybook`(6006). **스토리 타입 오류는 build로 안 잡힌다**(exclude) → Storybook 기동으로 확인
 5. Chromatic은 dev push 자동(`frontend/bznav/ui/**`) 또는 수동. 변경 있으면 실패 → 리뷰
-6. changeset → PR
+6. changeset → (사용자 요청 시) `commit.sh` 커밋 → push·PR 은 헤르메스
 
 ## D. breaking 변경
 1. changeset **minor**(0.x라 major 미사용, 선례 전부 minor). `**breaking**` 항목 + 마이그레이션
@@ -32,7 +32,7 @@
 
 ## E. 브랜치 스냅샷 → 소비 레포 PR 프리뷰
 1. 브랜치 끝 토막을 양쪽 동일하게(`feat/login-fix` ↔ `care/login-fix`)
-2. zent-packages: changeset 커밋 → Actions **Release (snapshot)** → 브랜치 선택, tag 비움 → `0.0.0-login-fix-<ts>` `@login-fix`
+2. zent-packages: changeset 커밋 → (헤르메스가 push 한 뒤) Actions **Release (snapshot)** → 브랜치 선택, tag 비움 → `0.0.0-login-fix-<ts>` `@login-fix`
 3. 소비 PR에 프리뷰 라벨 → `BRICS_DEV_TAG=login-fix`로 `use:dev-pkgs`. 라벨 이름은 **소비 레포마다 다르니 그 레포 워크플로를 확인한다.** `origin/prd` 확인 결과 refund·care 는 `preview` 와 `works-preview` 두 개다(`care-preview`·`refund-preview` 는 없다)
 4. 확인: 소비 Actions "🧪 PR Preview Build" → `Resolve brics snapshot tag`. 폴백 체인 `@<tag>` → `@dev` → lockfile
 5. 브랜치명 못 맞추면 소비 PR 라벨 `brics-tag:<tag>`
@@ -42,8 +42,10 @@
 pnpm install
 pnpm build --filter @zenterprise-inc/<pkg>...     # tsc 타입체크
 pnpm build --filter '...[origin/main]'            # CI 동일
-pnpm lint                                         # ⚠️ --fix/--write 라 파일을 고친다
-pnpm --filter @zenterprise-inc/bznav-fe-ui storybook | build-storybook
+pnpm lint --filter=<pkg>                          # ⚠️ 루트 전체 `pnpm lint` 는 brics 3종 파일을 고친다(gotchas)
+pnpm --filter @zenterprise-inc/bznav-fe-ui storybook          # 또는 build-storybook (별도 명령)
+pnpm --filter @zenterprise-inc/bznav-fe-ui exec tsc --noEmit   # bznav-fe-ui 는 build 스크립트가 없다
+pnpm --filter @zenterprise-inc/brics-fe-zent-auth test         # zent-auth 변경 시 (vitest)
 pnpm changeset
 ```
-표준 스크립트 `scripts/verify/zent-packages.sh <패키지명...>`(build + lint + changeset 존재 확인)
+표준 스크립트 `scripts/verify/zent-packages.sh <패키지명...>`(build + lint + changeset 존재 확인. zent-auth test·bznav-fe-ui 타입검사는 포함하지 않는다). 워크트리에서 `pnpm deps` 는 `ZENT_CONSUMER_ROOT` 가 필요하다(`rules.md`)

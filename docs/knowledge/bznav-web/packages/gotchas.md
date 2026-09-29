@@ -13,4 +13,3 @@
 - `'app-deprecated'` WorkingPlatform은 구버전 웹뷰 호환용(미들웨어가 세팅) — 지우지 말 것
 - `ui/tailwind.config.ts` `content`에 `packages/user-sign/src/**` 하드코딩 — 새 공유 패키지가 Tailwind 쓰면 추가 필요
 - ⚠️ `LottiePlayer.tsx:68`(두 방식 동시 사용 금지). NOTE `EventTrackingProvider.tsx:209`(`PageNavigationEventProvider` 없으면 중복 제거 불완전), `use-auth-session.ts:80`(fallback 2000ms). TODO 0
-- basic-rule §7의 `pnpm --filter <app> type-check`은 care-web만 존재

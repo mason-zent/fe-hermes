@@ -16,8 +16,8 @@
 ## B. 새 Route Handler
 1. `app/api/<path>/route.ts`. 동적 세그먼트는 `context: { params: Promise<…> }` + `await context.params`(Next 16)
 2. 로직은 `src/backend/service/XxxService.ts` 클래스(생성자에서 repository 인스턴스화, `public async`)
-3. 외부 호출은 `src/backend/repository/external/XxxApiGateway.ts`(axios + `throw error.response`), 저장소는 `RedisRepository`. **route에서 repository 직접 호출 금지**(현행 위반 0)
-4. 에러는 `CommonException` 팩토리 throw → route catch에서 `{message}` + `status: error.httpStatus ?? error.status`
+3. 외부 호출은 `src/backend/repository/external/XxxApiGateway.ts`(axios + `throw error.response` — 응답 없는 네트워크 오류면 `undefined`를 던지는 한계가 있다. 새 gateway는 응답 없는 오류도 보존·정규화한다), 저장소는 `RedisRepository`. **route에서 repository 직접 호출 금지**(현행 위반 0)
+4. 에러는 `CommonException` 팩토리 throw → route catch에서 `{message}` + `status: error.httpStatus ?? error.status`. 새 route는 catch 값을 `unknown`으로 받아 판별하고 기본 메시지·유효한 HTTP 상태(없으면 500)를 보장한다
 5. 시크릿: `.env.example`에 이름만 추가, `NEXT_PUBLIC_` 금지, `_proxy.ts`의 `getApiKey()`처럼 미설정 시 500 반환 가드. 배포는 Secrets Manager → Dockerfile builder에서 `.env`
 6. 콘솔이 호출하는 내부 API면 `ApiResponse(request, async () => …)`로 JWT 검증
 
@@ -36,4 +36,5 @@ pnpm lint        # eslint + prettier --check
 pnpm typecheck   # 필수 — build 는 ignoreBuildErrors: true
 node scripts/run-salesjwt-test.cjs   # 유일한 테스트
 ```
+- `scripts/verify/web-op.sh`는 lint·typecheck만 돈다. `SalesJwtGenerator`·JWT 관련을 고쳤으면 `run-salesjwt-test.cjs`를 따로 돌려 보고한다
 - 포맷 위반 파일 4개가 이미 있어 `prettier --check`가 실패할 수 있다(gotchas). 그 파일들을 건드리면 diff가 튄다 — 포맷과 기능 변경을 섞지 말 것

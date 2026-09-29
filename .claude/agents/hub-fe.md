@@ -43,6 +43,8 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 hermes 루트에서 `scripts/verify/client-brics-hub.sh`를 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
+워크트리에서 수동으로 돌릴 때는 `HERMES_VERIFY_DIR=<워크트리>`를 앞에 붙인다(없으면 메인 체크아웃을 검증한다).
+
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 
 ## 보고

@@ -9,20 +9,20 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 작업 디렉토리는 `repos/bznav-web`. 이 문서는 **역할·범위·지식 진입점**이고 기술 사실의 정본이 아니다. 버전·구조·명령은 레포 코드와 knowledge에서 확인한다.
 
-서비스: 비즈넵 브랜드/공식 사이트 — 홈, 브랜드 리소스, 약관, 팝업. 유지보수 단계(변경 적음) (dev 포트 **3000**).
+서비스: 비즈넵 브랜드/공식 사이트 — 홈, 브랜드 리소스, 약관, 팝업. 유지보수 단계(변경 적음).
 
 ## 담당 범위
 
 - **수정 범위는 `apps/brand-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
 - **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
-- ⚠️ **Jotai Provider만 있고 atom 사용처가 0건**이다. 스토어 선례가 없으니 **도입 전 헤르메스에 확인**한다
+- ⚠️ 스토어 선례가 없다. 상태 스토어는 **도입 전 헤르메스에 확인**한다
 
 ## 시작 전 (작업 크기와 무관하게 항상)
 
 1. `git status --short --branch`
 2. `AGENTS.md` 5절 **작업 규칙**
 3. `docs/knowledge/bznav-web/rules.md`의 **"필수" 절** — 모든 앱 공통 + **brand-web 항목**
-4. `docs/knowledge/bznav-web/brand-web/gotchas.md` **전체**
+4. `docs/knowledge/bznav-web/gotchas.md`(레포 공통)와 `docs/knowledge/bznav-web/brand-web/gotchas.md` **전체**
 
 ## 그다음은 작업 유형에 따라 (기준: `AGENTS.md` 2.3)
 
@@ -34,16 +34,14 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 | 새 페이지·화면 | `workflows.md` → `patterns.md`가 가리키는 `app/**` 실제 파일 |
 | 콘텐츠·데이터 | `patterns.md` → DatoCMS GraphQL 단일 경로(`lib/utils/dato-cms.ts` + `lib/constants/graph-ql-query.ts`) |
 | **라우팅·메타데이터·콘텐츠 구조 변경** | `workflows.md` → **`build` 후 sitemap 산출을 반드시 확인**한다 (`postbuild`가 sitemap/robots를 지우고 next-sitemap으로 재생성) |
-| 스타일 | Tailwind 기본. SCSS는 `styles/default.scss` 1개뿐 |
+| 스타일 | Tailwind 기본. 현황은 `patterns.md` |
 | 버그 수정 | 재현 근거 → 관련 코드 |
 
 ## 검증
 
-hermes 루트에서 `scripts/verify/bznav-web.sh brand-web`을 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
+hermes 루트에서 `scripts/verify/bznav-web.sh brand-web`을 실행하고(워크트리면 `HERMES_VERIFY_DIR=<워크트리>` 를 붙인다), 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
-⚠️ 라우팅·메타데이터·콘텐츠 구조를 바꿨으면 `pnpm --filter brand-web build` 후 **sitemap 산출을 확인**한다.
-
-⚠️ **라우팅·빌드 설정·의존성을 바꿨으면 `pnpm --filter brand-web build` 를 따로 돌린다.** 표준 스크립트는 lint·타입·테스트만 돌고 build 는 대신해 주지 않는다 (`rules.md` 의 변경 범위별 검증 표).
+⚠️ **라우팅·메타데이터·콘텐츠 구조·빌드 설정·의존성을 바꿨으면 `pnpm --filter brand-web build` 를 따로 돌리고 sitemap 산출을 확인한다.** 표준 스크립트는 build 를 대신해 주지 않는다 (`rules.md` 의 변경 범위별 검증 표).
 
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 

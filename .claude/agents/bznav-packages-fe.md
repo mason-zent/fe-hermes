@@ -25,7 +25,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 1. `git status --short --branch`
 2. `AGENTS.md` 5절 **작업 규칙**
 3. `docs/knowledge/bznav-web/rules.md`의 **"필수" 절** — 공통 + `packages/**` 항목
-4. `docs/knowledge/bznav-web/packages/gotchas.md` **전체** — 실제 의존 그래프와 export 누락 사례가 여기 있다
+4. `docs/knowledge/bznav-web/gotchas.md`(레포 공통)와 `docs/knowledge/bznav-web/packages/gotchas.md` **전체** — 실제 의존 그래프와 export 누락 사례가 여기 있다
 
 ## 그다음은 작업 유형에 따라 (기준: `AGENTS.md` 2.3)
 
@@ -36,6 +36,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 | 문구·스타일 국소 수정 | 대상 파일과 인접 사용처만 |
 | `@repo/ui` 컴포넌트 추가 | `workflows.md` A → **export 2곳**(`src/components/index.ts` + `packages/ui/index.ts`)을 모두 갱신 → `*.stories.tsx` 추가 |
 | **기존 컴포넌트 API 변경** | `workflows.md` B의 영향 확인 명령 → `structure.md` 의존 매트릭스 → **영향 앱 목록과 후속 앱 에이전트를 보고에 명시** |
+| WorkingPlatform·플랫폼 판정 | `workflows.md` C-1 — 타입 유니온과 `constants.ts` 목록·맵을 함께 고친다. 토스 계열·제휴 판정은 `TOSS_APP_LIST`·`PARTNER_APP_LIST` |
 | 유틸 추가 | `workflows.md` C — 앱 무관 순수 함수는 `common-utils`(**내부 패키지 의존 금지**), 플랫폼·라우팅·웹뷰는 `platform`의 맞는 진입점 |
 | 트래킹 이벤트 | `workflows.md` D — 단순 이벤트는 앱에서 처리 가능(패키지 수정 불필요) |
 | 의존 관계 변경 | `structure.md` + `gotchas.md` — 의존 방향 역행 금지. 실제 그래프는 단순 사슬이 아니다 |
@@ -44,7 +45,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 검증
 
-hermes 루트에서 `scripts/verify/bznav-web.sh packages/<pkg>`를 실행하고, 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
+hermes 루트에서 `scripts/verify/bznav-web.sh packages/<pkg>`를 실행하고(워크트리면 `HERMES_VERIFY_DIR=<워크트리>`. `ui-deprecated`·`project-config` 는 스크립트가 못 돌린다 — `workflows.md` F), 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다. reviewer도 같은 스크립트를 다시 돌린다. 실행하지 못한 검증을 통과한 것처럼 적지 않는다.
 
 ⚠️ 패키지에는 빌드 산출물·`types` 필드가 없어 **타입 오류는 앱의 build/tsc에서 터진다.** 루트 설정(`turbo.json`·`pnpm-workspace.yaml`)을 건드렸으면 영향 앱 `build` 까지 확인한다. export를 바꿨으면 영향 앱에서 `exec tsc --noEmit`으로 확인한다 (읽기·검증만, 앱 코드는 고치지 않는다).
 

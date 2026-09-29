@@ -42,7 +42,10 @@ const DEP_PATTERNS = [
   /^react-relay$/, /^relay-runtime$/, /^relay-compiler$/, /^graphql$/,
   /^zustand$/, /^jotai$/, /^nuqs$/, /^styled-components$/, /^tailwindcss$/,
   /^react-hook-form$/, /^zod$/, /^yup$/, /^next-auth$/, /^jest$/, /^vitest$/, /^@playwright\/test$/,
-  /^@ebay\/nice-modal-react$/, /^@zenterprise-inc\//, /^@repo\//, /^turbo$/, /^storybook$/
+  /^@ebay\/nice-modal-react$/, /^@zenterprise-inc\//, /^@repo\//, /^turbo$/, /^storybook$/,
+  // 모바일 앱(bznav-rn-app) — 버전이 바뀌면 코드 푸시 가능 여부·구조가 달라진다
+  /^expo$/, /^react-native$/, /^expo-updates$/, /^react-native-webview$/, /^nativewind$/,
+  /^@react-navigation\/(native|native-stack|bottom-tabs)$/, /^@tanstack\/react-query$/
 ]
 
 // 레포 규칙·소개 문서. 내용이 바뀌면 에이전트 md 재검토 대상

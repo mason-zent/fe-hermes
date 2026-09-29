@@ -25,6 +25,7 @@
 - `useDocumentFiles`(파일 상태 머신), `useSubmitDocuments`(업로드 오케스트레이션), `useResolvedFileUrl`, `useCertFlowByKey`(long-poll, `useDialog`), `useCertPolling`, `useCountdown`, `useRetryCooldown`, `useInFlowBackGuard`, `useDevOverride`, `useEventLogger`(Mixpanel)
 
 ## P6. Route Handler 골격 — controller는 거의 없다 (30개 중 2개)
+기존 구현 인용(`app/api/sales/statstics/route.ts`). ⚠️ `catch (error: any)`·가드 없는 `error.data.message`는 따라 하지 않는다 — 새 코드는 `unknown` + 판별, 상태 기본값 500(workflows B)
 ```ts
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const params = await context.params            // Next 16: params 는 Promise
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 - 콘솔 인증: `POST /api/authorize` → `AuthService.generateAuthKey`(도메인 화이트리스트) → HS256 JWT + Redis 24h → `ApiResponse`가 검증
 - sales 로그인: `containers/sales/login` → `SalesAuthUseCase.signin`(id/pw를 ES512 `encryptString`) → `SalesAuthApiClient` → **zent API 직접**(`${NEXT_PUBLIC_SERVER_ZENT_API_URL}/sales/auth`, `src/gateway/sales/SalesAuthApiClient.ts`). 레포 BFF(`/api/sales/**`)를 거치는 건 sso(`/api/sales/auth/sso`) 하나뿐이다. 응답 3분기: JWT / `{mfaRequired, mfaToken}` / `{mfaSetupRequired, token}`
 - MFA: Google Authenticator, `setupMfa`(QR `qrcode.react`, `containers/sales/mfaSetup`) / `verifyMfaSetup` / `verifyMfa` / `disableMfa`
-- 비밀번호 재설정: `password-reset` → 본인인증 `/api/sales/auth/self-cert/request` → `/self-cert` → `/[salesUserId]/reset-password`
+- 비밀번호 재설정: `containers/sales/passwordReset` → `SalesAuthApiClient`가 **zent API 직접** `${NEXT_PUBLIC_SERVER_ZENT_API_URL}/sales/auth/self-cert/request` → `/self-cert` → `/{salesUserId}/reset-password`(레포 BFF `/api/sales/auth/**` 동명 Route Handler와 혼동 금지)
 - SSO 딥링크: `POST /api/sales/auth/sso` → key → `/sales/auth/[key]` → `GET …/sso?key=` → store+localStorage → `/sales`
 
 ## P9. 스타일 — 도메인으로 갈린다

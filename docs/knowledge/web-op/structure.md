@@ -1,6 +1,6 @@
 # web-op 구조 맵
 
-기준 `origin/prd` `756d471` (2026-09-11), 파일 285개. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
+기준 `origin/prd` `4ac5be7`, 파일 285개. 규칙 `rules.md`, 예시 `patterns.md`, 절차 `workflows.md`, 함정 `gotchas.md`.
 
 ## app/ 라우트
 | 경로 | 역할 | 인증 |
@@ -24,7 +24,7 @@
 | `analytics/` | 3 | `MixpanelProvider`, `MixpanelService`, types |
 | `useCases/` | **1** | `SalesAuthUseCase.ts` — sales 인증 전용 예외 패턴 |
 | `config/` | 1 | `Environment.ts` |
-| 루트 `types/` | 13 | 도메인 타입 + `exceptions/{ZentException,CommonException}` |
+| 루트 `types/` | 12 | 도메인 타입 + `exceptions/{ZentException,CommonException}` |
 
 ## 외부 시스템 (`src/backend`)
 - **Redis** `@vercel/kv` — `RedisRepository`(JWT 화이트리스트, 링크 키 TTL) · **Blob** `@vercel/blob` — `DocumentsService`(레거시 업로드, `app/api/upload` edge) · **Pipedrive** `PipedriveApiGateway`(v2, `x-api-token`) · **zent 백엔드** `SalesExternalApiGateway`(`NEXT_PUBLIC_SERVER_ZENT_API_URL`) · **고용보험 V2** `app/api/employee/_proxy.ts` · **Notion** `notion-client`(`notion-guide` route) · `@aws-sdk/client-s3`는 **사용 0(설치만)**

@@ -1,5 +1,7 @@
 # 지식 베이스 확장 인계 검증 — 2026-09-16
 
+> ⚠️ **과거 기록 — 현재 문서의 기준이 아니다.** 아래 ref 는 당시 `origin/dev` 기준이고, 지금 지식 문서는 운영 기준 브랜치(`prd`·`prd-<앱>`·`main`)로 쓰인다. 현재 기준 커밋은 `.sync/snapshots/<레포>.json` 의 `sha`. 영역·파일 수도 bznav-rn-app 추가 전 숫자다.
+
 Claude가 완료한 8개 조사 결과와 작성 중이던 문서를 인계받아, 기존 hub를 포함한 11개 담당 영역의 `structure.md`, `patterns.md`, `workflows.md`, `gotchas.md` 44개가 모두 존재하고 비어 있지 않음을 확인했다.
 
 ## 기준

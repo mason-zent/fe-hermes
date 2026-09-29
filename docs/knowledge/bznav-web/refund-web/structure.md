@@ -1,11 +1,11 @@
 # bznav-web apps/refund-web 구조 맵
 
-기준 `origin/prd-refund` `4be90b5eb` (2026-09-16), 파일 625개, `pages/*.tsx` 109개. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
+기준 `origin/prd-refund` `cf69fdb0f` (2026-09-29 점검 · 지문과 같음). 앱·라이브러리 버전은 지문(`.sync/snapshots/bznav-web.json`)·catalog 가 정본. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
 
 ## 앱 메타 / 스크립트
-- `refund-web` v26.9.161, `"type": "module"`. `exports: { ".": "./index.ts" }`는 **존재하지 않는 파일** 참조(죽은 필드)
+- `"type": "module"`. `exports: { ".": "./index.ts" }`는 **존재하지 않는 파일** 참조(죽은 필드)
 - `dev`: `pnpm gen:env && pnpm gen:relay && next dev -p 3200 --webpack` · `build`: `pnpm gen:relay && next build` · `gen:api` = `gen:schema` → `gen:survey-schema` → `gen:relay` · `gen:env`: SSM(`--env=loc`) · `gen:schema`: `dev-gateway.api.bznav.com/graphql` → `graphql/schema/schema.graphql` · `gen:survey-schema`: openapi-typescript → `graphql/schema/survey-model.ts`(gitignore) · `gen:relay`: `relay-compiler relay.config.json`
-- 런타임 deps: next 16.2.5, react 19.2.6, react-relay 18.2 / relay-runtime 20.1, jotai 2.17, `@repo/{ui,platform,tracking-service,user-session,user-sign,common-utils}`, `@zenterprise-inc/ui`(deprecated), nice-modal, channel-talk loader, RHF+yup, react-use, es-toolkit, firebase, clsx, date-fns, cmdk, react-markdown, bignumber.js, axios, react-error-boundary. **xstate/@xstate/react, jspdf/html2canvas는 사용 0(설치만)**
+- 런타임 deps: next, react, react-relay / relay-runtime, jotai, `@repo/{ui,platform,tracking-service,user-session,user-sign,common-utils}`, `@zenterprise-inc/ui`(deprecated), nice-modal, channel-talk loader, RHF+yup, react-use, es-toolkit, firebase, clsx, date-fns, cmdk, react-markdown, bignumber.js, axios, react-error-boundary. **xstate/@xstate/react, jspdf/html2canvas는 사용 0(설치만)**
 
 ## pages/ 라우트
 | 그룹 | 경로 | 역할 |
@@ -25,5 +25,5 @@
 ## components/ · graphql/ · lib/
 - `components/`: `common/`(+`context`, `refund-agreement`), `event/`, `follow-up/`, `help/`, `hometax-auth/*`, `landing/`, `layout/`, `menu/*`, `simple-terms/`, `survey/*`(+`common/ui`), `tax-refund/*`, `trp/`. **조회 결과 화면은 템플릿 버전 폴더**(`tax-refund/lookup/result/apply-possible/template/v-2026MMDD/…`) — 삭제 금지
 - `graphql/query/`(29) · `graphql/mutation/`(31) · `graphql/schema/schema.graphql`(커밋) · `graphql/__generated__/`(**`__generated__.md`만 커밋**)
-- `lib/stores/`(Jotai: 루트 8 + `refund/` 4 + `survey/` 3) · `lib/relay/`(`relay-environment`, `use-fetch-relay-factory`, `relay-loggers`) · `lib/hooks/`(50+, 도메인별 `api/`) · `lib/utils/`(`common-ssr`, `feature-rollout`, `joint-certificate`, `url`, `z-currency` …) · `lib/constants/`(20, `paths.ts` 한글 키) · `lib/content-page/`(`api.ts`, `server.ts` 공용 gSSP 팩토리, `path.ts`) · `lib/channel-talk/` · `lib/graphql/server-fetch.ts`(gSSP raw fetch) · `lib/styles/index.scss` · `lib/regex/`(yup 스키마) · `lib/sitemap.mjs` · `lib/seo-policy.mjs`(**`.mjs`를 `.tsx`에서 확장자 포함 import**)
+- `lib/stores/`(Jotai: 루트 8 + `refund/` 4 + `survey/` 3) · `lib/relay/`(`relay-environment`, `use-fetch-relay-factory`, `relay-loggers`) · `lib/hooks/`(50+, 도메인별 `api/`) · `lib/utils/`(`common-ssr`, `joint-certificate`, `url`, `z-currency` …) · `lib/constants/`(20, `paths.ts` 한글 키) · `lib/content-page/`(`api.ts`, `server.ts` 공용 gSSP 팩토리, `path.ts`) · `lib/channel-talk/` · `lib/graphql/server-fetch.ts`(gSSP raw fetch) · `lib/styles/index.scss` · `lib/regex/`(yup 스키마) · `lib/sitemap.mjs` · `lib/seo-policy.mjs`(**`.mjs`를 `.tsx`에서 확장자 포함 import**)
 - 루트: `next.config.mjs`, `relay.config.json`, `tailwind.config.ts`, `tsconfig.json`(`@/*`), `declaration.d.ts`(`*.svg → any`), **`proxy.ts`**(Next 16 미들웨어: 점검 redirect, working-platform·UTM·maintenance 쿠키)

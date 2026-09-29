@@ -20,22 +20,23 @@ tools: Read, Glob, Grep, Bash
 
 1. 계획서를 읽고 **승인된 범위·결정 사항·Checkpoint**를 파악한다
 2. 규칙을 확인한다: `AGENTS.md` 5절 → `docs/knowledge/<레포>/rules.md`의 **"필수" 절** → `gotchas.md` → 레포 원문 (뒤가 우선)
-3. 대상 레포에서 `git status --short && git diff`로 변경을 본다 (커밋 전 상태)
+3. 대상 트리(워크트리면 그 경로)에서 변경을 본다. 에이전트가 `commit.sh` 로 이미 로컬 커밋했을 수 있으니 미커밋 `git status --short && git diff` 와 함께 `git log --oneline origin/<prBase>..HEAD`·`git diff origin/<prBase>...HEAD` 도 본다. 계획서 `## Commits` 에 없는 커밋이 있으면 보고한다
 4. 아래 체크리스트를 검토한다
-5. **표준 검증 스크립트를 직접 다시 돌린다**: `scripts/verify/<레포>.sh` (bznav-web은 `bznav-web.sh <앱|packages/<pkg>>`, zent-packages는 `zent-packages.sh <패키지명>`). 에이전트가 보고한 결과와 다르면 그 차이를 보고한다
+5. **표준 검증 스크립트를 직접 다시 돌린다**: `scripts/verify/<레포>.sh` (bznav-web은 `bznav-web.sh <앱|packages/<pkg>>`, zent-packages는 `zent-packages.sh <패키지명>`, bznav-rn-app은 `bznav-rn-app.sh`). 워크트리면 `HERMES_VERIFY_DIR=<워크트리>` 를 호출마다 붙이고(없으면 메인 체크아웃을 검증한다), 결과 표 제목의 브랜치·SHA 를 계획서 Work ref 와 대조한다. 에이전트가 보고한 결과와 다르면 그 차이를 보고한다
 6. 결과를 보고한다
 
 ## 체크리스트
 
 - [ ] **계획서 준수**: 승인 범위 밖 변경 없음, 결정 사항 그대로 구현됨, 미구현 항목 없음
 - [ ] **필수 규칙 준수**: 해당 레포 `rules.md` "필수" 절의 항목이 지켜졌는지 (용어 규칙, 금지 사항, 허용 범위 예외). 국소 수정이라도 예외가 아니다
-- [ ] **범위 준수**: bznav 앱 에이전트가 다른 앱·`packages/**`를 건드리지 않았는지, `packages-fe`가 `frontend/**`와 `.changeset/`만 바꿨는지, `bznav-packages-fe`의 루트 설정 수정이 허용 예외 안인지
+- [ ] **범위 준수**: bznav 앱 에이전트가 다른 앱·`packages/**`를 건드리지 않았는지, `packages-fe`가 `frontend/**`와 `.changeset/`만 바꿨는지, `bznav-packages-fe`의 루트 설정 수정이 허용 예외 안인지, `bznav-rn-app` 이 웹(bznav-web)을 건드리지 않았고 배포 명령을 실행하지 않았는지, 네이티브·배포 설정 변경은 승인 범위 안이고 배포 경로(코드 푸시 가능 / 스토어 빌드 필요)를 보고했는지
+- [ ] **zent-packages 릴리스 조건**: 브랜치 diff 에 `.changeset/*.md` 추가가 있는지(`git diff --name-only --diff-filter=A origin/main...HEAD -- .changeset` — 표준 스크립트는 미커밋만 본다), bump 수준, 소비 레포 영향 보고
 - [ ] **레포 규칙 준수**: 해당 레포의 Prettier 설정(레포마다 다르다), 파일 네이밍, `any` 미사용, 미사용 import 없음
 - [ ] **기존 패턴 일치**: 권한 가드 위치, 라우트 구조, 레이어 분리(web-op), 생성물(Orval·Relay) 직접 수정 여부
 - [ ] **API 정합성**: 호출 엔드포인트·파라미터·응답 타입이 계획서 spec/생성물과 일치
 - [ ] **교차 서비스 정합성** (복수 레포 작업 시): 같은 기능의 UI 문구·동작이 서비스 간 일관, 공유 env 키 이름 일치, 공유 패키지 선행 순서가 지켜졌는지
 - [ ] **예외·경계값**: 로딩/에러/빈 상태 처리, 널 가드
-- [ ] **보안**: 시크릿 노출, 클라이언트 번들에 서버 전용 값 유입(`NEXT_PUBLIC_` 오용), 키 파일 내용 노출
+- [ ] **보안**: 시크릿 노출, 클라이언트 번들에 서버 전용 값 유입(`NEXT_PUBLIC_`·`EXPO_PUBLIC_` 오용), 새 하드코딩 키, 키 파일 내용 노출
 - [ ] **성능**: 불필요한 리렌더, O(n²) 로직, 과도한 재요청
 
 ## 보고 형식
