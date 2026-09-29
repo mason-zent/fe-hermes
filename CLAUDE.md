@@ -34,47 +34,46 @@
 
 ## 작업 흐름 (Plan-First)
 
-> 이 절의 내용은 `docs/diagrams/hermes-flow.html`(= `/guide 그림`, 가이드 메뉴 "작업 흐름")의 카드에도 그대로 들어 있다. **여기를 고치면 `docs/diagrams/hermes-flow.workflow.json` 의 `cards` 도 같이 고치고 HTML 을 다시 만든다** (방법: `docs/diagrams/README.md`).
+> 이 절의 내용은 `docs/diagrams/hermes-flow.html`(= `/guide 그림`, 가이드 메뉴 "작업 흐름")의 카드에도 그대로 들어 있다. **여기를 고치면 `docs/diagrams/hermes-flow.workflow.json` 의 `cards` 도 같이 고치고 HTML 을 다시 만든다** (방법: `docs/diagrams/README.md`). 진행 상황은 현황판(`/board`)에서 실시간으로 본다.
 
-### 1단계: 분석 & 계획서 작성
-- **모든 작업은 계획서 하나에 묶인다.** 무게에 따라 정식(아래, md + html) 또는 경량(`plans/task/…md` 하나 — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정, 사용자 지시가 곧 승인. `docs/plan-template-light.md`, `scripts/new-plan.mjs`). 계획서 없이 디스패치하는 예외는 없다
-- 요청을 파악하고 대상 서비스를 정한다 (복수 가능)
-- 대상 레포에서 관련 기존 코드를 탐색한다 (Explore 에이전트 또는 직접 읽기)
-- 지식은 **작업 유형에 필요한 절만** 읽는다 (`AGENTS.md` 2.2~2.3). knowledge 전체를 선행 로딩하지 않는다
-- **작업계획서를 `.md` + `.html` 한 쌍으로 작성** (같은 파일명):
-  - `plans/유형/YYYYMMDD-제목.md` — `docs/plan-template.md` 구조. **개요 다음에 Checkpoint 블록**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions)을 반드시 넣는다
-  - `plans/유형/YYYYMMDD-제목.html` — `docs/plan-template.html` 복사 후 `PLAN.decisions[]`와 `<script id="plan-md">`(md 본문 그대로)만 채움
-  - 유형: `feature` / `bugfix` / `refactor`
-- 한쪽만 만들거나 수정하지 않는다. md 결정 사항↔html `decisions[]`, md 본문↔html `plan-md`를 **같은 턴에 동기화**
+### 1단계: 요청 · 계획서
+- **요청은 세 갈래로 들어온다.** ① 대화·`/feature`·`/bugfix` ② `/call <에이전트>` — pane 을 먼저 띄우고 요청은 그 pane 에서 ③ 현황판 이슈 카드의 [처리 시작]. sync·리뷰·다이어그램 작업에서 찾았지만 그 자리에서 고치지 않은 것은 `issues/*.md` 로 등록해 둔다
+- 요청을 파악하고 대상 서비스를 정한다(복수 가능). "케어·환급" 만 나오면 콘솔인지 사용자 웹인지 묻는다
+- 대상 레포의 관련 코드를 탐색한다(Explore 또는 직접 읽기). 지식은 **작업 유형에 필요한 절만** 읽는다(`AGENTS.md` 2.2~2.3)
+- **모든 작업은 계획서 하나에 묶인다. 예외 없다.**
+  - **정식** — 새 기능·여러 레포·API·구조 변경. `plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md` + 같은 이름 `.html`(결정 콘솔, `docs/plan-template.html` 복사 후 `PLAN.decisions[]`·`plan-md` 만 채움). 개요 다음에 **Checkpoint**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions / Commits)
+  - **경량** — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. `plans/task/…md` 하나(`scripts/new-plan.mjs`, `docs/plan-template-light.md`). 사용자 지시가 곧 승인
+- 정식은 md↔html 을 **같은 턴에 동기화**한다(결정 사항↔`decisions[]`, 본문↔`plan-md`)
 
 ### 2단계: 사용자 승인
-- `.md`(상세)와 `.html`(결정 콘솔) 경로를 함께 제시
-- 사용자는 HTML에서 선택지를 고르고 **[프롬프트로 복사]**한 결정을 채팅에 붙여넣음
-- 결정대로 `.md`를 확정하고 html `decisions[]`에 `decided`를 채움 → "✅ 확정 완료" 뷰로 전환
-- 수정 요청 시 양쪽 갱신 후 재승인
+- 정식: `.md`(상세)와 `.html`(결정 콘솔) 경로를 함께 제시 → 사용자가 선택지를 고르고 **[프롬프트로 복사]**한 결정을 붙여넣음 → `.md` 확정, `decisions[]` 에 `decided` → "✅ 확정 완료"
+- 경량: 사용자의 지시가 곧 승인. 결정 콘솔 없이 3단계로
+- 수정 요청이면 양쪽 갱신 후 재승인. **확정 전에는 디스패치하지 않는다**
 
-### 3단계: 작업 브랜치 생성 → 병렬 디스패치
-- **디스패치 전에 `/branch`로 작업 브랜치·워크트리를 만든다.** 로컬 트리는 브랜치가 제각각이라, 확인 없이 보내면 남의 브랜치나 미커밋 변경 위에 얹힌다. 기본이 워크트리라 레포가 지저분해도 시작할 수 있고 여러 작업을 동시에 돌릴 수 있다. 만든 경로로 `scripts/delegate.sh <에이전트> --cwd <워크트리> --plan <계획서>` 하고, 건너뛴 레포에는 디스패치하지 않는다
-- **배치는 workspace = 레포**다. `delegate.sh` 가 담당 레포 workspace 를 찾아(없으면 만들어) 그 **한 탭에 pane 을 나란히** 붙인다. 워크트리마다 탭을 가르지 않는다 — 동시 작업 상황이 한 화면에 다 보이는 쪽이 낫다. pane 이름은 `🤖 <에이전트> · <브랜치>`. `reviewer` 나 단발 조사는 `--here`
-- **레포를 넘는 작업은 순차로** 보낸다. 공유 패키지를 먼저 끝내고 결과를 소비 레포에 넘긴다
-- 서비스별 작업은 **독립적이면 동시에** 보낸다. 기본은 `scripts/delegate.sh <에이전트> --plan <계획서>` — **프롬프트 없이 pane을 열고 그 안에서 작업을 지시한다.** 대화를 이어갈 수 있어 한 방에 던지는 것보다 낫다. 한 번에 끝나는 조사라면 `scripts/delegate.sh <에이전트> "<프롬프트>" --plan new "<요약>"`로 프롬프트를 실어 보내도 된다. 워크트리에서 작업하면 `--cwd <경로>`. 대상마다 pane을 따로 연다. Agent 도구(백그라운드)를 쓰면 `scripts/monitor-pane.sh`(= `/monitor`)로 로그 모니터를 pane에 띄운다
-- 여러 서비스에 같은 기능을 넣을 때는 계획서에 **공통 스펙(문구·동작·env 키)**을 명시해 각 에이전트가 같은 것을 보게 한다
-- 프롬프트 구성: `.claude/rules/dispatch-protocol.md`
+### 3단계: 작업 브랜치 → 디스패치
+- **디스패치 전에 작업 브랜치·워크트리.** `/branch` 또는 `scripts/new-branch.sh` 가 `prBase` 에서 `.worktrees/<레포>/<슬러그>` 로 딴다(메인 체크아웃은 건드리지 않는다). **브랜치가 이미 있으면**(로컬·원격) 상태를 알려 주고 "그대로 이어 쓸까요?" → `--reuse`. 건너뛴 레포에는 디스패치하지 않는다
+- `/call` 은 브랜치를 **뜬 에이전트가 선택지로 묻는다**(최근 작업 브랜치 후보 · 새 브랜치)
+- **`scripts/delegate.sh <에이전트> --cwd <워크트리> --plan <계획서>`** — `--plan` 없이는 띄우지 않는다. 계획서 경로가 지시 맨 앞에 들어가고, Work ref 에 워크트리·브랜치·pane 이 적힌다. FE 세션에는 **보호 훅**이 걸린다(git commit 직접·`add -A`·push·`gh pr` 차단)
+- **배치는 workspace = 레포**, 그 한 탭에 pane 을 나란히(`🤖 <에이전트> · <브랜치>`). `reviewer`·단발 조사는 `--here`
+- **레포를 넘는 작업은 순차로** — 공유 패키지를 먼저 끝내고 소비 레포에 넘긴다. 독립적인 서비스는 동시에. 같은 기능을 여러 서비스에 넣으면 계획서에 **공통 스펙**(문구·동작·env 키)을 적는다
+- 기본은 **프롬프트 없이 pane 을 열고 그 안에서 지시**한다. 한 번에 끝나는 조사만 프롬프트를 싣는다. 프롬프트 구성: `.claude/rules/dispatch-protocol.md`
 
-### 4단계: 검증
-- `reviewer`에게 계획서 경로 + 대상 레포를 넘겨 리뷰
-- 수정 필요 항목은 해당 FE 에이전트에 재디스패치
-- 각 에이전트가 보고한 검증 스크립트 결과를 그대로 확인. 실패를 숨기지 않는다
+### 4단계: 작업 · 커밋 (pane 에서 반복)
+- 사용자는 pane 에서 여러 번 요청한다. 에이전트는 요청마다 시작할 때 Status `in_progress`, 끝나면 `ready_for_review` 로 바꾸고 계획서 `## 지시`·Progress·결과를 쌓는다 → 현황판 카드가 **진행 중 ↔ 리뷰** 를 오간다(에이전트가 working 이면 진행 중)
+- 에이전트는 작업한 뒤 **같은 검증 스크립트**(`scripts/verify/*.sh`, 워크트리면 `HERMES_VERIFY_DIR`)를 돌리고 출력 표를 그대로 보고한다
+- **커밋은 사용자가 "커밋해줘" 라고 할 때만, `scripts/commit.sh` 로만.** 지정 파일만 스테이징 → 엄격 검증 → 검증 전후가 같을 때만 커밋 → 계획서 `## Commits` 기록. 메인 체크아웃·보호 브랜치·남의 스테이징·검증 실패면 **거부**하고 이유를 전해 사용자에게 묻는다
 
-### 5단계: 보고 · Checkpoint 갱신
-- 서비스별 변경 파일 목록, 주요 변경, 검증 결과, 남은 위험을 사용자에게 요약
-- 커밋: 에이전트가 사용자 요청으로 `scripts/commit.sh` 로 로컬 커밋했을 수 있다 — 계획서 `## Commits` 를 확인해 보고에 넣는다. **push·PR 은 헤르메스가** 여러 레포 순서를 확인하고 사용자에게 묻는다
-- **계획서의 Checkpoint를 갱신한다** — Status, Progress 체크, Next, Validation. 갱신 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전이며 매 턴이 아니다. md의 Checkpoint를 고치면 html의 `plan-md` 블록도 **같은 턴에** 동기화한다(승인된 결정이 바뀐 게 아니면 `decisions[]`는 그대로)
+### 5단계: 검증 · 보고 · push/PR
+- `reviewer` 에게 계획서 경로 + 대상 레포(워크트리면 `--cwd <워크트리>`)를 넘겨 리뷰. 수정 필요 항목은 해당 에이전트에 다시 지시
+- 에이전트가 보고한 검증 결과를 그대로 확인한다. **실패를 숨기지 않는다**
+- 서비스별 변경 파일·주요 변경·검증 결과·**`## Commits`**·남은 위험을 요약해 보고
+- **push·PR 은 헤르메스가** 여러 레포 순서·공개 범위를 확인하고 사용자에게 묻는다. 에이전트는 하지 않는다
+- **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 정식이면 html `plan-md` 도 같은 턴에
 
 ### 6단계: 정리
-- 작업 종료가 확인되면 plan을 `plans/archive/<유형>/`으로 이동
-- 후속 작업이 남았으면 그대로 둠
-- 안전망: `scripts/archive-plans.sh` (30일 이상 + 최근 git log 미언급 plan 일괄 이동)
+- 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 계획서 `plans/archive/<유형>/`(md+html), 이슈 `issues/archive/`(+ 연결 경량 계획서), 이슈 워크트리 정리(미커밋·push 안 된 커밋이 있으면 남긴다)
+- 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지. **완료로 옮기는 건 사용자**
+- 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
 ---
 
