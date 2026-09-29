@@ -43,4 +43,7 @@
 
 ## 결과
 - (변경 파일 · 요약 · 남은 위험 — AGENTS.md 6절 보고 형식)
+
+## Commits
+- (scripts/commit.sh 가 한 줄씩 적는다 — 날짜 · 레포 · 브랜치 · SHA · 메시지 · 검증 · push 여부)
 <!-- END:template -->

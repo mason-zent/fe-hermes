@@ -652,7 +652,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <div class="who">헤르메스 → FE 에이전트</div>
           <ul>
             <li>독립적인 서비스 작업은 한 응답에서 동시에 호출합니다.</li>
-            <li>프롬프트에는 계획서 경로, 자기 담당 범위, 관련 파일, API 스펙, 다른 서비스와의 연관성, "커밋 금지·레포 밖 수정 금지" 리마인드가 들어갑니다.</li>
+            <li>프롬프트에는 계획서 경로, 자기 담당 범위, 관련 파일, API 스펙, 다른 서비스와의 연관성, "커밋은 요청 시 <code>scripts/commit.sh</code> 로만·push/PR 금지·레포 밖 수정 금지" 리마인드가 들어갑니다.</li>
             <li>여러 서비스에 같은 기능을 넣을 때는 계획서의 공통 스펙(문구·동작·env 키)을 모두가 같이 봅니다.</li>
           </ul>
 
@@ -716,7 +716,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         <div class="rule">
           <h3>git-workflow</h3>
           <ul>
-            <li>FE 에이전트는 커밋하지 않음. 커밋 여부는 사용자에게 확인</li>
+            <li>FE 에이전트는 사용자가 pane 에서 "커밋해줘" 라고 할 때만 <code>scripts/commit.sh</code> 로 로컬 커밋(지정 파일만·엄격 검증·계획서 기록). push·PR 은 헤르메스</li>
             <li>시작 전 <code>git status</code>로 기존 변경 확인, 무관한 파일은 건드리지 않음</li>
             <li>커밋 메시지는 한국어, 티켓 있으면 <code>feat: REF-1234 설명</code></li>
           </ul>

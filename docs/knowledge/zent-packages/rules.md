@@ -10,7 +10,7 @@
 - **brics(React 18) 라인과 bznav(React 19) 라인을 한 작업에서 섞어 수정하지 않는다.** 별칭 방식도 다르다(brics는 tsconfig paths, bznav는 exports)
 - **public export를 바꾸면 소비 레포 영향을 반드시 보고한다.** 여기 변경은 client-brics-*·bznav-web·web-op로 퍼진다. 운영 반영은 자동이 아니라 소비 레포의 `pnpm up`이 필요하다
 - 기준 브랜치가 **`main`**이다 (다른 레포는 `dev`)
-- **커밋하지 않는다.** `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
 
 ## 공통과 다른 점
 - **문서·지식의 기준 브랜치는 `origin/main`** (콘솔은 `prd`, bznav 앱은 `prd-<앱>` — 정본은 `hermes.config.json`). 작업 브랜치 `feature/REF-####`

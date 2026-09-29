@@ -15,7 +15,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 - **수정 허용은 `frontend/**` 와 `.changeset/*.md` 두 가지다.** `.changeset/`는 `frontend/` 밖이지만 **반드시 쓸 수 있어야 한다**
 - `backend/`, 루트 `package.json`·`pnpm-workspace.yaml`(catalog)·`.github/`는 수정하지 않는다. 필요하면 **헤르메스에 보고**
-- **커밋하지 않는다.** `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
 - 기준 브랜치가 **`main`**이다 (다른 레포는 `dev`). 혼동하지 않는다
 - bznav-web 모노레포 안의 `packages/*`(`@repo/*`)는 **다른 레포**이며 `bznav-packages-fe` 담당이다
 

@@ -63,7 +63,7 @@ PLAN="${PLAN#"$HERMES_DIR"/}"
 case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 한다: $PLAN" >&2; exit 2 ;; esac
 [ -f "$HERMES_DIR/$PLAN" ] || { echo "계획서가 없다: $PLAN" >&2; exit 2; }
 # 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
-PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
+PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 커밋은 사용자가 "커밋해줘" 라고 할 때만 $HERMES_DIR/scripts/commit.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> -m "<레포 관례 메시지>" -- <바꾼 파일>… 로 한다(git commit 직접·git add -A 금지, 거부되면 이유를 그대로 전하고 사용자에게 묻는다). push·PR 은 하지 않는다 — 헤르메스가 맡는다. 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
 # 지시 없이 띄우면(/call) 사용자가 pane 에서 직접 요청한다 — 첫 요청으로 계획서를 채우게 한다
 # /call — 브랜치를 사용자에게 물어 에이전트가 워크트리를 만든다. new-branch.sh 대상 이름은 config 에서
 if [ "$ASK_BRANCH" = 1 ]; then
@@ -216,6 +216,13 @@ if [ -n "$WORK_TOP" ] && [ "$(cd "$WORK_TOP" && pwd -P)" != "$HERMES_REAL" ]; th
   EXTRA_FILES="'$AGENTS_JSON' '$CONTEXT_FILE' '$SETTINGS_FILE'"
   CLAUDE_ARGS="--agents \"\$(cat '$AGENTS_JSON')\" $CLAUDE_ARGS --add-dir '$HERMES_DIR' --append-system-prompt-file '$CONTEXT_FILE' --settings '$SETTINGS_FILE'"
   REPO_DIR="$WORK_TOP"
+elif [ "$AGENT" != reviewer ]; then
+  # hermes 안에서 띄워도 FE 세션에는 보호 훅을 건다 (git commit 직접·add -A → commit.sh 안내, push·gh pr 차단)
+  SETTINGS_FILE="$(mktemp -t hermes-settings)" || { rm -f "$PROMPT_FILE" "$RUNNER"; echo "mktemp 실패"; exit 1; }
+  python3 -c 'import json,sys; json.dump({"hooks":{"PreToolUse":[{"matcher":"Bash","hooks":[{"type":"command","command":"python3 "+sys.argv[2]}]}]}}, open(sys.argv[1],"w"))' \
+    "$SETTINGS_FILE" "$HERMES_DIR/scripts/hooks/commit-guard.py"
+  EXTRA_FILES="'$SETTINGS_FILE'"
+  CLAUDE_ARGS="$CLAUDE_ARGS --settings '$SETTINGS_FILE'"
 fi
 
 # exec 를 쓰지 않는다. exec 는 셸을 교체해 EXIT trap 이 돌지 않아 임시 파일이 남는다.

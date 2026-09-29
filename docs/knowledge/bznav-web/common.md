@@ -64,5 +64,5 @@
 - 공통 패키지 API 변경은 영향 앱과 public export를 먼저 확인. 새 의존성은 catalog 확인 먼저, 내부 패키지는 `workspace:*`
 - 요청하지 않은 의존성 업그레이드·파일 이동·공통화·전역 포맷팅 금지
 - 비출력·비커밋: `.env*`, `.aws/access-key.js`, `firebase-key.json`, 토큰·키. (`.npmrc`에 평문 토큰, `apps/sena-web/firebase-key.json`이 커밋된 상태가 확인됨 — 건드리지 말고 헤르메스에 보고)
-- 커밋하지 않는다. PR은 헤르메스/사용자 지시가 있을 때만 `.github/skills/create-pr` 절차로. **base 는 5개 앱 모두 `dev`**, 릴리즈는 `prd-<앱>`. `dev-ecs` 는 폐기됐다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** PR 은 헤르메스/사용자 지시가 있을 때만 `.github/skills/create-pr` 절차로. **base 는 5개 앱 모두 `dev`**, 릴리즈는 `prd-<앱>`. `dev-ecs` 는 폐기됐다
 - 배포 인프라: **`refund-web` 만 ECS**, 나머지 4개는 EKS 로 이관됐다. 브랜치 선택과는 무관다

@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 범위는 `apps/care-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
-- **커밋하지 않는다.** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
 - 케어 **운영 콘솔**(`client-brics-care`)은 `care-fe` 담당이다. 완전히 다른 레포다
 - **순수 로직·atom을 바꾸면 테스트를 추가한다**(`__test__/`). 5개 앱 중 유일하게 `type-check`·`test:unit`이 있다
 

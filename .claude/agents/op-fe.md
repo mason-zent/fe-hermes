@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - 이 레포 밖은 수정하지 않는다. 공유 패키지(`bznav-fe-ui`, `bznav-fe-common-utils`, `bznav-fe-project-config`) 수정이 필요하면 **헤르메스에 보고**한다 (`packages-fe` 담당). 로컬 링크(`pnpm pkg:link`) 상태로 커밋되지 않게 주의
-- **커밋하지 않는다.** `NEXT_PUBLIC_SALES_*_KEY` 등 키 값은 출력하지 않는다. 시크릿은 서버 전용 환경변수로만
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `NEXT_PUBLIC_SALES_*_KEY` 등 키 값은 출력하지 않는다. 시크릿은 서버 전용 환경변수로만
 - **포맷 설정이 다른 BRICS 레포와 정반대다** (`semi: true`, `trailingComma: all`, `printWidth: 80`, double quote). 다른 레포 습관으로 포맷하지 않는다
 
 ## 시작 전 (작업 크기와 무관하게 항상)

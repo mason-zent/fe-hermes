@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 범위는 `apps/plus-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
-- **커밋하지 않는다.** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
 - ⚠️ `dev`가 `gen:env`를 자동 실행하지 않는다. 최초 1회 `pnpm --filter plus-web gen:env` 수동 실행이 필요하다
 - 신규 앱 성격(0.1.0)이라 **현재 구현 패턴을 우선**하고 불필요한 공통화를 하지 않는다
 

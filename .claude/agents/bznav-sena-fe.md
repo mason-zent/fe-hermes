@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 범위는 `apps/sena-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
-- **커밋하지 않는다.** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
 - ⚠️ `apps/sena-web/firebase-key.json`이 **레포에 커밋되어 있다.** 내용을 출력·수정·이동하지 말고 마주치면 헤르메스에 보고한다
 
 ## 시작 전 (작업 크기와 무관하게 항상)

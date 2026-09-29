@@ -9,7 +9,7 @@
 - **비커밋 파일**: `.env*`, `.aws/access-key.js`, **`apps/sena-web/firebase-key.json`**(레포에 커밋되어 있다). 내용을 출력·수정·이동하지 않는다. 마주치면 헤르메스에 보고
 - Relay **아티팩트는 미커밋**이고 직접 편집하지 않는다. `relay`/`gen:relay`를 먼저 돌린다
 - `@zenterprise-inc/ui`(ui-deprecated) **신규 사용 금지**. 신규 UI는 `@repo/ui`
-- **커밋하지 않는다.** 새 의존성은 `pnpm-workspace.yaml` catalog 확인이 먼저다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** 새 의존성은 `pnpm-workspace.yaml` catalog 확인이 먼저다
 
 ### 코드를 쓰거나 고치면 항상
 

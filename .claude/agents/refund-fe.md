@@ -13,7 +13,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 - 이 레포 밖은 수정하지 않는다. 공유 패키지(`brics-fe-ui`, `brics-fe-zent-auth`) 수정이 필요하면 **직접 고치지 말고 헤르메스에 보고**한다 (`packages-fe` 담당)
 - `__generated__/`(Orval 생성물)는 직접 편집하지 않는다. 생성 명령으로만 만든다
-- **커밋하지 않는다.** `.env*`·토큰·키 파일 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·토큰·키 파일 내용은 출력하지 않는다
 - 비즈넵 환급 **사용자** 웹(`bznav-web apps/refund-web`)은 `bznav-refund-fe` 담당이다. 혼동하지 않는다
 
 ## 시작 전 (작업 크기와 무관하게 항상)

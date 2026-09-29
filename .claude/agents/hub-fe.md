@@ -13,7 +13,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 - 이 레포 밖은 수정하지 않는다. 공유 패키지(`brics-fe-ui`, `zent-auth`, `datadog-trace`, `resource-manager`) 수정이 필요하면 **헤르메스에 보고**한다 (`packages-fe` 담당)
 - `__generated__/`(Orval 생성물)는 직접 편집하지 않는다. **`client-brics-works`의 생성물을 복사해 오지도 않는다**
-- **커밋하지 않는다.** `.env*`·토큰 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·토큰 내용은 출력하지 않는다
 - 사이드바 **메뉴 항목 추가는 코드가 아니라 `/brics-menus` 화면(DB 행)**이다. 코드로 넣지 않는다
 
 ## 시작 전 (작업 크기와 무관하게 항상)

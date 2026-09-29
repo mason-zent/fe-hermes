@@ -3,6 +3,10 @@
 #   run_step "<이름>" <명령...>   → 실행·시간 측정·로그 저장, 실패해도 계속 진행
 #   skip_step "<이름>" "<이유>"   → 건너뜀으로 기록
 #   print_summary                 → 표준 형식 요약 출력, 실패가 있으면 exit 1
+#
+# 엄격 모드(HERMES_VERIFY_STRICT=1, scripts/commit.sh 가 켠다) — 커밋 전 검증용
+#   - 건너뜀(⏭)도 실패로 친다. 사용자가 확인한 단계만 HERMES_VERIFY_ALLOW_SKIP="이름1|이름2" 로 허용
+#   - HERMES_VERIFY_DIR 가 이 레포 워크트리가 아니면 메인 체크아웃으로 돌아가지 않고 멈춘다
 # 출력은 에이전트 보고서의 "검증 결과" 절에 그대로 붙일 수 있는 마크다운이다.
 set -uo pipefail
 VERIFY_LOG_DIR="${VERIFY_LOG_DIR:-$(mktemp -d /tmp/hermes-verify.XXXXXX)}"
@@ -19,6 +23,10 @@ resolve_repo_dir() { # resolve_repo_dir <메인 체크아웃> — 검증할 트�
   if [ -n "$main_common" ] && [ "$main_common" = "$target_common" ]; then
     git -C "$target" rev-parse --show-toplevel
   else
+    if [ "${HERMES_VERIFY_STRICT:-0}" = 1 ]; then
+      echo "❌ HERMES_VERIFY_DIR($target)는 $(basename "$main_dir") 의 워크트리가 아니다 — 엄격 모드라 멈춘다" >&2
+      exit 2
+    fi
     echo "⚠️ HERMES_VERIFY_DIR($target)는 $(basename "$main_dir") 의 워크트리가 아니다 — 메인 체크아웃을 검증한다" >&2
     echo "$main_dir"
   fi
@@ -45,7 +53,15 @@ run_step() {
   fi
   STEP_NAMES+=("$name"); STEP_SECS+=("$((SECONDS - start))"); STEP_LOGS+=("$log")
 }
-skip_step() { STEP_NAMES+=("$1"); STEP_RESULTS+=("⏭ 건너뜀 — $2"); STEP_SECS+=("0"); STEP_LOGS+=(""); }
+skip_step() {
+  STEP_NAMES+=("$1"); STEP_SECS+=("0"); STEP_LOGS+=("")
+  # 엄격 모드: 허용 목록에 없는 건너뜀은 실패
+  if [ "${HERMES_VERIFY_STRICT:-0}" = 1 ] && ! printf '%s' "${HERMES_VERIFY_ALLOW_SKIP:-}" | tr '|' '\n' | grep -qxF "$1"; then
+    STEP_RESULTS+=("❌ 건너뜀(엄격 모드) — $2"); VERIFY_FAILED=1
+  else
+    STEP_RESULTS+=("⏭ 건너뜀 — $2")
+  fi
+}
 
 print_summary() { # print_summary <레포명> <레포경로>
   local repo="$1" path="$2" sha branch

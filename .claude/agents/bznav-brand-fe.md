@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 범위는 `apps/brand-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
-- **커밋하지 않는다.** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
 - ⚠️ **Jotai Provider만 있고 atom 사용처가 0건**이다. 스토어 선례가 없으니 **도입 전 헤르메스에 확인**한다
 
 ## 시작 전 (작업 크기와 무관하게 항상)
