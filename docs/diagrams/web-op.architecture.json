@@ -151,6 +151,16 @@
         {
           "path": "src/gateway/BaseApiGateway.ts",
           "label": "상속하지 말 것"
+        },
+        {
+          "path": "src/gateway/sales/SalesAuthApiClient.ts",
+          "line": 5,
+          "label": "ZENT API 직접(NEXT_PUBLIC_SERVER_ZENT_API_URL)"
+        },
+        {
+          "path": "src/gateway/sales/SalesAuthApiClient.ts",
+          "line": 111,
+          "label": "BFF 경유는 sso 하나"
         }
       ],
       "row": 1,
@@ -170,7 +180,8 @@
       "size": [
         128,
         62
-      ]
+      ],
+      "tag": "호출처 확인 필요"
     },
     {
       "id": "service",
@@ -310,7 +321,11 @@
       "id": "o5",
       "from": "gateway",
       "to": "route",
-      "label": "BFF"
+      "label": "BFF 일부",
+      "labelAt": [
+        706,
+        292
+      ]
     },
     {
       "id": "o6",
@@ -337,6 +352,15 @@
       "to": "jwt",
       "label": "토큰",
       "variant": "security"
+    },
+    {
+      "id": "o10",
+      "from": "gateway",
+      "to": "ext",
+      "label": "직접 — sales·documents 대부분",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "top"
     }
   ],
   "cards": [
