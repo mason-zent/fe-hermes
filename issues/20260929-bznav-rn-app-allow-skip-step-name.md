@@ -1,6 +1,6 @@
 ---
 title: rn-app 커밋 지시의 --allow-skip 단계 이름이 옛 이름(yarn expo lint)이라 commit.sh 가 거부
-status: open
+status: done
 repo: bznav-rn-app
 agent: hermes
 kind: knowledge
