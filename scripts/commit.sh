@@ -174,6 +174,14 @@ else:
 if updated == text or line not in updated:
     sys.exit(1)   # 기록이 안 됐다 — 아래에서 경고
 path.write_text(updated, encoding='utf-8')
+# 정식 계획서는 같은 이름의 .html(결정 콘솔)이 md 본문을 <script id="plan-md"> 에 그대로 담는다 — 같이 맞춘다(AGENTS 규칙: md↔html 동기화)
+html = path.with_suffix('.html')
+if html.exists():
+    page = html.read_text(encoding='utf-8')
+    block = re.compile(r'(<script id="plan-md" type="text/markdown">)(.*?)(</script>)', re.S)
+    if block.search(page):
+        body = re.sub(r'</(script)', r'<\\/\1', updated, flags=re.I)   # 본문 안의 닫는 태그(대소문자·공백 변형 포함)가 블록을 끊지 않게
+        html.write_text(block.sub(lambda m: m.group(1) + '\n' + body + m.group(3), page, count=1), encoding='utf-8')
 PYEOF
 [ $? = 0 ] || echo "⚠️ 커밋은 됐지만 계획서 기록에 실패했다 — 다시 커밋하지 말고 계획서 ## Commits 에 손으로 적는다: $SHA" >&2
 

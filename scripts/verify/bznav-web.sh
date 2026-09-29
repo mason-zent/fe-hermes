@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # bznav-web 표준 검증 (앱 또는 패키지 단위)
 #   scripts/verify/bznav-web.sh <앱>            예: refund-web · care-web · brand-web · sena-web · plus-web
-#   scripts/verify/bznav-web.sh packages/<pkg>  예: packages/ui  (→ pnpm --filter @repo/ui lint)
+#   scripts/verify/bznav-web.sh packages/<pkg>  예: packages/ui  (→ 그 폴더 package.json 의 name 으로 pnpm --filter <name> lint)
 # 규칙 출처: .ai/basic-rule.md 7장. care-web 만 type-check·test:unit 이 있고 나머지는 tsc --noEmit 로 대체.
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/verify/_lib.sh"
 # HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
@@ -14,8 +14,16 @@ check_node_version "$REPO_DIR"
 [ -d node_modules ] || skip_step "pnpm install 확인" "node_modules 없음 — pnpm install 먼저"
 
 if [[ "$TARGET" == packages/* ]]; then
-  PKG="@repo/${TARGET#packages/}"
-  run_step "pnpm --filter $PKG lint" pnpm --filter "$PKG" lint
+  # 폴더 이름으로 패키지 이름을 짐작하지 않는다 — ui-deprecated 는 @zenterprise-inc/ui 다
+  [ -f "$TARGET/package.json" ] || { echo "$TARGET/package.json 이 없습니다."; exit 2; }
+  PKG="$(node -p "require('./$TARGET/package.json').name")"
+  HAS_LINT="$(node -p "Boolean(require('./$TARGET/package.json').scripts?.lint)")"
+  if [ "$HAS_LINT" = true ]; then
+    run_step "pnpm --filter $PKG lint" pnpm --filter "$PKG" lint
+  else
+    # project-config 처럼 설정만 내보내는 패키지는 lint 스크립트가 없다 — 통과로 적지 않고 건너뜀으로
+    skip_step "pnpm --filter $PKG lint" "$TARGET 에 lint 스크립트가 없다(설정만 내보내는 패키지) — 바꾼 설정을 쓰는 앱을 bznav-web.sh <앱> 으로 검증한다"
+  fi
   [ "$PKG" = "@repo/ui" ] && run_step "pnpm --filter @repo/ui build-storybook" pnpm --filter @repo/ui build-storybook
   print_summary "bznav-web $TARGET" "$REPO_DIR"; exit $?
 fi

@@ -44,6 +44,7 @@ case "$TICKET" in
   *)   BRANCH="feature/$TICKET" ;;
 esac
 SLUG="$(printf '%s' "$BRANCH" | tr '/' '-')"
+BRANCH_GIVEN="$BRANCH"; SLUG_GIVEN="$SLUG"   # 레포마다 이름 규칙이 다를 수 있어 반복문에서 다시 정한다
 
 resolve() {
   python3 - "$CONFIG" "$1" <<'PY'
@@ -101,6 +102,19 @@ for target in "${TARGETS[@]}"; do
     else
       echo "❌ $label — origin/$base 를 fetch 하지 못했고 로컬에도 없다 (네트워크·권한 확인)"
       skipped=$((skipped+1)); continue
+    fi
+  fi
+
+  # 레포별 브랜치 이름 — 기본은 위에서 정한 이름. bznav-rn-app 은 feature/v<앱버전>/<티켓> 이 관례라
+  # 티켓만 줬으면 base 의 app.config.js 에서 앱 버전(첫 version: "x.y.z")을 읽어 붙인다(슬래시가 있으면 준 이름 그대로)
+  BRANCH="$BRANCH_GIVEN"; SLUG="$SLUG_GIVEN"
+  if [ "$repo" = bznav-rn-app ] && [[ "$TICKET" != */* ]]; then
+    app_version="$(git -C "$dir" show "origin/$base:app.config.js" 2>/dev/null | sed -nE 's/^[[:space:]]*version:[[:space:]]*"([0-9][0-9.]*)".*/\1/p' | head -1)"
+    if [ -n "$app_version" ]; then
+      BRANCH="feature/v$app_version/$TICKET"; SLUG="$(printf '%s' "$BRANCH" | tr '/' '-')"
+      echo "   $label — 레포 관례로 브랜치 이름: $BRANCH (앱 버전은 origin/$base app.config.js)"
+    else
+      echo "   ⚠️ $label — app.config.js 에서 앱 버전을 못 읽어 $BRANCH 로 딴다. 관례는 feature/v<앱버전>/<티켓> — 전체 이름을 주면 그대로 쓴다"
     fi
   fi
 

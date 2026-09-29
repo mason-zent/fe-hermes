@@ -249,6 +249,19 @@ elif [ "$AGENT" != reviewer ]; then
   CLAUDE_ARGS="$CLAUDE_ARGS --settings '$SETTINGS_FILE'"
 fi
 
+# packages-fe: zent-packages 의 `pnpm deps` 는 레포 상위 폴더에서 소비 레포를 찾는다. 워크트리(.worktrees/zent-packages/…)에서는
+# 상위가 헤르메스라 못 찾는다 — config 의 다른 레포 실제 경로를 ZENT_CONSUMERS 로 직접 넘긴다(심볼릭 링크 탐색에 기대지 않는다)
+CONSUMERS=""
+if [ "$AGENT" = packages-fe ]; then
+  CONSUMERS="$(python3 - "$HERMES_DIR/hermes.config.json" "$HERMES_DIR/repos" <<'PYEOF'
+import json, os, sys
+cfg = json.load(open(sys.argv[1]))
+paths = [os.path.realpath(os.path.join(sys.argv[2], r['name'])) for r in cfg['repos'] if r.get('kind') != 'packages']
+print(','.join(path for path in paths if os.path.isdir(path)))
+PYEOF
+)"
+fi
+
 # exec 를 쓰지 않는다. exec 는 셸을 교체해 EXIT trap 이 돌지 않아 임시 파일이 남는다.
 {
   echo '#!/usr/bin/env bash'
@@ -257,6 +270,7 @@ fi
   echo "cd '$WORKDIR' || exit 1"
   [ -n "$REPO_DIR" ] && echo "export HERMES_REPO_DIR='$REPO_DIR'"
   [ -n "$EXTRA_FILES" ] && echo "export HERMES_VERIFY_DIR='$WORK_TOP'"
+  [ -n "$CONSUMERS" ] && echo "export ZENT_CONSUMERS='$CONSUMERS'"
   if [ -n "$PROMPT" ]; then
     echo "claude $CLAUDE_ARGS \"\$(cat '$PROMPT_FILE')\""
   else
