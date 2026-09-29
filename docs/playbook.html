@@ -294,11 +294,11 @@
   <header>
     <div class="eyebrow">Frontend Agent Team · Claude Code Workspace</div>
     <h1>Hermes 플레이북</h1>
-    <p class="lede">헤르메스는 프론트엔드 레포 6개 — 운영 콘솔·내부 4개, 비즈넵 사용자 웹 모노레포(앱 5개), 공유 패키지 — 를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
+    <p class="lede">헤르메스는 레포 7개 — 운영 콘솔·내부 4개, 비즈넵 사용자 웹 모노레포(앱 5개), 공유 패키지, 비즈넵 모바일 앱 — 를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
-      <span>agents 12 · skills 7</span>
+      <span>agents 13 · skills 7</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-17</span>
 <!-- END:generated:last-sync -->
@@ -338,7 +338,7 @@ claude
 
     <section id="team">
       <h2>팀 구성</h2>
-      <p>서브에이전트 12개가 <code>.claude/agents/</code>에 정의되어 있습니다. 단일 레포는 에이전트 하나가 전담하고, bznav-web 모노레포는 <strong>앱마다 에이전트 하나</strong>(+ packages 담당), zent-packages는 <code>frontend/</code>만 맡는 에이전트가 있으며, reviewer는 읽기 전용으로 전체를 봅니다. 레포 목록 정본은 <code>hermes.config.json</code>, 경로는 <code>repos/&lt;레포&gt;</code> 링크입니다. 아래 표의 스택·포트는 각 레포의 <strong>운영 기준 브랜치</strong>(콘솔 <code>prd</code> · bznav 앱별 <code>prd-&lt;앱&gt;</code> · zent-packages <code>main</code>, 정본은 <code>hermes.config.json</code>) 기준이며 <code>/sync</code>로 갱신됩니다.</p>
+      <p>서브에이전트 13개가 <code>.claude/agents/</code>에 정의되어 있습니다. 단일 레포는 에이전트 하나가 전담하고, bznav-web 모노레포는 <strong>앱마다 에이전트 하나</strong>(+ packages 담당), zent-packages는 <code>frontend/</code>만 맡는 에이전트가 있으며, reviewer는 읽기 전용으로 전체를 봅니다. 레포 목록 정본은 <code>hermes.config.json</code>, 경로는 <code>repos/&lt;레포&gt;</code> 링크입니다. 아래 표의 스택·포트는 각 레포의 <strong>운영 기준 브랜치</strong>(콘솔 <code>prd</code> · bznav 앱별 <code>prd-&lt;앱&gt;</code> · zent-packages <code>main</code>, 정본은 <code>hermes.config.json</code>) 기준이며 <code>/sync</code>로 갱신됩니다.</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -409,6 +409,13 @@ claude
               <td><code>pnpm --filter @repo/&lt;pkg&gt; lint</code><br><code>build-storybook</code></td>
             </tr>
             <tr>
+              <td class="name">bznav-rn-app</td>
+              <td><code>bznav-rn-app</code></td>
+              <td>비즈넵 모바일 앱<span class="sub">화면·내비게이션, 웹뷰 브릿지, 푸시·딥링크, 네이티브 설정, 코드 푸시·스토어 빌드 판단 (배포 명령은 실행하지 않음)</span></td>
+              <td>Expo 55 · RN 0.83 · React Navigation · TanStack Query · zustand · NativeWind<span class="sub">기준·PR base prd · yarn · Node 20.19</span></td>
+              <td><code>yarn expo lint</code><br><code>yarn tsc --noEmit</code></td>
+            </tr>
+            <tr>
               <td class="name">packages-fe</td>
               <td>zent-packages <code>frontend/</code></td>
               <td>발행 공유 패키지<span class="sub"><code>@zenterprise-inc/brics-fe-*</code>(React 18, 콘솔용) · <code>bznav-fe-*</code>(React 19) · <code>zent-fe-devkit</code>. backend/ 범위 밖</span></td>
@@ -451,6 +458,7 @@ claude
         <div class="kw">플러스, 세금 계산기, 세금 진단, 운세</div><div class="to">bznav-plus-fe</div>
         <div class="kw">@repo/* 공통 UI·세션·트래킹·유틸 (bznav-web packages)</div><div class="to">bznav-packages-fe</div>
         <div class="kw">brics-fe-ui, zent-auth, bznav-fe-ui, 공유 패키지 발행·changeset·스냅샷, zent-packages</div><div class="to">packages-fe</div>
+        <div class="kw">비즈넵 모바일 앱, RN·Expo, 웹뷰 브릿지, 푸시·딥링크, 코드 푸시(EAS Update)</div><div class="to">bznav-rn-app</div>
         <div class="kw">web-op, 영업(sales), 영업사원, 서류(documents), 직원(employee), 파이프드라이브</div><div class="to">op-fe</div>
       </div>
     </section>
@@ -563,7 +571,7 @@ claude
 
         <article class="cmd wide">
           <div class="cmd-head"><kbd>/guide <span class="arg">스킬 · pane · 열기 · 그림 · 팀 · 흐름 (선택)</span></kbd><span class="tag plain">read-only</span></div>
-          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>스킬</code>을 붙이면 <strong>지금 쓸 수 있는 슬래시 커맨드 목록</strong>(이름·인자·설명)을 <code>.claude/skills</code>에서 읽어 보여줍니다. <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다 — 마우스 클릭 또는 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 항목은 <strong>⚡ 실행·확인</strong>(① 스킬 목록·실행 ② 에이전트·담당 레포·라우팅 ③ git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드) 두 그룹입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>의 frontmatter를 그때그때 읽으므로 스킬을 추가하면 메뉴에 자동으로 나오고, 번호를 고른 뒤 <kbd>⏎</kbd>로 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 <code>/&lt;스킬&gt;</code>을 실행합니다(기존 세션은 건드리지 않음). <kbd>v</kbd>는 SKILL.md 본문 보기입니다. 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, 특정 파일은 <code>/guide pane &lt;파일&gt;</code>으로 직접 띄웁니다(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을, <code>그림</code>은 <strong>다이어그램 목록</strong>을 브라우저로 엽니다 — 담당 서비스 9개를 <strong>구조 · 화면 맵 · 요청 흐름</strong> 세 각도로 그린 인터랙티브 HTML이고(비즈넵 웹 5개는 화면 전수를 담은 심층 추가), 헤르메스 작업 흐름도 같이 있습니다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지가 붙은 노드는 실제 파일을 가리킵니다. 각 그림은 <strong>대표 화면 하나를 정해 그 코드만</strong> 그린 것이라 같은 앱의 다른 화면에 그대로 옮기면 안 됩니다.</p>
+          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>스킬</code>을 붙이면 <strong>지금 쓸 수 있는 슬래시 커맨드 목록</strong>(이름·인자·설명)을 <code>.claude/skills</code>에서 읽어 보여줍니다. <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다 — 마우스 클릭 또는 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 항목은 <strong>⚡ 실행·확인</strong>(① 스킬 목록·실행 ② 에이전트·담당 레포·라우팅 ③ git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드) 두 그룹입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>의 frontmatter를 그때그때 읽으므로 스킬을 추가하면 메뉴에 자동으로 나오고, 번호를 고른 뒤 <kbd>⏎</kbd>로 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 <code>/&lt;스킬&gt;</code>을 실행합니다(기존 세션은 건드리지 않음). <kbd>v</kbd>는 SKILL.md 본문 보기입니다. 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, 특정 파일은 <code>/guide pane &lt;파일&gt;</code>으로 직접 띄웁니다(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을, <code>그림</code>은 <strong>다이어그램 목록</strong>을 브라우저로 엽니다 — 담당 서비스 10개를 <strong>구조 · 화면 맵 · 요청 흐름</strong> 세 각도로 그린 인터랙티브 HTML이고(비즈넵 웹 5개와 모바일 앱은 화면 전수를 담은 심층 추가), 헤르메스 작업 흐름도 같이 있습니다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지가 붙은 노드는 실제 파일을 가리킵니다. 각 그림은 <strong>대표 화면 하나를 정해 그 코드만</strong> 그린 것이라 같은 앱의 다른 화면에 그대로 옮기면 안 됩니다.</p>
           <div class="flow"><span>스킬 · 문서 읽기</span><span class="hi">본문 그대로 출력</span><span>원본 경로 표시</span></div>
           <dl>
             <dt>언제</dt><dd>헤르메스에게 뭘 시킬 수 있는지 훑을 때, 어느 레포 작업인지 헷갈릴 때, 스킬·에이전트 추가 절차가 기억나지 않을 때</dd>
@@ -574,7 +582,7 @@ claude
 /guide pane      # 오른쪽 pane 에 선택형 메뉴 (herdr/tmux)
 /guide pane CLAUDE.md # 메뉴 대신 파일을 less 로
 /guide 열기      # docs/playbook.html 을 브라우저로
-/guide 그림      # 다이어그램 목록 (서비스 9개 × 구조·화면 맵·요청 흐름)
+/guide 그림      # 다이어그램 목록 (서비스 10개 × 구조·화면 맵·요청 흐름)
 /guide 팀        # 에이전트 · 담당 레포 · 라우팅 기준</code></pre>
         </article>
 
@@ -617,6 +625,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
             <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">앱별 prd-*</td><td>2026-09-23</td><td>packages 는 dev c08dbd8</td></tr>
             <tr><td>web-op</td><td class="name">op-fe</td><td class="name">4ac5be7</td><td>2026-09-16</td><td>Merge pull request #198 from zenterprise-inc/feature/REF-3</td></tr>
             <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">bfa6be4</td><td>2026-09-16</td><td>Merge pull request #101 from zenterprise-inc/changeset-rel</td></tr>
+            <tr><td>bznav-rn-app</td><td class="name">bznav-rn-app</td><td class="name">a161710</td><td>2026-09-23</td><td>Merge pull request #90 from zenterprise-inc/feature/v5.1.2</td></tr>
 <!-- END:generated:baseline-rows -->
           </tbody>
         </table>

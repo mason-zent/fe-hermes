@@ -14,7 +14,7 @@ open docs/diagrams/index.html
 
 서비스마다 **보는 각도를 셋으로 나누고**, 그 위에 **레포를 가로지르는 구조** 세 장을 뒀다.
 
-> 목록(`index.html`)에는 **구조 · 화면 맵 · 요청 흐름**(비즈넵 웹 5개는 심층 추가 — `<앱>/<앱>-architecture.html` 탭 번들, 원본 JSON 과 `build-bundle.py` 가 같은 폴더에 있다)만 올린다. lifecycle(화면 상태)과 가로지르는 장(`data-sources` 등)은 2026-09-28 목록에서 뺐고, 파일과 원본 JSON 은 이 폴더에 남아 있다.
+> 목록(`index.html`)에는 **구조 · 화면 맵 · 요청 흐름**(비즈넵 웹 5개·모바일 앱은 심층 추가 — `<앱>/<앱>-architecture.html` 탭 번들, 원본 JSON 과 `build-bundle.py` 가 같은 폴더에 있다)만 올린다. lifecycle(화면 상태)과 가로지르는 장(`data-sources` 등)은 2026-09-28 목록에서 뺐고, 파일과 원본 JSON 은 이 폴더에 남아 있다.
 
 | 타입 | 무엇을 보나 | 파일 |
 |---|---|---|
@@ -33,6 +33,7 @@ open docs/diagrams/index.html
 | bznav brand-web | ✅ | ✅ | ✅ | `app/terms/[...terms]` |
 | bznav sena-web | ✅ | ✅ | ✅ | 챗 스트림 |
 | bznav plus-web | ✅ | ✅ | ✅ | `app/calc/holidaypay` (계산기마다 단계가 다르다. 훅·유틸 파일명은 `holiday-pay`) |
+| bznav-rn-app | ✅ | ✅ | – | 세나 탭 첫 진입(`SenaContainerScreen`) · 쿠키 주입 → 웹뷰 → 브릿지. lifecycle 대신 화면 맵(domains) |
 
 ⚠️ **sequence·lifecycle 은 대표 화면 하나를 정해 그 코드만 그린 것이다.** 같은 앱의 다른 화면은
 다르게 동작한다(care 콘솔의 promotion 과 bmans, hub 의 messages 와 admin 이 그렇다). 일반화해서 옮기지 않는다.

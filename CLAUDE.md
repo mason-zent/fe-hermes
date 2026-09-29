@@ -23,6 +23,7 @@
 | `op-fe` | web-op | `bznav-sena-fe` | bznav `apps/sena-web` |
 | `packages-fe` | zent-packages `frontend/` | `bznav-plus-fe` | bznav `apps/plus-web` |
 | `reviewer` | 전체 (읽기 전용) | `bznav-packages-fe` | bznav `packages/*` |
+| `bznav-rn-app` | bznav-rn-app (모바일 앱) | | |
 
 상세 프로필은 `.claude/agents/*.md`. 담당 범위·기준 브랜치·라우팅 기준은 공통 문서 1절을 따른다.
 
@@ -101,7 +102,7 @@
 | `/monitor` | 백그라운드 서브에이전트 로그를 herdr pane 에 실시간 표시 (`/monitor 30` = 최근 30분) |
 | `/board` | 현황판 — 로컬 서버를 띄워 브라우저에서 실시간으로 본다. 지금 동작 중인 에이전트 · 계획서 칸반(Checkpoint Status) · `issues/` 이슈. 카드를 끌어 상태를 바꾸고, 버튼으로 헤르메스 pane 에 지시를 보낸다 (`/board stop`) |
 | `/sync` | 담당 레포의 운영 기준 브랜치를 훑어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서는 `node scripts/build-derived.mjs`가 생성. 다이어그램 근거가 운영 코드와 어긋났는지 `node scripts/check-diagrams.mjs`로 점검 |
-| `/guide` | 사용·확장 가이드를 터미널에 표시. `/guide 스킬`은 쓸 수 있는 슬래시 커맨드 목록, `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 라우팅 · git 현황 · 문서), `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 + 서비스 9개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개는 심층 추가) 열기 |
+| `/guide` | 사용·확장 가이드를 터미널에 표시. `/guide 스킬`은 쓸 수 있는 슬래시 커맨드 목록, `/guide pane`은 오른쪽 pane에 선택형 메뉴(스킬 목록·실행 · 라우팅 · git 현황 · 문서), `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
 
 ## 확장
 - 스킬: `.claude/skills/<이름>/SKILL.md` (frontmatter `name`/`description`/`argument-hint`, 본문 `$ARGUMENTS`). 에이전트: `.claude/agents/<이름>.md` (description이 라우팅 문장, 콜론+공백 금지)

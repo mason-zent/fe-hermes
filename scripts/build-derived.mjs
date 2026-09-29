@@ -192,7 +192,7 @@ const servicesTable = () => {
 
 // ---- playbook 기준 커밋 표 ----
 const baselineRows = () => {
-  const order = ['client-brics-refund', 'client-brics-hub', 'client-brics-care', 'bznav-web', 'web-op', 'zent-packages']
+  const order = ['client-brics-refund', 'client-brics-hub', 'client-brics-care', 'bznav-web', 'web-op', 'zent-packages', 'bznav-rn-app']
   return order
     .filter((name) => snaps[name])
     .map((name) => {

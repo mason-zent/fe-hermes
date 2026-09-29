@@ -1,0 +1,130 @@
+{
+  "repo": "bznav-rn-app",
+  "agents": [
+    "bznav-rn-app"
+  ],
+  "branch": "origin/prd",
+  "sha": "a161710c5c3b",
+  "shaDate": "2026-09-23",
+  "subject": "Merge pull request #90 from zenterprise-inc/feature/v5.1.2/SENA-269",
+  "package": {
+    "name": "bznav-mobile",
+    "version": "5.0.0",
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+    "engines": null,
+    "scripts": {
+      "prebuild:clean:dev": "APP_VARIANT=development expo prebuild --clean",
+      "prebuild:clean:prod": "APP_VARIANT=production expo prebuild --clean",
+      "android:clean": "cd android && ./gradlew clean",
+      "# 환경변수 스크립트": "------------------------------------------------------------------",
+      "env:dev": "APP_VARIANT=development eas env:pull --environment production",
+      "env:prod": "APP_VARIANT=production eas env:pull --environment production",
+      "# Expo 스크립트": "------------------------------------------------------------------",
+      "start": "expo start",
+      "start:dev:lan": "APP_VARIANT=development expo start --lan",
+      "start:prod:lan": "APP_VARIANT=production expo start --lan",
+      "start:dev:tunnel": "APP_VARIANT=development expo start --tunnel",
+      "start:prod:tunnel": "APP_VARIANT=production expo start --tunnel",
+      "# 빌드 스크립트": "------------------------------------------------------------------",
+      "ios-device:dev": "APP_VARIANT=development expo run:ios --device --configuration Debug",
+      "ios-device:dev:release": "APP_VARIANT=development expo run:ios --device --configuration Release",
+      "ios-device:prod:release": "APP_VARIANT=production expo run:ios --device --configuration Release",
+      "ios-device:prod:debug": "APP_VARIANT=production expo run:ios --device --configuration Debug",
+      "android-device:dev": "APP_VARIANT=development expo run:android --device --variant debug",
+      "android-device:prod": "APP_VARIANT=production expo run:android --device --variant release",
+      "# 배포 스크립트": "------------------------------------------------------------------",
+      "update:dev": "yarn prebuild:clean:dev && bash -c 'set -a && source .env && set +a && APP_VARIANT=development eas update --branch development --environment development --clear-cache -m \"dev update\"' && APP_VARIANT=development npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@development --dist=development",
+      "update:dev:ios": "yarn prebuild:clean:dev && bash -c 'set -a && source .env && set +a && APP_VARIANT=development eas update --branch development --environment development --clear-cache --platform ios -m \"dev update ios\"' && APP_VARIANT=development npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@development --dist=development",
+      "update:dev:android": "yarn prebuild:clean:dev && bash -c 'set -a && source .env && set +a && APP_VARIANT=development eas update --branch development --environment development --clear-cache --platform android -m \"dev update android\"' && APP_VARIANT=development npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@development --dist=development",
+      "update:prod": "yarn prebuild:clean:prod && bash -c 'set -a && source .env && set +a && APP_VARIANT=production eas update --branch production --environment production --clear-cache -m \"prod update\"' && APP_VARIANT=production npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@production --dist=production",
+      "update:prod:ios": "yarn prebuild:clean:prod && bash -c 'set -a && source .env && set +a && APP_VARIANT=production eas update --branch production --environment production --clear-cache --platform ios -m \"prod update ios\"' && APP_VARIANT=production npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@production --dist=production",
+      "update:prod:android": "yarn prebuild:clean:prod && bash -c 'set -a && source .env && set +a && APP_VARIANT=production eas update --branch production --environment production --clear-cache --platform android -m \"prod update android\"' && APP_VARIANT=production npx sentry-expo-upload-sourcemaps dist --release=bznav-rn@production --dist=production",
+      "ios:dev:ipa:local": "APP_VARIANT=development eas build --platform ios --profile development --local",
+      "android:dev:apk:local": "APP_VARIANT=development eas build --platform android --profile development --local",
+      "android:prod:apk:local": "APP_VARIANT=production eas build --platform android --profile production-apk --local",
+      "android:prod:aab:local": "APP_VARIANT=production eas build --platform android --profile production --local",
+      "# Firebase App Distribution 스크립트": "------------------------------------------------------------------",
+      "firebase:distribute:android": "./scripts/firebase-distribute-android.sh",
+      "firebase:distribute:ios": "./scripts/firebase-distribute-ios.sh",
+      "# Sentry 스크립트": "------------------------------------------------------------------",
+      "sentry:upload:dsym": "cd ios && sentry-cli upload-dif --project bznav-rn \"/Users/edin/Downloads/dSYMs\"",
+      "android": "expo run:android",
+      "ios": "expo run:ios",
+      "postinstall": "patch-package"
+    },
+    "deps": {
+      "axios": "^1.12.2",
+      "react": "19.2.0",
+      "react-dom": "19.2.0",
+      "tailwindcss": "^3.4.17",
+      "typescript": "~5.9.2",
+      "zustand": "^5.0.8"
+    }
+  },
+  "port": null,
+  "prettier": null,
+  "nvmrc": "20.19.4",
+  "dirs": {
+    "src": [
+      "components",
+      "config",
+      "constants",
+      "contexts",
+      "data",
+      "handlers",
+      "hooks",
+      "interface",
+      "navigation",
+      "screens",
+      "services",
+      "store",
+      "theme",
+      "tracking",
+      "types",
+      "utils"
+    ],
+    "src/components": [
+      "atoms",
+      "auth",
+      "button",
+      "card",
+      "channelTalk",
+      "chat",
+      "checkbox",
+      "common",
+      "dev",
+      "divider",
+      "input",
+      "list",
+      "modal",
+      "notification",
+      "organisms",
+      "progress",
+      "skeleton",
+      "survey",
+      "toast",
+      "topNavigation"
+    ],
+    "src/hooks": [
+      "api"
+    ],
+    "src/screens": [
+      "auth",
+      "showcase",
+      "survey",
+      "tabs"
+    ],
+    "src/utils": [
+      "migrations"
+    ]
+  },
+  "docs": {
+    "README.md": "1ef508b5ff77",
+    "CLAUDE.md": "876da1ed8147",
+    ".nvmrc": "f5b3751f5dd2",
+    ".claude/rules/design-system-core.md": "0545517079d3",
+    ".claude/rules/tracking.md": "1b15760c17c9",
+    "docs/plans/navigation-intent-v2-plan.md": "f106d0a75c8a",
+    "docs/plans/sena-notification-bridge-interface.md": "9e3aeb679ee7"
+  }
+}

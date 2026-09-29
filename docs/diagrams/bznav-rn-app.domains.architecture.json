@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 화면 맵",
+    "subtitle": "src/screens 37파일 · 내비게이터 등록 26 + 개발용 쇼케이스 11",
+    "output": "docs/diagrams/bznav-rn-app.domains.html",
+    "viewBox": [1080, 640],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "tabs",
+        "label": "하단 탭",
+        "focus": ["refund", "sena", "care", "collection"],
+        "note": "탭 4개 중 3개는 웹뷰 한 장이다. 네이티브로 그리는 탭은 전체(collection) 하나다."
+      },
+      {
+        "id": "auth",
+        "label": "인증 흐름",
+        "focus": ["signin", "signup", "renew", "dup"],
+        "note": "로그인 결과의 ciRequired · requiredTerms 로 약관 갱신 · 본인인증 화면이 끼어든다."
+      },
+      {
+        "id": "stack",
+        "label": "스택 화면",
+        "focus": ["setting", "account", "info", "license", "noti", "notiset", "chatroom", "survey", "modal"],
+        "note": "RootStack 에 탭과 나란히 올라가는 화면이다. 설정은 전체 탭 상단 버튼에서 들어간다."
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 5,
+    "cellW": 128,
+    "cellH": 62,
+    "gapX": 44,
+    "gapY": 44
+  },
+  "components": [
+    { "id": "refund", "type": "frontend", "row": 0, "col": 0, "label": "환급 탭", "sublabel": "1 화면 · 웹뷰", "tag": "기본 탭", "size": [128, 54],
+      "sources": [{ "path": "src/screens/tabs/RefundContainerScreen.tsx" }] },
+    { "id": "sena", "type": "frontend", "row": 0, "col": 1, "label": "세나 탭", "sublabel": "1 화면 · 웹뷰", "tag": "AI 동의 · 알림 쿠키", "size": [128, 54],
+      "sources": [{ "path": "src/screens/tabs/SenaContainerScreen.tsx" }] },
+    { "id": "care", "type": "frontend", "row": 0, "col": 2, "label": "케어 탭", "sublabel": "1 화면 · 웹뷰", "tag": "채널톡 버튼", "size": [128, 54],
+      "sources": [{ "path": "src/screens/tabs/CareContainerScreen.tsx" }] },
+    { "id": "collection", "type": "frontend", "row": 0, "col": 3, "label": "전체 탭", "sublabel": "1 화면 · 네이티브", "tag": "메뉴 · 알림 · AI 상담", "size": [128, 54],
+      "sources": [{ "path": "src/screens/tabs/CollectionScreen.tsx" }] },
+
+    { "id": "signin", "type": "security", "row": 1, "col": 0, "label": "SignIn", "sublabel": "1 화면", "tag": "카카오 · 네이버 · 애플", "size": [128, 54],
+      "sources": [{ "path": "src/screens/auth/SignInScreen.tsx" }] },
+    { "id": "signup", "type": "security", "row": 1, "col": 1, "label": "가입", "sublabel": "2 화면", "tag": "SignTerms · SignupCi", "size": [128, 54],
+      "sources": [{ "path": "src/screens/auth/SignTermsScreen.tsx" }, { "path": "src/screens/auth/SignupCiVerificationScreen.tsx" }] },
+    { "id": "renew", "type": "security", "row": 1, "col": 2, "label": "약관 · CI 갱신", "sublabel": "2 화면", "tag": "UpdateTerms · UserCi", "size": [128, 54],
+      "sources": [{ "path": "src/screens/auth/UpdateTermsScreen.tsx" }, { "path": "src/screens/auth/UserCiVerificationScreen.tsx" }] },
+    { "id": "dup", "type": "security", "row": 1, "col": 3, "label": "중복 계정", "sublabel": "1 화면", "tag": "아래에서 올라온다", "size": [128, 54],
+      "sources": [{ "path": "src/screens/auth/DuplicateAccountScreen.tsx" }] },
+
+    { "id": "setting", "type": "backend", "row": 2, "col": 0, "label": "설정", "sublabel": "1 화면", "tag": "전체 탭 상단에서", "size": [128, 54],
+      "sources": [{ "path": "src/screens/SettingScreen.tsx" }] },
+    { "id": "account", "type": "backend", "row": 2, "col": 1, "label": "내 정보 · 탈퇴", "sublabel": "3 화면", "tag": "탈퇴 전 본인인증", "size": [128, 54],
+      "sources": [{ "path": "src/screens/MyInfoScreen.tsx" }, { "path": "src/screens/WithdrawScreen.tsx" }, { "path": "src/screens/WithdrawConfirmScreen.tsx" }] },
+    { "id": "info", "type": "backend", "row": 2, "col": 2, "label": "안내", "sublabel": "3 화면", "tag": "사업자 · 고객센터 · 약관", "size": [128, 54],
+      "sources": [{ "path": "src/screens/BusinessInfoScreen.tsx" }, { "path": "src/screens/CustomerServiceScreen.tsx" }, { "path": "src/screens/TermsAndPoliciesScreen.tsx" }] },
+    { "id": "license", "type": "backend", "row": 2, "col": 3, "label": "오픈소스", "sublabel": "2 화면", "tag": "목록 · 상세", "size": [128, 54],
+      "sources": [{ "path": "src/screens/OpenSourceLicensesScreen.tsx" }, { "path": "src/screens/LicenseDetailScreen.tsx" }] },
+
+    { "id": "noti", "type": "messagebus", "row": 3, "col": 0, "label": "알림센터", "sublabel": "1 화면", "tag": "NotificationScreen", "size": [128, 54],
+      "sources": [{ "path": "src/screens/NotificationScreen.tsx" }] },
+    { "id": "notiset", "type": "messagebus", "row": 3, "col": 1, "label": "알림 설정", "sublabel": "3 화면", "tag": "메인 · 전체 · 서비스별", "size": [128, 54],
+      "sources": [{ "path": "src/screens/NotificationSettingMainScreen.tsx" }, { "path": "src/screens/NotificationTotalSettingsScreen.tsx" }, { "path": "src/screens/ServiceNotificationSettingsScreen.tsx" }] },
+    { "id": "chatroom", "type": "frontend", "row": 3, "col": 2, "label": "AI 상담방", "sublabel": "1 화면", "tag": "plus API 스트림", "size": [128, 54],
+      "sources": [{ "path": "src/screens/ChatRoomScreen.tsx" }] },
+    { "id": "survey", "type": "frontend", "row": 3, "col": 3, "label": "설문", "sublabel": "1 화면", "tag": "OPEN_SCREEN 으로만", "size": [128, 54],
+      "sources": [{ "path": "src/screens/survey/SurveyScreen.tsx" }] },
+    { "id": "modal", "type": "frontend", "row": 3, "col": 4, "label": "WebViewModal", "sublabel": "1 화면", "tag": "modal · push 두 방식", "size": [128, 54],
+      "sources": [{ "path": "src/screens/WebViewModal.tsx" }] },
+
+    { "id": "showcase", "type": "external", "row": 4, "col": 0, "label": "쇼케이스", "sublabel": "11 파일 · 미등록", "tag": "isShowCaseMode 전용", "size": [128, 54],
+      "sources": [{ "path": "src/screens/showcase/ComponentShowcase.tsx" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "MainTab — 하단 탭 4", "wraps": ["refund", "sena", "care", "collection"], "pad": 12 },
+    { "kind": "security-group", "label": "인증 흐름 — 6 화면", "wraps": ["signin", "signup", "renew", "dup"], "pad": 12 }
+  ],
+  "connections": [],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 수와 화면 안쪽은 다르다",
+      "items": [
+        "내비게이터 등록은 RootStack 23개(그중 Main 은 탭 내비게이터) + MainTab 4개다. 파일로는 26개다",
+        "환급·세나·케어 탭은 각각 웹뷰 한 장이라 앱 쪽 화면은 1개씩이지만, 그 안에서 bznav-web 의 수십 화면이 돈다",
+        "쇼케이스 11파일은 App.tsx 의 isShowCaseMode(false) 일 때만 쓰는 개발용이다. 내비게이터에 없다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "들어오는 길이 정해져 있지 않은 화면",
+      "items": [
+        "Survey 는 코드 안에서 navigate 하는 곳이 없다. 딥링크·푸시의 OPEN_SCREEN 인텐트로만 열린다",
+        "ChatRoom 은 전체 탭의 AI 상담 목록에서 열리고, entryPoint 파라미터로 딥링크·푸시 진입도 받는다",
+        "WebViewModal 은 presentation=push 면 옆에서, 기본은 아래에서 올라온다(RootStackNavigator 108–120)"
+      ]
+    }
+  ]
+}

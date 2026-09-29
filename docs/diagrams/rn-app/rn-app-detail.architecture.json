@@ -1,0 +1,1036 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 상세 아키텍처",
+    "subtitle": "진입 → 셸 → 스택 → 화면군 → 상태 → 관문. 관문은 넷이고 이동은 스토어 한 칸을 거친다",
+    "output": "rn-app-detail.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      720
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "boot",
+        "label": "부팅 순서",
+        "focus": [
+          "entry",
+          "airbridge",
+          "shell",
+          "splash",
+          "init",
+          "providers",
+          "ready"
+        ],
+        "note": "푸시·딥링크 핸들러는 React 트리보다 먼저 걸린다. 스플래시가 끝나야(isAppReady) Provider 트리가 뜬다."
+      },
+      {
+        "id": "route",
+        "label": "시작 화면",
+        "focus": [
+          "rootstack",
+          "auth",
+          "webtabs",
+          "authstore"
+        ],
+        "note": "토큰이 있으면 회원 정보를 먼저 받아 Main 으로, 아니면 SignIn 으로 시작한다."
+      },
+      {
+        "id": "move",
+        "label": "이동 요청",
+        "focus": [
+          "intent",
+          "navreq",
+          "collection",
+          "tabweb",
+          "pushsvc"
+        ],
+        "note": "딥링크·푸시·전체 탭 메뉴는 모두 navigationRequest 한 칸에 의도를 쓰고 MainTab 이 꺼낸다."
+      },
+      {
+        "id": "data",
+        "label": "데이터 관문",
+        "focus": [
+          "bridge",
+          "axios",
+          "xhr",
+          "apis",
+          "plusapi",
+          "webs"
+        ],
+        "note": "API 는 axios 하나로 가되 baseURL 을 요청마다 바꾼다. AI 상담 스트림만 XHR 을 직접 쓴다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "clients",
+      "type": "external",
+      "label": "기기 · 진입 경로",
+      "sublabel": "앱 아이콘 · 푸시 탭 · bznav:// 딥링크 · Airbridge 링크",
+      "pos": [
+        60,
+        6
+      ],
+      "size": [
+        1000,
+        40
+      ]
+    },
+    {
+      "id": "entry",
+      "type": "security",
+      "label": "index.js — registerRootComponent 전에",
+      "sublabel": "enableScreens → FCM 백그라운드 → notifee 백그라운드 → Airbridge 콜백",
+      "pos": [
+        60,
+        76
+      ],
+      "size": [
+        810,
+        56
+      ],
+      "sources": [
+        {
+          "path": "index.js",
+          "line": 17,
+          "label": "registerBackgroundMessageHandler"
+        },
+        {
+          "path": "index.js",
+          "line": 21,
+          "label": "registerNotifeeBackgroundHandler"
+        },
+        {
+          "path": "index.js",
+          "line": 43,
+          "label": "initializeAirbridge — 콜백 2개",
+          "end_line": 52
+        }
+      ]
+    },
+    {
+      "id": "airbridge",
+      "type": "cloud",
+      "label": "Airbridge SDK",
+      "sublabel": "딥링크 · 디퍼드 딥링크 · 어트리뷰션",
+      "pos": [
+        900,
+        76
+      ],
+      "size": [
+        420,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/airbridgeAttributionHandler.ts",
+          "line": 44,
+          "label": "어트리뷰션 → UTM 저장"
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "type": "frontend",
+      "label": "App.tsx — Sentry.wrap(App)",
+      "sublabel": "Sentry.init → 스플래시 → initializeApp → Provider 9겹 → NavigationContainer",
+      "pos": [
+        60,
+        162
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "App.tsx",
+          "line": 106,
+          "label": "Sentry.init — 모듈 수준"
+        },
+        {
+          "path": "App.tsx",
+          "line": 332,
+          "label": "준비 전에는 스플래시만",
+          "end_line": 337
+        },
+        {
+          "path": "App.tsx",
+          "line": 375,
+          "label": "NavigationContainer · Sentry 연결",
+          "end_line": 390
+        }
+      ]
+    },
+    {
+      "id": "splash",
+      "type": "security",
+      "label": "BznavSplashScreen",
+      "sublabel": "재설치 토큰 정리 · 버전 · 코드 푸시",
+      "pos": [
+        60,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BznavSplashScreen.tsx",
+          "line": 60,
+          "label": "checkFirstLaunch — 재설치 판단"
+        },
+        {
+          "path": "src/components/BznavSplashScreen.tsx",
+          "line": 62,
+          "label": "앱 버전 체크 — 강제 업데이트"
+        },
+        {
+          "path": "src/components/BznavSplashScreen.tsx",
+          "line": 130,
+          "label": "EAS 업데이트 확인 → reload",
+          "end_line": 153
+        }
+      ]
+    },
+    {
+      "id": "init",
+      "type": "backend",
+      "label": "initializeApp",
+      "sublabel": "Firebase · 네이버 · 게스트 세션 · 폰트",
+      "pos": [
+        380,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "App.tsx",
+          "line": 147,
+          "label": "Promise.all 6갈래",
+          "end_line": 160
+        }
+      ]
+    },
+    {
+      "id": "providers",
+      "type": "frontend",
+      "label": "Provider 9겹",
+      "sublabel": "GestureHandler → SafeArea → Query → … → Dialog",
+      "pos": [
+        700,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "App.tsx",
+          "line": 363,
+          "label": "GestureHandlerRootView → DevUrlSwitcher",
+          "end_line": 374
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "type": "messagebus",
+      "label": "준비 뒤",
+      "sublabel": "ATT → Mixpanel · 푸시 리스너 · 대기 이동 복원",
+      "pos": [
+        1020,
+        236
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "App.tsx",
+          "line": 276,
+          "label": "ATT 결과 → Mixpanel 초기화"
+        },
+        {
+          "path": "App.tsx",
+          "line": 286,
+          "label": "setupPushNotificationListeners"
+        },
+        {
+          "path": "App.tsx",
+          "line": 298,
+          "label": "handleSplashFinish — 인텐트 복원"
+        }
+      ]
+    },
+    {
+      "id": "rootstack",
+      "type": "security",
+      "label": "RootStack — getInitialRoute",
+      "sublabel": "토큰 없음·회원 조회 실패 → SignIn · 성공 → Main (CI·약관이 남으면 MainTab 이 다시 보낸다)",
+      "pos": [
+        60,
+        320
+      ],
+      "size": [
+        1260,
+        40
+      ],
+      "sources": [
+        {
+          "path": "src/utils/getInitialRoute.ts",
+          "line": 19,
+          "label": "getInitialRoute — SignIn | Main"
+        },
+        {
+          "path": "src/navigation/RootStackNavigator.tsx",
+          "line": 42,
+          "label": "결정 전에는 null"
+        },
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 207,
+          "label": "checkUserStatusAndNavigate"
+        }
+      ]
+    },
+    {
+      "id": "webtabs",
+      "type": "frontend",
+      "label": "웹뷰 탭 3",
+      "sublabel": "환급 · 세나 · 케어",
+      "pos": [
+        60,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 517,
+          "label": "Tab.Screen refund · sena · care",
+          "end_line": 519
+        },
+        {
+          "path": "src/types/tabs.ts",
+          "line": 31,
+          "label": "DEFAULT_TAB_ID = refund"
+        }
+      ]
+    },
+    {
+      "id": "collection",
+      "type": "frontend",
+      "label": "전체 탭",
+      "sublabel": "메뉴 · 알림 · AI 상담",
+      "pos": [
+        316,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/CollectionScreen.tsx",
+          "line": 192,
+          "label": "메뉴 액션 → 이동 요청",
+          "end_line": 219
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "인증 6화면",
+      "sublabel": "로그인 · 가입 · 약관 · CI",
+      "pos": [
+        572,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/RootStackNavigator.tsx",
+          "line": 53,
+          "label": "SignIn … DuplicateAccount",
+          "end_line": 80
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "type": "backend",
+      "label": "설정 · 알림 13화면",
+      "sublabel": "계정 · 안내 · 알림 설정",
+      "pos": [
+        828,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "src/screens/SettingScreen.tsx",
+          "line": 16,
+          "label": "SettingScreen — 하위 7곳"
+        }
+      ]
+    },
+    {
+      "id": "feature",
+      "type": "frontend",
+      "label": "기능 3화면",
+      "sublabel": "AI 상담 · 설문 · WebViewModal",
+      "pos": [
+        1084,
+        390
+      ],
+      "size": [
+        236,
+        58
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/RootStackNavigator.tsx",
+          "line": 108,
+          "label": "WebViewModal — modal | push",
+          "end_line": 120
+        },
+        {
+          "path": "src/navigation/RootStackNavigator.tsx",
+          "line": 123,
+          "label": "ChatRoom · Survey",
+          "end_line": 128
+        }
+      ]
+    },
+    {
+      "id": "tabweb",
+      "type": "messagebus",
+      "label": "BottomTabWebView",
+      "sublabel": "쿠키 주입 · 링크 분기",
+      "pos": [
+        60,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 109,
+          "label": "checkTabAuthValue"
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 323,
+          "label": "handleShouldStartLoadWithRequest"
+        }
+      ]
+    },
+    {
+      "id": "navreq",
+      "type": "messagebus",
+      "label": "navigationRequest",
+      "sublabel": "zustand · 이동 의도 1건",
+      "pos": [
+        316,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/store/navigationRequestStore.ts",
+          "line": 11,
+          "label": "set · consume · clear"
+        }
+      ]
+    },
+    {
+      "id": "authstore",
+      "type": "messagebus",
+      "label": "userStore · SecureStore",
+      "sublabel": "user · ciRequired · 토큰",
+      "pos": [
+        572,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/store/userStore.ts"
+        },
+        {
+          "path": "src/utils/secureStorage.ts",
+          "line": 19,
+          "label": "secureStorage — 토큰만"
+        }
+      ]
+    },
+    {
+      "id": "queryhooks",
+      "type": "messagebus",
+      "label": "Query 훅",
+      "sublabel": "hooks/api · staleTime 0",
+      "pos": [
+        828,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/hooks/api/index.ts"
+        },
+        {
+          "path": "src/config/react-query.ts",
+          "line": 58,
+          "label": "staleTime 0 — 항상 새로"
+        }
+      ]
+    },
+    {
+      "id": "agentstream",
+      "type": "messagebus",
+      "label": "AI 상담 스트림",
+      "sublabel": "XHR onprogress SSE",
+      "pos": [
+        1084,
+        478
+      ],
+      "size": [
+        236,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/services/agentChatService.ts",
+          "line": 356,
+          "label": "sendAgentChatMessage"
+        },
+        {
+          "path": "src/services/agentChatService.ts",
+          "line": 376,
+          "label": "XMLHttpRequest — fetch 아님"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "type": "backend",
+      "label": "웹뷰 브릿지",
+      "sublabel": "handleWebViewMessage · sendAction",
+      "pos": [
+        60,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 74,
+          "label": "handleWebViewMessage"
+        },
+        {
+          "path": "src/utils/webViewUtils.ts",
+          "line": 81,
+          "label": "sendActionToWebView"
+        }
+      ]
+    },
+    {
+      "id": "intent",
+      "type": "backend",
+      "label": "딥링크 · 푸시 입구",
+      "sublabel": "handleDeepLink · handlePushTap",
+      "pos": [
+        380,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 239,
+          "label": "handleDeepLink"
+        },
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 748,
+          "label": "handlePushTap"
+        }
+      ]
+    },
+    {
+      "id": "axios",
+      "type": "backend",
+      "label": "axiosInstance",
+      "sublabel": "Bearer · x-device-id · Sentry",
+      "pos": [
+        700,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/config/axios.ts",
+          "line": 28,
+          "label": "axios.create — 30초"
+        },
+        {
+          "path": "src/config/axios.ts",
+          "line": 161,
+          "label": "모든 API 오류 Sentry"
+        }
+      ]
+    },
+    {
+      "id": "xhr",
+      "type": "backend",
+      "label": "스트림 요청",
+      "sublabel": "baseURL 직접 조립",
+      "pos": [
+        1020,
+        558
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/services/agentChatService.ts",
+          "line": 365,
+          "label": "/api/agent-chats/{uid}/messages"
+        }
+      ]
+    },
+    {
+      "id": "webs",
+      "type": "cloud",
+      "label": "비즈넵 웹 3",
+      "sublabel": "refund · ai(/about) · care .bznav.com",
+      "pos": [
+        60,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ],
+      "sources": [
+        {
+          "path": "src/config/url.ts",
+          "line": 29,
+          "label": "운영 URL",
+          "end_line": 33
+        }
+      ]
+    },
+    {
+      "id": "pushsvc",
+      "type": "cloud",
+      "label": "FCM · SFMC · 채널톡",
+      "sublabel": "푸시 발송 3계열",
+      "pos": [
+        380,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ]
+    },
+    {
+      "id": "apis",
+      "type": "cloud",
+      "label": "SSO · core · edge-config",
+      "sublabel": "로그인 · 세션 · 앱 버전",
+      "pos": [
+        700,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ],
+      "sources": [
+        {
+          "path": "src/config/axios.ts",
+          "line": 13,
+          "label": "기본 SSO API",
+          "end_line": 26
+        },
+        {
+          "path": "src/services/sessionService.ts",
+          "line": 13,
+          "label": "core API",
+          "end_line": 19
+        },
+        {
+          "path": "src/services/versionService.ts",
+          "line": 27,
+          "label": "edge-config CDN",
+          "end_line": 36
+        }
+      ]
+    },
+    {
+      "id": "plusapi",
+      "type": "cloud",
+      "label": "plus API",
+      "sublabel": "agent-chats · 설문",
+      "pos": [
+        1020,
+        644
+      ],
+      "size": [
+        300,
+        48
+      ],
+      "sources": [
+        {
+          "path": "src/services/agentChatService.ts",
+          "line": 27,
+          "label": "api.plus.bznav.com",
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "eas",
+      "type": "cloud",
+      "label": "EAS Update",
+      "sublabel": "checkAutomatically NEVER",
+      "pos": [
+        1100,
+        6
+      ],
+      "size": [
+        220,
+        40
+      ],
+      "sources": [
+        {
+          "path": "app.config.js",
+          "line": 649,
+          "label": "updates — 자동 확인 끔",
+          "end_line": 656
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "bznav-rn-app (Expo · React Native)",
+      "wraps": [
+        "entry",
+        "shell",
+        "splash",
+        "init",
+        "providers",
+        "ready",
+        "rootstack",
+        "webtabs",
+        "collection",
+        "auth",
+        "settings",
+        "feature",
+        "tabweb",
+        "navreq",
+        "authstore",
+        "queryhooks",
+        "agentstream",
+        "bridge",
+        "intent",
+        "axios",
+        "xhr"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "인증 흐름",
+      "wraps": [
+        "auth"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "관문 4종",
+      "wraps": [
+        "bridge",
+        "intent",
+        "axios",
+        "xhr"
+      ],
+      "pad": 8
+    }
+  ],
+  "connections": [
+    {
+      "id": "clients-entry",
+      "from": "clients",
+      "to": "entry",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "entry-airbridge",
+      "from": "entry",
+      "to": "airbridge",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "entry-shell",
+      "from": "entry",
+      "to": "shell",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "shell-splash",
+      "from": "shell",
+      "to": "splash",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-init",
+      "from": "shell",
+      "to": "init",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-providers",
+      "from": "shell",
+      "to": "providers",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shell-ready",
+      "from": "shell",
+      "to": "ready",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "providers-rootstack",
+      "from": "providers",
+      "to": "rootstack",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rootstack-webtabs",
+      "from": "rootstack",
+      "to": "webtabs",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "rootstack-collection",
+      "from": "rootstack",
+      "to": "collection",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "rootstack-auth",
+      "from": "rootstack",
+      "to": "auth",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "rootstack-settings",
+      "from": "rootstack",
+      "to": "settings",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "rootstack-feature",
+      "from": "rootstack",
+      "to": "feature",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "webtabs-tabweb",
+      "from": "webtabs",
+      "to": "tabweb",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "collection-navreq",
+      "from": "collection",
+      "to": "navreq",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "auth-authstore",
+      "from": "auth",
+      "to": "authstore",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "settings-queryhooks",
+      "from": "settings",
+      "to": "queryhooks",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "feature-agentstream",
+      "from": "feature",
+      "to": "agentstream",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "tabweb-bridge",
+      "from": "tabweb",
+      "to": "bridge",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "intent-navreq",
+      "from": "intent",
+      "to": "navreq",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "queryhooks-axios",
+      "from": "queryhooks",
+      "to": "axios",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "agentstream-xhr",
+      "from": "agentstream",
+      "to": "xhr",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "bridge-webs",
+      "from": "bridge",
+      "to": "webs",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "pushsvc-intent",
+      "from": "pushsvc",
+      "to": "intent",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "axios-apis",
+      "from": "axios",
+      "to": "apis",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "xhr-plusapi",
+      "from": "xhr",
+      "to": "plusapi",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "부팅이 세 층이다",
+      "items": [
+        "index.js — enableScreens, FCM·notifee 백그라운드 핸들러, Airbridge 콜백을 registerRootComponent 전에 건다. 디퍼드 딥링크를 놓치지 않으려고 옮긴 것이다(index.js 주석)",
+        "App.tsx — Sentry.init 은 모듈 수준, 앱·DEV URL·폰트 셋이 준비될 때까지 BznavSplashScreen 만 그린다",
+        "스플래시 — 재설치면 SecureStore 토큰 삭제 → 앱 버전(강제 업데이트) → 운영 빌드만 EAS 업데이트 확인. 새 번들이면 대기 중인 이동 의도를 저장하고 reload 한다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "관문이 하나가 아니다",
+      "items": [
+        "axiosInstance — 기본 baseURL 은 SSO API. core(세션)·plus(설문·AI 상담)·edge-config(버전)는 요청 옵션으로 baseURL 을 바꾼다",
+        "AI 상담 메시지 스트림은 axios 가 아니라 XMLHttpRequest onprogress 로 SSE 를 읽는다",
+        "웹뷰 브릿지는 HTTP 가 아니다. postMessage JSON 을 origin·sender 로 걸러 받는다"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "이동은 스토어 한 칸을 거친다",
+      "items": [
+        "딥링크·푸시·웹뷰 링크·전체 탭 메뉴는 navigate 를 직접 부르지 않고 navigationRequest 에 의도를 쓴다",
+        "MainTab 이 initialTab 준비 뒤 꺼내 스택을 Main 까지 되돌리고 탭 전환 → 목적지를 연다",
+        "로그인 전(SignIn)이면 Main 이 없어 대기한다. 로그인 뒤 Main 진입 때 처리된다"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "bznav-rn-app 요청 흐름",
+    "subtitle": "대표 흐름 세나 탭 첫 진입 · 쿠키 주입 → 웹뷰 로드 → 브릿지 메시지",
+    "viewBox": [
+      1040,
+      900
+    ],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/bznav-rn-app.sequence.html",
+    "views": [
+      {
+        "id": "enter",
+        "label": "탭에 들어갈 때",
+        "focus": [
+          "user",
+          "maintab",
+          "tabweb",
+          "store"
+        ],
+        "note": "탭 화면은 마운트된 채 남는다. 쿠키 확인은 첫 포커스에서 한 번만 돈다."
+      },
+      {
+        "id": "load",
+        "label": "웹뷰를 띄울 때",
+        "focus": [
+          "tabweb",
+          "webview",
+          "link",
+          "web"
+        ],
+        "note": "쿠키 스크립트는 페이지 로드 전에 들어가고, 첫 onLoadEnd 뒤 비워진다."
+      },
+      {
+        "id": "bridge",
+        "label": "웹이 앱을 부를 때",
+        "focus": [
+          "web",
+          "handler",
+          "store",
+          "tabweb"
+        ],
+        "note": "origin 과 sender 를 통과한 메시지만 액션별로 처리한다."
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "사용자",
+      "sublabel": "앱"
+    },
+    {
+      "id": "maintab",
+      "type": "frontend",
+      "label": "MainTab",
+      "sublabel": "탭 전환"
+    },
+    {
+      "id": "tabweb",
+      "type": "frontend",
+      "label": "탭 웹뷰",
+      "sublabel": "세나 탭"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "저장소",
+      "sublabel": "토큰 · user"
+    },
+    {
+      "id": "webview",
+      "type": "backend",
+      "label": "WebView",
+      "sublabel": "네이티브"
+    },
+    {
+      "id": "link",
+      "type": "security",
+      "label": "링크 분기",
+      "sublabel": "8가지"
+    },
+    {
+      "id": "web",
+      "type": "cloud",
+      "label": "세나 웹",
+      "sublabel": "ai.bznav.com"
+    },
+    {
+      "id": "handler",
+      "type": "messagebus",
+      "label": "브릿지",
+      "sublabel": "메시지 수신"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 300,
+      "label": "탭 진입"
+    },
+    {
+      "from": 316,
+      "to": 560,
+      "label": "쿠키 · URL · 로드 판정"
+    },
+    {
+      "from": 576,
+      "to": 830,
+      "label": "로드 · 브릿지"
+    }
+  ],
+  "messages": [
+    {
+      "from": "user",
+      "to": "maintab",
+      "y": 180,
+      "label": "세나 탭 누름",
+      "variant": "emphasis",
+      "note": "같은 탭을 다시 누르면 웹뷰를 맨 위로 올리고 끝난다. 다른 탭이면 jumpTo 하고 마지막 탭을 AsyncStorage 에 저장한다"
+    },
+    {
+      "from": "maintab",
+      "to": "tabweb",
+      "y": 225,
+      "label": "첫 포커스",
+      "note": "useScreenLifecycle firstFocus 에서 checkTabAuthValue 를 한 번 부른다. 끝나기 전에는 WebView 를 그리지 않는다"
+    },
+    {
+      "from": "tabweb",
+      "to": "store",
+      "y": 270,
+      "label": "AI 동의 · 알림 권한",
+      "note": "세나 탭만 쿠키 두 개를 더 만든다. BZNAV_APP_AI_AGREE 는 동의했을 때만, BZNAV_APP_PUSH_ENABLED 는 항상"
+    },
+    {
+      "from": "tabweb",
+      "to": "store",
+      "y": 335,
+      "label": "토큰 · user 확인",
+      "note": "SecureStore 토큰이나 userStore.user 가 없으면 세나 쿠키만 넣고 로그인 쿠키 없이 로드한다"
+    },
+    {
+      "from": "store",
+      "to": "tabweb",
+      "y": 380,
+      "label": "B_AT.sena · B_AS.sena",
+      "variant": "return",
+      "note": "createAuthCookiesForApp — domain .bznav.com · secure. 운영은 이름 끝이 .prd, 개발은 .dev 다"
+    },
+    {
+      "from": "tabweb",
+      "to": "webview",
+      "y": 425,
+      "label": "URL + 쿠키 스크립트",
+      "variant": "emphasis",
+      "note": "bznav-sena 에 가입돼 있으면 웹이 저장해 둔 초기 경로를 붙인다(세나는 기본값 없음). working_platform=app · utm_source=bznav_app 을 붙이고 스크립트는 injectedJavaScriptBeforeContentLoaded 로 넣는다"
+    },
+    {
+      "from": "webview",
+      "to": "link",
+      "y": 470,
+      "label": "로드 요청 판정",
+      "note": "onShouldStartLoadWithRequest → handleLinkClick. 같은 서브도메인은 그대로 로드, 다른 탭 도메인은 OPEN_TAB_WEBVIEW 요청으로 바꾸고 막는다. 하위 프레임은 판정 없이 허용"
+    },
+    {
+      "from": "webview",
+      "to": "web",
+      "y": 515,
+      "label": "ai.bznav.com/about"
+    },
+    {
+      "from": "web",
+      "to": "webview",
+      "y": 600,
+      "label": "페이지 로드",
+      "variant": "return"
+    },
+    {
+      "from": "webview",
+      "to": "tabweb",
+      "y": 645,
+      "label": "loading false",
+      "variant": "return",
+      "note": "200ms 간격으로 로딩이 끝났는지 본 뒤 스켈레톤을 걷는다. 첫 onLoadEnd 에서 쿠키 스크립트를 비워 다음 이동에 다시 넣지 않는다"
+    },
+    {
+      "from": "web",
+      "to": "handler",
+      "y": 690,
+      "label": "postMessage",
+      "variant": "emphasis",
+      "note": "origin 이 *.bznav.com 이고 sender 가 bznav-refund · sena · care 중 하나여야 한다. displayPushNotification · setTabBadge · openAppSettings · senaAiAgree 는 세나 sender 만 받는다"
+    },
+    {
+      "from": "handler",
+      "to": "web",
+      "y": 735,
+      "label": "응답",
+      "variant": "return",
+      "note": "messageId 가 있는 요청에만 sendResponseToWebView 로 답한다. 응답 sender 는 bznav-app"
+    },
+    {
+      "from": "handler",
+      "to": "store",
+      "y": 778,
+      "label": "동의 저장 · 상태 반영",
+      "variant": "dashed",
+      "note": "senaAiAgree 면 AsyncStorage 에 저장하고 쿠키를 바로 주입한다. onSignInSuccess 면 회원 정보를 다시 받아 userStore 를 바꾼다"
+    },
+    {
+      "from": "tabweb",
+      "to": "webview",
+      "y": 808,
+      "label": "대기 중인 이동 요청",
+      "variant": "dashed",
+      "note": "딥링크·푸시가 세나 URL 을 OPEN_TAB_WEBVIEW 로 남겨 뒀으면 로드가 끝난 뒤 꺼내 이동한다. 같은 경로면 forceNavigate 가 아닌 한 건너뛴다"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "탭 진입에서 한 번만 일어나는 것",
+      "items": [
+        "쿠키 확인(checkTabAuthValue)은 첫 포커스에 한 번이다. 탭을 오가도 다시 돌지 않는다",
+        "다시 도는 경우는 두 가지다 — 그 서비스 가입이 풀린 것을 userStore 에서 감지했을 때, 웹뷰 프로세스가 죽었을 때. 이때는 key 를 바꿔 WebView 를 새로 만든다",
+        "iOS 는 incognito 웹뷰(Android 는 아님)이고 sharedCookiesEnabled 는 false 다. 로그인 쿠키는 스크립트로 넣는다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "다른 탭은 다르게 뜬다 — 옮겨 쓰지 않는다",
+      "items": [
+        "환급 탭은 환급 가입 회원이면 저장 경로가 없을 때 /tax/refund/summary, 로그인했지만 미가입이면 /home/event/refundbada?entry=true 로 시작한다. 로그인 전이면 경로를 붙이지 않는다",
+        "케어 탭은 가입 회원 기본 경로가 / 이고, 로드 뒤 URL 로 채널톡 버튼 노출을 정한다",
+        "환급 탭으로 들어온 이동 요청은 URL 로드 대신 pageNavigation 브릿지 메시지로 경로만 보낸다"
+      ]
+    }
+  ]
+}

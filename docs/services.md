@@ -1,6 +1,6 @@
 # 서비스 맵
 
-헤르메스 팀이 담당하는 프론트엔드 레포 비교표. **상세 규칙과 구조는 `docs/knowledge/<레포>/`**, 레포 목록 정본은 `hermes.config.json`.
+헤르메스 팀이 담당하는 프론트엔드 레포(+ 모바일 앱) 비교표. **상세 규칙과 구조는 `docs/knowledge/<레포>/`**, 레포 목록 정본은 `hermes.config.json`.
 
 아래 첫 표는 **`.sync/snapshots/` 지문에서 자동 생성**된다. 버전·포트·Node/pnpm·Prettier·검증 스크립트·기준 커밋을 손으로 고치지 말고 `/sync` 후 `node scripts/build-derived.mjs`를 돌린다. 기준은 운영 반영분(콘솔 `prd` · bznav 앱별 `prd-<앱>` · zent-packages `main`)이다.
 
@@ -48,6 +48,24 @@
 | 규칙 문서 | `frontend/README.md`, `frontend/bznav/README.md`, `frontend/devkit/README.md` |
 
 - bznav-web의 `@repo/*`는 모노레포 **내부** 패키지(bznav-packages-fe 담당). zent-packages의 `bznav-fe-*`는 **발행** 패키지(packages-fe 담당). 이름이 비슷하니 구분한다
+
+## 모바일 앱 — bznav-rn-app (`bznav-rn-app`, 기준 브랜치 prd)
+웹이 아니라 **Expo · React Native 앱**이라 위 스택 표(Next.js 기준)에 넣지 않는다. 버전·명령은 지문(`.sync/snapshots/bznav-rn-app.json`)과 `docs/knowledge/bznav-rn-app/structure.md` 가 정본이다.
+
+| 항목 | 내용 |
+|---|---|
+| 경로 | `repos/bznav-rn-app` (단일 앱, 소스 `src/`) |
+| 사용자 | 외부 고객 (비즈넵 앱 — iOS·Android) |
+| 기준 · PR base | 둘 다 `prd`. 작업 브랜치 `feature/v<앱버전>/<티켓>` 을 prd·dev 양쪽에 PR. `main`·`develop` 은 2025-12 에 멈춘 옛 코드 |
+| 구조 | React Navigation(RootStack·MainTab) · `src/screens` · 웹뷰 + 브릿지 메시지 |
+| 데이터·상태 | TanStack Query · zustand |
+| UI | NativeWind + 레포 디자인 시스템(`.claude/skills/design-system-*`) |
+| 패키지 매니저 | **yarn** (`yarn.lock`), Node `.nvmrc` |
+| 검증 | `scripts/verify/bznav-rn-app.sh` = `yarn expo lint` + `yarn tsc --noEmit` (package.json 에 스크립트 없음, 테스트 없음) |
+| 배포 | 코드 푸시(EAS Update) / 스토어 빌드(EAS Build). **에이전트는 배포 명령을 실행하지 않는다.** 네이티브·플러그인·권한·SDK 변경은 스토어 빌드가 필요 |
+| 레포 자체 규칙 문서 | `CLAUDE.md`(피그마 개발 규칙), `.claude/rules/{design-system-core,tracking}.md`, `docs/plans/*` |
+
+- 앱 안 웹뷰로 뜨는 웹 화면은 bznav-web 앱 담당이다. 브릿지 메시지 규약은 앱·웹 양쪽이 같아야 한다
 
 ## 관련 레포 (참고용, 담당 아님)
 - `client-brics-works` — hub·care·refund 콘솔이 분화된 원본. 권한 가드·병렬 라우트 패턴의 출처

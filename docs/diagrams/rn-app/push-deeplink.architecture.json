@@ -1,0 +1,791 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 푸시 · 딥링크",
+    "subtitle": "입구 4 → NavigationIntent 한 칸 → MainTab 이 5 액션으로 실행",
+    "output": "push-deeplink.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      610
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "inv",
+        "label": "입구",
+        "focus": [
+          "pushbg",
+          "pushfg",
+          "airb",
+          "inapp",
+          "tap",
+          "deeplink"
+        ],
+        "note": "푸시·Airbridge·앱 안 링크가 입구다. 푸시 URL(openDirectUrl)도 결국 handleDeepLink 로 간다."
+      },
+      {
+        "id": "parse",
+        "label": "의도로 바꾸기",
+        "focus": [
+          "channel",
+          "navfrom",
+          "v1",
+          "v2",
+          "execute"
+        ],
+        "note": "무엇으로 들어왔든 NavigationIntent 하나로 바꿔 스토어에 쓴다. 바로 이동하지 않는다."
+      },
+      {
+        "id": "run",
+        "label": "실행",
+        "focus": [
+          "maintab",
+          "opentab",
+          "opentabweb",
+          "webmodal",
+          "openscreen",
+          "channeltalk",
+          "consume"
+        ],
+        "note": "MainTab 이 꺼내 처리한다. OPEN_TAB_WEBVIEW 만 스토어에 남겨 두고 탭 웹뷰가 로드 뒤 꺼낸다."
+      },
+      {
+        "id": "cp",
+        "label": "코드 푸시",
+        "focus": [
+          "codepush",
+          "execute"
+        ],
+        "note": "스플래시에서 새 번들을 받으면 reload 로 스토어가 날아간다. 그 전에 저장했다가 복원한다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "pushbg",
+      "type": "cloud",
+      "label": "FCM 백그라운드 · 종료",
+      "sublabel": "index.js 에서 등록 · data-only 는 Android 만 직접 그림",
+      "pos": [
+        60,
+        20
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 1207,
+          "label": "registerBackgroundMessageHandler"
+        },
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 1224,
+          "label": "Android data-only → notifee",
+          "end_line": 1230
+        }
+      ]
+    },
+    {
+      "id": "pushfg",
+      "type": "backend",
+      "label": "앱 켜진 뒤 리스너",
+      "sublabel": "expo · FCM · notifee · 채널톡 · 시작 알림",
+      "pos": [
+        380,
+        20
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 1141,
+          "label": "setupPushNotificationListeners",
+          "end_line": 1154
+        },
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 1015,
+          "label": "checkInitialNotification — 종료 상태 탭"
+        }
+      ]
+    },
+    {
+      "id": "airb",
+      "type": "cloud",
+      "label": "Airbridge",
+      "sublabel": "setOnDeeplinkReceived — 등록 전에",
+      "pos": [
+        700,
+        20
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "index.js",
+          "line": 48,
+          "label": "handleDeepLink(url, deeplink)",
+          "end_line": 51
+        }
+      ]
+    },
+    {
+      "id": "inapp",
+      "type": "frontend",
+      "label": "앱 안 링크",
+      "sublabel": "웹뷰 bznav:// · 알림센터 · 전체 탭",
+      "pos": [
+        1020,
+        20
+      ],
+      "size": [
+        300,
+        56
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 337,
+          "label": "웹뷰 딥링크",
+          "end_line": 342
+        },
+        {
+          "path": "src/screens/tabs/CollectionScreen.tsx",
+          "line": 151,
+          "label": "알림 actnUrl → handleDeepLink"
+        },
+        {
+          "path": "src/screens/tabs/CollectionScreen.tsx",
+          "line": 195,
+          "label": "메뉴 → 스토어 직접",
+          "end_line": 207
+        }
+      ]
+    },
+    {
+      "id": "tap",
+      "type": "security",
+      "label": "handlePushTap",
+      "sublabel": "10초 안 같은 messageId 는 한 번만",
+      "pos": [
+        60,
+        110
+      ],
+      "size": [
+        620,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 748,
+          "label": "handlePushTap — 탭 공통"
+        },
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 723,
+          "label": "HANDLED_TAP_TTL_MS 10초",
+          "end_line": 742
+        }
+      ]
+    },
+    {
+      "id": "deeplink",
+      "type": "security",
+      "label": "handleDeepLink",
+      "sublabel": "Airbridge URL 이면 Airbridge.click · 아니면 v1 open · v2 navigate",
+      "pos": [
+        720,
+        110
+      ],
+      "size": [
+        600,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 239,
+          "label": "handleDeepLink(url, entryPoint)"
+        },
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 245,
+          "label": "Airbridge 링크는 SDK 로 넘김",
+          "end_line": 258
+        }
+      ]
+    },
+    {
+      "id": "channel",
+      "type": "messagebus",
+      "label": "채널톡 푸시",
+      "sublabel": "OPEN_CHANNEL_TALK · 케어 탭",
+      "pos": [
+        60,
+        190
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 760,
+          "label": "채널톡이면 케어 탭에서 연다",
+          "end_line": 767
+        }
+      ]
+    },
+    {
+      "id": "navfrom",
+      "type": "backend",
+      "label": "navigateFromPushData",
+      "sublabel": "① type ② action ③ openDirectUrl·url",
+      "pos": [
+        380,
+        190
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/pushNotificationHandler.ts",
+          "line": 536,
+          "label": "3단계 판별",
+          "end_line": 555
+        },
+        {
+          "path": "src/handlers/pushTypeHandlers.ts",
+          "line": 49,
+          "label": "세나 답변 → sena 탭 forceNavigate",
+          "end_line": 62
+        }
+      ]
+    },
+    {
+      "id": "v1",
+      "type": "backend",
+      "label": "v1 bznav://open?url=",
+      "sublabel": "탭 도메인 → 탭 웹뷰 · 그 외 bznav → 전체 탭 모달",
+      "pos": [
+        720,
+        190
+      ],
+      "size": [
+        290,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 264,
+          "label": "탭 도메인 → OPEN_TAB_WEBVIEW",
+          "end_line": 284
+        },
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 287,
+          "label": "그 외 bznav → collection 모달",
+          "end_line": 298
+        }
+      ]
+    },
+    {
+      "id": "v2",
+      "type": "backend",
+      "label": "v2 bznav://navigate",
+      "sublabel": "action · tab · url · screen · params",
+      "pos": [
+        1030,
+        190
+      ],
+      "size": [
+        290,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 145,
+          "label": "parseNavigateIntent — 5 액션",
+          "end_line": 233
+        },
+        {
+          "path": "src/handlers/deepLinkHandler.ts",
+          "line": 132,
+          "label": "flat 쿼리 우선 · params JSON",
+          "end_line": 143
+        }
+      ]
+    },
+    {
+      "id": "execute",
+      "type": "messagebus",
+      "label": "navigationRequest — 의도 1건",
+      "sublabel": "executeNavigationIntent · setNavigationRequest · entryPoint 기록",
+      "pos": [
+        60,
+        280
+      ],
+      "size": [
+        840,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/navigationHandler.ts",
+          "line": 36,
+          "label": "executeNavigationIntent",
+          "end_line": 40
+        },
+        {
+          "path": "src/store/navigationRequestStore.ts",
+          "line": 15,
+          "label": "set — 덮어쓴다",
+          "end_line": 18
+        },
+        {
+          "path": "src/constants/navigationActions.ts",
+          "line": 27,
+          "label": "NavigationIntent 5종",
+          "end_line": 59
+        }
+      ]
+    },
+    {
+      "id": "codepush",
+      "type": "security",
+      "label": "코드 푸시 reload",
+      "sublabel": "저장 → 스플래시 뒤 복원",
+      "pos": [
+        960,
+        280
+      ],
+      "size": [
+        360,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/components/BznavSplashScreen.tsx",
+          "line": 140,
+          "label": "reload 전 AsyncStorage 저장",
+          "end_line": 153
+        },
+        {
+          "path": "App.tsx",
+          "line": 298,
+          "label": "handleSplashFinish — 복원",
+          "end_line": 316
+        }
+      ]
+    },
+    {
+      "id": "maintab",
+      "type": "security",
+      "label": "MainTab effect — initialTab 준비 뒤",
+      "sublabel": "스택을 Main 까지 popTo → 탭 전환(탭 전환 애니메이션 + 50ms) → 목적지",
+      "pos": [
+        60,
+        360
+      ],
+      "size": [
+        1260,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 377,
+          "label": "navigationRequest effect",
+          "end_line": 465
+        },
+        {
+          "path": "src/handlers/navigationHandler.ts",
+          "line": 12,
+          "label": "prepareRootStack — popTo Main",
+          "end_line": 29
+        },
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 348,
+          "label": "이미 그 탭이면 전환 생략",
+          "end_line": 365
+        }
+      ]
+    },
+    {
+      "id": "opentab",
+      "type": "frontend",
+      "label": "OPEN_TAB",
+      "sublabel": "탭 전환 + 서비스 토스트",
+      "pos": [
+        60,
+        440
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 381,
+          "label": "OPEN_TAB",
+          "end_line": 388
+        }
+      ]
+    },
+    {
+      "id": "opentabweb",
+      "type": "frontend",
+      "label": "OPEN_TAB_WEBVIEW",
+      "sublabel": "탭만 바꾸고 URL 은 웹뷰가",
+      "pos": [
+        316,
+        440
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 390,
+          "label": "OPEN_TAB_WEBVIEW — clear 안 함",
+          "end_line": 397
+        }
+      ]
+    },
+    {
+      "id": "webmodal",
+      "type": "frontend",
+      "label": "OPEN_WEB_MODAL",
+      "sublabel": "WebViewModal · showHeader",
+      "pos": [
+        572,
+        440
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 399,
+          "label": "OPEN_WEB_MODAL",
+          "end_line": 423
+        }
+      ]
+    },
+    {
+      "id": "openscreen",
+      "type": "frontend",
+      "label": "OPEN_SCREEN",
+      "sublabel": "screen 이름 그대로 navigate",
+      "pos": [
+        828,
+        440
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 443,
+          "label": "OPEN_SCREEN — params + entryPoint",
+          "end_line": 463
+        }
+      ]
+    },
+    {
+      "id": "channeltalk",
+      "type": "frontend",
+      "label": "OPEN_CHANNEL_TALK",
+      "sublabel": "채널톡 메신저",
+      "pos": [
+        1084,
+        440
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 425,
+          "label": "OPEN_CHANNEL_TALK",
+          "end_line": 441
+        }
+      ]
+    },
+    {
+      "id": "consume",
+      "type": "messagebus",
+      "label": "탭 웹뷰가 꺼냄",
+      "sublabel": "로드 뒤 · 같은 경로 스킵",
+      "pos": [
+        316,
+        530
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 513,
+          "label": "hasLoaded 뒤 consume",
+          "end_line": 556
+        }
+      ]
+    },
+    {
+      "id": "stackscr",
+      "type": "external",
+      "label": "Stack 화면",
+      "sublabel": "ChatRoom · Survey · …",
+      "pos": [
+        828,
+        530
+      ],
+      "size": [
+        236,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/types.ts",
+          "line": 70,
+          "label": "ChatRoom · Survey 는 entryPoint",
+          "end_line": 82
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "입구 — 모두 같은 스토어로 모인다",
+      "wraps": [
+        "tap",
+        "deeplink",
+        "channel",
+        "navfrom",
+        "v1",
+        "v2"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "MainTabNavigator 가 처리",
+      "wraps": [
+        "maintab",
+        "opentab",
+        "opentabweb",
+        "webmodal",
+        "openscreen",
+        "channeltalk"
+      ],
+      "pad": 8
+    }
+  ],
+  "connections": [
+    {
+      "id": "pushbg-tap",
+      "from": "pushbg",
+      "to": "tap",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "pushfg-tap",
+      "from": "pushfg",
+      "to": "tap",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "airb-deeplink",
+      "from": "airb",
+      "to": "deeplink",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "inapp-deeplink",
+      "from": "inapp",
+      "to": "deeplink",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "tap-channel",
+      "from": "tap",
+      "to": "channel",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "tap-navfrom",
+      "from": "tap",
+      "to": "navfrom",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "deeplink-v1",
+      "from": "deeplink",
+      "to": "v1",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "deeplink-v2",
+      "from": "deeplink",
+      "to": "v2",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "channel-execute",
+      "from": "channel",
+      "to": "execute",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "navfrom-execute",
+      "from": "navfrom",
+      "to": "execute",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "v1-execute",
+      "from": "v1",
+      "to": "execute",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "codepush-execute",
+      "from": "codepush",
+      "to": "execute",
+      "fromSide": "left",
+      "toSide": "right",
+      "variant": "dashed"
+    },
+    {
+      "id": "execute-maintab",
+      "from": "execute",
+      "to": "maintab",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "maintab-opentab",
+      "from": "maintab",
+      "to": "opentab",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "maintab-opentabweb",
+      "from": "maintab",
+      "to": "opentabweb",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "maintab-webmodal",
+      "from": "maintab",
+      "to": "webmodal",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "maintab-openscreen",
+      "from": "maintab",
+      "to": "openscreen",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "maintab-channeltalk",
+      "from": "maintab",
+      "to": "channeltalk",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "opentabweb-consume",
+      "from": "opentabweb",
+      "to": "consume",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "openscreen-stackscr",
+      "from": "openscreen",
+      "to": "stackscr",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "의도 5종 — NavigationIntent",
+      "items": [
+        "OPEN_TAB · OPEN_TAB_WEBVIEW(tab 필수) · OPEN_WEB_MODAL · OPEN_SCREEN · OPEN_CHANNEL_TALK. tab 이 있으면 탭 전환 뒤 목적지, 없으면 현재 스택 위에 연다",
+        "푸시는 ① data.type(세나 답변 완료 → sena 탭 채팅방, forceNavigate) ② action 평면 파라미터 ③ openDirectUrl·_od·url 순으로 본다",
+        "v1 bznav://open?url= 은 탭 도메인이면 그 탭 웹뷰, 탭에 없는 bznav 도메인(calc 등)은 전체 탭 위 모달이다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "모르면 틀리는 것",
+      "items": [
+        "스토어는 한 칸이다. 처리 전에 새 의도가 오면 앞의 것을 덮어쓴다",
+        "OPEN_TAB_WEBVIEW 는 같은 경로면 건너뛴다. 쿼리로 목적지가 갈리는 요청(세나 답변)만 forceNavigate 로 넘긴다",
+        "환급 탭은 URL 을 로드하지 않고 pageNavigation 브릿지로 경로만 보낸다",
+        "푸시 하나가 FCM·expo 리스너 양쪽에 오므로 messageId 로 10초 중복을 막는다. id 없는 SFMC 푸시는 막지 않는다"
+      ]
+    }
+  ]
+}

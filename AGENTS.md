@@ -25,6 +25,7 @@
 | `repos/bznav-web/apps/plus-web` | 비즈넵 플러스 계산기 (3400) | `origin/prd-plus` |
 | `repos/bznav-web/packages/*` | 비즈넵 공통 패키지 `@repo/*` | `origin/dev` (앱들이 공유) |
 | `repos/zent-packages/frontend` | 발행 공유 패키지 (`backend/`는 범위 밖) | `origin/main` |
+| `repos/bznav-rn-app` | 비즈넵 모바일 앱 (Expo · React Native, 웹 아님) | `origin/prd` |
 
 **기준 브랜치 = 운영 반영분.** 문서와 지식 베이스는 이 브랜치를 읽어 만든 것이다. 로컬 작업 트리가 그보다 뒤처져 있으면 문서와 코드가 다를 수 있는데, **그건 문서 오류가 아니다.** 작업 전 `git status --short --branch`로 얼마나 벌어졌는지 확인하고 보고에 적는다.
 
@@ -37,6 +38,7 @@
 - 영업·서류·직원·파이프드라이브 → web-op
 - 비즈넵 사용자 웹은 앱별로: 환급 랜딩/이벤트/UTM/홈택스/설문 → refund-web · 세무기장 구독 → care-web · 브랜드/약관 → brand-web · AI 상담 → sena-web · 세금 계산기/진단 → plus-web · `@repo/*` → packages
 - `brics-fe-ui`·`zent-auth`·`bznav-fe-ui` 등 발행 패키지 → zent-packages
+- 비즈넵 **모바일 앱** 화면·내비게이션·웹뷰 브릿지·푸시·딥링크·네이티브 설정·코드 푸시 → bznav-rn-app. 앱 안 웹뷰로 뜨는 **웹 화면** 자체는 해당 bznav 웹 앱 담당
 - ⚠️ **"케어"·"환급"만 나오면 운영 콘솔인지 사용자 웹인지 반드시 사용자에게 확인**한다. 둘은 완전히 다른 레포다
 
 ---
@@ -154,6 +156,7 @@ scripts/verify/client-brics-care.sh
 scripts/verify/web-op.sh
 scripts/verify/bznav-web.sh <앱|packages/<pkg>>
 scripts/verify/zent-packages.sh <패키지명...>
+scripts/verify/bznav-rn-app.sh
 ```
 
 실행 전 확인할 것과 결과 해석은 `docs/knowledge/common/verify.md`에 있다. 요약하면 Node 버전을 레포 `.nvmrc`에 맞추고(`nvm use`), 생성물(Orval·Relay)이 없으면 타입 검사가 건너뛰어진다는 점이다. 워크트리를 검증할 때는 `HERMES_VERIFY_DIR=<워크트리>`를 붙인다(없으면 메인 체크아웃을 검증한다). **실행하지 못한 검증을 통과한 것처럼 보고하지 않는다.**

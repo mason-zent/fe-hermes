@@ -1,0 +1,714 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 화면 37",
+    "subtitle": "src/screens 전수 — 등록 26(탭 4 · 인증 6 · 스택 16) + 쇼케이스 11",
+    "output": "screens.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      470
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "tabs",
+        "label": "탭 4",
+        "focus": [
+          "refund",
+          "sena",
+          "care",
+          "collection"
+        ],
+        "note": "MainTab 에 등록된 4개. 웹뷰 탭 3개는 BottomTabWebView 한 컴포넌트를 공유한다."
+      },
+      {
+        "id": "authv",
+        "label": "인증 6",
+        "focus": [
+          "signin",
+          "signup",
+          "renew",
+          "dup"
+        ],
+        "note": "로그인 응답 status 와 ciRequired · requiredTerms 로 다음 화면이 정해진다."
+      },
+      {
+        "id": "stackv",
+        "label": "스택 16",
+        "focus": [
+          "setting",
+          "account",
+          "info",
+          "license",
+          "notiset",
+          "noti",
+          "chatroom",
+          "survey",
+          "modal"
+        ],
+        "note": "RootStack 에 탭과 나란히 올라가는 화면. 설정 하위는 SettingScreen 에서만 들어간다."
+      },
+      {
+        "id": "dev",
+        "label": "쇼케이스 11",
+        "focus": [
+          "sc1",
+          "sc2",
+          "sc3",
+          "sc4"
+        ],
+        "note": "App.tsx isShowCaseMode 가 true 일 때만 쓰는 개발용. 운영 값은 false 다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "refund",
+      "type": "frontend",
+      "label": "환급 탭",
+      "sublabel": "refund · 웹뷰",
+      "pos": [
+        60,
+        42
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/RefundContainerScreen.tsx",
+          "line": 14,
+          "label": "RefundContainerScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "sena",
+      "type": "frontend",
+      "label": "세나 탭",
+      "sublabel": "sena · 웹뷰",
+      "pos": [
+        320,
+        42
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/SenaContainerScreen.tsx",
+          "line": 14,
+          "label": "SenaContainerScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "care",
+      "type": "frontend",
+      "label": "케어 탭",
+      "sublabel": "care · 웹뷰 + 채널톡",
+      "pos": [
+        580,
+        42
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/CareContainerScreen.tsx",
+          "line": 43,
+          "label": "CareContainerScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "collection",
+      "type": "frontend",
+      "label": "전체 탭",
+      "sublabel": "collection · 네이티브",
+      "pos": [
+        840,
+        42
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/CollectionScreen.tsx",
+          "line": 48,
+          "label": "CollectionScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "signin",
+      "type": "security",
+      "label": "SignIn",
+      "sublabel": "카카오 · 네이버 · 애플",
+      "pos": [
+        60,
+        124
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 45,
+          "label": "SignInScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "signup",
+      "type": "security",
+      "label": "SSO 신규 가입",
+      "sublabel": "SignTerms · SignupCi",
+      "pos": [
+        320,
+        124
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/SignTermsScreen.tsx",
+          "line": 26,
+          "label": "SignTermsScreen"
+        },
+        {
+          "path": "src/screens/auth/SignupCiVerificationScreen.tsx",
+          "line": 34,
+          "label": "SignupCiVerificationScreen"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "renew",
+      "type": "security",
+      "label": "약관 · 본인인증",
+      "sublabel": "UpdateTerms · UserCi",
+      "pos": [
+        580,
+        124
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/UpdateTermsScreen.tsx",
+          "line": 23,
+          "label": "UpdateTermsScreen — 뒤로 제스처 막음"
+        },
+        {
+          "path": "src/screens/auth/UserCiVerificationScreen.tsx",
+          "line": 32,
+          "label": "UserCi — REGISTER·UPDATE·WITHDRAW"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "dup",
+      "type": "security",
+      "label": "DuplicateAccount",
+      "sublabel": "아래에서 올라온다",
+      "pos": [
+        840,
+        124
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/DuplicateAccountScreen.tsx",
+          "line": 31,
+          "label": "DuplicateAccountScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "setting",
+      "type": "backend",
+      "label": "설정",
+      "sublabel": "SettingScreen",
+      "pos": [
+        60,
+        206
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/SettingScreen.tsx",
+          "line": 16,
+          "label": "SettingScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "account",
+      "type": "backend",
+      "label": "내 정보 · 탈퇴",
+      "sublabel": "MyInfo · Withdraw · Confirm",
+      "pos": [
+        320,
+        206
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/MyInfoScreen.tsx",
+          "line": 16,
+          "label": "MyInfoScreen"
+        },
+        {
+          "path": "src/screens/WithdrawScreen.tsx",
+          "line": 24,
+          "label": "WithdrawScreen"
+        },
+        {
+          "path": "src/screens/WithdrawConfirmScreen.tsx",
+          "line": 28,
+          "label": "WithdrawConfirmScreen"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "info",
+      "type": "backend",
+      "label": "안내",
+      "sublabel": "사업자 · 고객센터 · 약관",
+      "pos": [
+        580,
+        206
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/BusinessInfoScreen.tsx",
+          "line": 27,
+          "label": "BusinessInfoScreen"
+        },
+        {
+          "path": "src/screens/CustomerServiceScreen.tsx",
+          "line": 19,
+          "label": "CustomerServiceScreen"
+        },
+        {
+          "path": "src/screens/TermsAndPoliciesScreen.tsx",
+          "line": 12,
+          "label": "TermsAndPoliciesScreen"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "license",
+      "type": "backend",
+      "label": "오픈소스 라이선스",
+      "sublabel": "목록 · 상세",
+      "pos": [
+        840,
+        206
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/OpenSourceLicensesScreen.tsx",
+          "line": 11,
+          "label": "OpenSourceLicensesScreen"
+        },
+        {
+          "path": "src/screens/LicenseDetailScreen.tsx",
+          "line": 8,
+          "label": "LicenseDetailScreen"
+        }
+      ],
+      "tag": "2 화면"
+    },
+    {
+      "id": "notiset",
+      "type": "messagebus",
+      "label": "알림 설정",
+      "sublabel": "메인 · 전체 · 서비스별",
+      "pos": [
+        60,
+        288
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/NotificationSettingMainScreen.tsx",
+          "line": 21,
+          "label": "NotificationSettingMainScreen"
+        },
+        {
+          "path": "src/screens/NotificationTotalSettingsScreen.tsx",
+          "line": 22,
+          "label": "파일명과 달리 NotificationSettings"
+        },
+        {
+          "path": "src/screens/ServiceNotificationSettingsScreen.tsx",
+          "line": 23,
+          "label": "ServiceNotificationSettingsScreen"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "noti",
+      "type": "messagebus",
+      "label": "알림센터",
+      "sublabel": "NotificationScreen",
+      "pos": [
+        320,
+        288
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/NotificationScreen.tsx",
+          "line": 58,
+          "label": "NotificationScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "chatroom",
+      "type": "frontend",
+      "label": "AI 상담방",
+      "sublabel": "ChatRoom · plus API",
+      "pos": [
+        580,
+        288
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/ChatRoomScreen.tsx",
+          "line": 60,
+          "label": "ChatRoomScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "survey",
+      "type": "frontend",
+      "label": "설문",
+      "sublabel": "Survey · 뒤로 제스처 막음",
+      "pos": [
+        840,
+        288
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/survey/SurveyScreen.tsx",
+          "line": 79,
+          "label": "SurveyScreen"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "modal",
+      "type": "frontend",
+      "label": "WebViewModal",
+      "sublabel": "탭 밖 비즈넵 URL",
+      "pos": [
+        1100,
+        288
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/WebViewModal.tsx",
+          "line": 28,
+          "label": "WebViewModal"
+        }
+      ],
+      "tag": "1 화면"
+    },
+    {
+      "id": "sc1",
+      "type": "external",
+      "label": "쇼케이스 셸",
+      "sublabel": "Component · Checkbox · Description",
+      "pos": [
+        60,
+        370
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/showcase/ComponentShowcase.tsx",
+          "line": 134,
+          "label": "ComponentShowcase — 자체 Stack"
+        },
+        {
+          "path": "src/screens/showcase/showcases/CheckboxShowcase.tsx",
+          "line": 6,
+          "label": "CheckboxShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/DescriptionShowcase.tsx",
+          "line": 7,
+          "label": "DescriptionShowcase"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "sc2",
+      "type": "external",
+      "label": "쇼케이스",
+      "sublabel": "Dialog · Divider · InAppPush",
+      "pos": [
+        320,
+        370
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/showcase/showcases/DialogShowcase.tsx",
+          "line": 7,
+          "label": "DialogShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/DividerShowcase.tsx",
+          "line": 6,
+          "label": "DividerShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/InAppPushToastShowcase.tsx",
+          "line": 20,
+          "label": "InAppPushToastShowcase"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "sc3",
+      "type": "external",
+      "label": "쇼케이스",
+      "sublabel": "List · Progress · StickyBottom",
+      "pos": [
+        580,
+        370
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/showcase/showcases/ListShowcase.tsx",
+          "line": 10,
+          "label": "ListShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/ProgressShowcase.tsx",
+          "line": 6,
+          "label": "ProgressShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/StickyBottomShowcase.tsx",
+          "line": 7,
+          "label": "StickyBottomShowcase"
+        }
+      ],
+      "tag": "3 화면"
+    },
+    {
+      "id": "sc4",
+      "type": "external",
+      "label": "쇼케이스",
+      "sublabel": "Toast · TopNavigation",
+      "pos": [
+        840,
+        370
+      ],
+      "size": [
+        220,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/showcase/showcases/ToastShowcase.tsx",
+          "line": 22,
+          "label": "ToastShowcase"
+        },
+        {
+          "path": "src/screens/showcase/showcases/TopNavigationShowcase.tsx",
+          "line": 7,
+          "label": "TopNavigationShowcase"
+        }
+      ],
+      "tag": "2 화면"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "src/screens — 37파일 전수 (index.ts 제외)",
+      "wraps": [
+        "refund",
+        "sena",
+        "care",
+        "collection",
+        "signin",
+        "signup",
+        "renew",
+        "dup",
+        "setting",
+        "account",
+        "info",
+        "license",
+        "notiset",
+        "noti",
+        "chatroom",
+        "survey",
+        "modal",
+        "sc1",
+        "sc2",
+        "sc3",
+        "sc4"
+      ]
+    },
+    {
+      "kind": "security-group",
+      "label": "인증 6",
+      "wraps": [
+        "signin",
+        "signup",
+        "renew",
+        "dup"
+      ],
+      "pad": 8
+    }
+  ],
+  "connections": [
+    {
+      "id": "signin-signup",
+      "from": "signin",
+      "to": "signup",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "signup-renew",
+      "from": "signup",
+      "to": "renew",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "setting-account",
+      "from": "setting",
+      "to": "account",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "setting-notiset",
+      "from": "setting",
+      "to": "notiset",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "sc1-sc2",
+      "from": "sc1",
+      "to": "sc2",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "화면 수",
+      "items": [
+        "내비게이터 등록 26파일 — 탭 4 · 인증 6 · 설정·계정 9 · 알림 4 · 기능 3(ChatRoom · Survey · WebViewModal). RootStack 의 Main 은 탭 내비게이터라 파일이 아니다",
+        "쇼케이스 11파일(ComponentShowcase + showcases 10)은 내비게이터에 없다. ComponentShowcase 가 자기 Stack 을 따로 만든다",
+        "파일 이름과 컴포넌트 이름이 다른 곳이 있다 — NotificationTotalSettingsScreen.tsx 의 컴포넌트는 NotificationSettingsScreen"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "코드 안에 들어오는 길이 없는 화면",
+      "items": [
+        "Survey 와 DuplicateAccount 는 navigate 호출이 코드에 없다. 딥링크·푸시의 OPEN_SCREEN(screen 문자열)으로만 열 수 있다",
+        "OPEN_SCREEN 은 screen 이름을 검사하지 않고 navigate 에 넘긴다. 이름을 바꾸면 밖에서 보내는 링크가 깨진다",
+        "UpdateTerms · UserCiVerification · Survey 는 iOS 뒤로 제스처를 막았다"
+      ]
+    }
+  ]
+}

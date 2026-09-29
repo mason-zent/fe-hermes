@@ -36,6 +36,7 @@
 | bznav-web `apps/plus-web` | `bznav-plus-fe` |
 | bznav-web `packages/*` | `bznav-packages-fe` |
 | zent-packages `frontend/` | `packages-fe` |
+| bznav-rn-app (모바일 앱) | `bznav-rn-app` |
 | 교차 리뷰 (읽기 전용) | `reviewer` |
 
 bznav-web 은 한 레포지만 앱마다 에이전트가 다르다. 같은 레포의 두 앱을 동시에 디스패치할 때는 **서로 다른 파일만 만지는지**(공통 `packages/**` 는 bznav-packages-fe 단독) 계획서에서 확인한 뒤 병렬로 보낸다. 공유 패키지(zent-packages) 변경이 소비 레포 작업과 함께 필요하면 packages-fe 를 **먼저** 끝내고 changeset·스냅샷 태그를 소비 측 에이전트에 넘긴다.

@@ -70,7 +70,7 @@ if [ "$ASK_BRANCH" = 1 ]; then
   BRANCH_TARGET="$(python3 - "$HERMES_DIR/hermes.config.json" "$AGENT" <<'PYEOF'
 import json, sys
 cfg = json.load(open(sys.argv[1])); agent = sys.argv[2]
-alias = {'client-brics-refund': 'refund', 'client-brics-hub': 'hub', 'client-brics-care': 'care', 'web-op': 'op', 'zent-packages': 'packages'}
+alias = {'client-brics-refund': 'refund', 'client-brics-hub': 'hub', 'client-brics-care': 'care', 'web-op': 'op', 'zent-packages': 'packages', 'bznav-rn-app': 'rn-app'}
 for repo in cfg['repos']:
     if agent in (repo.get('agents') or []): print(alias.get(repo['name'], repo['name'])); break
     if repo.get('packagesAgent') == agent: print('bznav:<작업할 앱>'); break

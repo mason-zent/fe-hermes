@@ -1,0 +1,767 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 웹뷰 · 브릿지",
+    "subtitle": "BottomTabWebView 로드 → 링크 8분기 → 웹 ↔ 앱 메시지. 규약은 웹 쪽과 짝이다",
+    "output": "webview-bridge.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      680
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "loadv",
+        "label": "로드",
+        "focus": [
+          "containers",
+          "checkauth",
+          "cookies",
+          "urlbuild",
+          "webview"
+        ],
+        "note": "쿠키 확인이 끝나야 WebView 가 그려진다. 스크립트는 로드 전에 들어가고 첫 로드 뒤 비워진다."
+      },
+      {
+        "id": "linkv",
+        "label": "링크 분기",
+        "focus": [
+          "linkclick",
+          "tabnav",
+          "modal",
+          "deeplink",
+          "browser"
+        ],
+        "note": "웹뷰 안 이동마다 판정한다. 같은 서브도메인만 웹뷰 안에서 그대로 간다."
+      },
+      {
+        "id": "msgv",
+        "label": "웹 → 앱",
+        "focus": [
+          "webs",
+          "onmessage",
+          "common",
+          "authact",
+          "senaact",
+          "resp"
+        ],
+        "note": "origin → sender → actionName 순으로 거른다. 세나 전용 액션은 sender 를 한 번 더 본다."
+      },
+      {
+        "id": "outv",
+        "label": "앱 → 웹",
+        "focus": [
+          "app2web",
+          "webs",
+          "resp"
+        ],
+        "note": "쿠키 갱신·경로 이동은 앱이 먼저 보낸다. Android 는 postMessage 대신 MessageEvent 를 주입한다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "containers",
+      "type": "frontend",
+      "label": "탭 컨테이너 3",
+      "sublabel": "Refund · Sena · Care ContainerScreen → ref 를 MainTab 에 등록",
+      "pos": [
+        60,
+        30
+      ],
+      "size": [
+        840,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/screens/tabs/SenaContainerScreen.tsx",
+          "line": 34,
+          "label": "baseUrl = webviewUrls[tabId]"
+        },
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 135,
+          "label": "Android 백버튼 → 웹뷰 goBack",
+          "end_line": 153
+        }
+      ]
+    },
+    {
+      "id": "checkauth",
+      "type": "security",
+      "label": "checkTabAuthValue — 첫 포커스 1회",
+      "sublabel": "세나 쿠키 2 → 토큰·user → B_AT·B_AS → 가입 앱이면 초기 경로",
+      "pos": [
+        60,
+        110
+      ],
+      "size": [
+        840,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 86,
+          "label": "firstFocus 에서만"
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 124,
+          "label": "세나 전용 쿠키",
+          "end_line": 130
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 163,
+          "label": "가입 앱이면 저장 경로 · 기본값",
+          "end_line": 214
+        }
+      ]
+    },
+    {
+      "id": "cookies",
+      "type": "backend",
+      "label": "쿠키 스크립트",
+      "sublabel": "document.cookie · 첫 로드 뒤 비움",
+      "pos": [
+        60,
+        190
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/utils/webViewUtils.ts",
+          "line": 234,
+          "label": "generateCookieInjectionScript"
+        },
+        {
+          "path": "src/utils/createAuthCookies.ts",
+          "line": 30,
+          "label": "B_AT · B_AS 이름 — 앱·환경별",
+          "end_line": 46
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 675,
+          "label": "onLoadEnd — 스크립트 초기화",
+          "end_line": 680
+        }
+      ]
+    },
+    {
+      "id": "urlbuild",
+      "type": "backend",
+      "label": "URL 조립",
+      "sublabel": "경로 + working_platform · utm",
+      "pos": [
+        340,
+        190
+      ],
+      "size": [
+        260,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 628,
+          "label": "base + suffix + 쿼리 3개",
+          "end_line": 647
+        },
+        {
+          "path": "src/config/url.ts",
+          "line": 37,
+          "label": "환급 비회원 경로"
+        }
+      ]
+    },
+    {
+      "id": "remount",
+      "type": "security",
+      "label": "다시 만들기",
+      "sublabel": "가입 해제 · 프로세스 종료",
+      "pos": [
+        620,
+        190
+      ],
+      "size": [
+        280,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 594,
+          "label": "signAppIds 에서 빠지면",
+          "end_line": 624
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 667,
+          "label": "프로세스 종료 → 리마운트",
+          "end_line": 674
+        }
+      ]
+    },
+    {
+      "id": "webview",
+      "type": "frontend",
+      "label": "WebView",
+      "sublabel": "commonWebViewConfig · iOS 만 incognito · sharedCookies 끔",
+      "pos": [
+        60,
+        270
+      ],
+      "size": [
+        840,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 654,
+          "label": "쿠키 확인 뒤에만 렌더",
+          "end_line": 681
+        },
+        {
+          "path": "src/config/webView.ts",
+          "line": 18,
+          "label": "sharedCookiesEnabled false"
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 662,
+          "label": "incognito — iOS 만"
+        }
+      ]
+    },
+    {
+      "id": "linkclick",
+      "type": "security",
+      "label": "onShouldStartLoadWithRequest → handleLinkClick",
+      "sublabel": "intent · bznav:// · Airbridge · 인증 도메인 · 탭 도메인 · 그 외 bznav → 모달 · 외부 → 인앱 브라우저",
+      "pos": [
+        60,
+        354
+      ],
+      "size": [
+        840,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/utils/linkHandler.ts",
+          "line": 71,
+          "label": "handleLinkClick — 8가지 결과"
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 329,
+          "label": "하위 프레임은 판정 없이 허용"
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 336,
+          "label": "결과별 처리",
+          "end_line": 494
+        }
+      ]
+    },
+    {
+      "id": "tabnav",
+      "type": "messagebus",
+      "label": "다른 탭 도메인",
+      "sublabel": "OPEN_TAB_WEBVIEW 요청",
+      "pos": [
+        60,
+        434
+      ],
+      "size": [
+        195,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 344,
+          "label": "tab_navigation → 스토어",
+          "end_line": 357
+        }
+      ]
+    },
+    {
+      "id": "modal",
+      "type": "frontend",
+      "label": "탭 밖 bznav",
+      "sublabel": "WebViewModal",
+      "pos": [
+        275,
+        434
+      ],
+      "size": [
+        195,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 360,
+          "label": "modal_webview",
+          "end_line": 363
+        }
+      ]
+    },
+    {
+      "id": "deeplink",
+      "type": "backend",
+      "label": "bznav:// · Airbridge",
+      "sublabel": "handleDeepLink",
+      "pos": [
+        490,
+        434
+      ],
+      "size": [
+        195,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 337,
+          "label": "deeplink → handleDeepLink",
+          "end_line": 342
+        },
+        {
+          "path": "src/utils/linkHandler.ts",
+          "line": 37,
+          "label": "Airbridge https → bznav://"
+        }
+      ]
+    },
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "외부 · intent",
+      "sublabel": "인앱 브라우저 · Play 스토어",
+      "pos": [
+        705,
+        434
+      ],
+      "size": [
+        195,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 365,
+          "label": "inapp_browser",
+          "end_line": 379
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 381,
+          "label": "intent:// — Android 파싱",
+          "end_line": 474
+        }
+      ]
+    },
+    {
+      "id": "app2web",
+      "type": "backend",
+      "label": "앱 → 웹",
+      "sublabel": "updateCookies · pageNavigation",
+      "pos": [
+        960,
+        30
+      ],
+      "size": [
+        360,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/utils/webViewUtils.ts",
+          "line": 11,
+          "label": "Android 는 MessageEvent 주입",
+          "end_line": 31
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 559,
+          "label": "쿠키 스토어 → updateCookies",
+          "end_line": 591
+        },
+        {
+          "path": "src/components/BottomTabWebView.tsx",
+          "line": 548,
+          "label": "환급은 pageNavigation · 그 외 URL",
+          "end_line": 553
+        }
+      ]
+    },
+    {
+      "id": "webs",
+      "type": "cloud",
+      "label": "비즈넵 웹 3",
+      "sublabel": "refund · ai · care",
+      "pos": [
+        960,
+        270
+      ],
+      "size": [
+        360,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/config/url.ts",
+          "line": 29,
+          "label": "운영 URL",
+          "end_line": 33
+        }
+      ]
+    },
+    {
+      "id": "onmessage",
+      "type": "security",
+      "label": "handleWebViewMessage",
+      "sublabel": "origin *.bznav.com → JSON → sender 3종",
+      "pos": [
+        960,
+        354
+      ],
+      "size": [
+        360,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 62,
+          "label": "isAllowedOrigin — *.bznav.com",
+          "end_line": 72
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 95,
+          "label": "sender 3종만",
+          "end_line": 102
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 119,
+          "label": "actionName switch",
+          "end_line": 168
+        }
+      ]
+    },
+    {
+      "id": "common",
+      "type": "backend",
+      "label": "공통 5",
+      "sublabel": "버전 · 파일 · URL · 초기 경로 · 채널톡",
+      "pos": [
+        60,
+        524
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 120,
+          "label": "GET_APP_VERSION … NAVIGATE_URL",
+          "end_line": 134
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 146,
+          "label": "OPEN_CHANNEL_TALK"
+        }
+      ]
+    },
+    {
+      "id": "authact",
+      "type": "security",
+      "label": "인증 2",
+      "sublabel": "onSignInSuccess · onSignOut",
+      "pos": [
+        380,
+        524
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 135,
+          "label": "ON_SIGN_IN_SUCCESS · ON_SIGN_OUT",
+          "end_line": 142
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 677,
+          "label": "로그아웃과 탈퇴를 가입 목록으로 가른다"
+        }
+      ]
+    },
+    {
+      "id": "senaact",
+      "type": "messagebus",
+      "label": "세나 전용 4",
+      "sublabel": "AI 동의 · 인앱 푸시 · 배지 · 설정",
+      "pos": [
+        700,
+        524
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 501,
+          "label": "senaAiAgree — 세나만"
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 563,
+          "label": "같은 채팅방이면 토스트 생략"
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 579,
+          "label": "setTabBadge — 세나만"
+        }
+      ]
+    },
+    {
+      "id": "resp",
+      "type": "backend",
+      "label": "응답",
+      "sublabel": "messageId 있을 때 · sender bznav-app",
+      "pos": [
+        1020,
+        524
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/utils/webViewUtils.ts",
+          "line": 45,
+          "label": "sendResponseToWebView"
+        },
+        {
+          "path": "src/utils/webViewUtils.ts",
+          "line": 70,
+          "label": "응답은 postMessage 직접"
+        }
+      ]
+    },
+    {
+      "id": "natives",
+      "type": "external",
+      "label": "네이티브 기능",
+      "sublabel": "파일 공유 · 채널톡 · OS 설정 · 인앱 토스트 · AsyncStorage",
+      "pos": [
+        60,
+        612
+      ],
+      "size": [
+        940,
+        44
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "BottomTabWebView — 탭 웹뷰 하나",
+      "wraps": [
+        "checkauth",
+        "cookies",
+        "urlbuild",
+        "remount",
+        "webview",
+        "linkclick",
+        "tabnav",
+        "modal",
+        "deeplink",
+        "browser"
+      ],
+      "pad": 8
+    },
+    {
+      "kind": "region",
+      "label": "actionName — 11종 (webViewMessage.ts 에는 15개)",
+      "wraps": [
+        "common",
+        "authact",
+        "senaact"
+      ],
+      "pad": 8
+    }
+  ],
+  "connections": [
+    {
+      "id": "containers-checkauth",
+      "from": "containers",
+      "to": "checkauth",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "checkauth-cookies",
+      "from": "checkauth",
+      "to": "cookies",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "checkauth-urlbuild",
+      "from": "checkauth",
+      "to": "urlbuild",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "cookies-webview",
+      "from": "cookies",
+      "to": "webview",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "urlbuild-webview",
+      "from": "urlbuild",
+      "to": "webview",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "remount-webview",
+      "from": "remount",
+      "to": "webview",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "webview-webs",
+      "from": "webview",
+      "to": "webs",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "webview-linkclick",
+      "from": "webview",
+      "to": "linkclick",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "linkclick-tabnav",
+      "from": "linkclick",
+      "to": "tabnav",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "linkclick-modal",
+      "from": "linkclick",
+      "to": "modal",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "linkclick-deeplink",
+      "from": "linkclick",
+      "to": "deeplink",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "linkclick-browser",
+      "from": "linkclick",
+      "to": "browser",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "app2web-webs",
+      "from": "app2web",
+      "to": "webs",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "webs-onmessage",
+      "from": "webs",
+      "to": "onmessage",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "onmessage-resp",
+      "from": "onmessage",
+      "to": "resp",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "common-natives",
+      "from": "common",
+      "to": "natives",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "브릿지 규약 — 웹 쪽 짝과 같이 바꾼다",
+      "items": [
+        "웹 → 앱: { messageId?, sender, actionName, data } JSON. sender 는 bznav-refund · bznav-sena · bznav-care",
+        "앱 → 웹 응답: { messageId, sender: bznav-app, isSuccess, data, error }. 액션 요청은 messageId 를 app_ 로 시작해 만든다",
+        "PostMessageAction 은 15개지만 탭 웹뷰가 받는 것은 11개다. closeWebView 는 WebViewModal 만, updateCookies · pageNavigation 은 앱 → 웹, onWithdrawalComplete 는 주석 처리됐다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "모르면 틀리는 것",
+      "items": [
+        "origin 은 event.nativeEvent.url 로 본다. Android 는 origin 만 오므로 경로 판단은 onNavigationStateChange 로 모은 currentUrl 을 쓴다",
+        "앱 → 웹 액션은 Android 에서 injectJavaScript 로 window 에 MessageEvent 를 쏜다. 응답(sendResponseToWebView)은 postMessage 를 그대로 쓴다",
+        "WebViewModal 은 origin·sender 를 검사하지 않고 closeWebView · onSignOut 두 가지만 처리한다",
+        "로그아웃·탈퇴는 같은 onSignOut 이다. 회원 정보를 다시 받아 sender 서비스가 가입 목록에서 빠졌으면 탈퇴, 아니면 전체 로그아웃"
+      ]
+    }
+  ]
+}

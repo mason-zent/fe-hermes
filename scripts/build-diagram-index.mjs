@@ -88,6 +88,18 @@ const GROUPS = [
       },
     ],
   },
+  {
+    title: '비즈넵 모바일 앱',
+    items: [
+      {
+        base: 'bznav-rn-app',
+        name: 'bznav-rn-app',
+        sub: '비즈넵 앱 · Expo · RN (prd)',
+        desc: 'React Navigation 스택·탭 · 탭 4개 중 3개가 웹뷰 · 브릿지 메시지 · 코드 푸시/스토어 빌드 경계',
+        extra: [{ file: 'rn-app/rn-app-architecture.html', label: '심층 · 37화면' }],
+      },
+    ],
+  },
 ];
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -167,7 +179,7 @@ const html = `<!doctype html>
   <div class="wrap">
     <h1>헤르메스 다이어그램</h1>
     <p class="lead">작업 흐름과 담당 레포를 인터랙티브 HTML 로 본다. 서비스마다 보는 각도를 나눠 두었다.</p>
-    <p class="note"><b>구조</b>는 어떤 부품으로 이루어져 있는가, <b>화면 맵</b>은 실제로 어떤 화면이 몇 개씩 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가를 본다. 비즈넵 웹 5개는 <b>심층</b>에 화면을 전수로 담았다(탭 번들). 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
+    <p class="note"><b>구조</b>는 어떤 부품으로 이루어져 있는가, <b>화면 맵</b>은 실제로 어떤 화면이 몇 개씩 있는가, <b>요청 흐름</b>은 한 화면이 뜰 때 무엇이 오가는가를 본다. 비즈넵 웹 5개·모바일 앱은 <b>심층</b>에 화면을 전수로 담았다(탭 번들). 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지는 실제 파일을 가리킨다.</p>
     <h2>작업 흐름</h2>
     <div class="grid">
       <div class="card">

@@ -1,0 +1,715 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "bznav-rn-app 인증 · 세션",
+    "subtitle": "시작 라우트 → 소셜 로그인 → 약관 · 본인인증 → 쿠키 · 로그아웃",
+    "output": "auth-session.architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      660
+    ],
+    "repository": {
+      "url": "https://github.com/zenterprise-inc/bznav-rn-app",
+      "provider": "github",
+      "link_mode": "local-only",
+      "revision": "a161710c5c3b0c249f02f90fc1ed9bcb7ec86202"
+    },
+    "views": [
+      {
+        "id": "start",
+        "label": "시작",
+        "focus": [
+          "splashclear",
+          "guest",
+          "core",
+          "initroute"
+        ],
+        "note": "재설치 검사는 스플래시에서, 시작 라우트는 스플래시가 끝나고 RootStack 이 뜰 때 정해진다."
+      },
+      {
+        "id": "login",
+        "label": "로그인",
+        "focus": [
+          "signin",
+          "social",
+          "sso",
+          "success",
+          "signupreq"
+        ],
+        "note": "소셜 SDK 토큰을 SSO 에 넘기고 status 로 갈린다. SSO 계정이 없으면 SignTerms 로 가입한다."
+      },
+      {
+        "id": "gate",
+        "label": "약관 · 본인인증",
+        "focus": [
+          "mainentry",
+          "checkuser",
+          "terms",
+          "ci",
+          "completion"
+        ],
+        "note": "로그인 직후와 Main 첫 포커스 두 곳에서 같은 4갈래를 본다. 둘 다 필요하면 약관 → CI 순서다."
+      },
+      {
+        "id": "out",
+        "label": "로그아웃",
+        "focus": [
+          "cookies",
+          "signout",
+          "clear"
+        ],
+        "note": "웹이 onSignOut 을 보내면 가입 목록으로 탈퇴와 로그아웃을 가른다."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "splashclear",
+      "type": "security",
+      "label": "재설치면 토큰 삭제",
+      "sublabel": "IS_FIRST_LAUNCH 가 없으면 SecureStore 비움",
+      "pos": [
+        60,
+        20
+      ],
+      "size": [
+        400,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/components/BznavSplashScreen.tsx",
+          "line": 93,
+          "label": "checkFirstLaunch",
+          "end_line": 101
+        },
+        {
+          "path": "src/utils/secureStorage.ts",
+          "line": 38,
+          "label": "clearSecureStoreOnReinstall",
+          "end_line": 50
+        }
+      ]
+    },
+    {
+      "id": "guest",
+      "type": "backend",
+      "label": "게스트 세션",
+      "sublabel": "로그인 무관 · 앱 시작 1회",
+      "pos": [
+        500,
+        20
+      ],
+      "size": [
+        400,
+        54
+      ],
+      "sources": [
+        {
+          "path": "App.tsx",
+          "line": 212,
+          "label": "initializeAppSession"
+        },
+        {
+          "path": "src/services/sessionService.ts",
+          "line": 176,
+          "label": "/analytics/sessions/initialize",
+          "end_line": 198
+        }
+      ]
+    },
+    {
+      "id": "core",
+      "type": "cloud",
+      "label": "core API",
+      "sublabel": "sessions · 세션 ID B_SSID",
+      "pos": [
+        940,
+        20
+      ],
+      "size": [
+        380,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/services/sessionService.ts",
+          "line": 13,
+          "label": "core.api.bznav.com",
+          "end_line": 19
+        },
+        {
+          "path": "src/services/sessionService.ts",
+          "line": 34,
+          "label": "B_SSID.{zenv} — 웹과 같은 키"
+        }
+      ]
+    },
+    {
+      "id": "initroute",
+      "type": "security",
+      "label": "getInitialRoute",
+      "sublabel": "SecureStore 토큰 → /app/my/info → user·ciRequired·requiredTerms 저장 → Main · 실패면 토큰 삭제 → SignIn",
+      "pos": [
+        60,
+        110
+      ],
+      "size": [
+        1260,
+        50
+      ],
+      "sources": [
+        {
+          "path": "src/utils/getInitialRoute.ts",
+          "line": 21,
+          "label": "토큰 없으면 SignIn",
+          "end_line": 26
+        },
+        {
+          "path": "src/utils/getInitialRoute.ts",
+          "line": 32,
+          "label": "회원 정보 조회 → 스토어",
+          "end_line": 63
+        },
+        {
+          "path": "src/utils/getInitialRoute.ts",
+          "line": 64,
+          "label": "실패면 토큰 삭제 → SignIn",
+          "end_line": 71
+        }
+      ]
+    },
+    {
+      "id": "signin",
+      "type": "frontend",
+      "label": "SignIn — 소셜 3종",
+      "sublabel": "카카오 · 네이버 SDK · 애플(iOS 네이티브 · Android 웹)",
+      "pos": [
+        60,
+        200
+      ],
+      "size": [
+        620,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 270,
+          "label": "handleKakaoLogin"
+        },
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 327,
+          "label": "handleNaverLogin"
+        },
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 395,
+          "label": "handleAppleLogin",
+          "end_line": 430
+        }
+      ]
+    },
+    {
+      "id": "mainentry",
+      "type": "frontend",
+      "label": "Main 첫 포커스",
+      "sublabel": "유저 세션 활성화 → 상태 체크 → 푸시 권한 · 토큰 등록",
+      "pos": [
+        720,
+        200
+      ],
+      "size": [
+        600,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 156,
+          "label": "firstFocus",
+          "end_line": 172
+        },
+        {
+          "path": "src/services/sessionService.ts",
+          "line": 205,
+          "label": "/analytics/sessions/user/initialize",
+          "end_line": 226
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "type": "backend",
+      "label": "appSocialLogin",
+      "sublabel": "/v2/auth/{type}/app/login · status 분기",
+      "pos": [
+        60,
+        290
+      ],
+      "size": [
+        400,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/services/authService.ts",
+          "line": 19,
+          "label": "appSocialLogin",
+          "end_line": 35
+        },
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 207,
+          "label": "handleSocialLoginResult",
+          "end_line": 267
+        }
+      ]
+    },
+    {
+      "id": "sso",
+      "type": "cloud",
+      "label": "SSO API",
+      "sublabel": "sso.api.zent.kr",
+      "pos": [
+        500,
+        290
+      ],
+      "size": [
+        180,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/config/axios.ts",
+          "line": 24,
+          "label": "운영 baseURL"
+        }
+      ]
+    },
+    {
+      "id": "checkuser",
+      "type": "security",
+      "label": "상태 체크",
+      "sublabel": "ciRequired · requiredTerms",
+      "pos": [
+        720,
+        290
+      ],
+      "size": [
+        600,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/MainTabNavigator.tsx",
+          "line": 207,
+          "label": "checkUserStatusAndNavigate",
+          "end_line": 273
+        }
+      ]
+    },
+    {
+      "id": "success",
+      "type": "security",
+      "label": "LOGIN_SUCCESS",
+      "sublabel": "토큰 SecureStore · user 스토어",
+      "pos": [
+        60,
+        380
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 122,
+          "label": "토큰 · 로그인 타입 · user 저장",
+          "end_line": 150
+        },
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 156,
+          "label": "CI · 약관 4갈래",
+          "end_line": 201
+        }
+      ]
+    },
+    {
+      "id": "signupreq",
+      "type": "security",
+      "label": "SIGNUP_SSO_REQUIRED",
+      "sublabel": "SignTerms → appSignUp",
+      "pos": [
+        380,
+        380
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/SignInScreen.tsx",
+          "line": 215,
+          "label": "SignTerms 로",
+          "end_line": 219
+        },
+        {
+          "path": "src/screens/auth/SignTermsScreen.tsx",
+          "line": 56,
+          "label": "appSignUp → 토큰 저장",
+          "end_line": 75
+        }
+      ]
+    },
+    {
+      "id": "terms",
+      "type": "security",
+      "label": "약관 필요",
+      "sublabel": "UpdateTerms · app/terms/update",
+      "pos": [
+        700,
+        380
+      ],
+      "size": [
+        290,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/UpdateTermsScreen.tsx",
+          "line": 130,
+          "label": "updateTerms"
+        },
+        {
+          "path": "src/services/userService.ts",
+          "line": 24,
+          "label": "app/terms/update"
+        }
+      ]
+    },
+    {
+      "id": "ci",
+      "type": "security",
+      "label": "본인인증 필요",
+      "sublabel": "UserCiVerification · NICE 웹뷰",
+      "pos": [
+        1020,
+        380
+      ],
+      "size": [
+        300,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/screens/auth/UserCiVerificationScreen.tsx",
+          "line": 106,
+          "label": "REGISTER 분기"
+        },
+        {
+          "path": "src/components/organisms/ciVerification/CiVerificationForm.tsx",
+          "line": 78,
+          "label": "ciAppPrepare → 웹뷰"
+        },
+        {
+          "path": "src/services/authService.ts",
+          "line": 57,
+          "label": "/ci/v2/prepare",
+          "end_line": 60
+        }
+      ]
+    },
+    {
+      "id": "completion",
+      "type": "messagebus",
+      "label": "completionAction",
+      "sublabel": "GO_BACK · NAVIGATE_TO_MAIN(스택 reset) · NAVIGATE_TO_CI",
+      "pos": [
+        60,
+        470
+      ],
+      "size": [
+        1260,
+        44
+      ],
+      "sources": [
+        {
+          "path": "src/navigation/types.ts",
+          "line": 13,
+          "label": "CompletionActionType 3종",
+          "end_line": 16
+        },
+        {
+          "path": "src/screens/auth/UpdateTermsScreen.tsx",
+          "line": 94,
+          "label": "UpdateTerms 완료 분기",
+          "end_line": 112
+        },
+        {
+          "path": "src/screens/auth/UserCiVerificationScreen.tsx",
+          "line": 122,
+          "label": "UserCi 완료 분기",
+          "end_line": 140
+        }
+      ]
+    },
+    {
+      "id": "cookies",
+      "type": "backend",
+      "label": "탭 웹뷰 쿠키",
+      "sublabel": "B_AT.{앱} · B_AS.{앱} · 1년",
+      "pos": [
+        60,
+        560
+      ],
+      "size": [
+        400,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/utils/createAuthCookies.ts",
+          "line": 30,
+          "label": "APP_COOKIE_CONFIGS",
+          "end_line": 46
+        },
+        {
+          "path": "src/utils/createAuthCookies.ts",
+          "line": 76,
+          "label": "domain .bznav.com · 365일",
+          "end_line": 85
+        }
+      ]
+    },
+    {
+      "id": "signout",
+      "type": "security",
+      "label": "로그아웃 · 탈퇴 판별",
+      "sublabel": "onSignOut → 회원 정보 재조회",
+      "pos": [
+        500,
+        560
+      ],
+      "size": [
+        400,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 677,
+          "label": "handleOnSignOutOrWithdrawal"
+        },
+        {
+          "path": "src/handlers/webViewMessageHandler.ts",
+          "line": 706,
+          "label": "가입 목록에서 빠지면 탈퇴",
+          "end_line": 724
+        }
+      ]
+    },
+    {
+      "id": "clear",
+      "type": "security",
+      "label": "clearSession",
+      "sublabel": "토큰 · 스토어 · 채널톡 · SFMC → SignIn",
+      "pos": [
+        940,
+        560
+      ],
+      "size": [
+        380,
+        54
+      ],
+      "sources": [
+        {
+          "path": "src/utils/logout.ts",
+          "line": 27,
+          "label": "clearSession",
+          "end_line": 44
+        },
+        {
+          "path": "src/utils/logout.ts",
+          "line": 50,
+          "label": "logout — API 실패해도 정리",
+          "end_line": 68
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "로그인 뒤 끼어드는 화면",
+      "wraps": [
+        "success",
+        "signupreq",
+        "terms",
+        "ci"
+      ],
+      "pad": 8
+    }
+  ],
+  "connections": [
+    {
+      "id": "guest-core",
+      "from": "guest",
+      "to": "core",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "splashclear-initroute",
+      "from": "splashclear",
+      "to": "initroute",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "initroute-signin",
+      "from": "initroute",
+      "to": "signin",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "initroute-mainentry",
+      "from": "initroute",
+      "to": "mainentry",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "signin-social",
+      "from": "signin",
+      "to": "social",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "social-sso",
+      "from": "social",
+      "to": "sso",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "mainentry-checkuser",
+      "from": "mainentry",
+      "to": "checkuser",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "social-success",
+      "from": "social",
+      "to": "success",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "emphasis"
+    },
+    {
+      "id": "social-signupreq",
+      "from": "social",
+      "to": "signupreq",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "checkuser-terms",
+      "from": "checkuser",
+      "to": "terms",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "checkuser-ci",
+      "from": "checkuser",
+      "to": "ci",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "terms-ci",
+      "from": "terms",
+      "to": "ci",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "dashed"
+    },
+    {
+      "id": "success-completion",
+      "from": "success",
+      "to": "completion",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "signupreq-completion",
+      "from": "signupreq",
+      "to": "completion",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "terms-completion",
+      "from": "terms",
+      "to": "completion",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "ci-completion",
+      "from": "ci",
+      "to": "completion",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "completion-cookies",
+      "from": "completion",
+      "to": "cookies",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "signout-clear",
+      "from": "signout",
+      "to": "clear",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "토큰은 하나, 쿠키는 앱마다",
+      "items": [
+        "액세스 토큰은 SecureStore 한 곳(bznav_access_token)이다. axios 가 Bearer 로 붙이고 탭 웹뷰에는 B_AT.{앱} 쿠키로 넣는다",
+        "쿠키 이름은 환급 B_AT.prd, 세나 B_AT.sena.prd, 케어 B_AT.care.prd(개발은 .dev). 가입 여부와 무관하게 토큰이 있으면 넣는다",
+        "iOS Keychain 은 앱을 지워도 남는다. 그래서 스플래시가 IS_FIRST_LAUNCH 로 재설치를 알아채고 토큰을 지운다"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "모르면 틀리는 것",
+      "items": [
+        "CI·약관 판정은 두 곳이다 — SignIn 직후(handleSocialLoginResponse)와 MainTab 첫 포커스(checkUserStatusAndNavigate). 한쪽만 고치면 어긋난다",
+        "탈퇴해도 다른 서비스에 가입돼 있으면 로그아웃하지 않는다. userStore 의 signAppIds 만 바꾸고 그 탭 웹뷰가 변화를 보고 다시 만든다",
+        "게스트 세션 초기화는 initializeApp 안에서 돌지만 끝날 때까지 스플래시를 붙잡지 않는다(준비 조건은 스플래시 · DEV URL · 폰트)"
+      ]
+    }
+  ]
+}
