@@ -183,7 +183,8 @@
       planned: [['진행 지시', (card) => `${card.id} 계획서대로 진행하자. 결정 사항이 확정됐는지, 대상 레포 브랜치·미커밋 상태를 먼저 확인해 보고하고, 내 확인 뒤 /branch 로 워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄워줘(scripts/delegate.sh --cwd). 헤르메스가 직접 코드를 고치지 않는다.`]],
       in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`]],
       blocked: [['막힌 것 풀기', (card) => `${card.id} 가 막혀 있다(${card.blocked}). 무엇이 필요한지 정리해줘.`]],
-      ready_for_review: [['리뷰 요청', (card) => `${card.id} 를 reviewer 로 검증해줘. 계획서 경로와 대상 레포를 넘겨.`]],
+      // 헤르메스를 거치지 않는다 — reviewer 를 계획서의 담당 레포 workspace(워크트리)에 바로 띄운다
+      ready_for_review: [['리뷰 요청', (card) => `이 계획서를 검증해 줘. 계획서의 지시·결정 대비 구현이 맞는지, 담당 레포 rules.md 필수 절·gotchas 를 지켰는지, 범위 밖 변경은 없는지 본다. 검증 스크립트를 돌려(워크트리면 HERMES_VERIFY_DIR) 출력 표를 붙이고, 계획서 ## Commits 가 있으면 그 커밋과 origin/<prBase>...HEAD 도 본다. 읽기 전용. 보고는 AGENTS.md 6절 형식 + 발견 사항 [심각|중간|낮음] 파일:줄 — 문제 / 근거 / 고칠 것.`, 'review']],
     },
   };
 
@@ -347,6 +348,9 @@
       if (!agent) to.innerHTML += ' — <b>이슈에 담당이 정해져 있지 않아요. 골라 주세요</b>';
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
       if (card?.worktree) to.innerHTML += `<br>워크트리 <code>${esc(card.worktree.rel)}</code> ← ${esc(card.worktree.ref)} (detached${card.worktree.exists ? ', 이미 있어서 그대로 써요' : ', 새로 만들어요'}) · 담당을 바꾸면 그 에이전트의 레포에 만들어요`;
+    } else if (mode === 'review') {
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      to.innerHTML = `→ <b>reviewer</b> 를 계획서의 담당 레포 workspace 에 새 pane 으로 띄워요${card?.workRef ? `<br>대상 <code>${esc(card.workRef)}</code>` : ''} · 헤르메스는 거치지 않아요`;
     } else {
       // 받는 곳: 카드에 붙은 에이전트 pane → 없으면 헤르메스 pane. 팝업 안에서만 바꿀 수 있다
       const candidates = (lastState?.panes || []).filter((entry) => entry.role !== 'other');
@@ -385,6 +389,12 @@
         // 202 — 진행은 SSE event: job 으로 온다 (renderJob)
         currentJob = result.job;
         setStatus('', '');
+        return;
+      }
+      if (pending?.mode === 'review') {
+        const result = await api('/api/review', { id: pending.id, text });
+        document.getElementById('ask').close();
+        toast(`reviewer 를 띄웠어요 · ${(result.pane || '').split(' ')[0]}`);
         return;
       }
       await api('/api/action', { pane: targetPane, text });

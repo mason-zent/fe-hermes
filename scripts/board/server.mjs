@@ -96,6 +96,7 @@ const readPlan = (path) => {
     blocked: status === 'blocked' || (blocked && !/^없음/.test(blocked)) ? blocked || '막힘' : '',
     next,
     workRef: plain(field(checkpoint, 'Work ref')),
+    review: plain(field(checkpoint, 'Review')),
     issue: plain(field(checkpoint, 'Issue')).match(/issues\/\S+\.md/)?.[0] ?? '',
     updated: plain(field(checkpoint, 'Updated')),
     progress: total ? { checked, total } : null,
@@ -452,7 +453,7 @@ const collect = async () => {
   for (const plan of plans) {
     // delegate.sh 가 Work ref 에 "pane <id>" 를 적는다. 없으면 브랜치로 맞춘다
     plan.agents = panes
-      .filter((pane) => pane.role === 'agent' && (plan.workRef.includes(`pane ${pane.id} `) || plan.workRef.endsWith(`pane ${pane.id}`) || (pane.branch && plan.workRef.includes(pane.branch))))
+      .filter((pane) => pane.role === 'agent' && (plan.workRef.includes(`pane ${pane.id} `) || plan.workRef.endsWith(`pane ${pane.id}`) || plan.review.includes(`pane ${pane.id} `) || (pane.branch && plan.workRef.includes(pane.branch))))
       .map((pane) => pane.id)
     // 에이전트가 지금 일하고 있으면 진행 중 칸에 — 요청을 여러 번 주고받으면 계획서 Status 가 리뷰에 머물러 있어도
     // 실제로는 작업 중이다. 파일은 바꾸지 않고 보여 주는 칸만 (끝나 대기로 돌아가면 다시 리뷰 칸)
@@ -639,6 +640,17 @@ const dispatchAgent = async (issueId, agent, text, job) => {
   return { pane, plan, worktree: worktree.rel, ref: `origin/${worktree.branch}@${sha}${note}` }
 }
 
+// 리뷰 요청 — 헤르메스 pane 을 거치지 않고 reviewer 를 바로 띄운다.
+// 어느 레포 workspace·어느 워크트리에 띄울지는 delegate.sh 가 계획서의 Agent·Work ref 를 보고 정한다
+const dispatchReview = async (planId, text) => {
+  if (!safePath(planId, 'plans') || !planId.endsWith('.md')) return { error: '계획서를 찾지 못했어요' }
+  const prompt = text.trim()
+  if (!prompt || prompt.length > 4000) return { error: '지시문이 비어 있거나 너무 길어요' }
+  const out = await run(join(ROOT, 'scripts/delegate.sh'), ['reviewer', prompt, '--plan', planId], { cwd: ROOT, timeout: 30_000 })
+  if (out === null) return { error: 'reviewer 를 띄우지 못했어요 — herdr 안에서 현황판을 띄웠는지 확인해 주세요' }
+  return { pane: out.trim().split('\n').pop() }
+}
+
 const removeIssueWorktree = async (issueId, agent) => {
   const worktree = issueWorktree(issueId, agent)
   if (!worktree || !existsSync(worktree.path)) return { error: '지울 워크트리가 없어요' }
@@ -802,7 +814,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/worktree-remove', '/api/delete', '/api/archive'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -820,6 +832,12 @@ createServer(async (request, response) => {
         await refresh()
       })
       return reply(202, { ok: true, job: job.id })
+    }
+    if (url.pathname === '/api/review') {
+      const result = await dispatchReview(String(body.id ?? ''), String(body.text ?? ''))
+      if (result.error) return reply(400, result)
+      await refresh()
+      return reply(200, { ok: true, ...result })
     }
     if (url.pathname === '/api/delete' || url.pathname === '/api/archive') {
       const result = url.pathname === '/api/delete' ? await deleteCard(String(body.id ?? '')) : await archiveCard(String(body.id ?? ''))

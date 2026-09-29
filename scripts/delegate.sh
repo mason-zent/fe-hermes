@@ -63,7 +63,7 @@ PLAN="${PLAN#"$HERMES_DIR"/}"
 case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 한다: $PLAN" >&2; exit 2 ;; esac
 [ -f "$HERMES_DIR/$PLAN" ] || { echo "계획서가 없다: $PLAN" >&2; exit 2; }
 # 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
-PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 커밋은 사용자가 "커밋해줘" 라고 할 때만 $HERMES_DIR/scripts/commit.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> -m "<레포 관례 메시지>" -- <바꾼 파일>… 로 한다(git commit 직접·git add -A 금지, 거부되면 이유를 그대로 전하고 사용자에게 묻는다). push·PR 은 하지 않는다 — 헤르메스가 맡는다. 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
+PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 커밋은 사용자가 '커밋해줘' 라고 할 때만 $HERMES_DIR/scripts/commit.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> -m '<레포 관례 메시지>' -- <바꾼 파일>… 로 한다(git commit 직접·git add -A 금지, 거부되면 이유를 그대로 전하고 사용자에게 묻는다). push·PR 은 하지 않는다 — 헤르메스가 맡는다. 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
 # 지시 없이 띄우면(/call) 사용자가 pane 에서 직접 요청한다 — 첫 요청으로 계획서를 채우게 한다
 # /call — 브랜치를 사용자에게 물어 에이전트가 워크트리를 만든다. new-branch.sh 대상 이름은 config 에서
 if [ "$ASK_BRANCH" = 1 ]; then
@@ -109,6 +109,30 @@ PYEOF
 )"
 [ -n "$REPO_DIR" ] && REPO_DIR="$HERMES_DIR/repos/$REPO_DIR"
 [ -n "$REPO_DIR" ] && [ ! -d "$REPO_DIR" ] && REPO_DIR=""
+
+# reviewer 는 담당 레포가 없다 — 계획서를 보고 **어느 에이전트·레포 작업인지** 정해 그 레포 workspace 에 띄운다.
+# Agent: 의 에이전트 → config 의 레포, Work ref: 맨 앞이 실제 폴더면(워크트리) 그곳을 cwd 로 (검증 스크립트도 그걸 본다).
+# 헤르메스 자체 작업(Agent: hermes 등)이면 레포가 없으니 지금 탭에 둔다.
+if [ "$AGENT" = reviewer ] && [ "$HERE" = 0 ]; then
+  REVIEW_TARGET="$(python3 - "$HERMES_DIR/$PLAN" "$HERMES_DIR/hermes.config.json" <<'PYEOF'
+import json, re, sys, pathlib
+text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'); cfg = json.load(open(sys.argv[2]))
+agent = (re.search(r'^- Agent:\s*(\S+)', text, re.M) or [None, ''])[1]
+ref = (re.search(r'^- Work ref:\s*(\S+)', text, re.M) or [None, ''])[1]
+repo = ''
+for entry in cfg['repos']:
+    if agent in (entry.get('agents') or []) or agent == entry.get('packagesAgent') or any(app.get('agent') == agent for app in (entry.get('apps') or {}).values()):
+        repo = entry['name']; break
+cwd = ref if ref.startswith('/') and pathlib.Path(ref).is_dir() else ''
+print(f'{repo}\t{cwd}')
+PYEOF
+)"
+  REVIEW_REPO="${REVIEW_TARGET%%$'\t'*}"; REVIEW_CWD="${REVIEW_TARGET#*$'\t'}"
+  if [ -n "$REVIEW_REPO" ] && [ -d "$HERMES_DIR/repos/$REVIEW_REPO" ]; then
+    REPO_DIR="$HERMES_DIR/repos/$REVIEW_REPO"
+    [ -z "$WORKDIR" ] && WORKDIR="${REVIEW_CWD:-$REPO_DIR}"
+  fi
+fi
 
 WORKDIR="${WORKDIR:-$HERMES_DIR}"
 [ -d "$WORKDIR" ] || { echo "디렉터리가 없다: $WORKDIR"; exit 2; }
@@ -263,8 +287,16 @@ python3 - "$HERMES_DIR/$PLAN" "$WORKDIR" "${BRANCH_NAME:-?}" "$PANE" "$AGENT" <<
 import sys, re, pathlib
 plan, cwd, branch, pane, agent = sys.argv[1:6]
 path = pathlib.Path(plan); text = path.read_text(encoding='utf-8')
-line = f"- Work ref: {cwd} · 🌿 {branch} · pane {pane} ({agent})"
-text = re.sub(r'^- Work ref:.*$', line, text, count=1, flags=re.M) if re.search(r'^- Work ref:', text, re.M) else text
+if agent == 'reviewer':
+    # 리뷰는 구현한 쪽의 Work ref 를 덮어쓰지 않는다 — 따로 Review 줄에 적는다(현황판이 이 pane 도 카드에 붙인다)
+    line = f"- Review: {cwd} · 🌿 {branch} · pane {pane} (reviewer)"
+    if re.search(r'^- Review:', text, re.M):
+        text = re.sub(r'^- Review:.*$', line, text, count=1, flags=re.M)
+    elif re.search(r'^- Work ref:.*$', text, re.M):
+        text = re.sub(r'^(- Work ref:.*)$', lambda match: match.group(1) + '\n' + line, text, count=1, flags=re.M)
+else:
+    line = f"- Work ref: {cwd} · 🌿 {branch} · pane {pane} ({agent})"
+    text = re.sub(r'^- Work ref:.*$', line, text, count=1, flags=re.M) if re.search(r'^- Work ref:', text, re.M) else text
 path.write_text(text, encoding='utf-8')
 PYEOF
 

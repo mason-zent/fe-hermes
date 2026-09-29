@@ -17,7 +17,9 @@ is_up() { curl -s -o /dev/null --max-time 1 "$URL/api/state"; }
 case "${1:-}" in
   url) echo "$URL"; exit 0 ;;
   stop)
-    pkill -f "scripts/board/server.mjs" && echo "현황판을 껐다" || echo "떠 있는 현황판이 없다"
+    # 포트를 잡고 있는 node 만 끈다. `pkill -f server.mjs` 는 명령줄에 그 경로가 든 프로세스(지시문에 경로가 적힌 에이전트 세션)까지 죽였다
+    PIDS="$(lsof -ti "tcp:$PORT" -sTCP:LISTEN 2>/dev/null | while read -r pid; do ps -o comm= -p "$pid" | grep -q node && echo "$pid"; done)"
+    if [ -n "$PIDS" ]; then kill $PIDS && echo "현황판을 껐다"; else echo "떠 있는 현황판이 없다"; fi
     exit 0 ;;
 esac
 
