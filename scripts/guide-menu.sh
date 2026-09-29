@@ -219,7 +219,11 @@ PY
 cursor_hide() { printf '\e[?25l'; }
 cursor_show() { printf '\e[?25h'; }
 
+# 터미널 제목을 비운다 — 안 그러면 herdr 가 pane 이름 옆에 실행 중인 스크립트 경로를 붙여 보여 준다
+clear_title() { printf '\033]0;\007'; }
+
 draw() {
+  clear_title
   local cols; cols=$(tput cols 2>/dev/null || echo 80); [ "$cols" -lt 30 ] && cols=80
   local wide=0; [ "$cols" -ge 70 ] && wide=1          # 넓을 때만 설명 컬럼 표시
   local rule_w=$(( cols - 4 )); [ "$rule_w" -gt 60 ] && rule_w=60
