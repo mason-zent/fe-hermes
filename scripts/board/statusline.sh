@@ -17,6 +17,9 @@ if [ -n "$dir" ] && command -v jq >/dev/null 2>&1; then
   fi
 fi
 
+# 헤르메스 statusline(scripts/statusline.sh)이 기록만 시키려고 부를 때는 여기서 끝낸다
+[ "${HERMES_USAGE_ONLY:-}" = 1 ] && exit 0
+
 # 기존 statusline(Orca 훅)이 있으면 같은 입력으로 이어서 실행
 orca="$HOME/.orca/agent-hooks/claude-statusline.sh"
 if [ -r "$orca" ] && [ -x "$orca" ]; then
