@@ -1,6 +1,6 @@
 ---
 title: web-op 구조도의 gateway → BFF 화살표가 코드와 다르다
-status: open
+status: done
 repo: web-op
 kind: diagram
 severity: medium
