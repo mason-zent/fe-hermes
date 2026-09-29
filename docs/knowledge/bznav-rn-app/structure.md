@@ -123,7 +123,7 @@ export 방식이 섞여 있다 — 대부분 `export default`, `LicenseDetailScr
 | `yarn firebase:distribute:{android,ios}` | Firebase App Distribution | **금지**(배포) |
 | `yarn sentry:upload:dsym` | dSYM 업로드(다른 사람 로컬 경로 하드코딩) | **금지** |
 | `postinstall` | `patch-package` | 자동 |
-| (없음) | lint·typecheck·test 스크립트 없음 → `scripts/verify/bznav-rn-app.sh` 가 `yarn expo lint`·`yarn tsc --noEmit` 을 직접 실행 | — |
+| (없음) | lint·typecheck·test 스크립트 없음 → `scripts/verify/bznav-rn-app.sh` 가 `yarn eslint src`·`yarn tsc --noEmit` 을 직접 실행 | — |
 
 ## 레포 원문 목록 (prd 기준)
 | 파일 | 내용 | 상태 |

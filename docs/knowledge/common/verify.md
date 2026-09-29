@@ -36,5 +36,5 @@
   `pnpm rebuild canvas`는 전이 의존성이라 아무 일도 하지 않으니 위 경로에서 직접 빌드한다. 빌드 후 `build/Release/canvas.node`가 생기면 성공이다 (2026-09-16 확인, 테스트 78개 통과)
 - **zent-packages의 brics FE 3종**(`brics-fe-ui`, `zent-auth`, `datadog-trace`)은 eslint 프리셋이 빈 파일이라 CI도 lint를 제외한다. 스크립트도 건너뛰고 prettier만 맞춘다. 엄격 모드(커밋)에선 사용자 확인 후 `--allow-skip "pnpm lint --filter=<패키지>"`
 - **zent-packages `changeset 존재` 단계는 작업 트리의 미커밋 `.changeset/*.md` 만 본다.** changeset 을 앞 커밋에 넣었으면 다음 검증부터 ⏭(엄격 모드 ❌)가 된다. CI(`changeset-check`)는 브랜치 diff 로 보므로 실제 머지에는 문제가 없다 — 그 사실을 확인하고 사용자 확인 후 `--allow-skip "changeset 존재"`
-- **bznav-rn-app `yarn expo lint`** 는 레포 `eslint.config.js` 설정 오류(`@typescript-eslint` 플러그인 미등록)로 실행되지 않아 스크립트가 ⏭ 로 바꾼다. 엄격 모드(커밋)에선 사용자 확인 후 `--allow-skip "yarn expo lint"`
+- **bznav-rn-app `yarn eslint src`** 는 레포 `eslint.config.js` 설정 오류(`@typescript-eslint` 플러그인 미등록)로 실행되지 않아 스크립트가 ⏭ 로 바꾼다. 엄격 모드(커밋)에선 사용자 확인 후 `--allow-skip "yarn eslint src"`
 - **web-op은 `pnpm build`가 타입 에러를 무시**한다(`ignoreBuildErrors: true`). 반드시 `typecheck`를 따로 본다

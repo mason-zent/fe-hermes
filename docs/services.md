@@ -61,7 +61,7 @@
 | 데이터·상태 | TanStack Query · zustand |
 | UI | NativeWind + 레포 디자인 시스템(`.claude/skills/design-system-*`) |
 | 패키지 매니저 | **yarn** (`yarn.lock`), Node `.nvmrc` |
-| 검증 | `scripts/verify/bznav-rn-app.sh` = `yarn expo lint` + `yarn tsc --noEmit` (package.json 에 스크립트 없음, 테스트 없음) |
+| 검증 | `scripts/verify/bznav-rn-app.sh` = `yarn eslint src` + `yarn tsc --noEmit` (package.json 에 스크립트 없음, 테스트 없음) |
 | 배포 | 코드 푸시(EAS Update) / 스토어 빌드(EAS Build). **에이전트는 배포 명령을 실행하지 않는다.** 네이티브·플러그인·권한·SDK 변경은 스토어 빌드가 필요 |
 | 레포 자체 규칙 문서 | `CLAUDE.md`(피그마 개발 규칙), `.claude/rules/{design-system-core,tracking}.md`, `docs/plans/*` |
 

@@ -28,7 +28,7 @@
 - `console.log` 는 non-development 빌드에서 babel(`transform-remove-console`, error·warn 유지)과 metro(`drop_console`, production)가 제거한다. 그래도 토큰·쿠키 값은 로그에 찍지 않는다
 
 ## 검증
-- 표준: hermes 루트에서 `scripts/verify/bznav-rn-app.sh` = **`yarn expo lint` → `yarn tsc --noEmit`**. 테스트는 없다. lint 는 현재 설정 오류로 ⏭ 이고 커밋 시 `--allow-skip` 이 필요하다, Node·설치 조건도 `gotchas.md` "설치·검증"
+- 표준: hermes 루트에서 `scripts/verify/bznav-rn-app.sh` = **`yarn eslint src` → `yarn tsc --noEmit`**. 테스트는 없다. lint 는 현재 설정 오류로 ⏭ 이고 커밋 시 `--allow-skip` 이 필요하다, Node·설치 조건도 `gotchas.md` "설치·검증"
 - 기기·시뮬레이터 실행(`expo run:*`)은 스크립트가 대신하지 않는다. 했으면 무엇을 봤는지, 안 했으면 "실행 못 함"
 
 ## 보고에 추가로 적을 것

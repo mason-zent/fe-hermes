@@ -48,9 +48,9 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 검증
 
-hermes 루트에서 `scripts/verify/bznav-rn-app.sh` 를 실행하고(워크트리에서 수동으로 돌리면 `HERMES_VERIFY_DIR=<워크트리>` 를 붙인다 — 없으면 메인 체크아웃을 검증한다) 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다(`yarn expo lint` · `yarn tsc --noEmit`). reviewer 도 같은 스크립트를 돌린다. 기기·시뮬레이터 실행은 스크립트가 대신하지 않는다 — 했으면 무엇을 확인했는지, 안 했으면 "실행 못 함".
+hermes 루트에서 `scripts/verify/bznav-rn-app.sh` 를 실행하고(워크트리에서 수동으로 돌리면 `HERMES_VERIFY_DIR=<워크트리>` 를 붙인다 — 없으면 메인 체크아웃을 검증한다) 출력 표를 보고의 "검증 결과"에 **그대로** 붙인다(`yarn eslint src` · `yarn tsc --noEmit`). reviewer 도 같은 스크립트를 돌린다. 기기·시뮬레이터 실행은 스크립트가 대신하지 않는다 — 했으면 무엇을 확인했는지, 안 했으면 "실행 못 함".
 
-- lint 는 지금 레포 설정 오류로 "건너뜀(설정 오류)"으로 나온다(`gotchas.md`). 사용자가 커밋을 요청하면 `scripts/commit.sh … --allow-skip "yarn expo lint"` 가 필요하다는 것을 **먼저 알리고** 허락을 받는다. 그 설정을 고치는 것은 별도 작업이다
+- lint 는 지금 레포 설정 오류로 "건너뜀(설정 오류)"으로 나온다(`gotchas.md`). 사용자가 커밋을 요청하면 `scripts/commit.sh … --allow-skip "yarn eslint src"` 가 필요하다는 것을 **먼저 알리고** 허락을 받는다. 그 설정을 고치는 것은 별도 작업이다
 
 ⚠️ **네이티브 코드·플러그인·권한·SDK 버전을 바꿨으면 코드 푸시(EAS Update)로 배포할 수 없다.** 스토어 빌드가 필요하다고 보고에 적는다.
 

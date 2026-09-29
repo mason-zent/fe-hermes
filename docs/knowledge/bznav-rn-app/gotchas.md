@@ -10,7 +10,8 @@
 - 패키지 매니저는 yarn 1(`yarn.lock`)이다. `pnpm-lock.yaml`·`package-lock.json` 을 만들지 않는다. 트리에 남이 만든 다른 lockfile 이 있으면 커밋·사용하지 않고 지우지도 않는다(남의 작업일 수 있다)
 
 ## 설치·검증
-- **lint 가 prd 에서 아예 돌지 않는다** — `npx eslint src`/`yarn expo lint` → `could not find plugin "@typescript-eslint"`(ESLint 9.32.0). `eslint.config.js` 가 files 제한 없는 전역 블록에서 `@typescript-eslint/no-use-before-define` 을 켜는데 `eslint-config-expo/flat` 은 그 플러그인을 `**/*.ts, **/*.tsx` 블록에만 등록한다. 헤르메스 이슈 `issues/20260929-bznav-rn-app-eslint-config.md`. `scripts/verify/bznav-rn-app.sh` 는 "⏭ 건너뜀(설정 오류)"로 표시하고, 엄격 모드(커밋)는 `--allow-skip "yarn expo lint"` 가 있어야 통과한다. **eslint 설정을 몰래 고쳐 lint 를 살리지 않는다** — 고치면 그동안 쌓인 lint 오류가 한꺼번에 나올 수 있어 별도 작업이다
+- `yarn expo lint` 를 직접 돌리지 않는다 — package.json 에 lint 스크립트가 없으면 `"lint": "expo lint"` 를 **추가해** 추적 파일을 바꾼다(commit.sh 가 "작업 트리가 바뀌었다" 로 거부). 표준 검증은 같은 일을 하는 `yarn eslint src --cache …` 를 쓴다(2026-09-29 실전 시험에서 발견)
+- **lint 가 prd 에서 아예 돌지 않는다** — `npx eslint src`/`yarn eslint src` → `could not find plugin "@typescript-eslint"`(ESLint 9.32.0). `eslint.config.js` 가 files 제한 없는 전역 블록에서 `@typescript-eslint/no-use-before-define` 을 켜는데 `eslint-config-expo/flat` 은 그 플러그인을 `**/*.ts, **/*.tsx` 블록에만 등록한다. 헤르메스 이슈 `issues/20260929-bznav-rn-app-eslint-config.md`. `scripts/verify/bznav-rn-app.sh` 는 "⏭ 건너뜀(설정 오류)"로 표시하고, 엄격 모드(커밋)는 `--allow-skip "yarn eslint src"` 가 있어야 통과한다. **eslint 설정을 몰래 고쳐 lint 를 살리지 않는다** — 고치면 그동안 쌓인 lint 오류가 한꺼번에 나올 수 있어 별도 작업이다
 - `yarn tsc --noEmit` 은 통과한다(2026-09-29). 실질 게이트는 이것 하나다
 - package.json 에 **lint·typecheck·test 스크립트가 없다**. README 의 `npm run lint` 는 존재하지 않는 명령이다. 테스트 러너도 없다
 - **Node 20 필수**: Node 24 로 `yarn install` 하면 `superstatic`(firebase-tools 의존) engine 제한(18||20||22)에 걸려 설치가 실패한다. `.nvmrc` 는 `20.19.4` 이고 검증 스크립트는 **정확히 일치하지 않으면** "Node 버전" 건너뜀으로 기록한다(20.20.x 도 경고)

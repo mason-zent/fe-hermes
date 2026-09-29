@@ -12,7 +12,7 @@ fix:
 reason:
 ---
 
-prd 에서 `yarn expo lint`(= `eslint src`)가 규칙 검사 전에 설정 오류로 죽는다 — `could not find plugin "@typescript-eslint"`. 그래서 검증 스크립트의 lint 단계가 늘 "실행 불가"로 나오고, `scripts/commit.sh` 엄격 검증도 `--allow-skip "yarn expo lint"` 없이는 통과하지 못한다.
+prd 에서 `yarn eslint src`(= `eslint src`)가 규칙 검사 전에 설정 오류로 죽는다 — `could not find plugin "@typescript-eslint"`. 그래서 검증 스크립트의 lint 단계가 늘 "실행 불가"로 나오고, `scripts/commit.sh` 엄격 검증도 `--allow-skip "yarn eslint src"` 없이는 통과하지 못한다.
 
 ## 근거
 - `eslint.config.js` (origin/prd `a161710`) — files 제한이 없는 전역 설정 블록에서 `@typescript-eslint/no-use-before-define` 을 켠다
