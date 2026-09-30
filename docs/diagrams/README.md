@@ -101,9 +101,11 @@ npx skills add tt-a1i/archify -g
 git clone --depth 1 https://github.com/tt-a1i/archify.git /tmp/archify
 A=/tmp/archify/archify
 
-# 작업 흐름 (workflow)
-node $A/bin/archify.mjs validate workflow docs/diagrams/hermes-flow.workflow.json --quality showcase --json
-node $A/bin/archify.mjs deliver  workflow docs/diagrams/hermes-flow.workflow.json docs/diagrams/hermes-flow.html --quality showcase --json
+# 작업 흐름 (workflow) — standard 품질로 만든다. "작업·커밋·PR" 노드에 선이 6개 몰려
+# showcase(선 간격·화살촉 거리 같은 모양새 기준)는 통과하지 못한다(issues/archive/20260930-hermes-flow-diagram-archify-validate.md).
+# 서비스 다이어그램은 아래처럼 showcase 를 유지한다
+node $A/bin/archify.mjs validate workflow docs/diagrams/hermes-flow.workflow.json --quality standard --json
+node $A/bin/archify.mjs deliver  workflow docs/diagrams/hermes-flow.workflow.json docs/diagrams/hermes-flow.html --quality standard --json
 
 # 레포 구조 (architecture) — sources 를 쓰므로 --repo-root 가 필요하다
 node $A/bin/archify.mjs validate architecture docs/diagrams/client-brics-refund.architecture.json \
