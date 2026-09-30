@@ -10,7 +10,7 @@
 - **brics(React 18) 라인과 bznav(React 19) 라인을 한 작업에서 섞어 수정하지 않는다.** 별칭 방식도 다르다(brics는 tsconfig paths, bznav는 exports)
 - **public export를 바꾸면 소비 레포 영향을 반드시 보고한다.** 여기 변경은 brics 라인 → client-brics-{refund,hub,care}(+범위 밖 works), bznav 라인 → web-op(`bznav-fe-ui`·`bznav-fe-project-config`)로 퍼진다. bznav-web 은 현재 이 레포 패키지를 소비하지 않는다(자체 `@repo/*`). 운영 반영은 자동이 아니라 소비 레포의 `pnpm up`이 필요하다
 - 문서 기준·작업 브랜치 base·PR 대상이 **모두 `main`** 이다(`hermes.config.json` `branch`·`prBase`). 콘솔·bznav 처럼 문서 기준 prd 계열·base dev 로 나뉘지 않는다
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `commit.sh` 에는 `--verify "<패키지명>"` 이 필수이고, brics 3종(ui·zent-auth·datadog-trace)은 lint 가 항상 ⏭ 라 사용자 확인 후 `--allow-skip "pnpm lint --filter=<패키지>"` 가 필요하다(`common/verify.md`). `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** `commit.sh` 에는 `--verify "<패키지명>"` 이 필수이고, brics 3종(ui·zent-auth·datadog-trace)은 lint 가 항상 ⏭ 라 사용자 확인 후 `--allow-skip "pnpm lint --filter=<패키지>"` 가 필요하다(`common/verify.md`). `~/.npmrc` 토큰·`.env*` 내용은 출력하지 않는다
 
 ## 공통과 다른 점
 - 작업 브랜치 `feature/REF-####`

@@ -63,7 +63,12 @@ PLAN="${PLAN#"$HERMES_DIR"/}"
 case "$PLAN" in plans/*.md) ;; *) echo "계획서는 plans/ 아래 .md 여야 한다: $PLAN" >&2; exit 2 ;; esac
 [ -f "$HERMES_DIR/$PLAN" ] || { echo "계획서가 없다: $PLAN" >&2; exit 2; }
 # 에이전트 지시 맨 앞에 계획서를 박는다 — 프롬프트 없이 열어도 계획서를 읽고 시작하게
-PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 커밋은 사용자가 '커밋해줘' 라고 할 때만 $HERMES_DIR/scripts/commit.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> -m '<레포 관례 메시지>' -- <바꾼 파일>… 로 한다(git commit 직접·git add -A 금지, 거부되면 이유를 그대로 전하고 사용자에게 묻는다). push·PR 은 하지 않는다 — 헤르메스가 맡는다. 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
+PLAN_HEADER="이 작업의 계획서: $HERMES_DIR/$PLAN — 먼저 읽고 Checkpoint 의 Next 부터 한다. 끝나면(또는 막히면) 그 계획서의 Status·Progress·Validation·결과 절을 채운다(Status 는 끝나면 ready_for_review, 막히면 blocked). 커밋은 사용자가 '커밋해줘' 라고 할 때만 $HERMES_DIR/scripts/commit.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> -m '<레포 관례 메시지>' -- <바꾼 파일>… 로 한다(git commit 직접·git add -A 금지, 거부되면 이유를 그대로 전하고 사용자에게 묻는다). 사용자가 '리뷰해줘' 라고 하면 $HERMES_DIR/scripts/delegate.sh reviewer --cwd <워크트리> --here --plan $HERMES_DIR/$PLAN 로 옆에 reviewer pane 을 띄운다(직접 리뷰하지 않는다 — reviewer 가 결론을 계획서 '- Review result:' 줄에 남기고, ship.sh 미리보기에 나온다). 사용자가 'PR 올려줘' 라고 하면 $HERMES_DIR/scripts/ship.sh --plan $HERMES_DIR/$PLAN --dir <워크트리> 로 미리보기를 먼저 돌려 그 내용을 보여 주고, AskUserQuestion 으로 base(미리보기 후보, 여러 개 가능)·제목(제안 그대로/수정)·리뷰 줄에 ⚠️ 가 있으면 이대로 올릴지를 확인받은 뒤 --base … --title '…' [--no-review-ok] --yes 로 보낸다(git push·gh pr create 직접 금지, 거부되면 이유를 그대로 전한다). 여러 레포에 걸친 작업이면 ship.sh 가 거부한다 — 헤르메스에게 요청하라고 알린다. 요청을 여러 번 주고받는다 — 새 요청을 받을 때마다 작업을 시작하기 전에 Status 를 in_progress 로 되돌리고, 그 요청이 끝나면 다시 ready_for_review 로 바꾼다. Progress 에는 요청마다 한 줄씩 더한다. "
+if [ "$AGENT" = reviewer ]; then
+  # reviewer 는 커밋·PR·Status 를 다루지 않는다 — 에이전트용 머리말 대신 리뷰 머리말만 싣는다
+  PLAN_HEADER="리뷰할 계획서: $HERMES_DIR/$PLAN — 읽기 전용으로 리뷰한다(코드·계획서 본문을 고치지 않는다). 대상 트리는 지금 작업 디렉토리다. 리뷰를 마치면 결론을 $HERMES_DIR/scripts/review-result.sh --plan $HERMES_DIR/$PLAN --dir <리뷰한 트리> --verdict 승인|수정필요 --note '<한 줄 요약>' 로 한 줄 남긴다(ship.sh 가 이 줄과 HEAD 를 대조한다). 그다음 수정 필요 / 제안으로 나눠 보고한다. "
+  ASK_BRANCH=0; SKIP_AGENT_HEADER=1
+fi
 # 지시 없이 띄우면(/call) 사용자가 pane 에서 직접 요청한다 — 첫 요청으로 계획서를 채우게 한다
 # /call — 브랜치를 사용자에게 물어 에이전트가 워크트리를 만든다. new-branch.sh 대상 이름은 config 에서
 if [ "$ASK_BRANCH" = 1 ]; then
@@ -88,9 +93,11 @@ PYEOF
   fi
   PLAN_HEADER="${PLAN_HEADER}아직 브랜치·워크트리가 없다. 메인 체크아웃 상태: ${MAIN_STATE:-?} · 미커밋 ${MAIN_DIRTY:-?}개. 최근 작업 브랜치 후보: ${CANDIDATES:-없음}. 첫 동작으로 곧바로 AskUserQuestion 을 띄운다 — 계획서 읽기·git status 같은 다른 도구를 먼저 부르지 않는다. 질문은 '어느 브랜치로 작업할까요?'(header '브랜치'), 선택지는 위 후보마다 '<브랜치> 이어 쓰기'(description 에 로컬/원격·마지막 커밋) 와 '새 브랜치 만들기'(description 'Other 에 티켓 번호나 fix/설명을 적어 주세요'). 메인 체크아웃 상태는 질문 앞에 한 줄로 알린다. 답을 받으면 후보를 골랐을 때 $HERMES_DIR/scripts/new-branch.sh <브랜치> ${BRANCH_TARGET:-<대상>} --reuse, 새 이름이면 --reuse 없이 실행한다. 새 이름인데 '⚠️ 이미 있다' 가 나오면 그 내용을 전하고 AskUserQuestion 으로 '그대로 이어 쓰기 / 다른 이름' 을 다시 묻는다. 워크트리가 생기면 이후 모든 읽기·수정은 그 워크트리 절대경로 안에서만 한다(메인 체크아웃은 수정하지 않는다). 검증 스크립트는 HERMES_VERIFY_DIR=<워크트리> 를 붙인다. 그다음 '무엇을 할까요?' 로 요청을 기다린다. 계획서(Work ref 의 경로·브랜치, 제목, ## 지시)는 요청을 받은 뒤 한 번에 고친다 — 그 전에는 계획서를 건드리지 않는다. "
 fi
+if [ -z "${SKIP_AGENT_HEADER:-}" ]; then
 [ -z "$PROMPT" ] && PLAN_HEADER="${PLAN_HEADER}지금은 지시가 없다. 브랜치·미커밋 상태만 확인해 한 줄로 보고하고 사용자의 요청을 기다린다. 첫 요청을 받으면 계획서의 제목(# 줄)과 '## 지시' 절을 그 요청으로 바꿔 적고 진행한다. "
 # 지시가 있든 없든(현황판 [처리 시작]도) — 범위가 커지면 멈춘다
 PLAN_HEADER="${PLAN_HEADER}요청이 여러 레포·API·구조 변경으로 커지면 멈추고 정식 계획서가 필요하다고 알린다. 버그 수정이면 AGENTS.md 5절대로 재현부터 확인하고 수정 전·후를 같은 방법으로 비교한다. "
+fi
 PROMPT="$PLAN_HEADER${PROMPT}"
 
 GIVEN_PROMPT="$PROMPT"
@@ -126,6 +133,15 @@ for entry in cfg['repos']:
     if agent in (entry.get('agents') or []) or agent == entry.get('packagesAgent') or any(app.get('agent') == agent for app in (entry.get('apps') or {}).values()):
         repo = entry['name']; break
 cwd = ref if ref.startswith('/') and pathlib.Path(ref).is_dir() else ''
+if not repo and cwd:
+    # 정식 계획서는 Agent 줄이 없다 — Work ref 워크트리의 메인 체크아웃으로 레포를 찾는다
+    import subprocess, os
+    listing = subprocess.run(['git', '-C', cwd, 'worktree', 'list', '--porcelain'], capture_output=True, text=True).stdout
+    main = next((row[len('worktree '):] for row in listing.splitlines() if row.startswith('worktree ')), '')
+    links = pathlib.Path(sys.argv[1]).resolve().parents[2] / 'repos'
+    for link in (links.iterdir() if links.is_dir() else []):
+        if main and os.path.realpath(link) == os.path.realpath(main):
+            repo = link.name; break
 print(f'{repo}\t{cwd}')
 PYEOF
 )"

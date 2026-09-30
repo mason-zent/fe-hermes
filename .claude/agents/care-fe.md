@@ -13,7 +13,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 - 이 레포 밖은 수정하지 않는다. 공유 패키지(`brics-fe-ui`, `brics-fe-zent-auth`) 수정이 필요하면 **헤르메스에 보고**한다 (`packages-fe` 담당)
 - `__generated__/`(Orval 생성물)는 직접 편집하지 않는다. git 추적 대상이라 diff에 함께 올라간다
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·토큰 내용은 출력하지 않는다. dev·prd·frz 직접 push 금지
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** `.env*`·토큰 내용은 출력하지 않는다. dev·prd·frz 직접 push 금지
 - 비즈넵 **사용자향** 케어 웹(`bznav-web apps/care-web`)은 `bznav-care-fe` 담당이다. 완전히 다른 레포다
 - 레포 원문은 `CLAUDE.md`다. 단 "Next 14" 표기 등 낡은 부분이 있어 **코드가 우선**이다 (`gotchas.md` 참고)
 

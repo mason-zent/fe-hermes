@@ -20,5 +20,6 @@ reason:
 - composition/arrowhead-collision: e6 과 s6 화살촉이 도착점에서 겹침(간격 0px, 최소 11.2px)
 
 ## 할 일
+- (2026-09-30 추가) 에이전트 pane 리뷰·push·PR 작업에서도 같은 8건으로 deliver 실패 — json 을 고친 노드 3개(review 태그·agent 이름·보조 문구)와 카드 3·4·5단계 문구를 HTML 에 글자만 직접 맞췄다. 재생성할 때 json 기준으로 덮어써지므로 따로 옮길 것은 없다
 - 화살표 포트·배치를 고쳐 showcase 검증을 통과시키고 `deliver` 로 HTML 재생성 (`docs/diagrams/README.md` 절차)
 - 또는 docs/diagrams/README.md 에 사용할 archify 버전을 고정

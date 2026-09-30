@@ -8,7 +8,7 @@
 - `__generated__/`는 직접 편집하지 않는다. **`client-brics-works`의 생성물을 복사해 오지 않는다** — 이 레포는 works에서 분화됐지만 스펙이 갈라졌다
 - 공유 패키지는 works 기준 **정확 버전 고정**(`^` 없음). `pnpm up`으로 무심코 올리지 않는다. 버전을 바꿔야 하면 멈추고 보고한다
 - 사이드바 **메뉴 항목 추가는 코드가 아니라 `/brics-menus` 화면(DB 행)**이다. 사이드바는 hub에 내재화되어 있어 공유 패키지의 `RootWrapper`/`RootSidebar`를 쓰지 않는다
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·토큰 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** `.env*`·토큰 내용은 출력하지 않는다
 
 ## 포맷·검증
 - Prettier `semi: false`, `singleQuote: true`, `trailingComma: none`, `printWidth: 120`, 2 spaces

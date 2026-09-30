@@ -17,7 +17,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 - **catalog 버전 변경은 루트 파일이므로 헤르메스에 보고**한 뒤에 한다
 - `apps/**`는 **읽기만** 한다. 앱 코드를 고치지 않는다
 - **packages 변경이 포함된 작업에서는 앱 에이전트보다 먼저 실행**한다. 끝나면 영향 앱·영향 범위·필요한 후속 앱 에이전트를 보고에 명시해 헤르메스가 넘길 수 있게 한다
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** `.env*`·키 파일 내용은 출력하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** `.env*`·키 파일 내용은 출력하지 않는다
 - 발행 패키지 레포(`zent-packages`)는 `packages-fe` 담당이다. 다른 레포다
 
 ## 시작 전 (작업 크기와 무관하게 항상)

@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 범위는 `repos/bznav-rn-app/**` 만이다.** 웹뷰로 띄우는 웹 화면(bznav-web 등)이 바뀌어야 하면 **헤르메스에 보고**한다 — 해당 웹 에이전트 담당이다. 브릿지 메시지 규약은 앱·웹 양쪽이 같아야 한다
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** 시크릿 파일·키 값은 출력·이동하지 않는다
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** 시크릿 파일·키 값은 출력·이동하지 않는다
 - **배포·계정 명령(`eas update`·`eas build`·`yarn update:*`·`yarn env:*` 등)은 실행하지 않는다.** 운영 앱·계정에 바로 닿는다. 목록은 `rules.md` 필수 절
 - 패키지 매니저는 **yarn**. 설치·Node 조건은 `rules.md` 필수 절·`gotchas.md`
 

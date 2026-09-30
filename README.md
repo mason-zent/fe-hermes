@@ -25,7 +25,7 @@ cd fe-hermes
 claude                      # 켤 때 repos/<레포> 링크를 알아서 연결한다 (수동: scripts/setup.sh [--root <경로>])
 ```
 - 그냥 말하기 — "refund·hub 에 공지 배너 똑같이 넣어줘", "환급 콘솔 페이지네이션 버그 원인 찾아줘" → 헤르메스가 라우팅 → 계획서 → 승인 → 디스패치 → 리뷰 → 보고
-- `/call 에이전트` — 담당 에이전트를 pane 으로 바로 띄운다. 브랜치 이름은 에이전트가 물어 워크트리를 만들고, 요청도 그 pane 에서 직접 쓴다(빈 지시 경량 계획서)
+- `/call 에이전트` — 담당 에이전트를 pane 으로 바로 띄운다. 브랜치 이름은 에이전트가 물어 워크트리를 만들고, 요청·"커밋해줘"·"리뷰해줘"·"PR 올려줘" 까지 그 pane 에서 끝낸다(빈 지시 경량 계획서)
 - 리뷰·현황·브랜치도 말로 — "refund 변경 리뷰해줘", "현황 알려줘" (헤르메스가 `docs/knowledge/common/git.md` 절차대로)
 - `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
 - `/board` — 현황판. 로컬 서버(`localhost:4700`)를 띄워 브라우저에서 실시간으로 본다 — 지금 동작 중인 에이전트, 계획서 칸반(계획·진행 중·리뷰·완료), `issues/` 의 이슈. 카드를 끌어 상태를 바꾸고 버튼으로 헤르메스에게 지시를 보낸다
@@ -63,6 +63,8 @@ scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄�
 scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
 scripts/new-branch.sh         작업 브랜치·워크트리 생성 (헤르메스 3단계 · /call 에이전트가 호출)
+scripts/commit.sh             에이전트 로컬 커밋 ("커밋해줘" — 지정 파일만·엄격 검증·계획서 기록)
+scripts/ship.sh               push + draft PR ("PR 올려줘" — 미리보기 → 확인 → 공통 제목·본문 형식, 레포 하나짜리 작업만)
 scripts/statusline.sh         pane 하단 상태바 (레포·브랜치·변경 개수). 표시 규칙은 docs/playbook.html
 scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 호출)
 ```

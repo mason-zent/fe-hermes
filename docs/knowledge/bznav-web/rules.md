@@ -9,7 +9,7 @@
 - **비커밋·비출력 파일**: `.env*`, `.aws/access-key.js`, 그리고 레포에 이미 커밋되어 있는 **`apps/sena-web/firebase-key.json`**·**`.npmrc`(루트와 `apps/care-web/`, 평문 토큰)**. 내용을 출력·수정·이동하지 않는다. 마주치면 헤르메스에 보고
 - Relay **아티팩트는 미커밋**이고 직접 편집하지 않는다. 앱별 `relay`/`gen:relay`를 먼저 돌린다(루트 `pnpm gen:relay` 는 쓰지 않는다 — `gotchas.md`). 스키마 갱신은 네트워크·인증이 필요하다
 - `@zenterprise-inc/ui`(ui-deprecated) **신규 사용 금지**. 신규 UI는 `@repo/ui`
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).** 새 의존성은 `pnpm-workspace.yaml` catalog 확인이 먼저다(내부 패키지는 `workspace:*`)
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** 새 의존성은 `pnpm-workspace.yaml` catalog 확인이 먼저다(내부 패키지는 `workspace:*`)
 
 ### 코드를 쓰거나 고치면 항상
 
@@ -50,7 +50,7 @@
 ## Git
 - **문서·지식의 기준 브랜치는 앱마다 다르다** — `origin/prd-<앱>`(운영 반영분). `packages/*` 는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. 정본은 `hermes.config.json`
 - **개발·PR 브랜치는 별개다** — **5개 앱 모두 PR base 는 `dev`**, 릴리즈는 `prd-<앱>`. 문서 기준(`prd-<앱>`)과 PR base(`dev`)를 같은 것으로 취급하지 않는다
-- **PR 은 헤르메스가 만든다.** 원문 `.github/skills/create-pr` 는 참고만 — 그 스킬은 아직 brand·refund·sena 를 `dev-ecs` 로 보내는 base 추론을 적고 있어 따르면 폐기 브랜치로 간다
+- **PR 은 `scripts/ship.sh` 로 만든다**(에이전트는 사용자가 "PR 올려줘" 할 때, 여러 앱·packages 동시 작업은 헤르메스). 원문 `.github/skills/create-pr` 는 참고만 — 그 스킬은 아직 brand·refund·sena 를 `dev-ecs` 로 보내는 base 추론을 적고 있어 따르면 폐기 브랜치로 간다
 - ⚠️ **`dev-ecs` 는 폐기됐다.** 레포에 `chore: dev-ecs 브랜치 제거에 따른 워크플로우 및 문서 정리` 커밋이 있고, 2026-09-09 이후 갱신이 없으며 `dev` 에 없는 커밋도 없다. base 로 쓰지 않는다
 - **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있고, 5개 앱 모두 base 가 `dev` 라 어느 앱으로 따든 같다. `scripts/new-branch.sh REF-#### bznav:<앱>`
 - 커밋 `type(scope): 설명` (예 `fix(refund): REF-3728 ...`). 응답·PR·리뷰는 한글 존댓말

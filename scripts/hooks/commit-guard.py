@@ -4,10 +4,15 @@
 막는 것 (실수 방지용이지 보안 경계가 아니다 — 스크립트 파일 안의 명령까지 보지는 않는다)
   - git commit 직접        → scripts/commit.sh 로 안내 (지정 파일만·엄격 검증·계획서 기록)
   - git add -A / --all / . / -u / 디렉터리  → 남의 변경이 섞인다. 파일을 하나씩 지정하거나 commit.sh 로
-  - git push · gh pr …     → 밖으로 나가는 일은 헤르메스가 맡는다
+  - git push · gh pr (쓰기) → scripts/ship.sh 로 안내 (사용자가 "PR 올려줘" 했을 때 · 레포 하나짜리 작업만 · 미리보기 확인 후)
   - git revert · merge · cherry-pick · am  → commit.sh 를 거치지 않고 커밋을 만든다
   - git stash(list·show 제외) · reset --hard → 미커밋 변경(남의 작업일 수 있다)을 치우거나 지운다
-통과: 실제로 실행되는 명령(조각의 첫 실행 토큰)이 scripts/commit.sh 인 조각.
+통과: 실제로 실행되는 명령(조각의 첫 실행 토큰)이 **이 hermes 의** scripts/commit.sh · scripts/ship.sh 인 조각(경로를 풀어 비교 — 같은 이름의 다른 파일은 막는다),
+      gh pr 읽기(view·list·status·checks·diff), gh api 읽기(GET).
+그 밖에 막는 것: ship.sh --repo-agent(헤르메스 전용 — 여러 레포 순서 조율), gh api 쓰기(-X POST 등 · -f/-F 필드 · --input, 붙여 쓴 꼴 포함).
+경로는 페이로드 cwd 기준으로 푼다 — 워크트리에서는 절대 경로로 부른다(에이전트 지시문이 그렇게 한다).
+한계(보안 경계가 아니다): FE 세션은 hermes 에 쓰기 권한이 있어 scripts 자체나 계획서 기록(Review result 등)을 고칠 수 있고,
+git -c alias.… · send-pack · eval · xargs 로 감싼 push 는 보지 않는다.
 
 명령은 ; && || | & 줄바꿈으로 나누고, $( … ) · ` … ` · ( … ) 안과 sh|bash|zsh -c "…" 인자도 따로 본다.
 VAR=값 · env · command · sudo · nohup · time · exec · nice 앞붙임은 건너뛰고, git·gh 는 경로를 떼고 이름으로 본다.
@@ -15,6 +20,7 @@ VAR=값 · env · command · sudo · nohup · time · exec · nice 앞붙임은 
 """
 import json
 import os
+import pathlib
 import re
 import shlex
 import sys
@@ -32,6 +38,9 @@ WRAPPERS = {'env', 'command', 'sudo', 'nohup', 'time', 'exec', 'nice', 'builtin'
 SHELLS = {'sh', 'bash', 'zsh', 'dash'}
 GIT_OPTS_WITH_VALUE = {'-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--config-env'}
 GH_OPTS_WITH_VALUE = {'-R', '--repo', '--hostname'}
+# 통과시키는 스크립트 — 이 파일 기준 hermes 루트의 scripts/ 아래 실제 파일만
+HERMES_SCRIPTS = pathlib.Path(__file__).resolve().parents[1]
+ALLOWED_SCRIPTS = {name: os.path.realpath(HERMES_SCRIPTS / name) for name in ('commit.sh', 'ship.sh')}
 
 
 def mask_quotes(text, keep_substitution):
@@ -155,7 +164,7 @@ def check_git(args):
     if sub == 'reset' and '--hard' in rest:
         return 'git reset --hard 는 미커밋 변경을 지운다. 되돌릴 게 있으면 파일을 지정해 사용자에게 확인한 뒤 사용자가 직접 한다'
     if sub == 'push':
-        return 'push 는 하지 않는다 — 헤르메스가 맡는다. 사용자에게 "헤르메스에게 push 를 요청해 달라" 고 알린다'
+        return 'push 는 scripts/ship.sh 로만 한다 — 사용자가 "PR 올려줘" 라고 했을 때: scripts/ship.sh --plan <계획서> --dir <워크트리> 로 미리보기부터'
     if sub == 'add':
         for arg in rest:
             short_bundle = re.match(r'^-[A-Za-z]+$', arg) and any(flag in arg[1:] for flag in 'Au')
@@ -171,8 +180,26 @@ def check_gh(args):
     while index < len(args) and args[index].startswith('-'):
         option = args[index].split('=', 1)[0]
         index += 2 if option in GH_OPTS_WITH_VALUE and '=' not in args[index] else 1
+    if index < len(args) and args[index] == 'api':
+        rest = args[index + 1:]
+        # 붙여 쓴 꼴(-XPUT · -X=POST · --method=PATCH · -fquery=… · -Fhead=…)까지 본다
+        method = ''
+        for pos, token in enumerate(rest):
+            if token in ('-X', '--method'):
+                method = rest[pos + 1].upper() if pos + 1 < len(rest) else '?'
+            elif token.startswith('--method='):
+                method = token.split('=', 1)[1].upper()
+            elif token.startswith('-X'):
+                method = token[2:].lstrip('=').upper()
+        writes = any(token.startswith(('-f', '-F', '--field', '--raw-field', '--input')) for token in rest)
+        if (method and method != 'GET') or writes:
+            return 'gh api 쓰기는 막는다 — PR 은 scripts/ship.sh 로. 읽기(GET)만 허용'
+        return ''
     if index < len(args) and args[index] == 'pr':
-        return 'PR 은 헤르메스가 맡는다. 사용자에게 헤르메스에게 PR 을 요청해 달라고 알린다'
+        action = args[index + 1] if index + 1 < len(args) else ''
+        if action in ('view', 'list', 'status', 'checks', 'diff'):
+            return ''
+        return 'PR 은 scripts/ship.sh 로만 만든다 — 사용자가 "PR 올려줘" 라고 했을 때: scripts/ship.sh --plan <계획서> --dir <워크트리> 로 미리보기부터'
     return ''
 
 
@@ -188,8 +215,13 @@ def check(text, depth=0):
         if not tokens:
             continue
         name = os.path.basename(tokens[0])
-        if name == 'commit.sh':
-            continue  # 실제로 commit.sh 를 실행하는 조각만 통과
+        if name in ALLOWED_SCRIPTS:
+            # 이 hermes 의 그 파일일 때만 통과 — ./ship.sh · /tmp/ship.sh 같은 같은 이름의 다른 파일은 막는다
+            if os.path.realpath(os.path.join(cwd, tokens[0])) != ALLOWED_SCRIPTS[name]:
+                return f'{name} 은 hermes 의 scripts/{name} 만 실행한다: {ALLOWED_SCRIPTS[name]}'
+            if name == 'ship.sh' and any(token == '--repo-agent' or token.startswith('--repo-agent=') for token in tokens[1:]):
+                return 'ship.sh --repo-agent 는 헤르메스 전용이다(여러 레포 작업의 순서 조율). 사용자에게 헤르메스에게 PR 을 요청해 달라고 알린다'
+            continue
         # -c 는 -lc · -ec 처럼 다른 옵션과 묶여 올 수 있다
         flag = next((position for position, token in enumerate(tokens[1:], 1) if re.match(r'^-[A-Za-z]*c[A-Za-z]*$', token)), None) if name in SHELLS else None
         if flag is not None:

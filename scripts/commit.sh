@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 에이전트 로컬 커밋 — 사용자가 pane 에서 "커밋해줘" 라고 했을 때만, 이 스크립트로만 커밋한다.
-# push·PR 은 하지 않는다(헤르메스가 맡는다).
+# push·PR 은 하지 않는다 — 사용자가 "PR 올려줘" 라고 하면 scripts/ship.sh 로.
 #
 # 사용:
 #   scripts/commit.sh --plan <plans/…md> --dir <워크트리> -m "<커밋 메시지>" [--verify "<검증 인자>"] -- <파일> [<파일>…]
@@ -14,7 +14,7 @@
 #
 # 확인하는 것 (하나라도 걸리면 아무것도 바꾸지 않고 멈춘다)
 #   - <워크트리> 가 등록된 git 워크트리이고 메인 체크아웃이 아니다(허용 옵션 제외)
-#   - HEAD 가 브랜치에 붙어 있다(detached 아님) · 보호 브랜치(dev·main·master·stg·prd*·release/*·dev-*)가 아니다
+#   - HEAD 가 브랜치에 붙어 있다(detached 아님) · 보호 브랜치(dev·main·master·stg·frz·prd*·release/*·dev-*)가 아니다
 #   - 원래 스테이징돼 있던 변경이 없다 — 남의 변경이 섞이지 않게
 #   - 파일은 글자 그대로의 경로만(디렉터리·glob 금지), 워크트리 안이고, 실제로 바뀐 파일이다
 # 그다음: 지정 파일만 스테이징 → 그 상태로 엄격 검증 → 검증 전후 스테이징·파일 내용·HEAD 가 같을 때만 커밋
@@ -65,7 +65,7 @@ fi
 git -C "$TOP" worktree list --porcelain | grep -qxF "worktree $TOP" || [ "$TOP" = "$MAIN" ] || fail "등록된 워크트리가 아니다: $TOP"
 BRANCH="$(git -C "$TOP" symbolic-ref --short -q HEAD)" || fail "detached HEAD 다 — 브랜치를 만든 워크트리에서 커밋한다(scripts/new-branch.sh)"
 case "$BRANCH" in
-  dev|main|master|stg|prd|prd-*|release/*|dev-*) fail "보호 브랜치($BRANCH)에는 커밋하지 않는다" ;;
+  dev|main|master|stg|frz|prd|prd-*|release/*|dev-*) fail "보호 브랜치($BRANCH)에는 커밋하지 않는다" ;;
 esac
 
 # ── 2. 스테이징·파일 ────────────────────────────────────────────────────
@@ -186,4 +186,4 @@ PYEOF
 [ $? = 0 ] || echo "⚠️ 커밋은 됐지만 계획서 기록에 실패했다 — 다시 커밋하지 말고 계획서 ## Commits 에 손으로 적는다: $SHA" >&2
 
 echo "✅ 커밋했다: $SHA ($REPO · $BRANCH) — $VERIFY_NOTE"
-echo "   push·PR 은 하지 않았다. 필요하면 헤르메스에게 말한다"
+echo "   push·PR 은 하지 않았다. 사용자가 \"PR 올려줘\" 라고 하면 scripts/ship.sh --plan $PLAN --dir $TOP 로 미리보기부터"

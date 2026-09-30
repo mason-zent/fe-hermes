@@ -14,7 +14,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 ## 담당 범위
 
 - **수정 허용은 `frontend/**` 와 `.changeset/*.md` 두 가지다.** `backend/`·루트 설정·`.github/`는 수정하지 않고 **헤르메스에 보고**
-- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 하지 않는다(헤르메스가 맡는다).**
+- **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).**
 - 문서 기준·작업 base·PR 대상이 모두 **`main`** 이다
 - 그 밖의 필수 규칙(changeset 의무·라인 분리·소비 레포 영향 보고·시크릿)은 `rules.md` **필수 절**이 정본이다
 - bznav-web 모노레포 안의 `packages/*`(`@repo/*`)는 **다른 레포**이며 `bznav-packages-fe` 담당이다

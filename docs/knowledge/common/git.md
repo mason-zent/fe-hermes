@@ -3,15 +3,68 @@
 - **모든 작업은 계획서 하나에 묶인다**(정식 `plans/<유형>/…` 또는 경량 `plans/task/…`). 계획서 없이 시작하지 않는다
 - **작업은 `hermes.config.json` 의 `prBase` 에서 딴 새 작업 브랜치·워크트리에서 한다**(`scripts/new-branch.sh` → `.worktrees/<레포>/<슬러그>`, 절차는 아래 "작업 브랜치 만들기"). 지금 체크아웃된 브랜치에 얹지 않고, 메인 체크아웃을 건드리지 않으며, 남의 미커밋 변경을 stash 하지 않는다. `prBase`(작업 base)와 `branch`(문서 기준, 운영 반영분)는 다를 수 있다
 - 작업 시작 전 `git status --short --branch`로 대상 레포의 기존 변경을 확인하고, 사용자가 만든 변경과 무관한 파일은 건드리지 않는다
-- **FE 에이전트의 커밋은 사용자가 pane 에서 "커밋해줘" 라고 할 때만, `scripts/commit.sh` 로만 한다.** 스크립트가 워크트리·보호 브랜치·기존 스테이징·지정 파일을 확인하고, 그 상태로 엄격 검증한 뒤 커밋해 계획서 `## Commits` 에 적는다. `git commit` 직접·`git add -A`·`git push`·`gh pr`, commit.sh 를 거치지 않고 커밋을 만드는 `revert`·`merge`·`cherry-pick`·`am`, 미커밋 변경을 치우는 `stash`(list·show 제외)·`reset --hard` 는 FE 세션의 보호 훅(`scripts/hooks/commit-guard.py`)이 막는다(실수 방지용 — 보안 경계는 아니다). 꼭 필요하면 에이전트가 이유를 말하고 사용자가 직접 실행한다
-  - commit.sh 가 거부하는 경우: 메인 체크아웃, detached HEAD, 보호 브랜치(`dev`·`main`·`master`·`stg`·`prd`·`prd-*`·`release/*`·`dev-*`), 남이 해 둔 스테이징, 검증 실패
+- **FE 에이전트의 커밋은 사용자가 pane 에서 "커밋해줘" 라고 할 때만, `scripts/commit.sh` 로만 한다.** 스크립트가 워크트리·보호 브랜치·기존 스테이징·지정 파일을 확인하고, 그 상태로 엄격 검증한 뒤 커밋해 계획서 `## Commits` 에 적는다. `git commit` 직접·`git add -A`·`git push`·`gh pr create` 등 쓰기(ship.sh 로), commit.sh 를 거치지 않고 커밋을 만드는 `revert`·`merge`·`cherry-pick`·`am`, 미커밋 변경을 치우는 `stash`(list·show 제외)·`reset --hard` 는 FE 세션의 보호 훅(`scripts/hooks/commit-guard.py`)이 막는다(실수 방지용 — 보안 경계는 아니다). 꼭 필요하면 에이전트가 이유를 말하고 사용자가 직접 실행한다
+  - commit.sh 가 거부하는 경우: 메인 체크아웃, detached HEAD, 보호 브랜치(`dev`·`main`·`master`·`stg`·`frz`·`prd`·`prd-*`·`release/*`·`dev-*`), 남이 해 둔 스테이징, 검증 실패
   - bznav-web 은 바뀐 파일에서 앱(`apps/<앱>/`·`packages/<pkg>/`)을 찾아 검증한다. 루트 파일만 커밋하면 대상을 못 찾아 멈추니 `--verify "<앱|packages/<pkg>>"` 를 준다
   - **한계**: 검증은 작업 트리 **전체**에서 돈다. 지정하지 않은 미커밋 변경이 있으면 그 변경이 검증 결과에 섞일 수 있다(커밋에는 안 들어간다) — 스크립트가 경고하고 계획서 기록에 "지정 밖 미커밋 변경 N개" 를 남긴다. 검증 중 작업 트리 어디든 바뀌면 커밋하지 않는다
   - 검증은 **엄격 모드**다 — 건너뜀(⏭)도 실패로 친다. 레포가 원래 건너뛰는 단계(예 zent-packages brics 3종 lint, bznav-rn-app lint)는 **사용자 확인 후** `--allow-skip "<단계 이름>"` 으로 허용한다(`verify.md`)
-- **push·PR 은 FE 에이전트가 하지 않는다 — 헤르메스가 맡는다.** 헤르메스는 여러 레포 순서·공개 범위를 확인한 뒤 사용자에게 묻고 한다. 보호 브랜치 직접 push·force-push 금지
+- **push·PR 은 사용자가 "PR 올려줘" 라고 할 때만, `scripts/ship.sh` 로만 한다**(아래 "PR 올리기"). 레포 하나짜리 작업은 FE 에이전트가 자기 pane 에서, **여러 레포에 걸친 작업은 헤르메스가** 순서(공유 패키지 먼저)·공개 범위를 확인하고 올린다. 보호 브랜치 직접 push·force-push 금지
 - 커밋 메시지는 한국어. 티켓이 있으면 `feat: REF-1234 설명` (레포별 세부 관례는 `<레포>/rules.md`)
 - 브랜치 이름·PR 대상 등 레포별 전략은 `<레포>/rules.md`. base 는 `prBase` 로 정해지고, 설정으로 정할 수 없는 것만 사용자에게 묻는다
 - (zent-packages 소비 레포 — 콘솔 3종·web-op) 로컬 링크(`pnpm pkg:link`) 상태의 `package.json`·lockfile을 커밋하지 않는다
+
+## PR 올리기 (`scripts/ship.sh`)
+
+사용자가 pane 에서 **"PR 올려줘"** 라고 하면 한다. 두 번 부른다 — 미리보기 → 사용자 확인 → 보내기.
+
+```bash
+scripts/ship.sh --plan <계획서> --dir <워크트리>                       # 1) 미리보기 — 아무것도 보내지 않는다
+scripts/ship.sh --plan <계획서> --dir <워크트리> --base dev \
+  --title "feat(refund): REF-3671 랜딩 SEO 기본 정보에 랜딩타입 입력 추가" --yes   # 2) 확인받은 뒤
+```
+
+- **미리보기에 나오는 것**: 브랜치 · base 후보(`prBase` + 최근 30일 안에 움직인 원격 `release/*`, rn-app 은 `dev` 도) · 올라갈 커밋 · 검증 기록 · reviewer 기록 · 제목 제안 · 본문 초안 파일
+- 에이전트는 미리보기를 그대로 보여 주고 AskUserQuestion 으로 **base(여러 개 가능 — rn-app prd·dev 양쪽은 `--base prd --base dev`)·제목(제안 그대로/수정)** 을 받는다. reviewer 결론(`- Review result: 승인 @<SHA>`)이 **지금 HEAD 에 대한 승인이 아니면**(reviewer 기록 없음 · 띄웠지만 결론 미기록 · 수정 필요 · 승인 뒤 새 커밋 — 미리보기 "리뷰" 줄에 그대로 나온다) 미리보기에 ⚠️ 가 뜬다 — **이대로 올릴지 한 번 더 묻고**, 올리라면 `--no-review-ok`
+- **거부하는 경우**(아무것도 보내지 않는다): 메인 체크아웃 · detached · 보호 브랜치(`frz` 포함) · 추적 파일 미커밋 · 여러 에이전트가 붙은 계획서(헤르메스로) · HEAD 가 계획서 Commits 에 없음(= `commit.sh` 를 안 거친 커밋) · base 가 원격에 없음 · 올릴 커밋 없음 · 제목 형식·범위·티켓 불일치 · 본문 필수 절 누락 · 본문에 로컬 경로(`plans/`·`/Users/`·`.worktrees/`)·내부 주소·비밀값 흔적
+- 보내면: `git push -u origin <브랜치>` → base 마다 **draft PR**(이미 열린 PR 이 있으면 push 만) → 계획서 Commits 의 "push 안 함" 을 PR 링크로 바꾸고 Checkpoint 에 `- PR:` 줄. 리뷰어 지정·Ready 전환은 사용자가 GitHub 에서
+- 리뷰를 먼저 받으려면 pane 에서 **"리뷰해줘"** → 에이전트가 `scripts/delegate.sh reviewer --cwd <워크트리> --here --plan <계획서>` 로 같은 탭 옆에 reviewer 를 띄운다. reviewer 는 끝에 `scripts/review-result.sh` 로 결론(승인/수정 필요 @HEAD)을 계획서에 남긴다. 수정할 게 나오면 원래 에이전트 pane 에 말한다
+- 본문 초안은 **미리보기 때만** 만든다. 미리보기 뒤 초안 파일을 고쳤으면 `--yes` 때 그대로 나간다(다시 만들지 않는다). 미리보기 뒤에 새 커밋이 생겼으면 초안이 낡았으므로 거부한다 — 미리보기부터 다시
+- 스크립트는 **절대 경로로** 부른다(`<hermes>/scripts/ship.sh`). 보호 훅이 hermes 의 그 파일인지 경로로 확인해서, 워크트리에서 `scripts/ship.sh` 로 치면 막힌다
+- **헤르메스(여러 레포 작업)**: 순서대로 레포마다 `scripts/ship.sh … --repo-agent <그 레포 에이전트>` 로 올린다. 이 옵션은 FE 세션에서 보호 훅이 막는다
+
+## PR 제목·본문 (모든 레포 공통)
+
+레포 쪽에는 PR 템플릿이 없다(2026-09-30 확인). 이 절이 정본이고 `ship.sh` 가 검사한다.
+
+**제목** — `type(범위): 티켓 요약`
+- `type`: feat · fix · refactor · chore · docs · style · test
+- `범위`: client-brics-refund `refund` · hub `hub` · care `care` · web-op `op` · bznav 앱 `refund-web`·`care-web`·`brand-web`·`sena-web`·`plus-web`, `packages/*` 는 `packages`(여럿이면 쉼표 `sena-web,packages`) · zent-packages 는 패키지 `brics-fe-ui`·`bznav-fe-user-session`·`zent-fe-devkit` 등 · bznav-rn-app `app`. **바뀐 파일에서 나온 범위만** 받는다
+- `티켓`: 브랜치 이름에 티켓(`REF-1234` 꼴)이 있으면 필수, 없으면 생략
+- 요약: 한국어 한 줄, 마침표 없음. 예 `fix(care-web): NEWCARE-651 프리미엄 랜딩 OG 값 적용`
+- 커밋 메시지 형식은 레포 관례 그대로 둔다(콘솔 `feat: REF-1234 설명`). 이 규칙은 **PR 제목에만** 적용한다
+
+**본문** — 이 순서로 (ship.sh 가 계획서 `## 지시`·`## 결과`·`Validation` 과 변경 파일로 초안을 만든다)
+```markdown
+## 작업 내용
+- 왜·무엇을 (2~4줄)
+
+## 변경 사항
+- 추가·수정·삭제 `경로` — 주요 변경
+
+## 검증
+(scripts/verify 출력 표 그대로 · 실행 못 한 것은 "실행 못 함")
+
+## 확인 필요
+- 남은 위험 · 다른 서비스 영향 · 리뷰어가 볼 곳 (없으면 "없음")
+
+## 스크린샷
+(화면 변경이 있을 때만 — 없으면 절을 뺀다)
+
+---
+티켓: REF-1234
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+- hermes 로컬 경로(`plans/…`)·`.env`·토큰·내부 URL 은 넣지 않는다
 
 ## 작업 브랜치 만들기 (헤르메스 — `scripts/new-branch.sh`)
 

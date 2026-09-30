@@ -7,7 +7,7 @@
 4. 타입체크 `pnpm build --filter @zenterprise-inc/brics-fe-ui`. **brics 3종은 CI lint 제외** → lint 결과에 의존하지 말 것
 5. `pnpm changeset` → 패키지 선택 → bump. main PR에 changeset 없으면 `changeset-check` 실패(문서만이면 `--empty`)
 6. 소비 레포 확인: `pnpm pkg:link` → `pnpm dev` → `pnpm pkg:unlink`. 소비 `tailwind.config`의 `content`에 `node_modules/@zenterprise-inc/brics-fe-ui/src/components/**` 필요
-7. (사용자 요청 시) `scripts/commit.sh` 로 커밋 → push·PR 은 헤르메스. 이후 CI → main 머지 → "Version Packages" PR 머지 → `@latest` → 소비 레포는 **선언 범위를 먼저 확인**한다(hub·care 는 정확한 버전 고정, `^0.x` 는 다음 minor 를 포함하지 않는다) → 필요한 버전을 명시해 올리고 lockfile 커밋
+7. (사용자 요청 시) `scripts/commit.sh` 로 커밋 → (사용자 요청 시) `scripts/ship.sh` 로 draft PR(changeset 없으면 미리보기가 경고). 이후 CI → main 머지 → "Version Packages" PR 머지 → `@latest` → 소비 레포는 **선언 범위를 먼저 확인**한다(hub·care 는 정확한 버전 고정, `^0.x` 는 다음 minor 를 포함하지 않는다) → 필요한 버전을 명시해 올리고 lockfile 커밋
 
 ## B. `AuthFunction` 권한 코드 추가
 1. BE `/users/zent/me`의 `functions` 문자열 값 확정. **enum 값은 BE 문자열과 정확히 일치**(키는 자유)
@@ -22,7 +22,7 @@
 3. `<Name>.stories.tsx` 같은 폴더(`Bznav-UI/<그룹>/<이름>`, autodocs, 한국어)
 4. `pnpm --filter @zenterprise-inc/bznav-fe-ui storybook`(6006). **스토리 타입 오류는 build로 안 잡힌다**(exclude) → Storybook 기동으로 확인
 5. Chromatic은 dev push 자동(`frontend/bznav/ui/**`) 또는 수동. 변경 있으면 실패 → 리뷰
-6. changeset → (사용자 요청 시) `commit.sh` 커밋 → push·PR 은 헤르메스
+6. changeset → (사용자 요청 시) `commit.sh` 커밋 → (사용자 요청 시) `ship.sh` 로 draft PR
 
 ## D. breaking 변경
 1. changeset **minor**(0.x라 major 미사용, 선례 전부 minor). `**breaking**` 항목 + 마이그레이션

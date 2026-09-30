@@ -504,8 +504,12 @@ refund 변경 리뷰해줘
 
         <article class="cmd">
           <div class="cmd-head"><kbd>/call <span class="arg">에이전트</span></kbd><span class="tag plain">디스패치</span></div>
-          <p class="what">담당 에이전트를 <strong>바로 띄웁니다.</strong> 헤르메스는 빈 지시 경량 계획서(<code>plans/task/…</code>)를 만들어 pane 만 띄우고, 뜬 에이전트가 브랜치·미커밋 상태를 보고한 뒤 <strong>브랜치 이름을 물어</strong> 워크트리를 만듭니다. 요청도 그 pane 에서 직접 쓰면 에이전트가 계획서 제목·지시를 채우고 진행합니다.</p>
-          <div class="flow"><span>pane 띄우기</span><span>에이전트가 브랜치 묻기 · 워크트리</span><span class="hi">pane 에서 요청</span></div>
+          <p class="what">담당 에이전트를 <strong>바로 띄웁니다.</strong> 헤르메스는 빈 지시 경량 계획서(<code>plans/task/…</code>)를 만들어 pane 만 띄우고, 뜬 에이전트가 브랜치·미커밋 상태를 보고한 뒤 <strong>브랜치 이름을 물어</strong> 워크트리를 만듭니다. 요청도 그 pane 에서 직접 쓰면 에이전트가 계획서 제목·지시를 채우고 진행합니다. <strong>레포 하나짜리 작업은 이 pane 에서 PR 까지 끝납니다</strong> — "커밋해줘", "리뷰해줘"(옆에 reviewer pane), "PR 올려줘"(미리보기를 보고 base·제목을 고르면 draft PR). 헤르메스로 돌아올 일은 여러 레포에 걸친 작업뿐입니다.</p>
+          <div class="flow"><span>pane 띄우기</span><span>에이전트가 브랜치 묻기 · 워크트리</span><span class="hi">pane 에서 요청</span><span>커밋해줘</span><span>리뷰해줘</span><span class="hi">PR 올려줘</span></div>
+          <dl>
+            <dt>같은 레포 또 하나</dt><dd><code>/call</code> 을 한 번 더 — 같은 탭 옆에 pane 이 생기고, 브랜치 질문에 <strong>새 브랜치</strong>를 고르면 폴더(워크트리)가 따로 생깁니다. 진행 중인 브랜치를 "이어 쓰기"로 고르지 않습니다</dd>
+            <dt>PR 형식</dt><dd>제목 <code>type(범위): 티켓 요약</code>, 본문 작업 내용·변경 사항·검증·확인 필요(·스크린샷). 모든 레포 공통 — 정본 <code>docs/knowledge/common/git.md</code></dd>
+          </dl>
 <pre><code>/call bznav-plus-fe
 /call refund-fe</code></pre>
         </article>
@@ -639,7 +643,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <div class="who">헤르메스 → FE 에이전트</div>
           <ul>
             <li>디스패치 전에 <code>scripts/new-branch.sh</code>가 <code>prBase</code>에서 <code>.worktrees/&lt;레포&gt;/&lt;슬러그&gt;</code> 워크트리를 땁니다(메인 체크아웃은 건드리지 않음). 이미 있으면 이어 쓸지 묻습니다. <code>/call</code>은 뜬 에이전트가 브랜치를 묻습니다.</li>
-            <li><code>scripts/delegate.sh &lt;에이전트&gt; --cwd &lt;워크트리&gt; --plan &lt;계획서&gt;</code> — 레포 workspace 한 탭에 pane(<code>🤖 &lt;에이전트&gt; · &lt;브랜치&gt;</code>)을 나란히 띄웁니다. FE 세션에는 보호 훅이 걸립니다(직접 커밋·<code>add -A</code>·push·<code>gh pr</code> 차단).</li>
+            <li><code>scripts/delegate.sh &lt;에이전트&gt; --cwd &lt;워크트리&gt; --plan &lt;계획서&gt;</code> — 레포 workspace 한 탭에 pane(<code>🤖 &lt;에이전트&gt; · &lt;브랜치&gt;</code>)을 나란히 띄웁니다. FE 세션에는 보호 훅이 걸립니다(직접 커밋·<code>add -A</code>·push·<code>gh pr create</code> 차단 — <code>commit.sh</code>·<code>ship.sh</code> 로만).</li>
             <li>레포를 넘는 작업은 공유 패키지를 먼저 끝내고 소비 레포로 넘깁니다. 같은 기능을 여러 서비스에 넣으면 계획서의 공통 스펙(문구·동작·env 키)을 같이 봅니다.</li>
           </ul>
 
@@ -676,15 +680,16 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
             <li>사용자가 pane 에서 여러 번 요청합니다. 요청마다 Status 가 <code>in_progress</code> ↔ <code>ready_for_review</code> 로 바뀌어 현황판 카드가 진행 중 ↔ 리뷰를 오갑니다.</li>
             <li>작업 뒤 표준 검증 스크립트(<code>scripts/verify/*.sh</code>)를 돌리고 출력 표를 그대로 보고합니다.</li>
             <li>커밋은 사용자가 <strong>"커밋해줘"</strong>라고 할 때만 <code>scripts/commit.sh</code>로 합니다 — 지정 파일만·엄격 검증·계획서 <code>## Commits</code> 기록. 메인 체크아웃·보호 브랜치·검증 실패면 거부합니다.</li>
+            <li><strong>레포 하나짜리 작업은 여기서 PR 까지</strong> — "리뷰해줘"면 에이전트가 옆에 reviewer pane 을 띄우고, "PR 올려줘"면 <code>scripts/ship.sh</code> 가 base 후보·올라갈 커밋·검증·리뷰 기록·제목 제안·본문 초안을 보여 준 뒤 확인받아 <strong>draft PR</strong> 을 엽니다. 커밋 안 된 변경, <code>commit.sh</code> 를 안 거친 커밋, 여러 레포 작업, 형식에 안 맞는 제목은 거부합니다.</li>
           </ul>
         </div>
         <div class="step" data-n="5">
           <h3>검증 · 보고 · push/PR</h3>
           <div class="who">reviewer · 헤르메스</div>
           <ul>
-            <li>"리뷰해줘" — reviewer 가 계획서와 워크트리를 받아 diff를 읽고 검증 스크립트를 다시 돌려 에이전트 보고와 비교합니다. 수정 필요 항목은 사용자 확인 뒤 그 FE pane 에서 이어서 지시합니다.</li>
+            <li>여러 레포 작업이나 헤르메스가 맡은 작업은 헤르메스에게 "리뷰해줘" — reviewer 가 계획서와 워크트리를 받아 diff를 읽고 검증 스크립트를 다시 돌려 에이전트 보고와 비교합니다. 수정 필요 항목은 사용자 확인 뒤 그 FE pane 에서 이어서 지시합니다.</li>
             <li>서비스별 변경 파일·주요 변경·검증 결과·<code>## Commits</code>·남은 위험을 요약합니다. 검증 실패는 숨기지 않습니다.</li>
-            <li><strong>push·PR 은 헤르메스가</strong> 여러 레포 순서·공개 범위를 확인하고 사용자에게 묻고 합니다. 에이전트는 하지 않습니다.</li>
+            <li><strong>여러 레포에 걸친 작업의 push·PR 은 헤르메스가</strong> 순서(공유 패키지 먼저)·공개 범위를 확인하고 사용자에게 물은 뒤 레포마다 <code>ship.sh --repo-agent</code> 로 올립니다. 레포 하나짜리는 에이전트 pane 에서 올립니다(4단계).</li>
           </ul>
         </div>
         <div class="step" data-n="6">
@@ -705,7 +710,8 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         <div class="rule">
           <h3>git-workflow</h3>
           <ul>
-            <li>FE 에이전트는 사용자가 pane 에서 "커밋해줘" 라고 할 때만 <code>scripts/commit.sh</code> 로 로컬 커밋(지정 파일만·엄격 검증·계획서 기록). push·PR 은 헤르메스</li>
+            <li>FE 에이전트는 사용자가 pane 에서 "커밋해줘" 라고 할 때만 <code>scripts/commit.sh</code> 로 로컬 커밋(지정 파일만·엄격 검증·계획서 기록). push·PR 은 "PR 올려줘" 일 때 <code>scripts/ship.sh</code> 로(레포 하나짜리, draft)</li>
+            <li>PR 제목 <code>type(범위): 티켓 요약</code> · 본문 공통 템플릿 (<code>git.md</code> "PR 제목·본문")</li>
             <li>시작 전 <code>git status</code>로 기존 변경 확인, 무관한 파일은 건드리지 않음</li>
             <li>커밋 메시지는 한국어, 티켓 있으면 <code>feat: REF-1234 설명</code></li>
           </ul>
@@ -768,6 +774,8 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── setup.sh               <span class="c">repos/ 링크 + 도구 점검 — claude 를 켤 때 훅(hooks/setup-check.py)이 알아서 돌린다</span>
     ├── verify/&lt;레포&gt;.sh        <span class="c">표준 검증 (lint·타입·테스트 → 표 요약). 에이전트·reviewer 공용</span>
     ├── delegate.sh            <span class="c">위임을 herdr pane 에서 보이게 실행 (claude --agent)</span>
+    ├── commit.sh              <span class="c">에이전트 로컬 커밋 ("커밋해줘")</span>
+    ├── ship.sh                <span class="c">push + draft PR ("PR 올려줘", 레포 하나짜리)</span>
     ├── agent-monitor.py       <span class="c">백그라운드 서브에이전트 로그 실시간 모니터 (렌더러)</span>
     ├── monitor-pane.sh        <span class="c">모니터를 pane 에 띄움·재사용 (/monitor)</span>
     ├── board.sh               <span class="c">현황판 서버를 pane 에 띄우고 브라우저로 (/board) — 서버·화면은 board/</span>

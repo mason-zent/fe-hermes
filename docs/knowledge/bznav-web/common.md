@@ -9,7 +9,7 @@
 1. `.ai/basic-rule.md` — 공통 개발 규칙. `[필수]`/`[검증]`/`[권장]` 등급. **이 문서가 원문이고 여기 요약보다 우선한다**
 2. `.github/agents/<앱>.agent.md` — 앱별 담당 범위·특이사항 (`shared-packages.agent.md` = packages/**). 새 화면·구조 작업 시
 3. `.github/skills/react-component/SKILL.md` — 컴포넌트 생성·추출 시
-4. `.github/skills/create-pr/SKILL.md` — 참고만. PR 은 헤르메스가 만들고, 이 스킬의 base 추론(`dev-ecs`)은 낡았다(`gotchas.md`)
+4. `.github/skills/create-pr/SKILL.md` — 참고만. PR 은 `scripts/ship.sh` 로 만들고, 이 스킬의 base 추론(`dev-ecs`)은 낡았다(`gotchas.md`)
 5. `AGENTS.md`의 Codex 모델 정책은 무시. 규칙 우선순위(스킬 → agent.md → basic-rule)는 그대로
 
 ## 환경

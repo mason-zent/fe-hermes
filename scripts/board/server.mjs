@@ -666,7 +666,7 @@ const removeIssueWorktree = async (issueId, agent) => {
   if (dirty) return { error: '커밋하지 않은 변경이 있어서 지우지 않았어요 — 직접 확인해 주세요' }
   // 에이전트가 로컬 커밋을 할 수 있으니, 깨끗해도 원격 어디에도 없는 커밋이 있으면 지우지 않는다
   const unpushed = ((await run('git', ['-C', worktree.path, 'rev-list', '--count', 'HEAD', '--not', '--remotes'])) ?? '1').trim()
-  if (unpushed !== '0') return { error: `push 하지 않은 커밋이 ${unpushed}개 있어서 지우지 않았어요 — 헤르메스에게 push 를 요청하거나 직접 확인해 주세요` }
+  if (unpushed !== '0') return { error: `push 하지 않은 커밋이 ${unpushed}개 있어서 지우지 않았어요 — 그 pane 에서 "PR 올려줘"(ship.sh)로 올리거나 직접 확인해 주세요` }
   if ((await run('git', ['-C', join(ROOT, 'repos', worktree.repo), 'worktree', 'remove', worktree.path])) === null) return { error: '워크트리를 지우지 못했어요 (git worktree remove 실패)' }
   return { removed: worktree.rel }
 }
