@@ -14,5 +14,17 @@
     "type": "command",
     "command": "$CLAUDE_PROJECT_DIR/scripts/statusline.sh",
     "padding": 0
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hooks/setup-check.py\""
+          }
+        ]
+      }
+    ]
   }
 }

@@ -16,7 +16,7 @@ Claude Code 기반 **프론트엔드 멀티 서비스 에이전트 팀**. 이 �
 | `bznav-rn-app` | bznav-rn-app | 비즈넵 모바일 앱 (Expo · React Native, 기준 브랜치 prd) |
 | `reviewer` | 전체 (읽기 전용) | 계획서 대비 검증, 교차 정합성 |
 
-담당 레포는 `hermes.config.json`에 목록이 있고, 문서·스크립트는 모두 `repos/<레포>` 심볼릭 링크로 접근한다. 링크는 `scripts/setup.sh`가 만든다(기본: hermes 상위 폴더에 레포들이 나란히 있다고 가정, 다르면 `--root <경로>`). `repos/`는 gitignore라 팀원마다 배치가 달라도 문서는 그대로 쓴다.
+담당 레포는 `hermes.config.json`에 목록이 있고, 문서·스크립트는 모두 `repos/<레포>` 심볼릭 링크로 접근한다. 링크는 `scripts/setup.sh`가 만든다(기본: hermes 상위 폴더에 레포들이 나란히 있다고 가정, 다르면 `--root <경로>`). `repos/`는 gitignore라 팀원마다 배치가 달라도 문서는 그대로 쓴다. 링크 없이 `claude` 를 켜면 SessionStart 훅(`scripts/hooks/setup-check.py`)이 알아채고, 첫 메시지에서 헤르메스가 setup 실행 여부(기본 위치 — 거기서 레포를 찾았을 때만 / 다른 폴더 / 나중에)를 묻는다.
 
 ## 시작하기
 ```bash
