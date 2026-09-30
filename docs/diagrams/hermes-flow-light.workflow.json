@@ -48,6 +48,17 @@
           "board"
         ],
         "note": "경량 계획서는 보여 주지 않지만 만들어지는 순간 현황판 카드가 생기고, Status 를 따라 계획 → 진행 중 → 리뷰 → 완료로 움직입니다. 카드 제목을 누르면 요청·진행·결과가 펼쳐집니다."
+      },
+      {
+        "id": "knowledge",
+        "label": "무엇을 읽는가",
+        "focus": [
+          "config",
+          "route",
+          "rules",
+          "work"
+        ],
+        "note": "hermes.config(레포·에이전트·브랜치)와 rules 필수 절·gotchas 는 작업 크기와 무관하게 항상, knowledge 는 작업 유형에 필요한 절만 읽습니다."
       }
     ],
     "output": "docs/diagrams/hermes-flow-light.html",
@@ -114,7 +125,7 @@
       "id": "g-stop",
       "label": "여기서 멈추고 묻는다",
       "lane": "stop",
-      "fromCol": 1,
+      "fromCol": 0,
       "toCol": 5,
       "variant": "security"
     },
@@ -125,6 +136,22 @@
       "fromCol": 3,
       "toCol": 5,
       "variant": "dashed"
+    },
+    {
+      "id": "g-always",
+      "label": "항상 읽는다",
+      "lane": "src",
+      "fromCol": 1,
+      "toCol": 1,
+      "variant": "emphasis"
+    },
+    {
+      "id": "g-always2",
+      "label": "항상 읽는다",
+      "lane": "src",
+      "fromCol": 3,
+      "toCol": 3,
+      "variant": "emphasis"
     }
   ],
   "mainPath": [
@@ -220,7 +247,7 @@
     {
       "id": "outofscope",
       "lane": "stop",
-      "col": 1,
+      "col": 0,
       "type": "security",
       "label": "레포 모호 · 범위 밖",
       "sublabel": "콘솔? 웹? · 백엔드",
@@ -276,6 +303,26 @@
       "sublabel": "Checkpoint · Commits",
       "width": 138,
       "tag": "Review result · PR 링크"
+    },
+    {
+      "id": "config",
+      "lane": "src",
+      "col": 1,
+      "type": "database",
+      "label": "hermes.config",
+      "sublabel": "레포 · 에이전트 · 브랜치",
+      "width": 138,
+      "tag": "branch · prBase 정본"
+    },
+    {
+      "id": "rules",
+      "lane": "src",
+      "col": 3,
+      "type": "database",
+      "label": "rules · gotchas",
+      "sublabel": "작업 크기와 무관",
+      "width": 138,
+      "tag": "항상 읽는다"
     },
     {
       "id": "board",
@@ -394,6 +441,20 @@
       "from": "planfile",
       "to": "board",
       "label": "처음부터 카드",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    },
+    {
+      "id": "s4",
+      "from": "config",
+      "to": "route",
+      "variant": "dashed"
+    },
+    {
+      "id": "s5",
+      "from": "rules",
+      "to": "work",
       "variant": "dashed"
     }
   ],
@@ -418,6 +479,7 @@
       "title": "언제 경량인가",
       "items": [
         "문구·스타일 · 버그 하나 · 확인·조사 · /call · 긴급 수정 — 레포 하나",
+        "경량이어도 hermes.config · rules 필수 절 · gotchas 는 항상 읽는다. knowledge 는 필요한 절만",
         "\"정식으로\" 라고 하면 정식 흐름으로, 정식 대상이어도 \"바로 고쳐\" 면 경량으로",
         "같은 레포에 작업이 또 생기면 /call 을 한 번 더 — 옆에 pane, 새 브랜치(진행 중 브랜치를 이어 쓰지 않는다)",
         "이슈 [처리 시작] 은 지금 브랜치 없는(detached) 워크트리로 띄워 커밋 전에 브랜치가 필요하다 — issues/20260930-hermes-board-issue-start-detached.md"
