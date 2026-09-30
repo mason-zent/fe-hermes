@@ -536,7 +536,11 @@
     if (latest && !historyOpen.size) { historyOpen.add(latest.slice(0, 4)); historyOpen.add(latest.slice(0, 7)); }
     renderHistory();
   };
-  ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', renderHistory));
+  // 검색·필터를 바꾸면 날짜 선택은 전체로 — 고른 기간에 걸려 결과가 비어 보이지 않게
+  ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', () => {
+    historyPick = '';
+    renderHistory();
+  }));
   const showTab = (tab) => {
     const isHistory = tab === 'history';
     document.getElementById('view-now').hidden = isHistory;
