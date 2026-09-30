@@ -149,6 +149,20 @@
   .pill.kind-issue { color: var(--col-issue); border-color: color-mix(in srgb, var(--col-issue) 40%, transparent); }
   .pill.kind-plan { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
   .empty-history { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  .history-wrap { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 14px; align-items: start; }
+  .h-tree { position: sticky; top: 70px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 6px; display: grid; gap: 1px; max-height: calc(100vh - 110px); overflow-y: auto; }
+  .h-node { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 6px; padding: 5px 8px; cursor: pointer; }
+  .h-node:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+  .h-node:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .h-node[aria-current="true"] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-weight: 600; }
+  .h-node .caret { width: 12px; flex: none; color: var(--muted); font-size: 10px; }
+  .h-node .n { margin-left: auto; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .h-node.lv-all { font-weight: 600; }
+  .h-node.lv-month { padding-left: 22px; }
+  .h-node.lv-day { padding-left: 40px; font-size: 12.5px; }
+  .h-crumb { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  .h-crumb b { color: var(--text); }
+  @media (max-width: 720px) { .history-wrap { grid-template-columns: minmax(0, 1fr); } .h-tree { position: static; max-height: 240px; } }
   @media (max-width: 720px) { .h-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
   @media (max-width: 720px) { header { flex-wrap: wrap; } .usage { margin-left: 0; } main { padding: 12px 16px 32px; } }
 </style>
@@ -185,14 +199,15 @@
       <input id="history-q" type="search" placeholder="제목·요약·레포·커밋으로 찾기" aria-label="히스토리 검색">
       <select id="history-kind" aria-label="종류"><option value="">전체</option><option value="issue">이슈</option><option value="plan">계획서만</option></select>
       <select id="history-repo" aria-label="레포"><option value="">모든 레포</option></select>
-      <span class="tabs" role="group" aria-label="묶어 보기">
-        <button type="button" data-group="day" aria-selected="false">일</button>
-        <button type="button" data-group="month" aria-selected="true">월</button>
-        <button type="button" data-group="year" aria-selected="false">년</button>
-      </span>
       <span class="count" id="history-count"></span>
     </div>
-    <div id="history" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
+    <div class="history-wrap">
+      <nav class="h-tree" id="history-tree" aria-label="기간"></nav>
+      <div class="h-listbox">
+        <div class="h-crumb" id="history-crumb"></div>
+        <div id="history" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
+      </div>
+    </div>
   </section>
 </main>
 <dialog id="ask">
@@ -355,8 +370,9 @@
 
   // ── 히스토리 ──────────────────────────────────────────────────────────
   let historyItems = [];
-  let historyGroup = 'month';
-  try { historyGroup = localStorage.getItem('board-history-group') || 'month'; } catch (error) { /* 무시 */ }
+  // 트리에서 고른 기간 — '' 전체 · 'YYYY' · 'YYYY-MM' · 'YYYY-MM-DD'. 펼친 연·월은 open 에
+  let historyPick = '';
+  const historyOpen = new Set();
   const commitsBlock = (text) => {
     const lines = section(text, 'Commits');
     return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
@@ -409,35 +425,84 @@
     if (has.issue) return '<span class="pill kind-issue">📄 이슈만</span>';
     return '<span class="pill kind-plan">📋 계획서만</span>';
   };
+  const monthName = (key) => `${Number(key.slice(5, 7))}월`;
+  const dayName = (key) => `${Number(key.slice(8, 10))}일`;
+  const pickLabel = (key) => {
+    if (!key) return '전체';
+    if (key.length === 4) return `${key}년`;
+    if (key.length === 7) return `${key.slice(0, 4)}년 ${monthName(key)}`;
+    return `${key.slice(0, 4)}년 ${monthName(key)} ${dayName(key)}`;
+  };
+  // 연 → 월 → 일 건수. 검색·필터가 걸린 목록 기준이라 트리 숫자도 같이 바뀐다
+  const buildTree = (items) => {
+    const years = new Map();
+    for (const item of items) {
+      const day = (item.archivedAt || '').slice(0, 10);
+      if (day.length < 10) continue;
+      const year = years.get(day.slice(0, 4)) || { count: 0, months: new Map() };
+      const month = year.months.get(day.slice(0, 7)) || { count: 0, days: new Map() };
+      year.count += 1;
+      month.count += 1;
+      month.days.set(day, (month.days.get(day) || 0) + 1);
+      year.months.set(day.slice(0, 7), month);
+      years.set(day.slice(0, 4), year);
+    }
+    return [...years.entries()].sort((left, right) => right[0].localeCompare(left[0]));
+  };
+  const node = (key, label, count, level, openable) => {
+    let caret = '';
+    if (openable) caret = historyOpen.has(key) ? '▾' : '▸';
+    return `<button type="button" class="h-node lv-${level}" data-pick="${esc(key)}" aria-current="${historyPick === key}"${openable ? ` aria-expanded="${historyOpen.has(key)}"` : ''}><span class="caret">${caret}</span>${esc(label)}<span class="n">${count}</span></button>`;
+  };
+  const renderTree = (items) => {
+    const tree = buildTree(items);
+    const rows = [node('', '전체', items.length, 'all', false)];
+    for (const [year, yearData] of tree) {
+      rows.push(node(year, `${year}년`, yearData.count, 'year', true));
+      if (!historyOpen.has(year)) continue;
+      for (const [month, monthData] of [...yearData.months.entries()].sort((left, right) => right[0].localeCompare(left[0]))) {
+        rows.push(node(month, monthName(month), monthData.count, 'month', true));
+        if (!historyOpen.has(month)) continue;
+        for (const [day, count] of [...monthData.days.entries()].sort((left, right) => right[0].localeCompare(left[0]))) rows.push(node(day, dayName(day), count, 'day', false));
+      }
+    }
+    const box = document.getElementById('history-tree');
+    box.innerHTML = rows.join('');
+    box.querySelectorAll('[data-pick]').forEach((button) => {
+      button.onclick = () => {
+        const key = button.dataset.pick;
+        // 연·월은 누르면 고르고 펼친다. 이미 고른 걸 다시 누르면 접는다
+        if (key.length === 4 || key.length === 7) {
+          if (historyPick === key && historyOpen.has(key)) historyOpen.delete(key);
+          else historyOpen.add(key);
+        }
+        historyPick = key;
+        renderHistory();
+      };
+    });
+  };
   const renderHistory = () => {
     const box = document.getElementById('history');
     const query = document.getElementById('history-q').value.trim().toLowerCase();
     const kind = document.getElementById('history-kind').value;
     const repo = document.getElementById('history-repo').value;
-    const shown = historyItems.filter((item) => {
+    const filtered = historyItems.filter((item) => {
       if (kind && item.kind !== kind) return false;
       if (repo && item.repo !== repo) return false;
       if (!query) return true;
       return [item.title, item.summary, item.repo, item.dir, ...(item.commits || [])].join(' ').toLowerCase().includes(query);
     });
-    document.getElementById('history-count').textContent = `${shown.length} / ${historyItems.length}건`;
+    renderTree(filtered);
+    const shown = filtered.filter((item) => (item.archivedAt || '').startsWith(historyPick));
+    document.getElementById('history-count').textContent = `${filtered.length} / ${historyItems.length}건`;
+    document.getElementById('history-crumb').innerHTML = `<b>${esc(pickLabel(historyPick))}</b> · ${shown.length}건`;
     if (!historyItems.length) { box.innerHTML = '<div class="empty-history">아직 보관한 일이 없어요. 완료 칸 카드의 [아카이브]를 누르면 여기로 와요.</div>'; return; }
-    if (!shown.length) { box.innerHTML = '<div class="empty-history">조건에 맞는 일이 없어요</div>'; return; }
-    // 묶는 단위 — 일(YYYY-MM-DD) · 월(YYYY-MM) · 년(YYYY)
-    const width = { day: 10, month: 7, year: 4 }[historyGroup];
-    const label = (key) => {
-      if (!key) return '날짜 없음';
-      const [year, monthPart, dayPart] = key.split('-');
-      if (historyGroup === 'year') return `${year}년`;
-      if (historyGroup === 'month') return `${year}년 ${Number(monthPart)}월`;
-      return `${year}년 ${Number(monthPart)}월 ${Number(dayPart)}일`;
-    };
-    const counts = shown.reduce((map, item) => map.set((item.archivedAt || '').slice(0, width), (map.get((item.archivedAt || '').slice(0, width)) || 0) + 1), new Map());
-    let month = '';
+    if (!shown.length) { box.innerHTML = '<div class="empty-history">이 기간에 맞는 일이 없어요</div>'; return; }
+    // 목록은 날짜(일)별로 머리글을 단다
+    let lastDay = '';
     box.innerHTML = shown.map((item) => {
       const day = (item.archivedAt || '').slice(0, 10);
-      const key = day.slice(0, width);
-      const head = key !== month ? `<div class="month">${esc(label((month = key)))} · ${counts.get(key)}건</div>` : '';
+      const head = day !== lastDay ? `<div class="month">${esc(pickLabel((lastDay = day)) || '날짜 없음')}</div>` : '';
       const tags = [
         bundlePill(item),
         item.repo ? `<span class="pill">${esc(item.repo)}</span>` : '',
@@ -449,7 +514,7 @@
         item.pr ? `<span class="pill">PR #${esc(item.pr)}</span>` : '',
       ].join('');
       return `${head}<button type="button" class="h-row" data-dir="${esc(item.dir)}">
-        <span class="h-date">${esc(item.archivedAt || '')}</span>
+        <span class="h-date">${esc((item.archivedAt || '').slice(11, 16))}</span>
         <span class="h-main"><span class="h-title">${esc(item.title)}</span>${item.summary ? `<span class="h-sum">${esc(item.summary)}</span>` : ''}<span class="h-tags">${tags}</span></span>
       </button>`;
     }).join('');
@@ -467,20 +532,11 @@
     const current = select.value;
     const repos = [...new Set(historyItems.map((item) => item.repo).filter(Boolean))].sort();
     select.innerHTML = '<option value="">모든 레포</option>' + repos.map((name) => `<option ${name === current ? 'selected' : ''}>${esc(name)}</option>`).join('');
+    const latest = historyItems.map((item) => item.archivedAt || '').sort().pop() || '';
+    if (latest && !historyOpen.size) { historyOpen.add(latest.slice(0, 4)); historyOpen.add(latest.slice(0, 7)); }
     renderHistory();
   };
   ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', renderHistory));
-  const groupButtons = document.querySelectorAll('[data-group]');
-  const markGroup = () => groupButtons.forEach((button) => button.setAttribute('aria-selected', String(button.dataset.group === historyGroup)));
-  groupButtons.forEach((button) => {
-    button.onclick = () => {
-      historyGroup = button.dataset.group;
-      try { localStorage.setItem('board-history-group', historyGroup); } catch (error) { /* 무시 */ }
-      markGroup();
-      renderHistory();
-    };
-  });
-  markGroup();
   const showTab = (tab) => {
     const isHistory = tab === 'history';
     document.getElementById('view-now').hidden = isHistory;
