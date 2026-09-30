@@ -1,6 +1,6 @@
 ---
 title: /branch 스킬의 "계획서 없는 긴급 작업" 문구가 "계획서 없는 예외는 없다" 규칙과 어긋남
-status: open
+status: done
 repo: hermes
 agent:
 kind: knowledge
@@ -8,7 +8,7 @@ severity: low
 source: /feature·/bugfix 삭제 리뷰 2026-09-30 (reviewer 참고 사항)
 plan:
 pr:
-fix:
+fix: 1d9485d
 reason:
 ---
 
@@ -20,3 +20,6 @@ reason:
 
 ## 할 일
 - "긴급 작업이면 경량 계획서(`node scripts/new-plan.mjs`)를 먼저 만들고 대상은 사용자에게 확인한다" 식으로 맞춘다
+
+## 확인 결과
+- /branch 스킬을 삭제하면서(1d9485d) 해당 문구는 옮기지 않았다. git.md "작업 브랜치 만들기"에는 계획서 없는 작업 언급이 없다
