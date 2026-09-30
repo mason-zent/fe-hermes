@@ -1,18 +1,18 @@
 ---
 title: 작업 흐름 다이어그램이 최신 archify showcase 검증을 통과하지 못함 — HTML 재생성 불가
-status: open
+status: in_progress
 repo: hermes
 agent:
 kind: diagram
 severity: low
 source: /feature·/bugfix 삭제 작업 2026-09-30
-plan:
+plan: plans/task/20260930-hermes-작업-흐름-다이어그램-archify-showcase-검증-통과.md
 pr:
 fix:
 reason:
 ---
 
-`docs/diagrams/hermes-flow.workflow.json` 을 archify(5ca9c12, 2026-09-30 clone)로 `validate --quality showcase` 하면 실패한다. 이번 변경 전 HEAD 버전도 똑같이 실패하므로 archify 쪽 검사가 새로 엄격해진 것으로 보인다(추측입니다). 그래서 `deliver` 가 HTML 을 다시 만들지 않아, 이번에는 카드 문구 한 줄만 json 과 같게 HTML 에 직접 맞췄다.
+`docs/diagrams/hermes-flow.workflow.json` 을 archify(5ca9c12, 2026-09-30 clone)로 `validate --quality showcase` 하면 실패한다. **archify 버전 문제가 아니다**(2026-09-30 확인) — 기존 HTML 을 만든 2.17.0-dev.1 에서도 같은 8건이 난다. `b4a8137`(9/29 작업 흐름 다시 그림)부터 8건이고, 그 전에도 1건이 있었다. 그래서 `deliver` 가 HTML 을 다시 만들지 않아, 이번에는 카드 문구 한 줄만 json 과 같게 HTML 에 직접 맞췄다.
 
 ## 근거
 - composition/proper-crossing: s1 issues→req 가 x1 route→… 와 교차
