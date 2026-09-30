@@ -18,7 +18,8 @@
  *     담당 에이전트를 그 레포 workspace 에 새 pane 으로 띄운다(scripts/delegate.sh --cwd). 한 레포에서 여러 이슈를 동시에 돌려도 부딪히지 않게
  *   - POST /api/worktree-remove 끝난 이슈의 워크트리를 지운다(미커밋 변경이 있으면 거부)
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
- *   - POST /api/archive 끝난 카드를 보관 — 계획서 plans/archive/<유형>/(md+html), 이슈 issues/archive/(+ 연결 경량 계획서, 워크트리 정리). 보드에서 사라진다
+ *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
+ *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
  *   브라우저가 보내기 전에 지시문을 보여주고 고치게 한다
  * 다른 사이트가 localhost 로 요청을 보내 헤르메스에 지시를 넣지 못하게, 서버를 띄울 때마다 만드는 토큰과
@@ -30,6 +31,7 @@ import { join, dirname, relative, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
+import { archiveBundle, listHistory, readHistoryItem } from './archive.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -691,48 +693,29 @@ const toTrash = (relPath) => {
   return relPath
 }
 
-// 옮기기 — 같은 이름이 있으면 덮지 않고 뒤에 시각을 붙인다
-const moveFile = (relFrom, relTo) => {
-  const from = join(ROOT, relFrom)
-  if (!existsSync(from)) return null
-  const to = join(ROOT, relTo)
-  mkdirSync(dirname(to), { recursive: true })
-  const target = existsSync(to) ? to.replace(/(\.\w+)$/, `.${Date.now()}$1`) : to
-  renameSync(from, target)
-  return relative(ROOT, target)
-}
-
 const archiveCard = async (id) => {
   const moved = []
   const notes = []
   if (id.startsWith('issues/')) {
     const path = safePath(id, 'issues')
     if (!path || basename(path) === 'README.md') return { error: '이슈 파일을 찾지 못했어요' }
-    let text = readFileSync(path, 'utf8')
+    const text = readFileSync(path, 'utf8')
     const agent = text.match(/^agent:\s*(\S+)/m)?.[1] || agentForRepo(text.match(/^repo:\s*(\S+)/m)?.[1] || '')
     if (agent) {
       const removed = await removeIssueWorktree(id, agent)
       if (removed.removed) moved.push(`워크트리 ${removed.removed} 정리`)
       else if (removed.error && !removed.error.startsWith('지울 워크트리가 없어요')) notes.push(removed.error)
     }
-    // 연결된 경량 계획서도 같이 보관하고, 이슈 파일의 plan: 경로를 새 위치로 고친다
-    const plan = text.match(/^plan:\s*(plans\/task\/\S+\.md)/m)?.[1]
-    if (plan) {
-      const target = moveFile(plan, plan.replace(/^plans\/task\//, 'plans/archive/task/'))
-      if (target) {
-        moved.push(target)
-        text = text.replace(/^plan:.*$/m, `plan: ${target}`)
-        writeFileSync(path, text)
-      }
-    }
-    moved.push(moveFile(id, id.replace(/^issues\//, 'issues/archive/')))
+    // 연결된 계획서와 한 폴더로 묶어 보관한다(archive.mjs) — 이슈 plan: 은 새 위치로 고쳐진다
+    const bundle = archiveBundle(id)
+    if (bundle.error) return { error: bundle.error }
+    moved.push(...bundle.moved)
   } else {
     const path = safePath(id, 'plans')
     if (!path) return { error: '계획서를 찾지 못했어요' }
-    const target = id.replace(/^plans\/([^/]+)\//, 'plans/archive/$1/')
-    moved.push(moveFile(id, target))
-    const html = id.replace(/\.md$/, '.html')
-    if (existsSync(join(ROOT, html))) moved.push(moveFile(html, target.replace(/\.md$/, '.html')))
+    const bundle = archiveBundle(id)
+    if (bundle.error) return { error: bundle.error }
+    moved.push(...bundle.moved)
   }
   return { moved: moved.filter(Boolean), notes }
 }
@@ -822,6 +805,16 @@ createServer(async (request, response) => {
     return response.end(JSON.stringify({ id, text, plan }))
   }
   // board.sh 가 이미 보고 있는 탭이 있는지 묻는다 — 있으면 새 탭을 열지 않는다
+  // 히스토리 — 보관된 일(archive/). 누를 때만 읽는다
+  if (url.pathname === '/api/history') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+    return response.end(JSON.stringify({ items: listHistory() }))
+  }
+  if (url.pathname === '/api/history/item') {
+    const item = readHistoryItem(String(url.searchParams.get('dir') ?? ''))
+    response.writeHead(item ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' })
+    return response.end(JSON.stringify(item ?? { error: '보관된 일을 찾지 못했어요' }))
+  }
   if (url.pathname === '/api/viewers') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
     response.end(JSON.stringify({ viewers: clients.size }))

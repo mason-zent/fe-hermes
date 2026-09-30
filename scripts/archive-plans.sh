@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 완료된 plans 파일을 archive/로 이동.
+# 완료된 plans 파일을 archive/<이름>/ 로 보관한다(scripts/board/archive.mjs — 현황판 [아카이브]와 같은 형태, git 에 커밋된다).
 #
 # 이동 조건 — 아래를 모두 만족해야 한다:
 #   1. 본문 Checkpoint 의 `Status:` 가 **done** (명시적 완료)
@@ -10,8 +10,7 @@
 # 오래되었다는 이유만으로 진행 중(in_progress)·차단(blocked) 계획서를 옮기지 않는다.
 # 상태가 없는 옛 문서도 보수적으로 보류한다 (사람이 판단할 몫).
 #
-# .md 를 옮길 때 같은 이름의 .html 이 있으면 함께 옮긴다(예전 정식 계획서의 결정 콘솔 — 지금은 만들지 않는다).
-# plans/feature/, plans/bugfix/, plans/refactor/ 구조를 그대로 archive/ 하위에 보존.
+# 같은 이름의 .html(예전 정식 계획서의 결정 콘솔)과, 끝난(done·wontfix) 연결 이슈가 있으면 같은 폴더로 묶는다.
 #
 # 사용법:
 #   scripts/archive-plans.sh                # 30일 이상 된 plan 이동
@@ -38,7 +37,6 @@ done
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLANS_DIR="$ROOT/plans"
-ARCHIVE_DIR="$PLANS_DIR/archive"
 
 if [[ ! -d "$PLANS_DIR" ]]; then
   echo "plans/ 디렉토리 없음: $PLANS_DIR" >&2
@@ -110,44 +108,11 @@ while IFS= read -r file; do
     continue
   fi
 
-  rel="${file#$PLANS_DIR/}"
-  subdir=$(dirname "$rel")
-  if [[ "$subdir" == "." ]]; then
-    target="$ARCHIVE_DIR"
-  else
-    target="$ARCHIVE_DIR/$subdir"
-  fi
-
-  html="${file%.md}.html"           # 쌍인 html 도 함께 옮긴다
-  html_base="$(basename "$html")"
-
-  # 목적지 충돌은 md·html 을 **옮기기 전에 둘 다** 검사한다.
-  # md 만 검사하면 목적지에 html 만 남아 있을 때 조용히 덮어쓴다.
-  conflict=""
-  [[ -e "$target/$basename" ]] && conflict="$basename"
-  [[ -f "$html" && -e "$target/$html_base" ]] && conflict="${conflict:+$conflict, }$html_base"
-  if [[ -n "$conflict" ]]; then
-    echo "건너뜀 (목적지에 같은 이름 있음: $conflict): $rel" >&2
-    held=$((held+1))
-    continue
-  fi
-
-  if [[ $DRY_RUN -eq 1 ]]; then
-    echo "[DRY] 이동: $rel → archive/${subdir#.}"
-    [[ -f "$html" ]] && echo "[DRY] 이동: ${html#$PLANS_DIR/} → archive/${subdir#.}"
-  else
-    mkdir -p "$target"
-    mv "$file" "$target/" || { echo "이동 실패: $rel" >&2; held=$((held+1)); continue; }
-    if [[ -f "$html" ]]; then
-      # html 이동이 실패하면 md 를 되돌려 쌍이 갈라지지 않게 한다
-      if ! mv "$html" "$target/"; then
-        mv "$target/$basename" "$file" 2>/dev/null
-        echo "이동 실패 (html), md 복구함: $rel" >&2; held=$((held+1)); continue
-      fi
-      echo "이동 완료: $rel + ${html_base} → archive/${subdir#.}"
-    else
-      echo "이동 완료: $rel → archive/${subdir#.}"
-    fi
+  rel="plans/${file#$PLANS_DIR/}"
+  # 보관 형태(archive/<이름>/ plan.md · plan.html · meta.json)는 archive.mjs 한 곳에서 정한다 — 현황판 [아카이브]와 같다
+  dry=""; [[ $DRY_RUN -eq 1 ]] && dry="--dry-run"
+  if ! (cd "$ROOT" && node scripts/board/archive.mjs "$rel" $dry); then
+    echo "이동 실패: $rel" >&2; held=$((held+1)); continue
   fi
   archived=$((archived+1))
 done < <(find "$PLANS_DIR" -type f -name "*.md" -not -path "*/archive/*" 2>/dev/null)

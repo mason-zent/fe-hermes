@@ -110,17 +110,47 @@
   dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
   .toast.show { opacity: 1; }
+  /* 탭 — 현황 / 히스토리 */
+  .tabs { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+  .tabs button { font: inherit; font-size: 12.5px; padding: 3px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--panel); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  /* 히스토리 */
+  .history-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .history-bar input, .history-bar select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); }
+  .history-bar input { flex: 1 1 240px; min-width: 0; }
+  .history-bar .count { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .history { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
+  .history .month { font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .04em; padding: 8px 14px 4px; background: var(--bg); border-top: 1px solid var(--line); }
+  .history .month:first-child { border-top: 0; }
+  .h-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); cursor: pointer; text-align: left; background: none; border-left: 0; border-right: 0; border-bottom: 0; font: inherit; color: inherit; width: 100%; }
+  .history .month + .h-row { border-top: 0; }
+  .h-row:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .h-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .h-date { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .h-main { min-width: 0; display: grid; gap: 3px; }
+  .h-title { font-weight: 600; font-size: 13.5px; }
+  .h-sum { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .h-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .pill.kind-issue { color: var(--col-issue); border-color: color-mix(in srgb, var(--col-issue) 40%, transparent); }
+  .pill.kind-plan { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
+  .empty-history { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13px; }
+  @media (max-width: 720px) { .h-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
   @media (max-width: 720px) { header { flex-wrap: wrap; } .usage { margin-left: 0; } main { padding: 12px 16px 32px; } }
 </style>
 </head>
 <body>
 <header>
   <h1>현황판</h1>
+  <nav class="tabs" role="tablist" aria-label="보기">
+    <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true">현황</button>
+    <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
+  </nav>
   <span class="live" tabindex="0"><span id="live-dot" class="dot"></span><span id="live-text">연결 중…</span>
     <span class="tip" role="tooltip"><span id="updated"></span><span id="sync"></span></span></span>
   <div class="usage" id="usage" hidden></div>
 </header>
-<main>
+<main id="view-now">
   <section>
     <h2>지금 동작 중</h2>
     <div id="agents" class="agents"></div>
@@ -132,6 +162,18 @@
   <section>
     <h2>워크트리 (.worktrees)</h2>
     <div id="worktrees" class="worktrees"></div>
+  </section>
+</main>
+<main id="view-history" hidden>
+  <section>
+    <h2>히스토리 — 보관한 일 (archive/, git 에 남아요)</h2>
+    <div class="history-bar">
+      <input id="history-q" type="search" placeholder="제목·요약·레포·커밋으로 찾기" aria-label="히스토리 검색">
+      <select id="history-kind" aria-label="종류"><option value="">전체</option><option value="issue">이슈</option><option value="plan">계획서만</option></select>
+      <select id="history-repo" aria-label="레포"><option value="">모든 레포</option></select>
+      <span class="count" id="history-count"></span>
+    </div>
+    <div id="history" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
   </section>
 </main>
 <dialog id="ask">
@@ -291,6 +333,96 @@
     }
   };
   document.getElementById('detail-close').onclick = () => document.getElementById('detail').close();
+
+  // ── 히스토리 ──────────────────────────────────────────────────────────
+  let historyItems = [];
+  const commitsBlock = (text) => {
+    const lines = section(text, 'Commits');
+    return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
+  };
+  const openHistory = async (dir) => {
+    const dialog = document.getElementById('detail');
+    document.getElementById('detail-title').textContent = '불러오는 중이에요…';
+    document.getElementById('detail-meta').textContent = dir;
+    document.getElementById('detail-body').innerHTML = '';
+    dialog.showModal();
+    try {
+      const response = await fetch(`/api/history/item?dir=${encodeURIComponent(dir)}`);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || response.status);
+      const item = historyItems.find((entry) => entry.dir === dir);
+      document.getElementById('detail-title').textContent = item?.title || data.meta?.title || dir;
+      const from = data.meta?.from ? Object.values(data.meta.from).filter(Boolean).join(' · ') : '';
+      document.getElementById('detail-meta').textContent = `보관 ${data.meta?.archivedAt || '?'} · ${dir}${from ? ` · 원래 ${from}` : ''}`;
+      const issueBody = data.issue ? `<h4>이슈</h4>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}` : '';
+      const planBody = data.plan ? planBlocks(data.plan) + commitsBlock(data.plan) : '<h4>계획서</h4><p style="color:var(--muted)">연결된 계획서가 없어요</p>';
+      document.getElementById('detail-body').innerHTML = issueBody + planBody;
+    } catch (error) {
+      document.getElementById('detail-title').textContent = '불러오지 못했어요';
+      document.getElementById('detail-body').innerHTML = `<p>${esc(error.message)}</p>`;
+    }
+  };
+  const renderHistory = () => {
+    const box = document.getElementById('history');
+    const query = document.getElementById('history-q').value.trim().toLowerCase();
+    const kind = document.getElementById('history-kind').value;
+    const repo = document.getElementById('history-repo').value;
+    const shown = historyItems.filter((item) => {
+      if (kind && item.kind !== kind) return false;
+      if (repo && item.repo !== repo) return false;
+      if (!query) return true;
+      return [item.title, item.summary, item.repo, item.dir, ...(item.commits || [])].join(' ').toLowerCase().includes(query);
+    });
+    document.getElementById('history-count').textContent = `${shown.length} / ${historyItems.length}건`;
+    if (!historyItems.length) { box.innerHTML = '<div class="empty-history">아직 보관한 일이 없어요. 완료 칸 카드의 [아카이브]를 누르면 여기로 와요.</div>'; return; }
+    if (!shown.length) { box.innerHTML = '<div class="empty-history">조건에 맞는 일이 없어요</div>'; return; }
+    let month = '';
+    box.innerHTML = shown.map((item) => {
+      const day = (item.archivedAt || '').slice(0, 10);
+      const head = day.slice(0, 7) !== month ? `<div class="month">${esc((month = day.slice(0, 7)) || '날짜 없음')}</div>` : '';
+      const tags = [
+        `<span class="pill kind-${item.kind}">${item.kind === 'issue' ? '이슈' : '계획서'}</span>`,
+        item.repo ? `<span class="pill">${esc(item.repo)}</span>` : '',
+        item.planType && item.planType !== 'task' ? `<span class="pill">${esc(item.planType)}</span>` : '',
+        item.severity ? `<span class="pill ${item.severity === 'high' ? 'bad' : ''}">${esc(item.severity)}</span>` : '',
+        item.status ? `<span class="pill">${esc(item.status)}</span>` : '',
+        item.commits?.length ? `<span class="pill">커밋 ${item.commits.length}</span>` : '',
+        item.fix ? `<span class="pill">fix ${esc(item.fix)}</span>` : '',
+        item.pr ? `<span class="pill">PR #${esc(item.pr)}</span>` : '',
+      ].join('');
+      return `${head}<button type="button" class="h-row" data-dir="${esc(item.dir)}">
+        <span class="h-date">${esc(item.archivedAt || '')}</span>
+        <span class="h-main"><span class="h-title">${esc(item.title)}</span>${item.summary ? `<span class="h-sum">${esc(item.summary)}</span>` : ''}<span class="h-tags">${tags}</span></span>
+      </button>`;
+    }).join('');
+    box.querySelectorAll('.h-row').forEach((row) => { row.onclick = () => openHistory(row.dataset.dir); });
+  };
+  const loadHistory = async () => {
+    try {
+      const response = await fetch('/api/history');
+      historyItems = (await response.json()).items || [];
+    } catch (error) {
+      document.getElementById('history').innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
+      return;
+    }
+    const select = document.getElementById('history-repo');
+    const current = select.value;
+    const repos = [...new Set(historyItems.map((item) => item.repo).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">모든 레포</option>' + repos.map((name) => `<option ${name === current ? 'selected' : ''}>${esc(name)}</option>`).join('');
+    renderHistory();
+  };
+  ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', renderHistory));
+  const showTab = (tab) => {
+    const isHistory = tab === 'history';
+    document.getElementById('view-now').hidden = isHistory;
+    document.getElementById('view-history').hidden = !isHistory;
+    document.getElementById('tab-now').setAttribute('aria-selected', String(!isHistory));
+    document.getElementById('tab-history').setAttribute('aria-selected', String(isHistory));
+    if (isHistory) loadHistory();
+    try { history.replaceState(null, '', isHistory ? '#history' : location.pathname); } catch (error) { /* 무시 */ }
+  };
+  document.querySelectorAll('.tabs [data-tab]').forEach((button) => { button.onclick = () => showTab(button.dataset.tab); });
+  if (location.hash === '#history') showTab('history');
 
   // 브라우저 기본 confirm 대신 현황판 안의 확인 창 — 무엇이 남았는지 ✓/✗ 로 보여 준다
   const askConfirm = ({ title, message = '', items = [], yes }) =>
@@ -585,13 +717,16 @@
         const card = findCard(button.dataset.archive);
         if (!card) return;
         const isIssue = card.kind === 'issue';
-        const items = [{ label: `${card.id} → ${isIssue ? card.id.replace('issues/', 'issues/archive/') : card.id.replace(/^plans\/([^/]+)\//, 'plans/archive/$1/')}`, ok: true }];
-        if (isIssue && card.linkedPlan?.id?.startsWith('plans/task/')) items.push({ label: `${card.linkedPlan.id} → plans/archive/task/`, ok: true });
+        const folder = `archive/${card.id.split('/').pop().replace(/\.md$/, '')}/`;
+        const items = [{ label: `${card.id} → ${folder}${isIssue ? 'issue.md' : 'plan.md'}`, ok: true }];
+        if (isIssue && card.linkedPlan?.id) items.push(card.linkedPlan.status === 'done'
+          ? { label: `${card.linkedPlan.id} → ${folder}plan.md (같은 폴더로 묶어요)`, ok: true }
+          : { label: `${card.linkedPlan.id} — 아직 끝나지 않아 두고 가요(Status ${card.linkedPlan.status})`, ok: false });
         if (isIssue && card.worktree?.exists) items.push({ label: `이슈 워크트리 ${card.worktree.rel} 정리 (커밋 안 된 변경이 있으면 남겨요)`, ok: true });
-        if (!isIssue && card.html) items.push({ label: `결정 콘솔 ${card.html} 도 함께`, ok: true });
+        if (!isIssue && card.html) items.push({ label: `결정 콘솔 ${card.html} → ${folder}plan.html`, ok: true });
         const go = await askConfirm({
           title: `'${card.title}' 을(를) 아카이브할까요?`,
-          message: '끝난 일을 보관 폴더로 옮기고 보드에서 치워요. 파일은 그대로 남아요.',
+          message: '끝난 일을 이슈·계획서 한 폴더(archive/)로 묶어 보관하고 보드에서 치워요. git 에 커밋돼 남고, 히스토리 탭에서 다시 볼 수 있어요.',
           items,
           yes: '아카이브',
         });

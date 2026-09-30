@@ -80,7 +80,7 @@ ls *.architecture.html 2>/dev/null                              # hermes 루트�
 - 심층 번들 라벨(화면 수 등)이 바뀌었으면 `scripts/build-diagram-index.mjs` 의 카드 `extra` 를 고친다 → `node scripts/build-diagram-index.mjs`
 - 🟡 repin 만 한 장: 해당 JSON 들을 deliver 로 다시 만들고(html 경로 전체로) 번들이면 `python3 docs/diagrams/<폴더>/build-bundle.py`
 - 작업자가 보고한 **지식 문서와 코드의 차이**: 코드로 다시 확인한 것만 `docs/knowledge/**` 에 반영한다
-- **그리다 찾은 코드 문제**: 코드로 확인한 뒤 `issues/<YYYYMMDD>-<레포>-<제목>.md` 로 등록한다(`issues/README.md` 형식, `source: diagram <날짜>`, `kind: code`). 이미 같은 이슈가 있으면(`issues/`·`issues/archive/`·`.board-trash/`) 새로 만들지 않고 알린다. 값(키·토큰)은 옮기지 않는다
+- **그리다 찾은 코드 문제**: 코드로 확인한 뒤 `issues/<YYYYMMDD>-<레포>-<제목>.md` 로 등록한다(`issues/README.md` 형식, `source: diagram <날짜>`, `kind: code`). 이미 같은 이슈가 있으면(`issues/`·`archive/*/issue.md`·`.board-trash/`) 새로 만들지 않고 알린다. 값(키·토큰)은 옮기지 않는다
 
 ## 6. 정리 · 보고
 - 임시 체크아웃을 전부 지운다: `git -C repos/<레포> worktree remove --force <스크래치>/co/<서비스>`
