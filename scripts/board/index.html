@@ -530,6 +530,20 @@
   document.querySelectorAll('.tabs [data-tab]').forEach((button) => { button.onclick = () => showTab(button.dataset.tab); });
   if (location.hash === '#history') showTab('history');
 
+  // 팝업 바깥(배경)을 누르면 그 팝업의 취소·닫기 버튼을 누른 것과 같게 — 안에서 드래그하다 밖에서 뗀 건 무시
+  document.querySelectorAll('dialog').forEach((dialog) => {
+    const isOutside = (event) => {
+      const rect = dialog.getBoundingClientRect();
+      return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+    };
+    let pressedOutside = false;
+    dialog.addEventListener('mousedown', (event) => { pressedOutside = event.target === dialog && isOutside(event); });
+    dialog.addEventListener('click', (event) => {
+      if (!pressedOutside || event.target !== dialog || !isOutside(event)) return;
+      dialog.querySelector('.row .btn:not(.primary)')?.click();
+    });
+  });
+
   // 브라우저 기본 confirm 대신 현황판 안의 확인 창 — 무엇이 남았는지 ✓/✗ 로 보여 준다
   const askConfirm = ({ title, message = '', items = [], yes }) =>
     new Promise((resolve) => {
