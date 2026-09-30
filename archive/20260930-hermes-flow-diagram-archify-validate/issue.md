@@ -6,7 +6,7 @@ agent:
 kind: diagram
 severity: low
 source: /feature·/bugfix 삭제 작업 2026-09-30
-plan: plans/task/20260930-hermes-작업-흐름-다이어그램-archify-showcase-검증-통과.md
+plan: archive/20260930-hermes-flow-diagram-archify-validate/plan.md
 pr:
 fix: b2e7aea
 reason:

@@ -1,0 +1,10 @@
+{
+  "archivedAt": "2026-09-30 14:56",
+  "title": "web-op 구조도의 gateway → BFF 화살표가 코드와 다르다",
+  "kind": "issue",
+  "from": {
+    "issue": "issues/20260928-web-op-bff-arrow.md",
+    "plan": null,
+    "html": null
+  }
+}

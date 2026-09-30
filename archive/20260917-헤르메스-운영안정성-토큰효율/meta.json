@@ -1,0 +1,10 @@
+{
+  "archivedAt": "2026-09-30 14:56",
+  "title": "헤르메스 장기 운영 안정성·토큰 효율 개선",
+  "kind": "plan",
+  "from": {
+    "issue": null,
+    "plan": "plans/refactor/20260917-헤르메스-운영안정성-토큰효율.md",
+    "html": "plans/refactor/20260917-헤르메스-운영안정성-토큰효율.html"
+  }
+}

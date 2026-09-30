@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>작업계획서</title>
+<!--
+  ============================================================================
+  Hermes 작업계획서 — 결정 콘솔 + 계획서 뷰 (HTML 템플릿)
+  ----------------------------------------------------------------------------
+  이 파일 하나가 작업계획서의 라이프사이클 전체를 담는다.
+    (1) 승인 전 → 상단에 .md 본문이 렌더링되고, 그 아래 "결정 콘솔"에서
+                  선택지를 고르고 [프롬프트로 복사]
+    (2) 확정 후 → 각 결정에 decided 값을 채우면 하단 결정 콘솔이 "✅ 확정" 으로
+                  잠기고, 위쪽 .md 본문이 "읽기용 계획서"로 유지된다.
+
+  사용법 (Team Lead):
+  1) 이 파일을 plans/<유형>/YYYYMMDD-제목.html 로 복사한다 (md와 동일 파일명).
+  2) 아래 두 블록만 채운다 — 스타일/스크립트(맨 아래)는 건드릴 필요 없다.
+     ⚠️ 스크립트로 자동 치환할 때는 이 헤더 주석이 끝난 뒤에서만 찾아 바꾼다.
+        주석 안의 블록 이름까지 매칭되면 주석 종료 표시가 먹혀 PLAN 전체가 주석에 갇히고
+        브라우저에서 "PLAN is not defined" 로 빈 화면이 된다. (그래서 위 [A][B] 는 태그가 아닌 script#id 표기다)
+
+     [A] script#plan-data 의 PLAN 객체
+         - title/type/scope/mdFile/summary
+         - decisions[] : .md "사용자 결정 사항"과 1:1
+           · 승인 전: options[] 만 채운다 (decided 생략)
+           · 확정 후: 각 결정에 decided 를 채운다
+                      (택1이면 문자열, 복수면 배열) → 해당 결정이 "✅ 확정"으로 잠김
+
+     [B] script#plan-md 안에 .md 본문을 그대로 붙여넣는다
+         - 이 텍스트가 결정 콘솔 위에 렌더링되어 "보기 좋은 계획서"가 된다.
+         - .md 가 단일 소스 — 수정 시 .md 와 이 블록을 같은 턴에 함께 갱신한다.
+         - Checkpoint(Status/Progress/Next)만 바뀐 경우에도 이 블록은 동기화한다.
+           단 decisions[] 는 승인된 결정이 바뀔 때만 건드린다.
+
+  지원 마크다운: 제목(#~######), 굵게(**), 인라인코드(`), 코드펜스(```),
+                 표(GFM), 목록(- * 1.), 인용(>), 구분선(---), 링크. (중첩목록 제외)
+  ============================================================================
+-->
+<script id="plan-data">
+const PLAN = {
+  title: '헤르메스 장기 운영 안정성·토큰 효율 개선',
+  type: 'refactor',
+  scope: '문서·운영 절차 (FE 코드 변경 없음)',
+  mdFile: 'plans/refactor/20260917-헤르메스-운영안정성-토큰효율.md',
+  summary: '작업 시작 전 들어가는 문서 52KB를 작업유형별 선택 로딩으로 줄이고, 에이전트 md와 knowledge의 기술정보 중복을 정본 한 곳으로 모으고, plan에 Checkpoint를 넣어 /new 이후 재개를 가능하게 한다.',
+
+  decisions: [
+    {
+      id: 'codex-role',
+      title: 'Codex 참여 방식',
+      desc: '교차검토를 어떻게 돌릴지. codex CLI v0.154.0 · herdr 모두 설치되어 있다.',
+      type: 'single',
+      required: true,
+      options: [
+        { label: 'pane에서 codex exec 자동 실행', desc: '헤르메스가 단계마다 herdr pane에 codex를 띄워 diff를 검토시키고 결과를 받는다. 0단계가 이 방식으로 이미 끝났다.', recommended: true },
+        { label: '사용자가 수동 전달', desc: '헤르메스는 diff만 만들고, 사용자가 직접 Codex에 붙여넣어 검토받는다.' },
+        { label: 'Codex 없이 reviewer만', desc: 'hermes 내장 reviewer 에이전트로만 검증한다. 빠르지만 외부 시각이 빠진다.' },
+      ],
+      decided: '사용자가 수동 전달',
+    },
+    {
+      id: 'rollout',
+      title: '적용 속도',
+      desc: '에이전트 11개 경량화를 한 번에 할지, 하나로 검증한 뒤 퍼뜨릴지.',
+      type: 'single',
+      required: true,
+      options: [
+        { label: '파일럿 → 승인 → 전체', desc: 'refund-fe 하나만 먼저 축소하고 실제 작업으로 검증한 뒤 나머지 10개. 실패한 접근이 전체로 퍼지지 않는다.', recommended: true },
+        { label: '11개 한 번에', desc: '빠르지만 라우터 설계가 틀렸을 때 되돌릴 범위가 크다.' },
+        { label: '문서 정책(1단계)만 먼저', desc: 'AGENTS/CLAUDE 정책과 plan 템플릿만 바꾸고 에이전트 md는 다음 기회로 미룬다.' },
+      ],
+      decided: '파일럿 → 승인 → 전체',
+    },
+    {
+      id: 'scope',
+      title: '이번에 포함할 범위',
+      desc: '빼는 항목은 남은 위험으로 기록하고 다음 작업으로 넘긴다.',
+      type: 'multi',
+      required: true,
+      options: [
+        { label: '공통 정책 (AGENTS·CLAUDE)', desc: '선택 로딩 규칙, 정보 신뢰도 구분, Memory·History 정책' },
+        { label: '에이전트 11개 경량화', desc: '기술정보를 knowledge로 이관하고 역할·라우터만 남긴다. 소실 위험 항목은 2.5절 참조' },
+        { label: 'plan Checkpoint 템플릿', desc: 'Progress/Next/Blocked — /new 이후 재개용' },
+        { label: '/sync 개편', desc: '정본 1곳만 갱신, 에이전트 md에 스택 재복제 금지, 불일치 B·C 교정' },
+        { label: 'archive-plans.sh 수정', desc: '신규 발견 — .html 고아 문제 + 진행 중 계획서 보호' },
+        { label: '문서 불일치 G~O 교정', desc: 'Codex가 추가로 찾은 9건 — 브랜치 표기, playbook 기준 혼재, care-web Relay 오안내 등' },
+        { label: 'Memory·History 정책 문장', desc: '정리 대상은 0건. 앞으로의 금지 규칙만 명문화' },
+      ],
+      decided: ['공통 정책 (AGENTS·CLAUDE)', '에이전트 11개 경량화', 'plan Checkpoint 템플릿', '/sync 개편', 'archive-plans.sh 수정', '문서 불일치 G~O 교정', 'Memory·History 정책 문장'],
+    },
+    {
+      id: 'commit',
+      title: '커밋 단위',
+      desc: 'hermes 워크스페이스 자체의 git 커밋 방식. 워킹트리에 출처 불명 /guide 변경 6건이 있다는 점 참고.',
+      type: 'single',
+      required: true,
+      options: [
+        { label: '단계별 커밋', desc: '1~6단계마다 커밋. 문제가 생기면 그 단계만 되돌린다.', recommended: true },
+        { label: '전체 완료 후 1커밋', desc: '히스토리는 깔끔하지만 부분 롤백이 어렵다.' },
+        { label: '커밋하지 않고 diff만', desc: '사용자가 직접 확인 후 커밋한다.' },
+      ],
+      decided: '단계별 커밋',
+    },
+  ],
+}
+</script>
+
+<!-- [B] .md 본문을 그대로 붙여넣는다. 비워두면 본문 렌더링 영역이 숨겨진다. -->
+<script id="plan-md" type="text/markdown">
+# 헤르메스 장기 운영 안정성·토큰 효율 개선
+
+## Checkpoint
+- Updated: 2026-09-28 17:04 / 현황판에서 이동
+- Status: **done** — 0~6단계 완료 + **Codex 교차검토 13건 전건 반영**. 재검토 대기
+- Scope: hermes 워크스페이스 자체 (`/Users/mason/mason-zent/hermes`). FE 레포 코드 변경 없음
+- Work ref: `main` @ `a2f183d` / 워킹트리 깨끗. 이 작업의 커밋은 `c810447`~`a2f183d` (origin 에 일부 push 됨)
+- Sync basis: ⚠️ **4단계에서 bznav-web baseline 을 accept 했다**(`6b8b98d`, `.sync/state.json` acceptedAt 2026-09-17). 규칙 문서 변화가 없고 파생 문서를 갱신한 뒤였으므로 정당한 accept 다. 나머지 5개 레포 baseline 은 그대로
+- Approved scope: 아래 "사용자 결정 사항 (확정)" 4건 — 범위는 3절 전체(3.1~3.6)
+
+### Progress
+- [x] 0단계 기준선 조사 — 실측치·불일치 6건 확인 (2절)
+- [x] 0단계 Codex 교차검토 — A~F 전건 확인, 계획서 결함 3건·추가 불일치 9건 지적 → 2.5절에 반영
+- [x] 1단계 공통 정책 — `AGENTS.md` 2·3절 전면 교체(2.2 필수 규칙 / 2.3 작업유형별 선택 로딩 / 2.4 정보 신뢰도 / 2.5 Memory·History / 2.6 재개), 5절을 "필수 규칙"으로 앵커
+- [x] 1단계 `CLAUDE.md` — Checkpoint 작성 의무, 5단계에 Checkpoint 갱신, 재개 절차 신설, 선택 로딩 한 줄
+- [x] 1단계 `docs/plan-template.{md,html}` — Checkpoint 블록 + 운영 규칙 + html 자동치환 함정 경고
+- [x] 1단계 `docs/knowledge/README.md` — "작업 전에 읽는다" → 선택 로딩과 정합 (충돌 제거)
+- [x] 2단계 refund-fe 파일럿 — 프로필 5,232→3,576 B, 이관 대응표 20항목(부록 A), 신규 기재 3건
+- [x] 2단계 부수 교정 — 권한 가드 위치를 실제 코드로 판정해 `rules.md` 교정, 브랜치 표기 분리
+- [x] **승인 2건 접수(2026-09-17)** — ① 파일럿 방식대로 전체 적용 ② **gotchas.md를 항상 읽도록 승격**
+- [x] 3단계 정책 변경 — `AGENTS.md` 2.2에 `gotchas.md` 전체를 필수로 추가, 2.3 표에서 중복 제거
+- [x] 3단계 프로필 11개 + `reviewer.md` 재작성 — 12개 합계 67,576 → 45,430 B (−33%)
+- [x] 3단계 `rules.md` 5곳에 "필수" 절 신설 (hub·care·web-op·zent-packages·bznav-web) + Codex 미수록 6건 기재
+- [x] 3단계 `bznav-web/common.md` 전량 읽기 지시 교정 (마지막 충돌 제거)
+- [x] 4단계 **사용자 결정: A안(생성 스크립트)** — 파생 문서를 손으로 옮겨 적지 않고 지문에서 생성
+- [x] 4단계 `scripts/build-derived.mjs` 신설 — `services.md` 스택 표, `playbook.html` 기준 커밋 표·last sync 생성 + 마커 밖 사실 drift 경고
+- [x] 4단계 `sync-fingerprint.mjs` — catalog 값 저장 추가 (해시만 있어 bznav 버전을 못 뽑던 문제)
+- [x] 4단계 `.claude/skills/sync/SKILL.md` 전면 개편 — "사실마다 정본 1곳" 표, 에이전트 md 재복제 금지, 불일치 B·C 교정, accept 금지 조건 명문화
+- [x] 4단계 `archive-plans.sh` — `Status: done` 만 이동, `.html` 동반 이동, 목적지 충돌 확인
+- [x] 5단계 Memory·History 정책 — `AGENTS.md` 2.5에 기재 완료. **Memory 감사 결과 2건 모두 정책 적합, 정리·이관 0건**
+- [x] 5단계 archive 조건 점검 완료 (4단계에서 수정·실동작 검증)
+- [x] **남은 불일치 H·K·L·N·O 전건 교정** + `/monitor` 를 `CLAUDE.md` Skills 표에 추가
+- [x] 6단계 전체 측정 — 에이전트 11개 전부 계측 (부록 D)
+
+### Next
+1. **사용자가 0~6단계 diff를 Codex에 전달해 교차검토** (결정 1 = 수동 전달) — 원 계획서 9절 10개 질문 기준. 커밋: `c810447 8bff42a f49cf27 6b8b98d` + 마지막 교정 커밋
+2. Codex 지적이 나오면 반영 후 Checkpoint 갱신
+3. 이의 없으면 Status 를 `done` 으로 바꾼다 → `scripts/archive-plans.sh` 가 30일 후 md·html 쌍을 함께 보관한다
+4. **런타임 확인 2건이 남는다**(아래 Validation) — 실제 FE 작업이 생길 때 확인한다
+
+### Blocked
+- 없음. 다른 세션 작업은 `50b5fc3`으로 커밋됐고 내 playbook 마커 편집은 그 위에 얹혔다(충돌 없음)
+- ⚠️ 발견: `50b5fc3`이 `/monitor` 스킬을 추가했으나 **`CLAUDE.md`의 Skills 표에는 없다.** `CLAUDE.md` 확장 규칙이 요구하는 동반 갱신이 빠졌다 — 그쪽 작업 범위라 손대지 않고 보고만 한다
+
+### Validation
+- 실행: 파일 크기·중복 실측(`wc -c`), `git status`, codex/herdr CLI 확인 — 2절
+- 실행: Codex 독립 재측정 — 2.1 바이트 전건 일치 (2.5절)
+- 실행: plan html 헤드리스 렌더 검증 — 콘솔 에러 0건 (템플릿 주석이 자동 치환을 깨뜨리던 버그 수정)
+- ⚠️ **1단계 측정 결과 — 자동 주입량이 오히려 늘었다**: 18,114 B → **25,397 B (+40%)**. 정책·필수 규칙·재개 절차가 전부 항상 로딩되는 `AGENTS.md`(7,301→12,935)에 들어갔기 때문. 절감은 "읽지 않게 된 knowledge 29,481 B"에서 나와야 하며, 2단계 파일럿에서 **실제 순증감**을 확인한다
+- 실행: **3단계 정적 검토 5종 통과** — frontmatter 12개 유효(name 일치·`: ` 없음), 전량 로딩 지시 잔재 0건, `rules.md` 6곳 필수 절 존재, 프로필이 가리키는 knowledge 경로 전부 실존, 검증 스크립트 경로 전부 실존
+- ⚠️ **3단계 최종 측정 — 시나리오별로 결과가 갈린다** (refund 기준, 바이트)
+  | 시나리오 | 이전 | 이후 | 변화 |
+  |---|---:|---:|---|
+  | 국소 문구 수정 | 52,827 | 36,139 | **−32%** |
+  | API 연동 | 52,827 | 39,770 | **−25%** |
+  | 새 도메인 화면 | 52,827 | 53,553 | **+1% (증가)** |
+  새 화면이 늘어난 이유는 ① `gotchas.md`를 항상 읽도록 승격(+3,340) ② `AGENTS.md`·`rules.md`가 정책·필수 규칙으로 커진 것이다. **정확도를 택한 결과이며 숨기지 않는다.** 새 화면은 원래도 문서를 다 읽어야 하는 작업이라 절감 여지가 거의 없다
+- 미실행: 서브에이전트가 `.claude/rules/*.md`를 자동 주입받는지 (이게 확인돼야 불일치 I — rules 4개 중복 정리 — 를 안전하게 할 수 있다. 그래서 3단계로 미룸)
+- 실행: **refund 권한 가드 실제 코드 판정 완료** — `origin/prd`에서 layout 25 / page 0 → `rules.md` 교정 (부록 A)
+- 실행: **2단계 측정** — 국소 수정 52,827 → 32,336 B (**−39%**, 목표 30% 초과), 새 화면 → 48,401 B (−9%)
+- 실행: **4단계 동작 검증** — `build-derived.mjs --check` 통과(마커·마커 밖 사실 이상 없음) / `archive-plans.sh` 문법 검사 + 실동작 2종(`Status: done` 쌍은 md·html 함께 이동, `in_progress`는 보류) / catalog 파서가 bznav `next 16.2.5`·`react 19.2.6` 정확히 파싱
+- 실행: **Memory 감사** — 2건(`herdr-terminal-host`, `delegate-visibly`) 모두 장기 운영 규칙으로 정책 적합. 금지 항목(버전·포트·경로·브랜치·진행 상태·구현 결정) 0건 → **이관·삭제 대상 없음**
+- 실행: **에이전트 11개 전체 측정** (부록 D)
+- ✅ **자동 주입 범위 실측 완료 (2026-09-17, `refund-fe` 서브에이전트에 직접 질의)** — 부록 F
+- ⚠️ **미실행 1건** — `/new` 재개 시나리오 실측. Checkpoint만 읽고 작업을 이어갈 수 있는지는 실제로 끊어봐야 안다
+- ⚠️ **측정 정정(부록 H)** — 부록 D 는 과대평가였다. 양쪽을 고정 ref 에서 다시 재니 국소 수정 **−24%**(목표 30% 미달), 새 화면 **+2% 증가**다. 자동 주입이 18,114 → 28,637 B 로 늘고 `rules.md`·`gotchas.md` 상시 로딩이 더해진 결과다. 정확도를 택한 대가이며 되돌리지 않는다
+- ⚠️ 측정은 **문서 원문 바이트**이고 실제 입력 토큰이 아니다. 토큰 계측 수단이 없어 절감률을 토큰 기준으로 주장하지 않는다
+
+### Decisions
+- Codex 참여 = **수동 전달**. 헤르메스는 단계마다 커밋하고 diff 범위를 사용자에게 알린다. `codex exec` 자동 실행은 하지 않는다
+- 적용 = **파일럿 우선**. 2단계(refund-fe) 후 사용자 승인을 받고 3단계로 넘어간다
+- 범위 = 3.1~3.6 **전부** (공통 정책 · 에이전트 11개 · Checkpoint · `/sync` · `archive-plans.sh` · 불일치 G~O)
+- 커밋 = **단계별**
+
+---
+
+## 1. 개요
+- **작업 유형**: refactor
+- **요청 사항**: GPT와 정리한 「fe-hermes 장기 운영 안정성·토큰 효율 개선 계획서」(기준 커밋 `b50149f`)를 실제 레포에 반영. Codex와 함께 진행
+- **대상**: hermes 워크스페이스 문서·라우팅·운영 절차. **FE 제품 코드, 의존성, 런타임 교체는 범위 밖**
+- **담당**: 헤르메스(직접 편집) + Codex(교차검토) + reviewer(최종 정합성)
+
+### 사용자 결정 사항 (2026-09-17 확정)
+| # | 결정 | 확정값 |
+|---|---|---|
+| 1 | Codex 참여 방식 | **사용자가 수동 전달** — 헤르메스가 `codex exec`를 직접 돌리지 않는다 |
+| 2 | 적용 속도 | **파일럿 → 승인 → 전체** — 2단계 후 멈추고 승인받는다 |
+| 3 | 포함 범위 | **전부** — 공통 정책 · 에이전트 11개 경량화 · Checkpoint 템플릿 · `/sync` 개편 · `archive-plans.sh` · 불일치 G~O · Memory/History 정책 |
+| 4 | 커밋 단위 | **단계별 커밋** |
+
+---
+
+## 2. 기준선 조사 결과 (0단계 — 완료)
+
+확인 기준: `main` @ `b50149f`, 워킹트리 clean. 아래는 원 계획서의 가설을 실제 파일로 대조한 결과다.
+
+### 2.1 실측 — 작업 시작 전에 들어가는 문서량
+
+| 구분 | 내용 | 바이트 |
+|---|---|---|
+| 자동 주입 | `CLAUDE.md` + `AGENTS.md`(@import) + `.claude/rules/*.md` 4개 | **18,114** |
+| 에이전트 프로필 | `.claude/agents/refund-fe.md` | 5,232 |
+| "작업 전 읽어라" 지시 | `knowledge/common/*` 4개 + `knowledge/client-brics-refund/*` 5개 | **29,481** |
+| **선정 문서 집합 합계** | (refund-fe 기준, 대상 코드 읽기 전) | **52,827** |
+
+> ⚠️ 52,827은 **"지시가 가리키는 문서들의 원문 바이트 합계"**이지 실측된 입력 토큰이 아니다. 전량 로딩을 가정한 수치이고, 서브에이전트가 `CLAUDE.md`/`AGENTS.md`를 자동 주입받는지도 미확인이다. 실제 첫 편집 전 입력량은 파일럿에서 따로 계측한다. 토큰 환산은 계측 수단이 없어 하지 않고 바이트를 대리지표로 쓴다. (원 계획서 7.3 준수 / Codex 지적 반영)
+
+에이전트 프로필별 크기: refund 5,232 / hub 7,208 / care 7,224 / op 6,076 / packages 7,154 / bznav-refund 5,659 / bznav-care 6,806 / bznav-brand 4,452 / bznav-sena 4,384 / bznav-plus 4,800 / bznav-packages 5,268 / reviewer 3,313 — 합계 약 **67.6KB**.
+
+### 2.2 확인된 불일치·결함 6건 (원 계획서 지적 검증 + 신규 발견)
+
+| # | 내용 | 근거 | 원 계획서 |
+|---|---|---|---|
+| A | `knowledge/client-brics-refund/rules.md`에 "기준 브랜치 `dev`" — config·AGENTS.md는 `prd` | `rules.md` Git 절 vs `hermes.config.json` | 지적 적중 (중복 정본의 실증) |
+| B | `/sync` SKILL 본문 "대부분 `dev`" — 현재 콘솔 `prd`·앱별 `prd-*` | `.claude/skills/sync/SKILL.md` 본문 | 지적 적중 |
+| C | `/sync`가 갱신하라는 `CLAUDE.md`의 "스택 요약" 셀이 **존재하지 않음** (현재 표는 `에이전트\|담당` 2열 2쌍) | SKILL.md 3단계 표 vs CLAUDE.md | 지적 적중 |
+| D | `refund-fe.md`와 `knowledge/client-brics-refund/rules.md`가 prettier 설정·Orval 규칙·App Router 규칙·모달 순위·공유 패키지 정책을 **양쪽에 독립 보관** | 두 파일 대조 | 지적 적중 |
+| E | **[신규]** `scripts/archive-plans.sh`가 `*.md`만 이동 — 쌍인 `.html`이 `plans/<유형>/`에 고아로 남는다 | `find ... -name "*.md"` | 미지적 |
+| F | **[신규]** 같은 스크립트에 상태 판별이 없어 `in_progress`/`blocked` 계획서도 이동 대상. 판단 기준은 **파일명 날짜 + 최근 7일 커밋 메시지 언급**뿐이고 본문 상태는 읽지 않는다 | `archive-plans.sh:61,66` | 지적 적중(5.4) |
+
+### 2.3 가설이 틀렸던 부분 — Memory는 정리 대상이 아니다
+
+현재 Hermes Memory는 **2건뿐**이고 둘 다 원 계획서 5.5의 **허용 범주**(장기 워크스페이스 운영 규칙)다.
+
+| 항목 | 유형 | 판정 |
+|---|---|---|
+| `herdr-terminal-host` | user | 유지 — 실행 호스트 사실, 프로젝트 가변정보 아님 |
+| `delegate-visibly` | feedback | 유지 — 작업 방식 지시, 프로젝트 상태 아님 |
+
+→ **5.5의 "기존 항목 정리"는 이관·삭제 대상 0건.** 남는 일은 *앞으로 금지 항목이 기록되지 않게 하는 정책 문장 추가*뿐이다. 자동 기록 경로 차단은 도구 수준 통제가 없으므로 **정책상 한계로 명시**한다.
+
+### 2.4 그 밖의 확인 사실
+- `plans/` 는 `.gitkeep`만 — **진행 중 계획서 0건.** 5.4의 "로컬 진행 plan 갱신" 대상 없음. 템플릿 변경만 하면 된다
+- `codex` CLI v0.154.0, `herdr` 모두 설치됨 → pane 교차검토 실행 가능
+- 서브에이전트가 `CLAUDE.md`/`AGENTS.md`를 자동 주입받는지는 **런타임 미확인**. 파일럿에서 실측한다
+- `plans/`는 이 계획서 작성 **전** 0건 (작성 후 md·html 1쌍)
+
+### 2.5 Codex 교차검토 결과 (읽기 전용, `codex exec --sandbox read-only`)
+
+Codex가 원문을 독립 대조했다. **A~F 6건 전부 확인, 2.1 바이트 전건 일치**(FE 프로필 11개 64,263 / reviewer 포함 12개 67,576 재측정 일치). 그 위에 아래를 지적했고 **전부 이 계획서에 반영했다**.
+
+#### 계획서 자체의 결함 (3건 — 수정 완료)
+
+| 심각도 | 지적 | 반영 |
+|---|---|---|
+| 높음 | **고유 제약을 gotchas로 옮기면 필수 로딩이 깨진다.** 3.2는 "고유 제약 소실 없음"을 목표로 하지만, 국소 수정 라우터는 gotchas를 읽지 않는다. 파일에 남아 있다는 사실만으로 소실 0건을 판정하면 안 된다 | 이관 대응표에 **필수/조건부 + 읽는 작업 유형** 열 추가 (3.2) |
+| 높음 | **3.4 아카이브 정책이 자기모순.** "상태 없음은 날짜 규칙" ↔ "상태 없는 문서는 보수적으로 보류" | **상태 없음·불명 = 보류**, 명시적 `done`만 날짜 판단으로 단일화 (3.4) |
+| 중간 | 52,827을 "첫 편집 전 입력량"처럼 기술 — 전량 로딩 가정이 들어간 파일 크기 합계다 | 2.1 문구 교정 |
+
+#### 계획서가 놓친 불일치 (9건 — 3.6 교정 대상에 추가)
+
+| # | 내용 | 위치 |
+|---|---|---|
+| G | **불일치 A가 refund만이 아니다.** hub·web-op·bznav rules.md도 "기준 브랜치 dev", `packages-fe.md`·zent-packages rules.md에 "다른 레포는 dev" | `hub/rules.md:27`, `web-op/rules.md:23`, `bznav-web/rules.md:24`, `packages-fe.md:16`, `zent-packages/rules.md:6` |
+| H | `playbook.html`이 운영 기준과 dev 기준을 같은 문서에서 동시 안내 | `playbook.html:339,524,549` |
+| I | `.claude/rules/*.md` 4개가 `AGENTS.md`·`knowledge/common/*`와 통째로 중복 (coding/git/language 3개) | `coding-standards.md:6~24`, `git-workflow.md:3~`, `language.md:3~` |
+| J | `dispatch-protocol.md`의 pane 실행·담당 표·패키지 선행은 CLAUDE.md와 중복. 단 **모노레포 파일 충돌 확인**과 **changeset·스냅샷 태그 인계**는 더 구체적이라 보존 필요 | `dispatch-protocol.md:7,26` |
+| K | `docs/services.md` 12~25·31~36의 버전·포트·검증·배포가 프로필·knowledge·playbook에 3중 복제 | `services.md:12` |
+| L | `README.md:66` 동반 갱신 목록에 **`AGENTS.md`가 빠져** `CLAUDE.md:87`과 다름 | `README.md:66` |
+| M | **refund 권한 가드 위치 문서 충돌** — structure·workflows는 `layout`, rules·프로필은 `page`. 실제 코드로 판정 필요 | `refund/structure.md:16` vs `rules.md:12` |
+| N | care-web `gen:env 없음(5개 앱 전부)` 괄호가 다른 앱 문서와 충돌 / care-web workflows가 **표준 검증 스크립트가 Relay를 생성한다고 잘못 안내**(실제 스크립트는 lint부터, 아티팩트 없으면 타입검사 skip) | `care-web/gotchas.md:5`, `care-web/workflows.md:10` vs `verify/bznav-web.sh:24,33` |
+| O | zent-packages workflows의 프리뷰 라벨 `care-preview` ↔ care gotchas의 `preview` 충돌 / care-web patterns는 `origin/dev@0b713b4`, structure는 `origin/prd-care@631c155a7` 기준 혼재 | `zent-packages/workflows.md:36`, `care-web/patterns.md:3` |
+
+> M·N·O는 **문서 간 충돌만 확인**했고 어느 쪽이 실제 코드인지는 판정하지 않았다(Codex 명시). 해당 레포 코드 확인은 3.6 작업 시 수행한다.
+
+#### 경량화 시 소실 위험 — 레포별 지목 (Codex)
+
+**knowledge에 없어서 새로 이관해야 하는 것(미수록)**:
+
+| 레포 | 항목 | 도착지 |
+|---|---|---|
+| client-brics-refund | **`deal` = "환급", "딜/거래" 번역 금지** — knowledge 전체에 없음 | `rules.md` **필수** (문구 수정도 읽어야 함) |
+| bznav care-web | 순수 로직·atom 변경 시 **테스트 추가 의무**, local/session 목적·초기값·serialization 명시 | `rules.md` 조건부(상태 작업) |
+| bznav brand-web | build 후 **sitemap 산출 확인 의무** | `workflows.md` 조건부(메타데이터·콘텐츠 구조) |
+| bznav plus-web | 차트 변경 시 **데이터 shape 영향 확인** | `patterns.md` 조건부(차트) |
+| bznav packages | 루트 `package.json`·`pnpm-workspace.yaml`·`turbo.json` **수정 허용 예외 + 보고 조건** | `rules.md` **필수** (범위 충돌 위험) |
+| web-op | **BaseApiGateway 상속 금지** (patterns·workflows에만 있고 rules에 없음) + 별도 typecheck 의무 | `rules.md` **필수** |
+| zent-packages | `.changeset/*.md` 허용 예외 — "frontend만"으로 축약하면 사라진다 | `rules.md` **필수** |
+
+**이미 knowledge에 있으나 선택 로딩에서 빠질 위험(기수록)**: hub 생성물 복사 금지 → 필수 API 규칙에서 접근 / care QA `prd` 차단 → QA 수정 시 필수 / sena 키 파일 비출력 → **보안은 항상 필수** / bznav-refund Pages Router 제약 → 구조 설명이 아니라 제약으로
+
+---
+
+## 3. 변경 대상과 내용
+
+원 계획서 5절을 실제 파일에 매핑한 것이다.
+
+### 3.1 `AGENTS.md` — 선행 로딩 지시를 작업유형 기반으로 교체 (원 5.1)
+- 2절 "작업 전 이 순서로 읽는다" → **필수 규칙 + 작업유형별 선택 로딩**으로 교체
+- 3절 "새 코드를 쓰기 전에 workflows→patterns" 는 **새 구현에 한정**해 유지 (국소 수정에는 면제)
+- 신설: 정보 신뢰도 절 — 지시 / 현재 구현 사실(코드) / 진행 상태(plan) / Memory·History(단서일 뿐)
+- 신설: Memory 금지 목록, History 사용 규칙(원 5.6)
+- 3절의 "에이전트 md = 상세 프로필" → "역할·범위·지식 진입점"으로 수정
+
+**필수 규칙(항상 읽음)**: 담당 범위 제한 · 시크릿 금지 · 생성물 직접 편집 금지 · 커밋 금지 · 표준 검증 · 레포 고유 제약. 이건 선택 로딩으로 내리지 않는다.
+
+### 3.2 `.claude/agents/*.md` 11개 + `reviewer.md` — 역할·라우터 중심 축소 (원 5.2/5.3)
+**유지**: frontmatter(name/description/tools), 담당 repo·금지 범위, 모호한 서비스명 처리, 작업유형→knowledge 진입 표, 검증 스크립트 경로, 보고 형식 링크, 외부 의존 보고 조건
+**이관**: 버전·포트·디렉토리 트리·스택 설명·prettier 설정 복제 → `knowledge/<레포>/{structure,rules}.md`
+
+**이관 대응표는 5열로 쓴다** (Codex 지적 — 파일에 남아 있다는 사실만으로 소실 0건을 판정하면 안 된다):
+
+| 원문 위치 | 항목 | 도착지 | **필수/조건부** | **읽는 작업 유형** |
+|---|---|---|---|---|
+
+- **필수**로 분류된 항목은 `rules.md` 상단 "필수" 절에 두고 **모든 작업 유형이 읽는다**. gotchas로 내리지 않는다
+- 보안(키 파일 비출력), 범위 제한, 생성물 편집 금지, 용어 규칙은 **무조건 필수**
+- 소실 위험 목록은 2.5절 표 참조 — 특히 refund `deal` 용어, web-op BaseApiGateway 상속 금지, zent-packages `.changeset` 예외, bznav-packages 루트 설정 예외는 knowledge에 **아직 없다**
+
+각 프로필에 들어갈 작업유형 라우터:
+
+| 작업 유형 | 추가로 읽을 것 |
+|---|---|
+| 문구·스타일 국소 수정 | 대상 파일 + 인접 사용처. patterns/workflows 불필요 |
+| 새 화면·기능 | 해당 workflow 절 + patterns가 가리키는 파일 + 권한·라우팅 gotcha |
+| API·폼·상태 변경 | API/폼 pattern + 생성 설정 + 인증·오류 gotcha |
+| 버그 수정 | 재현 근거 + 관련 코드·테스트 + 연관 gotcha |
+| 구조 변경·공유 패키지 | structure + 소비처 + 담당 범위 규칙 |
+| 작업 재개 | 해당 plan의 Checkpoint + 현재 diff |
+
+### 3.3 `docs/plan-template.md` / `.html` — Checkpoint 블록 (원 5.4)
+- md 템플릿 개요 다음에 `Checkpoint / Progress / Next / Blocked / Validation / Decisions` 추가 (이 계획서가 그 예시다)
+- html 템플릿 주석에 "Checkpoint 갱신 시 `plan-md`만 동기화, `decisions[]`는 승인 내용이 바뀔 때만" 명시
+- 갱신 시점: 단계 완료 / 차단 변화 / reviewer 반영 / 세션 종료·`/new` 직전. 매 턴 아님
+- 별도 `CURRENT.md`·`PROJECT.md`는 만들지 않는다
+
+### 3.4 `scripts/archive-plans.sh` — 상태 판별 + html 동반 이동 (원 5.4, 발견 E·F)
+- `Status:` 파싱 → **명시적 `done`만** 기존 날짜+커밋 규칙으로 이동. `in_progress`·`blocked`·`planned`·**상태 없음·파싱 실패는 전부 보류** (단일 정책 — Codex가 지적한 자기모순 해소)
+- `.md` 이동 시 같은 이름 `.html`도 함께 이동, 목적지 충돌 확인
+- 현행 판단 기준을 주석에 정확히 기술: "날짜와 최근 7일 커밋 언급만 보고 본문 상태는 무시한다" → 상태 보호를 **우선** 적용
+
+### 3.5 `.claude/skills/sync/SKILL.md` — 정본 갱신 + 재복제 금지 (원 5.7)
+- 3단계 표 수정: 에이전트 md는 **역할·범위·라우팅이 바뀔 때만**. 버전·포트·스택 재삽입 금지
+- knowledge를 해당 사실의 정본으로, source path + 기준 ref/SHA + 확인 시점 기록
+- 불일치 B(본문 "대부분 dev") 교정, 불일치 C(없는 "스택 요약" 셀) 제거
+- "4개 문서에 같은 사실이 있으면 모두 고친다" → "정본 1곳만 고치고 나머지는 링크·파생"
+- 실패·부분 갱신 시 `--accept` 금지 규칙 명문화
+- `scripts/sync-fingerprint.mjs`는 **먼저 산출물 확인 후 필요할 때만** 수정
+
+### 3.6 `CLAUDE.md` 및 연관 진입점 (원 5.8)
+- `CLAUDE.md`: 재개 절차(plan Checkpoint) 연결, AGENTS.md 중복 문장 축소
+- `.claude/rules/dispatch-protocol.md`: 프롬프트 필수 포함에 "작업유형 명시" + Checkpoint 갱신 책임 추가
+- `docs/knowledge/README.md`: "작업 전 세 층을 읽는다" → 선택 로딩과 정합
+- **불일치 A·G 일괄 교정**: refund·hub·web-op·bznav `rules.md`의 "기준 브랜치 dev", `packages-fe.md:16`·`zent-packages/rules.md:6`의 "다른 레포는 dev" → config 참조로. ⚠️ **실제 PR base인 `dev`/`dev-ecs`까지 일괄 치환하지 않는다** (문서 조사 기준 ≠ 개발 브랜치, 두 항목을 분리 기술)
+- **H**: `playbook.html:339,524,549` 운영/dev 기준 혼재 → config 참조로 통일
+- **I**: `.claude/rules/*.md` 4개 — 각각 **유지 / 참조화** 범위를 명시적으로 정한다. 중복이라고 지우면 자동 로딩 경로에서 필수 규칙이 사라진다
+- **J**: `dispatch-protocol.md` 중복 표는 참조화하되 **모노레포 파일 충돌 확인**·**changeset/스냅샷 태그 인계** 두 제약은 보존
+- **K**: `docs/services.md` 각 항목을 knowledge 링크 또는 파생 요약으로 매핑. `services.md:3`의 "상세는 에이전트 md" 안내를 knowledge로 변경
+- **L**: `README.md:66` 동반 갱신 목록에 `AGENTS.md` 추가
+- **M**: refund 권한 가드 — **실제 코드(`origin/prd`)로 layout/page 판정 후** 4개 문서 통일
+- **N**: care-web `gen:env` 괄호 범위 교정 / care-web `workflows.md:10`의 "표준 스크립트가 Relay 생성" 오안내 → Relay 선행 생성과 검증 실행을 분리 기술
+- **O**: zent-packages 프리뷰 라벨을 소비 레포 현행으로 확인 후 한 곳에서 관리 / care-web patterns·structure의 기준 ref 혼재는 **지우지 말고** 운영 기준 유효 범위를 덧붙인다
+- `feature`/`bugfix`/`review` SKILL, `docs/extending.md`: **실제 충돌 문장이 있는 곳만** 수정 (일괄 수정 금지)
+- ⚠️ `CLAUDE.md`·`README.md`·`docs/extending.md`·`docs/playbook.html`·`.claude/skills/guide/SKILL.md`에는 **출처 불명의 미커밋 변경**이 있다. 작업 전 사용자에게 확인하고 해당 변경을 보존한 채 편집한다
+
+---
+
+## 4. 작업 배분
+
+| 담당 | 작업 | 의존성 |
+|---|---|---|
+| 헤르메스 | 3.1 공통 정책 초안 → 3.2 refund-fe 파일럿 → 나머지 10개 → 3.3~3.6 | 순차 |
+| Codex (**사용자 수동 전달**) | 각 단계 diff 교차검토. 원 계획서 9절 10개 질문 기준. 헤르메스는 단계별 커밋 후 diff 범위를 알리고 대기하지 않는다(사용자가 판단) | 단계별 직후 |
+| reviewer | 전체 적용 후 정합성 — 경로 실존, 고유 제약 소실 여부, 범위 유지 | 3단계 완료 후 |
+
+**단계 순서** (원 계획서 6절):
+
+| 단계 | 산출물 | 완료 조건 |
+|---|---|---|
+| 0 ✅ | 기준선 조사 + Codex 교차검토 | 2절·2.5절 (완료) |
+| 1 | AGENTS/CLAUDE 정책 + plan 템플릿 | 상충 지시 없음, 필수 규칙 유지 |
+| 2 | refund-fe 파일럿 + 이관 대응표 | 고유 제약 소실 0건, 단순 수정/새 구현 모두 올바른 로딩 → **여기서 멈추고 사용자 승인** |
+| 3 | 나머지 10개 + reviewer.md + 연관 진입점 | 경로·범위 정확, 공유 패키지 순서 유지 |
+| 4 | `/sync` 개편 + `archive-plans.sh` | 같은 사실의 독립 복제 제거, 실패 시 baseline 보존 |
+| 5 | Memory·History 정책 문장 (정리 대상 0건) | 금지 항목 재기록 여부 확인 |
+| 6 | 전후 측정·잔여 한계 보고 | 체크리스트 통과, 미확인 항목 명시 |
+
+---
+
+## 5. 검증
+
+### 5.1 정적 (매 단계)
+- [ ] 11개 에이전트의 역할·scope·tools frontmatter 유지
+- [ ] 전량 읽기 지시와 선택 로딩 지시가 충돌하지 않음
+- [ ] 이관 대응표가 5열(원문/항목/도착지/**필수·조건부**/**읽는 작업 유형**)로 채워짐
+- [ ] **필수** 분류 항목이 모든 작업 유형의 로딩 경로에 실제로 들어감 (국소 수정 라우터 포함)
+- [ ] 2.5절 "미수록" 7항목이 knowledge에 신규 생성됨
+- [ ] 라우터가 가리키는 파일·절이 실제로 존재 (경로 실존 검사 스크립트)
+- [ ] `hermes.config.json` 밖에 브랜치·담당 매핑 정본을 새로 만들지 않음
+- [ ] plan md ↔ html `plan-md` 일치
+- [ ] archive가 `in_progress`/`blocked`를 이동하지 않고 html도 함께 옮김
+
+### 5.2 측정 (원 7.3)
+바이트 대리지표. 같은 모델·checkout·요청으로 전후 비교.
+- 대표군: ① 버튼 문구 수정 ② 권한 있는 새 화면 ③ Orval 생성물 변경 ④ `/new` 후 재개
+- 기록: 첫 편집 전 문서 입력 바이트, 자동 주입량, 수동 로딩 문서 수, 재독 횟수, 필수 규칙 누락 건수
+- 목표(실측 아닌 초기 목표): 단순 수정 첫 편집 전 문서량 **30% 이상 감소**, 필수 규칙 누락 **0건**
+- 복잡 작업은 총량 감소를 강제하지 않고 정확도 우선
+
+### 5.3 시나리오
+refund 콘솔 ↔ refund-web 라우팅 구분 / 작업 중 `/new` 재개 / 재개 직전 브랜치 변경 감지 / `/sync` 재실행 시 기술정보 재복제 없음 / `/sync` 부분 실패 후 baseline 보존
+
+---
+
+## 6. 하지 않을 것
+- 필수 규칙·Plan-First·reviewer·표준 검증을 토큰 절약 이유로 제거하지 않는다
+- 모든 지식을 하나의 `PROJECT.md`로 합치지 않는다
+- 검증 없이 Memory·History를 knowledge로 승격하지 않는다
+- FE 레포 코드·의존성·워크트리를 건드리지 않는다
+- 새 자동화 계층·새 정본 시스템을 필요 이상으로 만들지 않는다
+- 측정 없이 절감률을 확정적으로 주장하지 않는다
+- `.sync/snapshots/` baseline과 Memory를 일괄 삭제하지 않는다
+
+---
+
+## 부록 A. refund-fe 이관 대응표 (2단계 파일럿)
+
+`.claude/agents/refund-fe.md` 5,232 B → 3,576 B. **삭제한 모든 항목의 도착지와 읽는 시점을 아래에 기록한다.** 파일에 남아 있다는 사실만으로 소실 0건을 판정하지 않는다 (Codex 지적).
+
+| # | 원문 (refund-fe.md) | 항목 | 도착지 | 필수/조건부 | 읽는 작업 유형 |
+|---|---|---|---|---|---|
+| 1 | `deal`은 "환급" — 딜/거래 금지 | 용어 | **`rules.md` 필수 절 (신규 기재)** | **필수** | 전부 (문구 한 줄 수정 포함) |
+| 2 | 담당 레포 밖 수정 금지·공유 패키지 보고 | 범위 | 프로필 "담당 범위" + `rules.md` 필수 | **필수** | 전부 |
+| 3 | `__generated__/` 직접 수정 금지 | 생성물 | `rules.md` 필수 (+ API 절) | **필수** | 전부 |
+| 4 | 커밋 금지 · `.env*` 미출력 | 보안·git | `AGENTS.md` 5절 + `rules.md` 필수 | **필수** | 전부 |
+| 5 | `AuthFunction` 추가 불가 → 보고 | 제약 | `rules.md` 필수 (신규 기재, `gotchas.md`에도 기존 기록) | **필수** | 전부 |
+| 6 | 권한 가드는 `page.tsx` 패턴 | **사실 오류** | **삭제 후 교정** → `rules.md` 구조 절 | 조건부 | 새 화면·권한 가드 |
+| 7 | dev 포트 13002 | 사실 | `structure.md` 스크립트 표 (기수록) | 조건부 | 로컬 구동 시 |
+| 8 | pnpm 8.15.6 / Node v24.14.1 | 사실 | **삭제** — 정본은 레포 `.nvmrc`·`package.json` | 조건부 | 검증 실패 시 (`common/verify.md`) |
+| 9 | Next 15 / React 19 / Tailwind 3.4 등 스택 | 사실 | **삭제** — 정본은 레포 `package.json` | 조건부 | 필요할 때 코드에서 |
+| 10 | Orval·`@/generated/*`·한글 디렉터리 | 함정 | `gotchas.md` (기수록) | 조건부 | API 연동 |
+| 11 | 전역 스토어 없음·URL 쿼리 단일 소스 | 규칙 | `rules.md` 상태 절 (기수록) | 조건부 | 폼·상태 |
+| 12 | RHF+Zod · `useDialog` 우선 모달 3방식 | 규칙 | `rules.md` 상태·모달 절 + `gotchas.md` (기수록) | 조건부 | 폼·모달 |
+| 13 | NextAuth v5 + Cognito | 사실 | `rules.md` 구조 절 권한 가드 항목에 흡수 | 조건부 | 권한 가드 |
+| 14 | 디렉토리 트리 | 구조 | `structure.md` (기수록, 더 상세) | 조건부 | 구조 파악 필요 시 |
+| 15 | Prettier 설정 4종 | 규칙 | `rules.md` 포맷 절 (기수록) | 조건부 | 포맷 적용 시 |
+| 16 | `pnpm lint:check` / `tsc --noEmit` | 명령 | `rules.md` 포맷·검증 + 표준 스크립트 | **필수** | 전부 (검증 단계) |
+| 17 | App Router 규칙(`'use client'`, page/layout 분리) | 규칙 | `rules.md` 구조 절 (기수록) | 조건부 | 새 화면 |
+| 18 | 규칙 3층 안내 | 절차 | `AGENTS.md` 2.1 | — | 참조 |
+| 19 | "작업 전 patterns·workflows 읽어라" | 절차 | `AGENTS.md` 2.3 + 프로필 라우터 표 | — | 작업 유형별 |
+| 20 | 완료 보고 형식 | 절차 | `AGENTS.md` 6절 | **필수** | 전부 (보고 단계) |
+
+**신규 기재 3건** (knowledge에 없던 것): #1 `deal` 용어, #5 `AuthFunction` 불가, #6 권한 가드 위치(교정). 나머지는 knowledge에 이미 있었고 **진입 경로만** 프로필 라우터로 옮겼다.
+
+### 부수 교정 — 실제 코드로 판정한 것
+
+Codex 지적 M(권한 가드 문서 충돌)을 `origin/prd`에서 확인했다.
+
+```
+refund-service/**/layout.tsx 에 AuthFunction 가드: 25개
+refund-service/**/page.tsx   에 AuthFunction 가드:  0개
+```
+
+→ `structure.md`·`workflows.md`가 맞고 `rules.md`·프로필이 틀렸다. `rules.md`를 교정하고 근거를 함께 적었다. 불일치 A(브랜치)도 "문서 기준 `origin/prd`" ↔ "PR base `dev`"로 **분리 기술**했다 (Codex 경고대로 일괄 치환하지 않음).
+
+### 측정 (바이트 대리지표)
+
+| 시나리오 | 이전 | 이후 | 증감 |
+|---|---:|---:|---|
+| 국소 문구 수정 | 52,827 | **32,336** | **−39%** ✅ 목표(30%) 초과 |
+| 새 도메인 화면 | 52,827 | **48,401** | −9% |
+
+- 이후 = 자동 주입 25,397 + 프로필 3,576 + 필요한 knowledge
+- 새 화면은 `patterns.md`(9,094)가 커서 절감이 작다. **정확도 우선 원칙에 따라 더 줄이지 않는다**
+- `rules.md`는 필수 절 신설로 1,818 → 3,363 B로 늘었다. 항상 읽히는 문서이므로 의도한 비용이다
+- ⚠️ 이 수치는 **문서 원문 바이트**이고 실제 입력 토큰이 아니다. 서브에이전트 자동 주입 실측은 여전히 미확인
+
+---
+
+## 부록 B. 3단계 전체 적용 결과
+
+### 프로필 12개 크기
+
+| 에이전트 | 이전 | 이후 | |
+|---|---:|---:|---|
+| refund-fe | 5,232 | 3,576 | −32% |
+| hub-fe | 7,208 | 3,500 | −51% |
+| care-fe | 7,224 | 3,518 | −51% |
+| op-fe | 6,076 | 3,617 | −40% |
+| packages-fe | 7,154 | 3,897 | −46% |
+| bznav-refund-fe | 5,659 | 4,104 | −27% |
+| bznav-care-fe | 6,806 | 4,063 | −40% |
+| bznav-brand-fe | 4,452 | 3,494 | −22% |
+| bznav-sena-fe | 4,384 | 3,355 | −23% |
+| bznav-plus-fe | 4,800 | 3,867 | −19% |
+| bznav-packages-fe | 5,268 | 4,635 | −12% |
+| reviewer | 3,313 | 3,804 | **+15%** (정보 신뢰도·필수 규칙 검토 항목 추가) |
+| **합계** | **67,576** | **45,430** | **−33%** |
+
+### Codex 지목 "미수록" 항목의 도착지 (전건 기재 완료)
+
+| 레포 | 항목 | 도착지 | 분류 |
+|---|---|---|---|
+| client-brics-refund | `deal`="환급" 용어 | `rules.md` 필수 | **필수** |
+| client-brics-refund | `AuthFunction` 추가 불가 | `rules.md` 필수 | **필수** |
+| client-brics-hub | works 생성물 복사 금지 · 정확 버전 고정 · 메뉴는 DB | `rules.md` 필수 | **필수** |
+| client-brics-care | QA 화면 운영(prd) 차단 · arrow function · 직접 fetch 금지 | `rules.md` 필수 | **필수** |
+| web-op | **`BaseApiGateway` 상속 금지** · **`pnpm typecheck` 의무** · 반대 포맷 | `rules.md` 필수 | **필수** |
+| zent-packages | `.changeset/*.md` 허용 예외 · 라인 분리 · 소비자 인계 | `rules.md` 필수 | **필수** |
+| bznav care-web | 순수 로직·atom 변경 시 **테스트 추가** · storage atom 명세 | `bznav-web/rules.md` 필수(앱별) | **필수** |
+| bznav brand-web | build 후 **sitemap 산출 확인** | `bznav-web/rules.md` 필수(앱별) + 라우터 | **필수** |
+| bznav plus-web | **차트 데이터 shape 영향 확인** · 폼 두 갈래 | `bznav-web/rules.md` 필수(앱별) + 라우터 | **필수** |
+| bznav packages | 루트 설정 **최소 수정 예외 + 보고 조건** | `bznav-web/rules.md` 필수(앱별) | **필수** |
+| bznav refund-web | Pages Router 제약 · `gen:relay` ↔ `relay` 구분 | `bznav-web/rules.md` 필수(앱별) | **필수** |
+| bznav sena-web | `firebase-key.json` 비출력 · 챗 상태 흐름 | `bznav-web/rules.md` 필수(공통·앱별) | **필수** |
+
+Codex 지적("gotchas로 옮기기만 하면 필수 로딩 보장 실패")에 따라 **하나도 `gotchas.md`에만 두지 않았다.** 전부 `rules.md`의 "필수" 절이다. 여기에 더해 사용자 결정으로 `gotchas.md` **전체가 항상 읽히게** 되어 이중 안전장치가 된다.
+
+### 정적 검토 결과 (5종 전부 통과)
+
+```
+1. frontmatter 12개 유효 (name 일치, tools 보존, description 에 ": " 없음)
+2. 전량 로딩 지시 잔재 0건  (bznav-web/common.md 마지막 1건 교정)
+3. rules.md "필수" 절 6개 레포 전부 존재
+4. 프로필이 가리키는 knowledge 경로 전부 실존
+5. 검증 스크립트 경로 전부 실존
+```
+
+---
+
+## 부록 C. 4단계 — `/sync` 정본화 (결정: A안)
+
+### 문제
+
+`/sync`는 탐지만 자동이고 **문서 수정은 사람이 손으로** 한다(스크립트 주석에 명시). 그래서 SKILL.md에 "4개 문서에 같은 사실이 있으면 모두 같은 턴에 고친다"가 절차로 박혀 있었다. 같은 값을 여러 번 옮겨 적는 구조라 불일치 A·B·C가 그렇게 생겼다.
+
+예: "hub의 Next 버전"이 `services.md:12`, `playbook.html:357`, `playbook.html:577` 3곳에 손으로 적혀 있었다.
+
+### 해결 — 사실마다 정본 1곳 + 파생은 생성
+
+| 사실 | 정본 | 파생 |
+|---|---|---|
+| 레포·에이전트·기준 브랜치 매핑 | `hermes.config.json` | — |
+| 버전·포트·Node/pnpm·Prettier·검증 스크립트·기준 커밋 | **지문** `.sync/snapshots/` | `services.md` 스택 표, `playbook.html` 기준 커밋 표·last sync → **생성** |
+| 디렉토리·라우트 | `knowledge/<레포>/structure.md` | — |
+| 규칙·필수 제약 | `knowledge/<레포>/rules.md` | — |
+| 함정 | `knowledge/<레포>/gotchas.md` | — |
+| 역할·범위·진입 경로 | `.claude/agents/<agent>.md` | — |
+
+### 만든 것
+
+**`scripts/build-derived.mjs`** — 지문 + config를 읽어 문서의 마커 구간을 다시 쓴다.
+- `<!-- BEGIN:generated:<이름> --> ... <!-- END:generated:<이름> -->` 안만 교체
+- **pending 우선** 읽기 — 순서가 "지문 생성 → 문서 갱신 → accept"이므로 곧 확정될 값으로 문서를 만들어야 한다 (설계 중 발견한 순서 문제)
+- `--check` 로 쓰지 않고 차이만 확인 (CI·확정 전 점검용)
+- 지문에 없는 사실(데이터·상태·UI·폼·인증)은 **생성하지 않고** 마커 밖에 둔다. 대신 Next major·포트가 지문과 어긋나면 **경고만** 낸다
+
+**`sync-fingerprint.mjs` 수정** — `catalog` 값 저장 추가. bznav 앱들이 `next`/`react`를 `catalog:`로 받는데 지문에 `catalogHash`(해시)만 있어서 **실제 버전을 뽑을 수 없었고**, catalog가 바뀌어도 "해시 변경"만 보여 무엇이 바뀐지 알 수 없었다. 이제 sync 리포트에 버전 diff가 그대로 보인다.
+
+**`sync/SKILL.md` 전면 개편** — 3단계를 "정본 갱신"으로 교체, 에이전트 md에 **스택 재삽입 금지** 명시, 불일치 B("대부분 dev" → config 참조)·C(없는 "스택 요약" 셀 지시 제거) 교정, **accept 금지 조건 4가지** 명문화.
+
+**`archive-plans.sh` 수정** — `Status: done`만 이동(없음·`planned`·`in_progress`·`blocked`·`ready_for_review`는 전부 보류), `.md`와 `.html` **동반 이동**, 목적지 이름 충돌 확인.
+
+### 검증
+
+```
+build-derived.mjs --check  → ✅ 마커·마커 밖 사실 모두 이상 없음
+catalog 파서               → bznav next 16.2.5 / react 19.2.6 정확히 파싱 (22개 항목)
+archive-plans.sh -n        → 문법 OK
+archive 실동작 ①           → Status: done + 오래된 날짜 → md·html 쌍이 함께 archive/feature/ 로
+archive 실동작 ②           → 이 계획서(in_progress) → "보류 (Status=in_progress)" ✅
+```
+
+### 남은 수동 작업
+
+sync 뒤 손으로 할 일은 **정본 갱신 3종**뿐이다 — `structure.md`(구조 변화), `rules.md`(레포 규칙 문서 변화), 에이전트 md(역할·경로 변화). 버전·포트·기준 커밋은 명령 하나(`node scripts/build-derived.mjs`)로 끝난다.
+
+---
+
+## 부록 D. 6단계 — 전체 측정 결과 ⚠️ **과대평가. 부록 H 로 정정됨**
+
+**측정 방법**: 각 에이전트가 "첫 편집 전에 읽도록 지시받는 문서"의 원문 바이트 합계.
+- **이전** = 자동 주입 18,114 + 프로필(경량화 전) + `knowledge/common/*` 6,909 + 해당 레포 knowledge 전량 (bznav 는 `common.md` 포함) — 당시 지시가 "세 층을 순서대로 읽는다 + 작업 전 patterns·workflows"였으므로 전량 로딩 가정
+- **이후** = 자동 주입 25,810 + 프로필(경량화 후) + `rules.md` + `gotchas.md` (국소 수정) / + `workflows`·`patterns`·`structure` (새 화면)
+
+| 에이전트 | 국소 수정 | | 새 화면 | |
+|---|---:|---:|---:|---:|
+| refund-fe | 54,372 → 36,240 | −34% | 54,372 → 53,654 | −2% |
+| hub-fe | 56,858 → 35,476 | −38% | 56,858 → 53,937 | −6% |
+| care-fe | 52,740 → 36,107 | −32% | 52,740 → 49,821 | −6% |
+| op-fe | 54,043 → 35,851 | −34% | 54,043 → 52,371 | −4% |
+| packages-fe | 56,371 → 36,983 | −35% | 56,371 → 53,901 | −5% |
+| bznav-refund-fe | 61,109 → 37,149 | −40% | 61,109 → 52,979 | −14% |
+| bznav-care-fe | 63,179 → 36,816 | −42% | 63,179 → 53,861 | −15% |
+| bznav-brand-fe | 46,270 → 34,273 | −26% | 46,270 → 38,737 | −17% |
+| bznav-sena-fe | 51,081 → 34,844 | −32% | 51,081 → 43,477 | −15% |
+| bznav-plus-fe | 50,584 → 35,377 | −31% | 50,584 → 43,076 | −15% |
+| bznav-packages-fe | 56,974 → 37,593 | −35% | 56,974 → 49,766 | −13% |
+| **평균** | **54,871 → 36,064** | **−35%** | **54,871 → 49,598** | **−10%** |
+
+> ⚠️ **이 표의 "이전" 값은 경량화 전 프로필과 변경 후 knowledge 를 섞어 절감을 과대평가했다.** 양쪽을 고정 ref 에서 다시 잰 정정값은 **부록 H**(국소 −24%, 새 화면 +2%)다.
+
+### 읽는 방법
+
+- **국소 수정 −35%** — 목표(30%)를 넘겼다. 절감의 대부분은 `knowledge/common/*`(6,909 B)과 `patterns`·`workflows`·`structure`를 더 이상 선행 로딩하지 않는 데서 온다
+- **새 화면 −10%** — 원래 문서를 다 봐야 하는 작업이라 여지가 적다. refund-fe 가 −2%로 가장 낮은데, `patterns.md`가 9,094 B로 크고 `rules.md`가 필수 절 신설로 1,818 → 3,363 B 로 늘었기 때문이다
+- **자동 주입은 18,114 → 25,810 B (+42%)로 늘었다.** 정책·필수 규칙·재개 절차가 항상 로딩되는 `AGENTS.md`에 들어갔다. 이 증가를 프로필 경량화(−33%)와 선택 로딩이 상쇄한다
+- `.claude/rules/*.md` 4개(4,856 B)가 `AGENTS.md`와 중복이라 여기서 더 줄일 수 있지만, **서브에이전트가 그 파일들을 자동 주입받는지 미확인**이라 손대지 않았다. 잘못 지우면 에이전트 쪽 필수 규칙이 사라진다
+
+### 정확도 지표
+
+| 항목 | 결과 |
+|---|---|
+| 필수 규칙 누락 | **0건** — 이관 20항목 전부 도착지 기록(부록 A), Codex 지목 미수록 12건 전부 `rules.md` 필수 절에 신규 기재(부록 B) |
+| 잘못된 경로 참조 | **0건** — 프로필이 가리키는 knowledge·검증 스크립트 경로 전수 실존 확인 |
+| 전량 로딩 ↔ 선택 로딩 충돌 | **0건** — 잔재 문장 전수 검색 후 제거 |
+| 문서 간 불일치 | **A~O 15건 중 14건 교정.** 남은 1건은 I(`.claude/rules/*.md` 중복) — 런타임 확인 대기 |
+| 코드로 판정한 것 | refund 권한 가드(layout 25 / page 0), 프리뷰 라벨(`preview`·`works-preview`), care-web `gen:env` 범위, 검증 스크립트 실제 실행 순서 |
+
+## 부록 E. 5단계 — Memory·History
+
+### Memory 감사 결과: 정리 대상 0건
+
+| 항목 | 유형 | 판정 |
+|---|---|---|
+| `herdr-terminal-host` | user | **유지** — 실행 호스트 사실. 프로젝트 가변정보 아님 |
+| `delegate-visibly` | feedback | **유지** — 작업 방식 지시. 프로젝트 상태 아님 |
+
+금지 항목(버전·포트·엔드포인트·브랜치·진행 단계·완료 여부·구현 결정)을 전수 검색한 결과 **0건**. 원 계획서 5.5가 가정한 "오래된 가변 사실이 Memory에 쌓여 재유입된다"는 **이 워크스페이스에서는 사실이 아니었다.**
+
+따라서 5단계의 실제 작업은 **앞으로의 금지 규칙을 명문화하는 것**(`AGENTS.md` 2.5)뿐이었고, 기존 항목 이관·삭제는 하지 않았다.
+
+### 정책상 한계 (숨기지 않는다)
+
+자동 Memory 기록 경로까지 도구 수준에서 막는 수단이 없다. 정책 문장으로만 통제하며, `AGENTS.md` 2.5에 그 한계를 적었다. 실제 확인은 새 세션에서 금지 항목이 주입되는지 보는 방법뿐이다.
+
+---
+
+## 부록 F. 자동 주입 범위 실측 (불일치 I 해소)
+
+`refund-fe` 서브에이전트를 pane 에 띄워 **도구를 쓰지 말고 이미 주어진 것만 답하라**고 질의한 결과다.
+
+| 문서 | 자동 주입 |
+|---|---|
+| `CLAUDE.md` | **O** — 전문 |
+| `AGENTS.md` | **O** — 전문 |
+| `.claude/rules/coding-standards.md` | **O** |
+| `.claude/rules/git-workflow.md` | **O** |
+| `.claude/rules/language.md` | **O** |
+| `.claude/rules/dispatch-protocol.md` | **O** |
+| `.claude/agents/refund-fe.md` | **O** — 경로 블록은 없고 본문이 시스템 프롬프트로 |
+| `docs/knowledge/client-brics-refund/rules.md` | **X — 없음** |
+
+필수 규칙 3종은 자동 주입만으로 이미 확보되어 있다(에이전트 보고):
+- "담당 범위 밖 수정 금지" — `AGENTS.md` 5절 · `coding-standards.md` · 프로필 **3곳**
+- "커밋하지 않는다" — `AGENTS.md` 5절 · `git-workflow.md` · 프로필 **3곳**
+- "`.env` 출력 금지" — `AGENTS.md` 5절 · `coding-standards.md` · 프로필 **3곳**
+
+### 결론 두 가지
+
+**1. `.claude/rules/*.md` 4개를 지우면 안 된다.** 불일치 I 는 "중복이니 정리"가 아니라 **"이것이 Claude Code 의 필수 규칙 전달 경로"**로 결론난다. 4,856 B 를 줄이려다 필수 규칙 3종의 전달 경로 하나를 없앨 뻔했다. 확인 전에 손대지 않은 판단이 맞았다.
+
+**2. 이번 설계가 필요했다는 증거가 나왔다.** `docs/knowledge/**` 는 **전부 자동 주입되지 않는다.** 즉 `rules.md` 의 "필수" 절과 `gotchas.md` 는 에이전트가 **직접 읽어야만** 한다. 프로필의 "시작 전 반드시 읽을 것" 목록이 없으면 이번에 새로 기재한 고유 제약(refund `deal` 용어, web-op `BaseApiGateway` 금지 등)은 **아무도 읽지 않는다.**
+
+### 부수 발견 — 도구 간 차이
+
+팀 공통 코드 규칙(변수명·`any` 금지·성능)은 Claude Code 에서는 `.claude/rules/coding-standards.md` 로 항상 들어오지만, 자동 주입이 없는 도구(Codex 등)는 `docs/knowledge/common/coding.md` 를 직접 읽어야 한다. `AGENTS.md` 2.2 에 이 차이를 적었다.
+
+## 부록 G. `scripts/delegate.sh` 프롬프트 전달 버그 (실측 중 발견·수정)
+
+실측하려고 에이전트를 띄웠는데 **엉뚱한 답(레포 상태 조사)이 돌아왔다.** 원인은 위임 스크립트였다.
+
+`herdr pane run` 은 인자를 **따옴표 없이 셸 명령줄로 이어붙인다.** 확인 테스트:
+
+```
+herdr pane run <pane> printf '[%s]\n' "첫째 단어 둘째 단어. 셋째!"
+→ pane 에서 실행된 것:  printf [%s]n 첫째 단어 둘째 단어. 셋째!
+→ zsh: no matches found: [%s]n
+```
+
+그래서 `delegate.sh` 가 넘긴 프롬프트가 **공백에서 쪼개지고 `( ) !` 가 셸에 먹혀** 에이전트에 제대로 도착하지 않았다. 첫 시도는 `)` 때문에 zsh parse error 로 아예 실행되지 않았고, 두 번째 시도는 실행은 됐지만 에이전트가 프롬프트를 못 받아 "지시가 없다"고 판단하고 레포 상태만 조사했다.
+
+**이 워크스페이스의 모든 위임이 이 경로를 쓴다.** 프롬프트에 공백이 없을 리 없으니 사실상 모든 디스패치가 영향을 받는다.
+
+**수정**: 프롬프트를 임시 파일에 쓰고, 그것을 읽는 러너 스크립트 **한 개**만 `herdr pane run` 에 넘긴다. 인자가 한 단어라 셸 분해가 일어나지 않는다. 러너는 종료 시 임시 파일을 지운다.
+
+수정 후 같은 프롬프트로 재실행해 정상 응답을 받았다(부록 F 가 그 결과다).
+
+---
+
+## 부록 H. 측정 정정 — 부록 D 는 과대평가였다 (Codex ⑬)
+
+### 무엇이 틀렸나
+
+부록 D 의 "이전" 값에 **경량화 전 프로필 + 변경 후 knowledge** 를 섞어 넣었다. `rules.md` 는 필수 절 신설로 커졌는데 그 커진 값을 "이전"에도 쓴 것이다. 그래서 절감이 실제보다 크게 나왔다.
+
+정정 방법: **양쪽을 각각 고정 ref 에서 읽는다.** 이전은 `c810447~1`(1단계 직전), 이후는 현재 작업 트리.
+
+```
+이전 = git show c810447~1:<파일>   (자동 주입 + 경량화 전 프로필 + common/* 전량 + 해당 레포 knowledge 전량)
+이후 = 현재 파일                    (자동 주입 + 경량화 후 프로필 + rules.md + gotchas.md [+ 새 화면이면 workflows·patterns·structure])
+```
+
+### 정정된 수치
+
+| 에이전트 | 이전 | 국소 수정 | | 새 화면 | |
+|---|---:|---:|---:|---:|---:|
+| refund-fe | 52,827 | 39,067 | −27% | 56,481 | **+6%** |
+| hub-fe | 55,963 | 38,544 | −32% | 57,005 | +1% |
+| care-fe | 51,677 | 38,934 | −25% | 52,648 | +1% |
+| op-fe | 52,957 | 38,919 | −27% | 55,439 | +4% |
+| packages-fe | 55,047 | 39,894 | −28% | 56,812 | +3% |
+| bznav-refund-fe | 58,750 | 43,316 | −27% | 59,146 | +0% |
+| bznav-care-fe | 59,993 | 42,981 | −29% | 60,026 | +0% |
+| bznav-brand-fe | 43,911 | 40,439 | **−8%** | 44,903 | +2% |
+| bznav-sena-fe | 48,722 | 41,009 | −16% | 49,642 | +1% |
+| bznav-plus-fe | 48,225 | 41,542 | −14% | 49,241 | +2% |
+| bznav-packages-fe | 54,615 | 43,611 | −21% | 55,784 | +2% |
+| **평균** | **52,971** | **40,750** | **−24%** | **54,284** | **+2%** |
+
+### 이전 보고와의 차이
+
+| | 부록 D (틀림) | 부록 H (정정) |
+|---|---|---|
+| 국소 수정 | −35% | **−24%** |
+| 새 화면 | −10% | **+2% (증가)** |
+
+**목표(단순 수정 30% 감소)를 달성하지 못했다.** 평균 −24% 이고, bznav-brand-fe 는 −8% 에 그친다.
+
+### 왜 이렇게 됐나 — 숨기지 않는다
+
+1. **자동 주입이 18,114 → 28,637 B (+58%)** 로 늘었다. 정책·필수 규칙·재개 절차가 전부 항상 로딩되는 `AGENTS.md`(7,301 → 14,394)에 들어갔다
+2. **`rules.md` 가 커졌다.** 특히 `bznav-web/rules.md` 는 7,213 B 이고 **앱 6개가 모두 항상 읽는다.** Codex ① 지적(원문 코드 컨벤션이 필수 절 밖에 있어 국소 수정에서 누락)을 고치느라 `[필수]` 컨벤션을 인라인한 결과다
+3. **`gotchas.md` 를 항상 읽도록 승격**했다(사용자 결정). 레포당 2~4 KB 가 상시 추가된다
+4. bznav 앱들이 특히 나쁜 것은 위 2·3 이 겹치기 때문이다. brand-web 은 원래 knowledge 가 작아서(43,911) 분모가 작고, 공유 `rules.md` 부담은 똑같이 진다
+
+### 판단
+
+2·3 은 **정확도를 택한 대가이고 되돌리지 않는다.** 되돌리면 refund 의 `deal` 용어, web-op 의 `BaseApiGateway` 금지, bznav 의 named export·`console.log` 금지 같은 규칙이 국소 수정에서 다시 누락된다. 그게 토큰보다 비싸다.
+
+줄일 여지가 있다면 1번이다. `AGENTS.md` 2.4~2.6(정보 신뢰도·Memory·History·재개)은 **헤르메스에게 필요하지 실무 FE 에이전트에게는 대부분 불필요**한데 지금은 모두에게 주입된다. 다만 Claude Code 가 서브에이전트에게 `CLAUDE.md`/`AGENTS.md` 를 통째로 주입하므로(부록 F) 문서를 쪼개지 않는 한 선택적으로 줄일 방법이 없다. **다음 작업으로 남긴다.**
+
+### 측정의 한계 (그대로 둔다)
+
+- **문서 원문 바이트이지 입력 토큰이 아니다.** 토큰 계측 수단이 없다
+- 실제 읽기 횟수·재독·재작업 비용은 재지 않았다. 정적 파일 크기 비교다
+- "이전" 은 당시 지시("세 층을 순서대로 + 작업 전 patterns·workflows")를 **전량 로딩으로 가정**한 값이다. 실제 에이전트가 매번 전량을 읽었는지는 확인하지 않았다
+
+---
+
+## 부록 I. Codex 교차검토 13건 처리 결과
+
+`git log c810447~1..` 전체 diff 를 Codex 가 읽고 낸 지적이다. **전건 반영했다.** 액면으로 받지 않고 모두 재현해 본 뒤 고쳤다.
+
+| # | 심각도 | 지적 | 재현 | 처리 |
+|---|---|---|---|---|
+| ① | 높음 | bznav 원문 `[필수]` 코드 컨벤션이 `rules.md` 필수 절 밖 — 선택 로딩이 만든 회귀 | `named export` 필수절 0회 확인 | 원문 `[필수]` 30여 개 대조 후 자주 걸리는 것을 필수 절에 인라인 |
+| ② | 중간 | bznav 3개 프로필에서 build 의무 삭제 | plus·sena `build` 0회 | 원문 §검증 표를 `rules.md` 에 옮기고 프로필 6개에 복구 |
+| ③ | 높음 | archive 가 기존 html 을 덮어씀 | 충돌 상황 재현 | 옮기기 전 md·html 둘 다 검사 + 실패 시 md 롤백 |
+| ④ | 중간 | archive Status 파싱이 `**done**` 을 못 읽음 | 빈 값 확인 | awk 로 Checkpoint 절만·코드블록 제외·굵게 제거. 경계 6종 검증 |
+| ⑤ | 중간 | `delegate.sh` 가 `exec` 때문에 임시 파일 누수 | `trap`+`exec` 재현 | `exec` 제거, 종료 코드 전달 |
+| ⑥ | 높음 | `build-derived --check` 가 마커 없어도 exit 0 | exit=0 확인 | 전체 검증 후에만 쓰기, 누락·중복이면 exit 1 |
+| ⑦ | 중간 | 마커 밖 검사가 레포별 구분을 못 함 | Next 99.5 로 바꿔도 통과 | 레포 이름이 든 `<tr>` 안에서만 대조. 패키지 레포는 포트 검사 제외 |
+| ⑧ | 중간 | `last sync` 를 실행일로 생성 | 날짜 바뀌며 실제로 깨짐 | `.sync/state.json` 의 `acceptedAt` 사용 |
+| ⑨ | 중간 | catalog 파서가 따옴표 키 누락 | **33개 중 22개만** 저장 | 따옴표 키·인라인 주석 처리 → 33/33 |
+| ⑩ | 중간 | prettier 요약이 주석·override 오인 | 재현됨 | JSON 은 구조 파싱, JS 는 주석 제거 + `overrides` 앞까지만 |
+| ⑪ | 중간 | `--repo` 가 pending 을 격리한다는 안내가 틀림 | `sync-fingerprint.mjs:293` 로 확인 | SKILL 에 사실대로 적고 accept 전 `ls .sync/pending/` 절차 추가 |
+| ⑫ | 중간 | 계획서 Checkpoint 노후 | Work ref `b50149f`, accept 사실 누락 | 현재 HEAD·accept 사실 반영 |
+| ⑬ | 중간 | 부록 D 측정 과대평가 | 재현·재계산 | **부록 H** 로 정정 (국소 −24%, 새 화면 +2%) |
+
+### Codex 가 틀린 것
+
+없다. 13건 모두 실제로 재현됐다. ⑨ 는 Codex 가 "47개 중 11개 누락" 이라 했는데 실제 catalog 블록은 33개였다(47 은 블록 밖까지 센 수). **누락 11개라는 핵심은 맞았다.**
+
+### 이 검토로 알게 된 것
+
+작업 중에 만든 스크립트 4개(`build-derived`·`archive-plans`·`delegate`·`sync-fingerprint`)에서 **결함 7건**이 나왔다. 전부 "정상 경로에서는 동작하지만 실패·경계에서 조용히 잘못되는" 종류다 — 마커가 없어도 통과, 굵게 쓴 Status 를 못 읽음, 따옴표 키를 조용히 버림, 임시 파일 누수. 새 자동화를 넣을 때 정상 경로만 확인하면 이런 것이 남는다.
+
+</script>
+
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-weak: #eff6ff;
+    --primary-border: #bfdbfe;
+    --good: #16a34a;
+    --good-weak: #f0fdf4;
+    --good-border: #bbf7d0;
+    --warn: #d97706;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo',
+      'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 200px; }
+
+  header.plan-head {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .plan-head h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.01em; }
+  .plan-summary { color: var(--muted); margin: 8px 0 16px; font-size: 15px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    background: var(--primary-weak); color: var(--primary); border: 1px solid var(--primary-border);
+  }
+  .badge.type-feature { background:#eff6ff; color:#2563eb; border-color:#bfdbfe; }
+  .badge.type-bugfix  { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+  .badge.type-refactor{ background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe; }
+  .badge.scope { background:#f8fafc; color:var(--muted); border-color:var(--border); }
+  .md-link { display:inline-block; margin-top:14px; font-size:13px; color:var(--muted); text-decoration:none; }
+  .md-link:hover { color: var(--primary); text-decoration: underline; }
+  .md-link code { background:#f1f5f9; padding:2px 6px; border-radius:6px; font-size:12px; }
+
+  /* 상태 배너 */
+  .statusbar {
+    display:flex; align-items:center; gap:10px;
+    border-radius: var(--radius); padding: 12px 18px; margin: 24px 0;
+    font-size: 14px; font-weight: 600; border: 1px solid var(--border);
+  }
+  .statusbar.pending { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+  .statusbar.confirmed { background:var(--good-weak); border-color:var(--good-border); color:#166534; }
+  .statusbar .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .statusbar.pending .dot { background:#d97706; }
+  .statusbar.confirmed .dot { background:var(--good); }
+
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em; margin: 0 0 12px 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card.unresolved { border-color: #fcd34d; }
+  .card.confirmed { border-color: var(--good-border); background: #fcfdfc; }
+  .card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .card-title { font-size: 16px; font-weight: 700; margin: 0; }
+  .card-desc { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+  .pick-tag { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap;
+    border:1px solid var(--border); border-radius:999px; padding:2px 9px; }
+  .pick-tag.done { color:var(--good); border-color:var(--good-border); background:var(--good-weak); }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px;
+    cursor: pointer; transition: border-color .12s, background .12s;
+    background: #fff;
+  }
+  .option:hover { border-color: #cbd5e1; background: #f8fafc; }
+  .option.selected { border-color: var(--primary); background: var(--primary-weak); }
+  .option .marker {
+    flex: none; width: 20px; height: 20px; margin-top: 1px;
+    border: 2px solid #cbd5e1; background:#fff; display:grid; place-items:center;
+  }
+  .option[data-type="single"] .marker { border-radius: 50%; }
+  .option[data-type="multi"] .marker { border-radius: 6px; }
+  .option.selected .marker { border-color: var(--primary); background: var(--primary); }
+  .option.selected .marker::after {
+    content: ''; width: 8px; height: 8px; background:#fff; border-radius:2px;
+  }
+  .option[data-type="single"].selected .marker::after { border-radius: 50%; }
+  .option .opt-body { flex: 1; }
+  .opt-label { font-weight: 600; font-size: 14.5px; }
+  .opt-label .rec { font-size:11px; font-weight:700; color:var(--good); margin-left:6px;
+    background:var(--good-weak); border:1px solid var(--good-border); padding:1px 7px; border-radius:999px; }
+  .opt-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .custom-input { margin-top: 8px; width: 100%; border:1.5px solid var(--border);
+    border-radius:8px; padding:8px 10px; font-size:14px; font-family:inherit; display:none; }
+  .option.selected .custom-input { display:block; }
+
+  /* 확정(locked) 카드 — 선택된 것만 강조, 나머지는 흐리게, 클릭 비활성 */
+  .card.confirmed .options { cursor: default; }
+  .card.confirmed .option { cursor: default; }
+  .card.confirmed .option:hover { border-color: var(--border); background: #fff; }
+  .card.confirmed .option.selected { border-color: var(--good-border); background: var(--good-weak); }
+  .card.confirmed .option.selected .marker { border-color: var(--good); background: var(--good); }
+  .card.confirmed .option:not(.selected) { opacity: .45; }
+
+  .notes-area { width:100%; min-height:70px; border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:14px; font-family:inherit; resize:vertical; }
+
+  /* 계획서 본문(.md 렌더) */
+  .plan-body {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px 32px; box-shadow: var(--shadow); margin-top: 8px;
+  }
+  .plan-body h1, .plan-body h2, .plan-body h3, .plan-body h4, .plan-body h5, .plan-body h6 {
+    line-height: 1.3; letter-spacing: -.01em; margin: 1.4em 0 .5em;
+  }
+  .plan-body > :first-child { margin-top: 0; }
+  .plan-body h1 { font-size: 22px; border-bottom: 2px solid var(--border); padding-bottom: .3em; }
+  .plan-body h2 { font-size: 19px; border-bottom: 1px solid var(--border); padding-bottom: .25em; }
+  .plan-body h3 { font-size: 16.5px; }
+  .plan-body h4 { font-size: 15px; color: #334155; }
+  .plan-body p { margin: .6em 0; font-size: 14.5px; }
+  .plan-body ul, .plan-body ol { margin: .5em 0; padding-left: 1.4em; font-size: 14.5px; }
+  .plan-body li { margin: .25em 0; }
+  .plan-body strong { font-weight: 700; color: #0f172a; }
+  .plan-body code {
+    background: #f1f5f9; color: #be123c; padding: 1.5px 6px; border-radius: 6px;
+    font-size: 12.8px; font-family: 'SF Mono', Menlo, Consolas, monospace;
+  }
+  .plan-body pre.md-code {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; margin: .8em 0;
+  }
+  .plan-body pre.md-code code { background: none; color: inherit; padding: 0; font-size: 12.8px; }
+  .plan-body blockquote {
+    margin: .8em 0; padding: 8px 16px; border-left: 4px solid var(--primary-border);
+    background: var(--primary-weak); color: #334155; border-radius: 0 8px 8px 0; font-size: 14px;
+  }
+  .plan-body hr { border: none; border-top: 1px solid var(--border); margin: 1.6em 0; }
+  .plan-body a { color: var(--primary); text-decoration: none; }
+  .plan-body a:hover { text-decoration: underline; }
+  .plan-body table {
+    border-collapse: collapse; width: 100%; margin: .9em 0; font-size: 13.5px;
+    display: block; overflow-x: auto;
+  }
+  .plan-body th, .plan-body td { border: 1px solid var(--border); padding: 7px 11px; text-align: left; vertical-align: top; }
+  .plan-body th { background: #f8fafc; font-weight: 700; white-space: nowrap; }
+  .plan-body tbody tr:nth-child(even) { background: #fcfdfe; }
+
+  /* 하단 고정 액션 바 */
+  .actionbar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(15,23,42,.06);
+    padding: 14px 20px;
+  }
+  .actionbar-inner { max-width: 880px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .status { font-size: 13px; color: var(--muted); flex: 1; }
+  .status b { color: var(--text); }
+  button {
+    font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    border-radius: 9px; padding: 11px 18px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); transition: filter .12s, background .12s;
+  }
+  button:hover { background: #f8fafc; }
+  button.primary { background: var(--primary); color:#fff; border-color: var(--primary); }
+  button.primary:hover { filter: brightness(1.06); background: var(--primary); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  details.preview { margin: 8px 0 24px; }
+  details.preview summary { cursor:pointer; font-size:13px; color:var(--muted); padding:6px 0; }
+  pre.prompt-out {
+    background:#0f172a; color:#e2e8f0; border-radius:10px; padding:16px 18px;
+    font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+    font-family: 'SF Mono', Menlo, Consolas, monospace; margin: 4px 0 0;
+  }
+  .toast {
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--good); color:#fff; padding: 10px 20px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s; box-shadow: var(--shadow); z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="plan-head">
+    <h1 id="p-title"></h1>
+    <p class="plan-summary" id="p-summary"></p>
+    <div class="badges">
+      <span class="badge" id="p-type"></span>
+      <span class="badge scope" id="p-scope"></span>
+    </div>
+    <a class="md-link" id="p-mdlink" href="#"></a>
+  </header>
+
+  <p class="section-title" id="body-title" style="display:none">작업계획서 상세</p>
+  <article class="plan-body" id="plan-body" style="display:none"></article>
+
+  <div class="statusbar" id="statusbar"><span class="dot"></span><span id="statusbar-text"></span></div>
+
+  <div id="decisions-wrap">
+    <p class="section-title" id="decisions-title">결정 사항 — 선택 후 하단 [프롬프트로 복사]</p>
+    <div id="decisions"></div>
+
+    <div class="card" id="notes-card">
+      <h3 class="card-title">추가 메모 (선택)</h3>
+      <p class="card-desc">결정 외에 전달할 제약·우선순위·주의사항이 있으면 적어주세요.</p>
+      <textarea class="notes-area" id="notes" placeholder="예: 마이그레이션은 이번 배포에 포함하지 말 것"></textarea>
+    </div>
+
+    <details class="preview">
+      <summary>복사될 프롬프트 미리보기</summary>
+      <pre class="prompt-out" id="preview"></pre>
+    </details>
+  </div>
+</div>
+
+<div class="actionbar" id="actionbar">
+  <div class="actionbar-inner">
+    <div class="status" id="status"></div>
+    <button id="btn-json">JSON 복사</button>
+    <button class="primary" id="btn-copy">프롬프트로 복사</button>
+  </div>
+</div>
+<div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+(function () {
+  const state = {}; // decisionId -> { picks: Set, custom: '' }
+
+  const el = (tag, cls, html) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (html != null) node.innerHTML = html;
+    return node;
+  };
+  const escapeText = (str) => String(str).replace(/[&<>"]/g, (ch) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // decided 값을 배열로 정규화
+  const decidedList = (dec) => {
+    if (dec.decided == null) return null;
+    return Array.isArray(dec.decided) ? dec.decided : [dec.decided];
+  };
+  const isConfirmed = (dec) => decidedList(dec) !== null;
+  // 모든 필수 결정에 decided 가 채워졌는가 → 확정 모드
+  const allConfirmed = () => PLAN.decisions.length > 0 &&
+    PLAN.decisions.every((dec) => !dec.required || isConfirmed(dec));
+
+  // --- 헤더 렌더 ---
+  document.getElementById('p-title').textContent = PLAN.title;
+  document.getElementById('p-summary').textContent = PLAN.summary || '';
+  const typeBadge = document.getElementById('p-type');
+  typeBadge.textContent = PLAN.type;
+  typeBadge.classList.add('type-' + PLAN.type);
+  document.getElementById('p-scope').textContent = '영향 범위: ' + PLAN.scope;
+  const mdLink = document.getElementById('p-mdlink');
+  mdLink.innerHTML = '원본 계획서 → <code>' + escapeText(PLAN.mdFile) + '</code>';
+  mdLink.href = PLAN.mdFile.split('/').pop();
+
+  // --- 결정 카드 렌더 ---
+  const container = document.getElementById('decisions');
+  PLAN.decisions.forEach((dec) => {
+    const confirmed = isConfirmed(dec);
+    const preset = decidedList(dec) || [];
+    state[dec.id] = { picks: new Set(preset), custom: '' };
+
+    const card = el('div', 'card' + (confirmed ? ' confirmed' : ''));
+    card.dataset.id = dec.id;
+    const reqMark = dec.required ? ' *' : '';
+    card.appendChild(el('div', 'card-head',
+      '<h3 class="card-title">' + escapeText(dec.title) + reqMark + '</h3>' +
+      '<span class="pick-tag">' + (dec.type === 'multi' ? '복수 선택' : '택1') + '</span>'));
+    if (dec.desc) card.appendChild(el('p', 'card-desc', escapeText(dec.desc)));
+
+    const opts = el('div', 'options');
+    dec.options.forEach((opt) => {
+      const row = el('div', 'option');
+      row.dataset.type = dec.type;
+      if (preset.includes(opt.label)) row.classList.add('selected');
+      const rec = opt.recommended ? '<span class="rec">추천</span>' : '';
+      const desc = opt.desc ? '<div class="opt-desc">' + escapeText(opt.desc) + '</div>' : '';
+      const customField = opt.custom
+        ? '<input class="custom-input" placeholder="직접 입력" />' : '';
+      row.innerHTML =
+        '<div class="marker"></div>' +
+        '<div class="opt-body"><div class="opt-label">' + escapeText(opt.label) + rec + '</div>' +
+        desc + customField + '</div>';
+      if (!confirmed) {
+        row.addEventListener('click', (ev) => {
+          if (ev.target.classList.contains('custom-input')) return;
+          toggle(dec, opt, row, opts);
+        });
+        const customInput = row.querySelector('.custom-input');
+        if (customInput) customInput.addEventListener('input', () => {
+          state[dec.id].custom = customInput.value;
+          render();
+        });
+      }
+      opts.appendChild(row);
+    });
+    card.appendChild(opts);
+    container.appendChild(card);
+  });
+
+  function toggle(dec, opt, row, opts) {
+    const picks = state[dec.id].picks;
+    if (dec.type === 'single') {
+      picks.clear();
+      opts.querySelectorAll('.option').forEach((node) => node.classList.remove('selected'));
+      picks.add(opt.label);
+      row.classList.add('selected');
+    } else {
+      if (picks.has(opt.label)) { picks.delete(opt.label); row.classList.remove('selected'); }
+      else { picks.add(opt.label); row.classList.add('selected'); }
+    }
+    render();
+  }
+
+  // --- 선택 결과 → 텍스트 ---
+  function valueFor(dec) {
+    const st = state[dec.id];
+    const labels = [...st.picks].map((label) => {
+      const opt = dec.options.find((option) => option.label === label);
+      if (opt && opt.custom && st.custom.trim()) return st.custom.trim();
+      return label;
+    });
+    return labels.join(', ');
+  }
+
+  function unresolved() {
+    return PLAN.decisions.filter((dec) => dec.required && state[dec.id].picks.size === 0);
+  }
+
+  function buildPrompt() {
+    const lines = [];
+    lines.push('[작업계획서 결정사항 확정] ' + PLAN.title);
+    lines.push('');
+    lines.push('아래 결정사항으로 ' + PLAN.mdFile + ' 계획서를 확정하고 진행해주세요.');
+    lines.push('');
+    PLAN.decisions.forEach((dec, idx) => {
+      const val = valueFor(dec) || '(미결정)';
+      lines.push((idx + 1) + '. ' + dec.title + ': ' + val);
+    });
+    const notes = document.getElementById('notes').value.trim();
+    lines.push('');
+    lines.push('추가 메모: ' + (notes || '(없음)'));
+    return lines.join('\n');
+  }
+
+  function buildJson() {
+    const obj = { title: PLAN.title, mdFile: PLAN.mdFile, decisions: {}, notes: document.getElementById('notes').value.trim() };
+    PLAN.decisions.forEach((dec) => { obj.decisions[dec.title] = valueFor(dec); });
+    return JSON.stringify(obj, null, 2);
+  }
+
+  function render() {
+    PLAN.decisions.forEach((dec) => {
+      const card = container.querySelector('[data-id="' + dec.id + '"]');
+      const tag = card.querySelector('.pick-tag');
+      const decided = state[dec.id].picks.size > 0;
+      card.classList.toggle('unresolved', dec.required && !decided && !isConfirmed(dec));
+      if (decided) {
+        tag.classList.add('done');
+        tag.textContent = (isConfirmed(dec) ? '✅ 확정 · ' : '✓ ') + valueFor(dec);
+      } else {
+        tag.classList.remove('done');
+        tag.textContent = dec.type === 'multi' ? '복수 선택' : '택1';
+      }
+    });
+    const left = unresolved();
+    const status = document.getElementById('status');
+    if (left.length === 0) status.innerHTML = '<b>모든 필수 결정 완료.</b> 복사해서 채팅에 붙여넣으세요.';
+    else status.innerHTML = '필수 결정 <b>' + left.length + '개</b> 남음: ' +
+      left.map((dec) => escapeText(dec.title)).join(', ');
+    document.getElementById('btn-copy').disabled = left.length > 0;
+    document.getElementById('preview').textContent = buildPrompt();
+  }
+
+  // --- 라이프사이클 UI: 결정 콘솔 / 확정 뷰 전환 ---
+  function applyLifecycle() {
+    const confirmed = allConfirmed();
+    const bar = document.getElementById('statusbar');
+    const barText = document.getElementById('statusbar-text');
+    if (confirmed) {
+      bar.className = 'statusbar confirmed';
+      barText.textContent = '✅ 확정 완료 — 위 작업계획서가 확정되었습니다. (아래 결정 카드는 잠금 표시)';
+      document.getElementById('decisions-title').textContent = '확정된 결정 사항';
+      // 확정되면 메모 입력/미리보기/액션바는 감춰 읽기용으로 전환
+      document.getElementById('notes-card').style.display = 'none';
+      document.querySelector('details.preview').style.display = 'none';
+      document.getElementById('actionbar').style.display = 'none';
+      document.querySelector('.wrap').style.paddingBottom = '60px';
+    } else {
+      bar.className = 'statusbar pending';
+      const left = PLAN.decisions.filter((dec) => dec.required && !isConfirmed(dec)).length;
+      barText.textContent = '결정 대기 — 필수 ' + left + '건을 선택해 [프롬프트로 복사] 후 채팅에 붙여넣어 주세요.';
+    }
+  }
+
+  // --- .md 본문 렌더 ---
+  renderPlanBody();
+  function renderPlanBody() {
+    const raw = (document.getElementById('plan-md').textContent || '').trim();
+    if (!raw) return;
+    document.getElementById('body-title').style.display = '';
+    const body = document.getElementById('plan-body');
+    body.style.display = '';
+    body.innerHTML = miniMarkdown(raw);
+  }
+
+  // 의존성 없는 경량 마크다운 렌더러 (중첩목록 미지원)
+  function mdEscape(str) {
+    return String(str).replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
+  }
+  function mdInline(str) {
+    let out = mdEscape(str);
+    out = out.replace(/`([^`]+)`/g, (m, code) => '<code>' + code + '</code>');
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+    return out;
+  }
+  function mdSplitRow(line) {
+    return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+  }
+  function miniMarkdown(src) {
+    const lines = src.replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let idx = 0;
+    const isSpecial = (line) =>
+      /^(#{1,6})\s/.test(line) || /^```/.test(line) || /^\s*\|.*\|\s*$/.test(line) ||
+      /^\s*([-*])\s+/.test(line) || /^\s*\d+\.\s+/.test(line) || /^\s*---+\s*$/.test(line) ||
+      /^\s*>/.test(line) || /^\s*$/.test(line);
+
+    while (idx < lines.length) {
+      const line = lines[idx];
+
+      // 코드 펜스
+      if (/^```/.test(line)) {
+        idx += 1;
+        const buf = [];
+        while (idx < lines.length && !/^```/.test(lines[idx])) { buf.push(lines[idx]); idx += 1; }
+        idx += 1;
+        html += '<pre class="md-code"><code>' + mdEscape(buf.join('\n')) + '</code></pre>';
+        continue;
+      }
+      // 표 (헤더 + 구분선)
+      if (/^\s*\|.*\|\s*$/.test(line) && idx + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[idx + 1])) {
+        const header = mdSplitRow(line);
+        idx += 2;
+        const rows = [];
+        while (idx < lines.length && /^\s*\|.*\|\s*$/.test(lines[idx])) { rows.push(mdSplitRow(lines[idx])); idx += 1; }
+        html += '<table><thead><tr>' + header.map((cell) => '<th>' + mdInline(cell) + '</th>').join('') + '</tr></thead><tbody>';
+        html += rows.map((row) => '<tr>' + row.map((cell) => '<td>' + mdInline(cell) + '</td>').join('') + '</tr>').join('');
+        html += '</tbody></table>';
+        continue;
+      }
+      // 제목
+      const heading = line.match(/^(#{1,6})\s+(.*)$/);
+      if (heading) {
+        const level = heading[1].length;
+        html += '<h' + level + '>' + mdInline(heading[2]) + '</h' + level + '>';
+        idx += 1;
+        continue;
+      }
+      // 구분선
+      if (/^\s*---+\s*$/.test(line)) { html += '<hr>'; idx += 1; continue; }
+      // 인용
+      if (/^\s*>\s?/.test(line)) {
+        const buf = [];
+        while (idx < lines.length && /^\s*>\s?/.test(lines[idx])) { buf.push(lines[idx].replace(/^\s*>\s?/, '')); idx += 1; }
+        html += '<blockquote>' + mdInline(buf.join(' ')) + '</blockquote>';
+        continue;
+      }
+      // 목록
+      if (/^\s*([-*]|\d+\.)\s+/.test(line)) {
+        const ordered = /^\s*\d+\.\s+/.test(line);
+        const buf = [];
+        while (idx < lines.length && /^\s*([-*]|\d+\.)\s+/.test(lines[idx])) {
+          buf.push(lines[idx].replace(/^\s*([-*]|\d+\.)\s+/, '')); idx += 1;
+        }
+        const items = buf.map((item) => '<li>' + mdInline(item) + '</li>').join('');
+        html += ordered ? '<ol>' + items + '</ol>' : '<ul>' + items + '</ul>';
+        continue;
+      }
+      // 빈 줄
+      if (/^\s*$/.test(line)) { idx += 1; continue; }
+      // 문단
+      const buf = [line];
+      idx += 1;
+      while (idx < lines.length && !isSpecial(lines[idx])) { buf.push(lines[idx]); idx += 1; }
+      html += '<p>' + mdInline(buf.join(' ')) + '</p>';
+    }
+    return html;
+  }
+
+  function copy(text) {
+    navigator.clipboard.writeText(text).then(showToast).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); showToast();
+    });
+  }
+  let toastTimer;
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+
+  document.getElementById('btn-copy').addEventListener('click', () => copy(buildPrompt()));
+  document.getElementById('btn-json').addEventListener('click', () => copy(buildJson()));
+  document.getElementById('notes').addEventListener('input', render);
+
+  render();
+  applyLifecycle();
+})();
+</script>
+</body>
+</html>

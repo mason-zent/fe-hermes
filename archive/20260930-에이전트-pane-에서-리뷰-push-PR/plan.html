@@ -1,0 +1,945 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>작업계획서</title>
+<!--
+  ============================================================================
+  Hermes 작업계획서 — 결정 콘솔 + 계획서 뷰 (HTML 템플릿)
+  ----------------------------------------------------------------------------
+  이 파일 하나가 작업계획서의 라이프사이클 전체를 담는다.
+    (1) 승인 전 → 상단에 .md 본문이 렌더링되고, 그 아래 "결정 콘솔"에서
+                  선택지를 고르고 [프롬프트로 복사]
+    (2) 확정 후 → 각 결정에 decided 값을 채우면 하단 결정 콘솔이 "✅ 확정" 으로
+                  잠기고, 위쪽 .md 본문이 "읽기용 계획서"로 유지된다.
+
+  사용법 (Team Lead):
+  1) 이 파일을 plans/<유형>/YYYYMMDD-제목.html 로 복사한다 (md와 동일 파일명).
+  2) 아래 두 블록만 채운다 — 스타일/스크립트(맨 아래)는 건드릴 필요 없다.
+     ⚠️ 스크립트로 자동 치환할 때는 이 헤더 주석이 끝난 뒤에서만 찾아 바꾼다.
+        주석 안의 블록 이름까지 매칭되면 주석 종료 표시가 먹혀 PLAN 전체가 주석에 갇히고
+        브라우저에서 "PLAN is not defined" 로 빈 화면이 된다. (그래서 위 [A][B] 는 태그가 아닌 script#id 표기다)
+
+     [A] script#plan-data 의 PLAN 객체
+         - title/type/scope/mdFile/summary
+         - decisions[] : .md "사용자 결정 사항"과 1:1
+           · 승인 전: options[] 만 채운다 (decided 생략)
+           · 확정 후: 각 결정에 decided 를 채운다
+                      (택1이면 문자열, 복수면 배열) → 해당 결정이 "✅ 확정"으로 잠김
+
+     [B] script#plan-md 안에 .md 본문을 그대로 붙여넣는다
+         - 이 텍스트가 결정 콘솔 위에 렌더링되어 "보기 좋은 계획서"가 된다.
+         - .md 가 단일 소스 — 수정 시 .md 와 이 블록을 같은 턴에 함께 갱신한다.
+         - Checkpoint(Status/Progress/Next)만 바뀐 경우에도 이 블록은 동기화한다.
+           단 decisions[] 는 승인된 결정이 바뀔 때만 건드린다.
+
+  지원 마크다운: 제목(#~######), 굵게(**), 인라인코드(`), 코드펜스(```),
+                 표(GFM), 목록(- * 1.), 인용(>), 구분선(---), 링크. (중첩목록 제외)
+  ============================================================================
+-->
+<script id="plan-data">
+const PLAN = {
+  "title": "에이전트 pane 에서 리뷰 · push · PR 까지",
+  "type": "refactor",
+  "scope": "프론트",
+  "mdFile": "plans/refactor/20260930-에이전트-pane-에서-리뷰-push-PR.md",
+  "summary": "/call 로 띄운 에이전트 pane 에서 리뷰·push·PR 까지 끝내 메인 헤르메스로 돌아올 일을 없앤다 (여러 레포 조율만 헤르메스에 남김).",
+  "decisions": [
+    {
+      "id": "d1",
+      "title": "D1 에이전트가 push·PR 할 수 있는 범위",
+      "desc": "이 밖의 작업은 ship.sh 가 거부하고 헤르메스로 안내합니다",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "레포 하나짜리 작업만",
+          "desc": "경량·정식 무관. 여러 레포 순서 조율만 헤르메스에 남깁니다",
+          "recommended": true
+        },
+        {
+          "label": "경량 계획서 + 레포 하나만",
+          "desc": "정식 계획서 작업은 레포 하나여도 헤르메스에서"
+        },
+        {
+          "label": "제한 없음",
+          "desc": "여러 레포 작업도 에이전트가 각자 push·PR. 순서는 사용자가 챙김"
+        }
+      ],
+      "decided": "레포 하나짜리 작업만"
+    },
+    {
+      "id": "d2",
+      "title": "D2 PR 형태",
+      "desc": "ship.sh 가 만드는 PR",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "draft PR",
+          "desc": "리뷰어 알림 없이 올리고 GitHub 에서 Ready 로 전환",
+          "recommended": true
+        },
+        {
+          "label": "일반 PR",
+          "desc": "바로 리뷰 요청 상태"
+        },
+        {
+          "label": "push 만",
+          "desc": "PR 은 사용자가 GitHub 에서 직접"
+        }
+      ],
+      "decided": "draft PR"
+    },
+    {
+      "id": "d3",
+      "title": "D3 보내기 전 확인 방식",
+      "desc": "밖으로 나가는 일이라 되돌리기 어렵습니다",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "매번 미리보기 + 선택지 확인",
+          "desc": "브랜치→base · 커밋 목록 · 검증 결과 · PR 본문을 보여 주고 확인받은 뒤 실행",
+          "recommended": true
+        },
+        {
+          "label": "\"PR 올려줘\" 가 곧 승인",
+          "desc": "미리보기 없이 바로 실행"
+        }
+      ],
+      "decided": "매번 미리보기 + 선택지 확인"
+    },
+    {
+      "id": "d4",
+      "title": "D4 리뷰와 PR 의 관계",
+      "desc": "계획서 Review 줄(reviewer 를 띄운 기록)을 기준으로 봅니다",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "권장 — 안 했으면 한 번 더 묻기",
+          "desc": "리뷰 없이도 가능하지만 확인 질문에 경고",
+          "recommended": true
+        },
+        {
+          "label": "필수",
+          "desc": "reviewer 기록이 없으면 거부"
+        },
+        {
+          "label": "상관없음",
+          "desc": "검사하지 않음"
+        }
+      ],
+      "decided": "권장 — 안 했으면 한 번 더 묻기"
+    },
+    {
+      "id": "d5",
+      "title": "D5 에이전트 pane 에서 \"리뷰해줘\" 할 때 reviewer 위치",
+      "desc": "",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "같은 탭 옆 pane",
+          "desc": "작업 pane 과 나란히 보면서 수정 지시",
+          "recommended": true
+        },
+        {
+          "label": "새 탭",
+          "desc": "작업 탭이 좁아지지 않게"
+        }
+      ],
+      "decided": "같은 탭 옆 pane"
+    },
+    {
+      "id": "d6",
+      "title": "D6 PR 제목 형식 (모든 레포 공통)",
+      "desc": "예: feat(refund): REF-3671 랜딩 SEO 기본 정보에 랜딩타입 입력 추가 — 범위는 레포별 고정값, 티켓 없으면 생략",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "type(범위): 티켓 요약",
+          "desc": "bznav 관례와 같고 어느 서비스 PR 인지 제목만 보고 앎",
+          "recommended": true
+        },
+        {
+          "label": "type: 티켓 요약",
+          "desc": "콘솔 커밋 관례와 같음. 범위 없음"
+        },
+        {
+          "label": "[티켓] type: 요약",
+          "desc": "티켓이 맨 앞"
+        }
+      ],
+      "decided": "type(범위): 티켓 요약"
+    },
+    {
+      "id": "d8",
+      "title": "D8 PR 본문 형식 (모든 레포 공통)",
+      "desc": "계획서에서 자동으로 채웁니다. 계획서 5.2절 참고",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "작업 내용 · 변경 사항 · 검증 · 확인 필요 · 스크린샷",
+          "desc": "스크린샷은 화면 변경 시에만",
+          "recommended": true
+        },
+        {
+          "label": "작업 내용 · 검증만",
+          "desc": "짧게"
+        }
+      ],
+      "decided": "작업 내용 · 변경 사항 · 검증 · 확인 필요 · 스크린샷"
+    },
+    {
+      "id": "d9",
+      "title": "D9 규칙을 각 레포에도 넣을지",
+      "desc": "",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "hermes 에만 (git.md 정본, ship.sh 가 적용)",
+          "desc": "레포는 건드리지 않음",
+          "recommended": true
+        },
+        {
+          "label": "각 레포에 pull_request_template.md 도 추가",
+          "desc": "레포마다 별도 작업·PR, 팀 합의 필요"
+        }
+      ],
+      "decided": "hermes 에만 (git.md 정본, ship.sh 가 적용)"
+    },
+    {
+      "id": "d7",
+      "title": "D7 PR 대상(base) 정하기",
+      "desc": "대부분 dev 지만 release/* 로 모으거나(rn-app·bznav) prd·dev 양쪽에 여는 경우가 있습니다",
+      "type": "single",
+      "required": true,
+      "options": [
+        {
+          "label": "prBase 기본 제안 + 다른 후보 선택지",
+          "desc": "원격의 진행 중 release/* 등을 함께 보여 주고 고름. rn-app 은 prd·dev 둘 다 선택지",
+          "recommended": true
+        },
+        {
+          "label": "prBase 고정",
+          "desc": "예외는 헤르메스에서"
+        },
+        {
+          "label": "매번 직접 입력",
+          "desc": ""
+        }
+      ],
+      "decided": "prBase 기본 제안 + 다른 후보 선택지"
+    }
+  ]
+}
+</script>
+
+<!-- [B] .md 본문을 그대로 붙여넣는다. 비워두면 본문 렌더링 영역이 숨겨진다. -->
+<script id="plan-md" type="text/markdown">
+# 에이전트 pane 에서 리뷰 · push · PR 까지
+
+## Checkpoint
+- Updated: 2026-09-30 / 헤르메스
+- Status: done
+- Scope: hermes 워크스페이스 자체 (scripts · .claude · 문서)
+- Work ref: hermes 메인 체크아웃 · main (헤르메스 자체 구조 — 워크트리 없이 main 에서 작업하는 관례)
+- Review: /Users/mason/mason-zent/hermes · 🌿 main · pane w2:p3B (reviewer)
+- Approved scope: 1절 결정 9건 모두 추천안으로 확정 (2026-09-30 사용자 "그대로 진행하자")
+
+### Progress
+- [x] 결정 확정 — D1~D9 추천안
+- [x] `scripts/ship.sh` 신규 — 미리보기/보내기 2단계, 거부 조건·draft PR·계획서 기록 → 확인: 임시 bare 원격 + gh 스텁으로 정상 1 · 거부 10경로 → 성공 조건 충족(아래 Validation)
+- [x] `commit-guard.py` — ship.sh 통과, gh pr view·list·status·checks·diff 허용, push·gh pr create·merge 차단 유지(안내 문구 ship.sh 로)
+- [x] `delegate.sh` 에이전트 지시문 — "리뷰해줘" → delegate.sh reviewer, "PR 올려줘" → ship.sh 미리보기 → AskUserQuestion → --yes
+- [x] 문서 — AGENTS.md 2.2·5절, CLAUDE.md 4·5단계·/call 행, git-workflow·dispatch-protocol, git.md "PR 올리기"·"PR 제목·본문"(정본), 에이전트 프로필 12 · rules.md 7 공통 줄, bznav·rn-app·zent-packages 개별 줄, call SKILL, commit.sh 안내, README, playbook, hermes-flow.workflow.json 카드
+- [x] reviewer 1차(w2:p3B) — 수정 필요 7건: 헤르메스 여러 레포 PR 불가 · --yes 가 초안 덮어씀 · 정식 계획서 리뷰 cwd · Review 줄만으로 리뷰 판정 · 훅 basename 예외 우회 · flow html · 잔여 문구 → 반영: --repo-agent(FE 훅 차단) · 초안 미리보기 때만 · reviewer --cwd --here + Work ref 로 레포 · scripts/review-result.sh(승인 @HEAD) · 훅 실제 경로 비교 + gh api 쓰기 차단 · reporting.md·board 문구 · frz · 본문 로컬 경로·내부 URL · reviewer 전용 머리말
+- [x] reviewer 2차 — 수정 필요 4건: gh api 붙여 쓴 옵션 우회 · 미리보기 뒤 새 커밋이면 낡은 초안 · .env.local 오탐 · flow html. 제안: --repo-agent 레포 고정 · 여러 레포 리뷰 결론 덮어씀 → flow html 외 전부 반영(초안 HEAD 기록·대조, URL 안에서만 검사, 브랜치별 Review result 줄)
+- [x] `docs/diagrams/hermes-flow.html` — 사용자가 archify deliver 실행 → 기존 레이아웃 8건으로 실패(바꾸기 전 json 도 동일, 기존 이슈 issues/20260930-hermes-flow-diagram-archify-validate.md). HTML 글자만 json 과 맞춤, 이슈에 한 줄 추가
+- [x] 커밋 f5e16a7 · push origin main · 플레이북 아티팩트 재게시
+
+### Next
+1. 없음 — 첫 실사용(에이전트 pane 에서 "PR 올려줘")에서 실제 GitHub draft PR 생성 확인
+
+### Blocked
+- 없음
+
+### Validation
+- `bash -n` ship.sh·delegate.sh·commit.sh 통과 · `py_compile` commit-guard.py 통과 · `build-derived.mjs --check` 일치
+- 훅: git push / gh pr create / bash -c "git push" / gh pr merge / ship.sh 뒤 && git push / git commit → 2 · gh pr view / gh pr list / ship.sh / commit.sh → 0
+- ship.sh (임시 bare 원격 + gh 스텁): 미리보기 0 · 제목 형식 · 티켓 누락 · 범위 불일치 · 리뷰 기록 없음 · 미커밋 · HEAD 미기록 · 여러 에이전트 · 메인 체크아웃 · 본문 plans/ 경로 · 원격에 없는 base → 모두 거부(원격 변화 없음) · 정상 → push + gh pr create --draft 호출, Commits 줄 PR 링크로 바뀜, Checkpoint - PR: 줄
+- 2차 반영 후 회귀: gh api -XPUT·-X=POST·-fquery=·-Fhead= → 2, gh api GET → 0 · --repo-agent 다른 레포 거부 · 다른 브랜치 승인만 있으면 '기록 없음' · 이 브랜치 승인 → 통과 · 미리보기 뒤 새 커밋 → 거부 · .env.local 통과 · http://*.internal 거부 · review-result 수정필요 → '승인이 아니다' 경고
+- 실제 GitHub PR 생성은 미실행(첫 실사용에서 확인)
+
+### Decisions
+- D1 레포 하나짜리 작업만(경량·정식 무관) · D2 draft PR · D3 매번 미리보기 + 선택지 확인 · D4 리뷰 권장(없으면 한 번 더 묻기) · D5 reviewer 는 같은 탭 옆 pane
+- D6 제목 `type(범위): 티켓 요약` · D7 base 는 prBase 기본 제안 + 다른 후보 선택지 · D8 본문 공통 템플릿 · D9 규칙은 hermes 에만(git.md 정본)
+
+### Commits
+- (hermes 자체 작업이라 헤르메스가 직접 커밋한다)
+
+## 1. 개요
+- 작업 유형: refactor (워크스페이스 운영 구조)
+- 요청 사항: `/call` 로 띄운 FE 에이전트 pane 에서 **리뷰 · push · PR 까지** 끝낼 수 있게 한다. 지금은 이 세 가지 때문에 매번 메인 헤르메스로 돌아와야 해서 불편하다. 레포별 헤르메스를 따로 두는 안은 pane 이 두 겹이 되고 여러 레포 순서 조율이 흩어져 채택하지 않았다
+- 대상: hermes 자체 (FE 레포 코드 변경 없음)
+- 사용자 결정 사항:
+  - D1 에이전트가 push·PR 할 수 있는 범위: **레포 하나짜리 작업만(경량·정식 무관)** (추천) / 경량 계획서 + 레포 하나만 / 제한 없음
+  - D2 PR 형태: **draft PR** (추천) / 일반 PR / push 만 (PR 은 사용자가 GitHub 에서)
+  - D3 확인 방식: **매번 에이전트가 브랜치·base·커밋 목록·검증 결과를 보여 주고 선택지로 확인** (추천) / "PR 올려줘" 라는 말이 곧 승인
+  - D4 리뷰와 PR 의 관계: **리뷰 권장, 안 했으면 PR 전에 한 번 더 묻기** (추천) / reviewer 승인이 있어야만 PR / 상관없음
+  - D5 에이전트 pane 에서 "리뷰해줘" 할 때 reviewer 위치: **같은 탭에 옆 pane 으로** (추천) / 새 탭
+  - D6 PR 제목 형식 (모든 레포 공통, 5.1절): **`type(범위): 티켓 요약`** (추천) / `type: 티켓 요약` (범위 없음) / `[티켓] type: 요약`
+  - D8 PR 본문 형식 (모든 레포 공통, 5.2절): **공통 템플릿 고정 — 작업 내용 · 변경 사항 · 검증 · 확인 필요 · 스크린샷(화면 변경 시)** (추천) / 작업 내용 · 검증만
+  - D9 규칙을 레포에도 넣을지: **hermes 에만 둔다(`docs/knowledge/common/git.md` — ship.sh 가 적용)** (추천) / 각 레포에 `.github/pull_request_template.md` 도 추가(레포별 별도 작업·PR 필요, 팀 합의 대상)
+  - D7 PR 대상(base) 정하기: **`prBase` 를 기본으로 제안하고 원격의 진행 중 `release/*`·그 밖의 브랜치를 선택지로 함께 보여 주기** (추천) / `prBase` 고정 / 매번 직접 입력
+
+## 2. 현재 상태 분석
+- `scripts/hooks/commit-guard.py` — FE 세션(`reviewer` 제외)에 PreToolUse 훅으로 걸려 `git push`·`gh pr` 을 막는다. 통과 예외는 첫 실행 토큰이 `scripts/commit.sh` 인 조각뿐
+- `scripts/agent-context.py:47-51` — 위 훅을 FE 세션 settings 에 주입
+- `scripts/commit.sh` — 워크트리·보호 브랜치·스테이징 검사 → 엄격 검증 → 커밋 → 계획서 `## Commits` 기록. **push·PR 을 새로 만들 때 이 검사·기록 방식을 그대로 따른다**
+- `scripts/delegate.sh reviewer --cwd <워크트리> --here --plan <계획서>` — reviewer 를 계획서·워크트리에 붙여 띄우는 기존 경로. `--here` 는 "지금 탭"이라 에이전트 pane 안에서 부르면 그 탭에 쪼개진다(추측입니다 — herdr `--current` 가 호출한 pane 기준인지 구현 때 확인)
+- `hermes.config.json` 의 `prBase` — PR 대상 브랜치 정본 (콘솔 dev · bznav 앱 dev · zent-packages main · rn-app prd)
+- 계획서 `## Commits` 줄 형식에 `push 여부` 칸이 이미 있다
+
+### 2.1 PR 관례 (2026-09-30 각 레포 최근 머지 PR 6건씩 확인)
+- **PR 템플릿·제목 규칙 문서는 어느 레포에도 없다**(`.github/pull_request_template.md` 없음). 제목은 사실상 **커밋 메시지 관례 그대로**
+  - 콘솔: `feat: REF-3671 설명` · web-op 은 `[REF-3624] 설명` 도 섞임 · bznav: `type(scope): 티켓 설명`(예 `feat(care): NEWCARE-651 …`, `.ai/basic-rule.md`) · rn-app: 브랜치 이름 그대로(`Feature/v5.1.2/sena 269`)
+  - 본문: 대부분 비어 있고 일부만 요약. bznav `create-pr` 스킬은 제목 기본값 = 마지막 커밋 메시지 → 확인 후 수정, 본문 `--fill`
+- **base 는 대부분 `dev` 이지만 예외가 있다**
+  - bznav: 기능 PR 을 `release/care/v.26.09.400` 같은 릴리즈 브랜치로 모으는 경우
+  - rn-app: 같은 브랜치로 `prd`·`dev` **양쪽**에 PR, 또는 `release/*` 로 모음 (`bznav-rn-app/rules.md`)
+  - zent-packages: config 는 `main` 인데 `dev` 로 간 PR 도 있다(확인 필요 — `issues/` 등록 후보)
+  - bznav `create-pr` 스킬의 base 추론(`dev-ecs`)은 낡았다(`bznav-web/rules.md`) — 따르지 않는다
+- 그래서 ship.sh 는 base 를 **자동 확정하지 않고** `prBase` 를 기본값으로 제안한 뒤 사용자가 고른다(D7). rn-app 은 "prd·dev 둘 다" 선택지를 둔다
+
+## 3. API 의존성
+- 없음. `gh` CLI 사용 (사용자 로그인 상태 전제)
+
+## 4. 설계
+### 4.1 `scripts/ship.sh` (신규) — push + PR
+```
+scripts/ship.sh --plan <계획서> --dir <워크트리> [--title "<PR 제목>"] [--dry-run]
+```
+확인하는 것 (하나라도 걸리면 아무것도 보내지 않고 멈춘다):
+- 워크트리 · 보호 브랜치 아님 · detached 아님 (commit.sh 와 같은 규칙)
+- **미커밋 변경 없음** — 커밋 안 된 게 있으면 먼저 "커밋해줘"
+- 계획서 `## Commits` 에 이 브랜치 커밋이 있고, **HEAD 가 마지막으로 검증 통과한 커밋과 같다**
+- D1 범위 검사 — 계획서가 가리키는 레포가 하나인지 (Work ref · 작업 배분). 아니면 거부하고 "헤르메스에서" 안내
+- base = D7 방식으로 사용자가 고른 브랜치(기본 제안 `prBase`). 원격에 그 브랜치가 없으면 거부. 이미 PR 이 있으면 새로 만들지 않고 push 만 하고 PR 링크를 알린다
+
+그다음: `--dry-run` 결과(브랜치 → base, 커밋 목록, 검증 결과, PR 제목·본문 미리보기)를 에이전트가 사용자에게 보여 주고 확인(D3) → 실제 실행 → 계획서 `## Commits` 의 해당 줄 push 칸 갱신 + Checkpoint 에 PR 링크.
+PR 제목·본문: 5.1·5.2 공통 형식(D6·D8). 제목이 형식에 안 맞으면(type·범위 누락 등) 보내기 전에 거부하고 고칠 값을 제안한다.
+
+### 4.2 보호 훅 예외
+- `commit-guard.py` 통과 예외에 `scripts/ship.sh` 추가. 직접 `git push`·`gh pr create` 는 계속 막는다 (안내 문구를 "ship.sh 로" 로 변경)
+- `gh pr view`·`gh pr list` 같은 읽기 전용은 허용할지 — 구현 때 판단(허용 추천, ship.sh 가 필요)
+
+### 4.3 에이전트 안에서 리뷰
+- 에이전트 컨텍스트(`agent-context.py` 가 만드는 안내)에 "사용자가 리뷰해줘 → `delegate.sh reviewer --cwd <내 워크트리> --here --plan <내 계획서>`" 추가. reviewer 결과는 사용자가 그 pane 에서 보고, 수정 필요 항목은 원래 에이전트 pane 에 말한다
+- D4 에 따라 ship.sh 가 계획서 `- Review:` 줄 유무를 보고 경고/거부
+
+### 4.4 문서
+- `CLAUDE.md` 4·5단계, Skills 표 `/call` 행 · `AGENTS.md` 5절(push·PR 금지 → 조건부 허용) · `.claude/rules/git-workflow.md` · `dispatch-protocol.md` 리마인드 문구 · `docs/knowledge/common/git.md` (ship.sh 절 추가) · `.claude/skills/call/SKILL.md` · 에이전트 프로필 공통 문구 · `README.md` · `docs/playbook.html`(`/call` 카드·작업 흐름 5단계·규칙 카드) · `docs/diagrams/hermes-flow.workflow.json` 카드 + HTML 재생성 · 아티팩트 재게시
+
+## 5. 공통 스펙
+### 5.1 PR 제목 (D6 추천안)
+```
+type(범위): 티켓 요약
+feat(refund): REF-3671 랜딩 SEO 기본 정보에 랜딩타입 입력 추가
+fix(care-web): NEWCARE-651 프리미엄 랜딩 OG 값 적용
+chore(brics-fe-ui): REF-3820 버튼 variant 추가
+```
+- `type`: feat · fix · refactor · chore · docs · style · test (커밋과 같은 목록)
+- `범위`: 레포별 고정값 — refund · hub · care · op · refund-web · care-web · brand-web · sena-web · plus-web · packages(bznav `@repo/*`, 여럿이면 `packages`) · 발행 패키지명(zent-packages) · app(rn-app). ship.sh 가 계획서 대상으로 채운다
+- `티켓`: 있으면 필수, 없으면 생략. 요약은 한국어 한 줄(50자 안팎), 마침표 없음
+- 기본값은 계획서 제목·마지막 커밋에서 만들고, 사용자에게 보여 주고 그대로/수정 선택
+
+### 5.2 PR 본문 (D8 추천안)
+```markdown
+## 작업 내용
+- 왜·무엇을 (계획서 요청 요약, 2~4줄)
+
+## 변경 사항
+- 경로 — 주요 변경
+
+## 검증
+(scripts/verify 출력 표 그대로 · 실행 못 한 것은 "실행 못 함")
+
+## 확인 필요
+- 남은 위험 · 다른 서비스 영향 · 리뷰어가 볼 곳 (없으면 "없음")
+
+## 스크린샷
+(화면 변경이 있을 때만 — 없으면 절을 뺀다)
+
+---
+티켓: REF-1234
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+- 계획서 `## 지시`·`## 결과`·`### Validation` 에서 채운다. hermes 내부 경로(`plans/…`)는 적지 않는다(레포 밖 로컬 파일)
+- `.env`·토큰·내부 URL 은 넣지 않는다
+
+### 5.3 그 밖
+- 에이전트 pane 에서 사용자가 쓰는 말: "커밋해줘" → commit.sh · "리뷰해줘" → reviewer pane · "PR 올려줘" → ship.sh
+- 여러 레포 작업은 지금처럼 헤르메스가 순서를 정해 push·PR
+
+## 6. 작업 배분
+| 담당 | 작업 내용 | 의존성 |
+|---|---|---|
+| 헤르메스 | ship.sh · commit-guard 예외 · agent-context 안내 (hermes 자체 코드) | 결정 확정 |
+| 헤르메스 | 4.4 문서 일괄 | 스크립트 완료 |
+| reviewer | 훅 우회 가능성 · ship.sh 검사 누락 · 문서 정합성 | 위 완료 후 |
+
+## 7. 검증 방법
+- `bash -n scripts/ship.sh` · `python3 -m py_compile scripts/hooks/commit-guard.py`
+- 훅: `git push` · `gh pr create` · `bash -c "git push"` 는 막히고 `scripts/ship.sh …` 는 통과 → 확인: 훅에 JSON 입력을 넣어 exit code → 성공 조건: 2 / 2 / 2 / 0
+- ship.sh 거부 경로: 메인 체크아웃 · 보호 브랜치 · 미커밋 있음 · Commits 없음 · HEAD≠검증 커밋 · 레포 여럿 → 각각 메시지와 함께 exit≠0, 원격 변화 없음
+- ship.sh 정상 경로: 실제 테스트 레포 대신 `--dry-run` 으로 브랜치·base·본문 미리보기 확인. 실제 push·PR 은 사용자 확인 뒤 한 번 실사용으로 확인
+- 잔여 문구 grep: "push·PR 은 하지 않는다" · "헤르메스에게" 류가 새 규칙과 어긋나는 곳 0건
+
+</script>
+
+<style>
+  :root {
+    --bg: #f1f5f9;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --primary: #2563eb;
+    --primary-weak: #eff6ff;
+    --primary-border: #bfdbfe;
+    --good: #16a34a;
+    --good-weak: #f0fdf4;
+    --good-border: #bbf7d0;
+    --warn: #d97706;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(15, 23, 42, .08), 0 1px 2px rgba(15, 23, 42, .04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Apple SD Gothic Neo',
+      'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 200px; }
+
+  header.plan-head {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .plan-head h1 { margin: 0 0 6px; font-size: 22px; letter-spacing: -.01em; }
+  .plan-summary { color: var(--muted); margin: 8px 0 16px; font-size: 15px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+    background: var(--primary-weak); color: var(--primary); border: 1px solid var(--primary-border);
+  }
+  .badge.type-feature { background:#eff6ff; color:#2563eb; border-color:#bfdbfe; }
+  .badge.type-bugfix  { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
+  .badge.type-refactor{ background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe; }
+  .badge.scope { background:#f8fafc; color:var(--muted); border-color:var(--border); }
+  .md-link { display:inline-block; margin-top:14px; font-size:13px; color:var(--muted); text-decoration:none; }
+  .md-link:hover { color: var(--primary); text-decoration: underline; }
+  .md-link code { background:#f1f5f9; padding:2px 6px; border-radius:6px; font-size:12px; }
+
+  /* 상태 배너 */
+  .statusbar {
+    display:flex; align-items:center; gap:10px;
+    border-radius: var(--radius); padding: 12px 18px; margin: 24px 0;
+    font-size: 14px; font-weight: 600; border: 1px solid var(--border);
+  }
+  .statusbar.pending { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+  .statusbar.confirmed { background:var(--good-weak); border-color:var(--good-border); color:#166534; }
+  .statusbar .dot { width:9px; height:9px; border-radius:50%; flex:none; }
+  .statusbar.pending .dot { background:#d97706; }
+  .statusbar.confirmed .dot { background:var(--good); }
+
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .05em; margin: 0 0 12px 2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card.unresolved { border-color: #fcd34d; }
+  .card.confirmed { border-color: var(--good-border); background: #fcfdfc; }
+  .card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .card-title { font-size: 16px; font-weight: 700; margin: 0; }
+  .card-desc { color: var(--muted); font-size: 14px; margin: 4px 0 16px; }
+  .pick-tag { font-size:11px; font-weight:700; color:var(--muted); white-space:nowrap;
+    border:1px solid var(--border); border-radius:999px; padding:2px 9px; }
+  .pick-tag.done { color:var(--good); border-color:var(--good-border); background:var(--good-weak); }
+
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    display: flex; align-items: flex-start; gap: 12px;
+    border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px;
+    cursor: pointer; transition: border-color .12s, background .12s;
+    background: #fff;
+  }
+  .option:hover { border-color: #cbd5e1; background: #f8fafc; }
+  .option.selected { border-color: var(--primary); background: var(--primary-weak); }
+  .option .marker {
+    flex: none; width: 20px; height: 20px; margin-top: 1px;
+    border: 2px solid #cbd5e1; background:#fff; display:grid; place-items:center;
+  }
+  .option[data-type="single"] .marker { border-radius: 50%; }
+  .option[data-type="multi"] .marker { border-radius: 6px; }
+  .option.selected .marker { border-color: var(--primary); background: var(--primary); }
+  .option.selected .marker::after {
+    content: ''; width: 8px; height: 8px; background:#fff; border-radius:2px;
+  }
+  .option[data-type="single"].selected .marker::after { border-radius: 50%; }
+  .option .opt-body { flex: 1; }
+  .opt-label { font-weight: 600; font-size: 14.5px; }
+  .opt-label .rec { font-size:11px; font-weight:700; color:var(--good); margin-left:6px;
+    background:var(--good-weak); border:1px solid var(--good-border); padding:1px 7px; border-radius:999px; }
+  .opt-desc { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .custom-input { margin-top: 8px; width: 100%; border:1.5px solid var(--border);
+    border-radius:8px; padding:8px 10px; font-size:14px; font-family:inherit; display:none; }
+  .option.selected .custom-input { display:block; }
+
+  /* 확정(locked) 카드 — 선택된 것만 강조, 나머지는 흐리게, 클릭 비활성 */
+  .card.confirmed .options { cursor: default; }
+  .card.confirmed .option { cursor: default; }
+  .card.confirmed .option:hover { border-color: var(--border); background: #fff; }
+  .card.confirmed .option.selected { border-color: var(--good-border); background: var(--good-weak); }
+  .card.confirmed .option.selected .marker { border-color: var(--good); background: var(--good); }
+  .card.confirmed .option:not(.selected) { opacity: .45; }
+
+  .notes-area { width:100%; min-height:70px; border:1.5px solid var(--border); border-radius:10px;
+    padding:12px 14px; font-size:14px; font-family:inherit; resize:vertical; }
+
+  /* 계획서 본문(.md 렌더) */
+  .plan-body {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px 32px; box-shadow: var(--shadow); margin-top: 8px;
+  }
+  .plan-body h1, .plan-body h2, .plan-body h3, .plan-body h4, .plan-body h5, .plan-body h6 {
+    line-height: 1.3; letter-spacing: -.01em; margin: 1.4em 0 .5em;
+  }
+  .plan-body > :first-child { margin-top: 0; }
+  .plan-body h1 { font-size: 22px; border-bottom: 2px solid var(--border); padding-bottom: .3em; }
+  .plan-body h2 { font-size: 19px; border-bottom: 1px solid var(--border); padding-bottom: .25em; }
+  .plan-body h3 { font-size: 16.5px; }
+  .plan-body h4 { font-size: 15px; color: #334155; }
+  .plan-body p { margin: .6em 0; font-size: 14.5px; }
+  .plan-body ul, .plan-body ol { margin: .5em 0; padding-left: 1.4em; font-size: 14.5px; }
+  .plan-body li { margin: .25em 0; }
+  .plan-body strong { font-weight: 700; color: #0f172a; }
+  .plan-body code {
+    background: #f1f5f9; color: #be123c; padding: 1.5px 6px; border-radius: 6px;
+    font-size: 12.8px; font-family: 'SF Mono', Menlo, Consolas, monospace;
+  }
+  .plan-body pre.md-code {
+    background: #0f172a; color: #e2e8f0; border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; margin: .8em 0;
+  }
+  .plan-body pre.md-code code { background: none; color: inherit; padding: 0; font-size: 12.8px; }
+  .plan-body blockquote {
+    margin: .8em 0; padding: 8px 16px; border-left: 4px solid var(--primary-border);
+    background: var(--primary-weak); color: #334155; border-radius: 0 8px 8px 0; font-size: 14px;
+  }
+  .plan-body hr { border: none; border-top: 1px solid var(--border); margin: 1.6em 0; }
+  .plan-body a { color: var(--primary); text-decoration: none; }
+  .plan-body a:hover { text-decoration: underline; }
+  .plan-body table {
+    border-collapse: collapse; width: 100%; margin: .9em 0; font-size: 13.5px;
+    display: block; overflow-x: auto;
+  }
+  .plan-body th, .plan-body td { border: 1px solid var(--border); padding: 7px 11px; text-align: left; vertical-align: top; }
+  .plan-body th { background: #f8fafc; font-weight: 700; white-space: nowrap; }
+  .plan-body tbody tr:nth-child(even) { background: #fcfdfe; }
+
+  /* 하단 고정 액션 바 */
+  .actionbar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(15,23,42,.06);
+    padding: 14px 20px;
+  }
+  .actionbar-inner { max-width: 880px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+  .status { font-size: 13px; color: var(--muted); flex: 1; }
+  .status b { color: var(--text); }
+  button {
+    font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    border-radius: 9px; padding: 11px 18px; border: 1px solid var(--border);
+    background: #fff; color: var(--text); transition: filter .12s, background .12s;
+  }
+  button:hover { background: #f8fafc; }
+  button.primary { background: var(--primary); color:#fff; border-color: var(--primary); }
+  button.primary:hover { filter: brightness(1.06); background: var(--primary); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+
+  details.preview { margin: 8px 0 24px; }
+  details.preview summary { cursor:pointer; font-size:13px; color:var(--muted); padding:6px 0; }
+  pre.prompt-out {
+    background:#0f172a; color:#e2e8f0; border-radius:10px; padding:16px 18px;
+    font-size:13px; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+    font-family: 'SF Mono', Menlo, Consolas, monospace; margin: 4px 0 0;
+  }
+  .toast {
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--good); color:#fff; padding: 10px 20px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s; box-shadow: var(--shadow); z-index: 50;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="plan-head">
+    <h1 id="p-title"></h1>
+    <p class="plan-summary" id="p-summary"></p>
+    <div class="badges">
+      <span class="badge" id="p-type"></span>
+      <span class="badge scope" id="p-scope"></span>
+    </div>
+    <a class="md-link" id="p-mdlink" href="#"></a>
+  </header>
+
+  <p class="section-title" id="body-title" style="display:none">작업계획서 상세</p>
+  <article class="plan-body" id="plan-body" style="display:none"></article>
+
+  <div class="statusbar" id="statusbar"><span class="dot"></span><span id="statusbar-text"></span></div>
+
+  <div id="decisions-wrap">
+    <p class="section-title" id="decisions-title">결정 사항 — 선택 후 하단 [프롬프트로 복사]</p>
+    <div id="decisions"></div>
+
+    <div class="card" id="notes-card">
+      <h3 class="card-title">추가 메모 (선택)</h3>
+      <p class="card-desc">결정 외에 전달할 제약·우선순위·주의사항이 있으면 적어주세요.</p>
+      <textarea class="notes-area" id="notes" placeholder="예: 마이그레이션은 이번 배포에 포함하지 말 것"></textarea>
+    </div>
+
+    <details class="preview">
+      <summary>복사될 프롬프트 미리보기</summary>
+      <pre class="prompt-out" id="preview"></pre>
+    </details>
+  </div>
+</div>
+
+<div class="actionbar" id="actionbar">
+  <div class="actionbar-inner">
+    <div class="status" id="status"></div>
+    <button id="btn-json">JSON 복사</button>
+    <button class="primary" id="btn-copy">프롬프트로 복사</button>
+  </div>
+</div>
+<div class="toast" id="toast">복사되었습니다</div>
+
+<script>
+(function () {
+  const state = {}; // decisionId -> { picks: Set, custom: '' }
+
+  const el = (tag, cls, html) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (html != null) node.innerHTML = html;
+    return node;
+  };
+  const escapeText = (str) => String(str).replace(/[&<>"]/g, (ch) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // decided 값을 배열로 정규화
+  const decidedList = (dec) => {
+    if (dec.decided == null) return null;
+    return Array.isArray(dec.decided) ? dec.decided : [dec.decided];
+  };
+  const isConfirmed = (dec) => decidedList(dec) !== null;
+  // 모든 필수 결정에 decided 가 채워졌는가 → 확정 모드
+  const allConfirmed = () => PLAN.decisions.length > 0 &&
+    PLAN.decisions.every((dec) => !dec.required || isConfirmed(dec));
+
+  // --- 헤더 렌더 ---
+  document.getElementById('p-title').textContent = PLAN.title;
+  document.getElementById('p-summary').textContent = PLAN.summary || '';
+  const typeBadge = document.getElementById('p-type');
+  typeBadge.textContent = PLAN.type;
+  typeBadge.classList.add('type-' + PLAN.type);
+  document.getElementById('p-scope').textContent = '영향 범위: ' + PLAN.scope;
+  const mdLink = document.getElementById('p-mdlink');
+  mdLink.innerHTML = '원본 계획서 → <code>' + escapeText(PLAN.mdFile) + '</code>';
+  mdLink.href = PLAN.mdFile.split('/').pop();
+
+  // --- 결정 카드 렌더 ---
+  const container = document.getElementById('decisions');
+  PLAN.decisions.forEach((dec) => {
+    const confirmed = isConfirmed(dec);
+    const preset = decidedList(dec) || [];
+    state[dec.id] = { picks: new Set(preset), custom: '' };
+
+    const card = el('div', 'card' + (confirmed ? ' confirmed' : ''));
+    card.dataset.id = dec.id;
+    const reqMark = dec.required ? ' *' : '';
+    card.appendChild(el('div', 'card-head',
+      '<h3 class="card-title">' + escapeText(dec.title) + reqMark + '</h3>' +
+      '<span class="pick-tag">' + (dec.type === 'multi' ? '복수 선택' : '택1') + '</span>'));
+    if (dec.desc) card.appendChild(el('p', 'card-desc', escapeText(dec.desc)));
+
+    const opts = el('div', 'options');
+    dec.options.forEach((opt) => {
+      const row = el('div', 'option');
+      row.dataset.type = dec.type;
+      if (preset.includes(opt.label)) row.classList.add('selected');
+      const rec = opt.recommended ? '<span class="rec">추천</span>' : '';
+      const desc = opt.desc ? '<div class="opt-desc">' + escapeText(opt.desc) + '</div>' : '';
+      const customField = opt.custom
+        ? '<input class="custom-input" placeholder="직접 입력" />' : '';
+      row.innerHTML =
+        '<div class="marker"></div>' +
+        '<div class="opt-body"><div class="opt-label">' + escapeText(opt.label) + rec + '</div>' +
+        desc + customField + '</div>';
+      if (!confirmed) {
+        row.addEventListener('click', (ev) => {
+          if (ev.target.classList.contains('custom-input')) return;
+          toggle(dec, opt, row, opts);
+        });
+        const customInput = row.querySelector('.custom-input');
+        if (customInput) customInput.addEventListener('input', () => {
+          state[dec.id].custom = customInput.value;
+          render();
+        });
+      }
+      opts.appendChild(row);
+    });
+    card.appendChild(opts);
+    container.appendChild(card);
+  });
+
+  function toggle(dec, opt, row, opts) {
+    const picks = state[dec.id].picks;
+    if (dec.type === 'single') {
+      picks.clear();
+      opts.querySelectorAll('.option').forEach((node) => node.classList.remove('selected'));
+      picks.add(opt.label);
+      row.classList.add('selected');
+    } else {
+      if (picks.has(opt.label)) { picks.delete(opt.label); row.classList.remove('selected'); }
+      else { picks.add(opt.label); row.classList.add('selected'); }
+    }
+    render();
+  }
+
+  // --- 선택 결과 → 텍스트 ---
+  function valueFor(dec) {
+    const st = state[dec.id];
+    const labels = [...st.picks].map((label) => {
+      const opt = dec.options.find((option) => option.label === label);
+      if (opt && opt.custom && st.custom.trim()) return st.custom.trim();
+      return label;
+    });
+    return labels.join(', ');
+  }
+
+  function unresolved() {
+    return PLAN.decisions.filter((dec) => dec.required && state[dec.id].picks.size === 0);
+  }
+
+  function buildPrompt() {
+    const lines = [];
+    lines.push('[작업계획서 결정사항 확정] ' + PLAN.title);
+    lines.push('');
+    lines.push('아래 결정사항으로 ' + PLAN.mdFile + ' 계획서를 확정하고 진행해주세요.');
+    lines.push('');
+    PLAN.decisions.forEach((dec, idx) => {
+      const val = valueFor(dec) || '(미결정)';
+      lines.push((idx + 1) + '. ' + dec.title + ': ' + val);
+    });
+    const notes = document.getElementById('notes').value.trim();
+    lines.push('');
+    lines.push('추가 메모: ' + (notes || '(없음)'));
+    return lines.join('\n');
+  }
+
+  function buildJson() {
+    const obj = { title: PLAN.title, mdFile: PLAN.mdFile, decisions: {}, notes: document.getElementById('notes').value.trim() };
+    PLAN.decisions.forEach((dec) => { obj.decisions[dec.title] = valueFor(dec); });
+    return JSON.stringify(obj, null, 2);
+  }
+
+  function render() {
+    PLAN.decisions.forEach((dec) => {
+      const card = container.querySelector('[data-id="' + dec.id + '"]');
+      const tag = card.querySelector('.pick-tag');
+      const decided = state[dec.id].picks.size > 0;
+      card.classList.toggle('unresolved', dec.required && !decided && !isConfirmed(dec));
+      if (decided) {
+        tag.classList.add('done');
+        tag.textContent = (isConfirmed(dec) ? '✅ 확정 · ' : '✓ ') + valueFor(dec);
+      } else {
+        tag.classList.remove('done');
+        tag.textContent = dec.type === 'multi' ? '복수 선택' : '택1';
+      }
+    });
+    const left = unresolved();
+    const status = document.getElementById('status');
+    if (left.length === 0) status.innerHTML = '<b>모든 필수 결정 완료.</b> 복사해서 채팅에 붙여넣으세요.';
+    else status.innerHTML = '필수 결정 <b>' + left.length + '개</b> 남음: ' +
+      left.map((dec) => escapeText(dec.title)).join(', ');
+    document.getElementById('btn-copy').disabled = left.length > 0;
+    document.getElementById('preview').textContent = buildPrompt();
+  }
+
+  // --- 라이프사이클 UI: 결정 콘솔 / 확정 뷰 전환 ---
+  function applyLifecycle() {
+    const confirmed = allConfirmed();
+    const bar = document.getElementById('statusbar');
+    const barText = document.getElementById('statusbar-text');
+    if (confirmed) {
+      bar.className = 'statusbar confirmed';
+      barText.textContent = '✅ 확정 완료 — 위 작업계획서가 확정되었습니다. (아래 결정 카드는 잠금 표시)';
+      document.getElementById('decisions-title').textContent = '확정된 결정 사항';
+      // 확정되면 메모 입력/미리보기/액션바는 감춰 읽기용으로 전환
+      document.getElementById('notes-card').style.display = 'none';
+      document.querySelector('details.preview').style.display = 'none';
+      document.getElementById('actionbar').style.display = 'none';
+      document.querySelector('.wrap').style.paddingBottom = '60px';
+    } else {
+      bar.className = 'statusbar pending';
+      const left = PLAN.decisions.filter((dec) => dec.required && !isConfirmed(dec)).length;
+      barText.textContent = '결정 대기 — 필수 ' + left + '건을 선택해 [프롬프트로 복사] 후 채팅에 붙여넣어 주세요.';
+    }
+  }
+
+  // --- .md 본문 렌더 ---
+  renderPlanBody();
+  function renderPlanBody() {
+    const raw = (document.getElementById('plan-md').textContent || '').trim();
+    if (!raw) return;
+    document.getElementById('body-title').style.display = '';
+    const body = document.getElementById('plan-body');
+    body.style.display = '';
+    body.innerHTML = miniMarkdown(raw);
+  }
+
+  // 의존성 없는 경량 마크다운 렌더러 (중첩목록 미지원)
+  function mdEscape(str) {
+    return String(str).replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]));
+  }
+  function mdInline(str) {
+    let out = mdEscape(str);
+    out = out.replace(/`([^`]+)`/g, (m, code) => '<code>' + code + '</code>');
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+    return out;
+  }
+  function mdSplitRow(line) {
+    return line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+  }
+  function miniMarkdown(src) {
+    const lines = src.replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let idx = 0;
+    const isSpecial = (line) =>
+      /^(#{1,6})\s/.test(line) || /^```/.test(line) || /^\s*\|.*\|\s*$/.test(line) ||
+      /^\s*([-*])\s+/.test(line) || /^\s*\d+\.\s+/.test(line) || /^\s*---+\s*$/.test(line) ||
+      /^\s*>/.test(line) || /^\s*$/.test(line);
+
+    while (idx < lines.length) {
+      const line = lines[idx];
+
+      // 코드 펜스
+      if (/^```/.test(line)) {
+        idx += 1;
+        const buf = [];
+        while (idx < lines.length && !/^```/.test(lines[idx])) { buf.push(lines[idx]); idx += 1; }
+        idx += 1;
+        html += '<pre class="md-code"><code>' + mdEscape(buf.join('\n')) + '</code></pre>';
+        continue;
+      }
+      // 표 (헤더 + 구분선)
+      if (/^\s*\|.*\|\s*$/.test(line) && idx + 1 < lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[idx + 1])) {
+        const header = mdSplitRow(line);
+        idx += 2;
+        const rows = [];
+        while (idx < lines.length && /^\s*\|.*\|\s*$/.test(lines[idx])) { rows.push(mdSplitRow(lines[idx])); idx += 1; }
+        html += '<table><thead><tr>' + header.map((cell) => '<th>' + mdInline(cell) + '</th>').join('') + '</tr></thead><tbody>';
+        html += rows.map((row) => '<tr>' + row.map((cell) => '<td>' + mdInline(cell) + '</td>').join('') + '</tr>').join('');
+        html += '</tbody></table>';
+        continue;
+      }
+      // 제목
+      const heading = line.match(/^(#{1,6})\s+(.*)$/);
+      if (heading) {
+        const level = heading[1].length;
+        html += '<h' + level + '>' + mdInline(heading[2]) + '</h' + level + '>';
+        idx += 1;
+        continue;
+      }
+      // 구분선
+      if (/^\s*---+\s*$/.test(line)) { html += '<hr>'; idx += 1; continue; }
+      // 인용
+      if (/^\s*>\s?/.test(line)) {
+        const buf = [];
+        while (idx < lines.length && /^\s*>\s?/.test(lines[idx])) { buf.push(lines[idx].replace(/^\s*>\s?/, '')); idx += 1; }
+        html += '<blockquote>' + mdInline(buf.join(' ')) + '</blockquote>';
+        continue;
+      }
+      // 목록
+      if (/^\s*([-*]|\d+\.)\s+/.test(line)) {
+        const ordered = /^\s*\d+\.\s+/.test(line);
+        const buf = [];
+        while (idx < lines.length && /^\s*([-*]|\d+\.)\s+/.test(lines[idx])) {
+          buf.push(lines[idx].replace(/^\s*([-*]|\d+\.)\s+/, '')); idx += 1;
+        }
+        const items = buf.map((item) => '<li>' + mdInline(item) + '</li>').join('');
+        html += ordered ? '<ol>' + items + '</ol>' : '<ul>' + items + '</ul>';
+        continue;
+      }
+      // 빈 줄
+      if (/^\s*$/.test(line)) { idx += 1; continue; }
+      // 문단
+      const buf = [line];
+      idx += 1;
+      while (idx < lines.length && !isSpecial(lines[idx])) { buf.push(lines[idx]); idx += 1; }
+      html += '<p>' + mdInline(buf.join(' ')) + '</p>';
+    }
+    return html;
+  }
+
+  function copy(text) {
+    navigator.clipboard.writeText(text).then(showToast).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); showToast();
+    });
+  }
+  let toastTimer;
+  function showToast() {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
+  }
+
+  document.getElementById('btn-copy').addEventListener('click', () => copy(buildPrompt()));
+  document.getElementById('btn-json').addEventListener('click', () => copy(buildJson()));
+  document.getElementById('notes').addEventListener('input', render);
+
+  render();
+  applyLifecycle();
+})();
+</script>
+</body>
+</html>

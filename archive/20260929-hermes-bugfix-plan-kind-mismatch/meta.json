@@ -1,0 +1,10 @@
+{
+  "archivedAt": "2026-09-30 14:57",
+  "title": "/bugfix 는 정식 계획서가 기본인데 CLAUDE.md·AGENTS.md 는 버그 하나를 경량으로 분류",
+  "kind": "issue",
+  "from": {
+    "issue": "issues/20260929-hermes-bugfix-plan-kind-mismatch.md",
+    "plan": null,
+    "html": null
+  }
+}
