@@ -492,7 +492,8 @@ claude
           <div class="flow"><span>의심 서비스</span><span>원인 추적</span><span class="hi">계획서</span><span class="hi">승인</span><span>디스패치</span><span>reviewer</span><span>보고</span></div>
           <dl>
             <dt>언제</dt><dd>재현되는 오동작. 원인 파악이 먼저 필요한 경우</dd>
-            <dt>예외</dt><dd>"바로 고쳐"라고 명시하면 결정 콘솔 없이 <strong>경량 계획서</strong>로 바로 디스패치. 계획서 자체는 건너뛰지 않습니다</dd>
+            <dt>계획서</dt><dd>단일 버그는 <strong>경량 계획서</strong>(사용자 지시가 곧 승인). 여러 레포·API·구조 변경이나 결정이 필요하면 정식(결정 콘솔)</dd>
+            <dt>예외</dt><dd>정식 대상이어도 "바로 고쳐"라고 명시하면 경량으로 바로 디스패치. 계획서 자체는 건너뛰지 않습니다</dd>
           </dl>
 <pre><code>/bugfix refund 파트너 목록 페이지네이션이 2페이지에서 멈춤
 /bugfix hub 메시지 큐에서 대량 발송 모달이 닫히지 않음</code></pre>
