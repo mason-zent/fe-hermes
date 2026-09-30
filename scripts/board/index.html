@@ -28,6 +28,12 @@
   .live .tip::before { content: ''; position: absolute; top: -5px; left: 12px; border: 5px solid transparent; border-top: 0; border-bottom-color: var(--text); }
   .live:hover .tip, .live:focus-visible .tip { display: flex; }
   .live .tip:empty, .live .tip span:empty { display: none; }
+  /* 제목 앞 점이 연결 상태 — 정상일 땐 글자 없이 점만, 끊김·다른 탭일 때만 옆에 안내 */
+  header h1.live { font-size: 16px; color: var(--text); gap: 8px; line-height: 1; }
+  /* 한글 글꼴은 글자가 줄 가운데보다 살짝 위에 그려져 점을 그만큼 올린다 */
+  header h1.live .dot { transform: translateY(-1px); }
+  .live-note { font-size: 12px; color: var(--muted); }
+  .live-note:empty { display: none; }
   .usage { margin-left: auto; display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; font-size: 12px; }
   .usage[hidden] { display: none; }
   main[hidden] { display: none; }
@@ -162,13 +168,13 @@
 </head>
 <body>
 <header>
-  <h1>현황판</h1>
+  <h1 class="live" tabindex="0"><span id="live-dot" class="dot"></span>현황판
+    <span class="tip" role="tooltip"><span id="live-state"></span><span id="updated"></span><span id="sync"></span></span></h1>
   <nav class="tabs" role="tablist" aria-label="보기">
     <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true">현황</button>
     <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
   </nav>
-  <span class="live" tabindex="0"><span id="live-dot" class="dot"></span><span id="live-text">연결 중…</span>
-    <span class="tip" role="tooltip"><span id="updated"></span><span id="sync"></span></span></span>
+  <span class="live-note" id="live-text">연결 중…</span>
   <div class="usage" id="usage" hidden></div>
 </header>
 <main id="view-now">
@@ -959,6 +965,7 @@
   const pause = () => {
     if (source) { source.close(); source = null; }
     document.getElementById('live-dot').className = 'dot';
+    document.getElementById('live-state').textContent = '';
     document.getElementById('live-text').innerHTML = '다른 탭에서 보고 있어요 · <a href="#" id="take-over">여기서 보기</a>';
     document.getElementById('take-over').onclick = (event) => { event.preventDefault(); claim(); };
   };
@@ -973,7 +980,8 @@
     source = new EventSource(`/events?boot=${BOOT}`);
     source.onopen = () => {
       document.getElementById('live-dot').className = 'dot on';
-      document.getElementById('live-text').textContent = '실시간';
+      document.getElementById('live-text').textContent = '';
+      document.getElementById('live-state').textContent = '실시간 연결됨';
     };
     source.onmessage = (event) => {
       const state = JSON.parse(event.data);
@@ -985,6 +993,7 @@
     source.onerror = () => {
       document.getElementById('live-dot').className = 'dot off';
       document.getElementById('live-text').textContent = '서버 끊김 — 다시 연결 중';
+      document.getElementById('live-state').textContent = '';
     };
   };
   // ?once — SSE 없이 한 번만 그린다 (캡처·확인용)
