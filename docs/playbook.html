@@ -294,10 +294,9 @@
   <header>
     <div class="eyebrow">Frontend Agent Team · Claude Code Workspace</div>
     <h1>Hermes 플레이북</h1>
-    <p class="lede">헤르메스는 레포 7개 — 운영 콘솔·내부 4개, 비즈넵 사용자 웹 모노레포(앱 5개), 공유 패키지, 비즈넵 모바일 앱 — 를 담당하는 FE 에이전트 팀의 팀 리드입니다. 요청을 받으면 담당 서비스를 찾아 계획서를 쓰고, 승인 후 에이전트에게 병렬로 배분하고, 결과를 검증해 보고합니다. 이 문서는 팀에서 헤르메스를 쓰는 방법을 정리한 가이드입니다.</p>
     <div class="meta">
       <span>path repos/hermes</span>
-      <span>updated 2026-09-15</span>
+      <span>updated 2026-09-30</span>
       <span>agents 13 · skills 6</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
@@ -601,32 +600,34 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="flow">
       <h2>작업 흐름</h2>
-      <p>헤르메스는 어떤 요청이든 아래 순서로 움직입니다. 핵심은 2단계입니다. 승인 전에는 어떤 에이전트도 파일을 건드리지 않습니다.</p>
+      <p>헤르메스는 어떤 요청이든 아래 순서로 움직입니다. <strong>모든 작업은 계획서 하나에 묶이고</strong>, 확정 전에는 어떤 에이전트도 파일을 건드리지 않습니다. 진행 상황은 현황판(<code>/board</code>)에서 실시간으로 봅니다. 원본은 <code>CLAUDE.md</code> "작업 흐름"입니다.</p>
       <div class="steps">
         <div class="step" data-n="1">
-          <h3>분석 · 계획서 작성</h3>
+          <h3>요청 · 계획서</h3>
           <div class="who">헤르메스</div>
           <ul>
-            <li>대상 서비스를 정하고, 해당 레포에서 관련 기존 코드와 재사용 가능한 컴포넌트·훅·API 생성물을 찾습니다.</li>
-            <li><code>plans/유형/YYYYMMDD-제목.md</code>와 같은 이름의 <code>.html</code>을 한 쌍으로 만듭니다. md는 상세 스펙, html은 결정 콘솔 겸 읽기 뷰입니다.</li>
-            <li>백엔드나 공유 패키지 변경이 필요하면 "외부 의존"으로 따로 적습니다.</li>
+            <li>요청은 세 갈래로 들어옵니다 — <strong>대화</strong>(담당자를 모르거나 여러 레포·기능·버그 원인 찾기), <strong><code>/call &lt;에이전트&gt;</code></strong>(담당자를 알 때), <strong>현황판 이슈 카드의 [처리 시작]</strong>.</li>
+            <li>대상 서비스를 정하고 관련 코드를 탐색합니다. "케어·환급"만 나오면 운영 콘솔인지 사용자 웹인지 묻습니다.</li>
+            <li><strong>정식 계획서</strong> — 새 기능·여러 레포·API·구조 변경. <code>plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md</code> + 같은 이름의 <code>.html</code>(결정 콘솔).</li>
+            <li><strong>경량 계획서</strong> — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. <code>plans/task/…md</code> 하나.</li>
+            <li>그 자리에서 고치지 않은 발견은 <code>issues/*.md</code>로 등록합니다.</li>
           </ul>
         </div>
         <div class="step" data-n="2">
           <h3>사용자 승인</h3>
           <div class="who">사용자</div>
           <ul>
-            <li>HTML을 열어 갈리는 선택지를 고르고 <strong>[프롬프트로 복사]</strong>를 눌러 채팅에 붙여넣습니다.</li>
-            <li>헤르메스가 결정대로 md를 확정하고 html에 <code>decided</code>를 채우면 "확정 완료" 뷰로 바뀝니다.</li>
+            <li>정식: HTML을 열어 선택지를 고르고 <strong>[프롬프트로 복사]</strong>한 결정을 채팅에 붙여넣습니다. 헤르메스가 md를 확정하고 html에 <code>decided</code>를 채우면 "확정 완료".</li>
+            <li>경량: 사용자의 지시가 곧 승인입니다. 정식 대상이어도 <strong>"바로 고쳐"</strong>라고 하면 경량으로 바로 갑니다(보고에 그 사실을 적음).</li>
           </ul>
         </div>
         <div class="step" data-n="3">
-          <h3>병렬 디스패치</h3>
+          <h3>작업 브랜치 → 디스패치</h3>
           <div class="who">헤르메스 → FE 에이전트</div>
           <ul>
-            <li>독립적인 서비스 작업은 한 응답에서 동시에 호출합니다.</li>
-            <li>프롬프트에는 계획서 경로, 자기 담당 범위, 관련 파일, API 스펙, 다른 서비스와의 연관성, "커밋은 요청 시 <code>scripts/commit.sh</code> 로만·push/PR 금지·레포 밖 수정 금지" 리마인드가 들어갑니다.</li>
-            <li>여러 서비스에 같은 기능을 넣을 때는 계획서의 공통 스펙(문구·동작·env 키)을 모두가 같이 봅니다.</li>
+            <li>디스패치 전에 <code>scripts/new-branch.sh</code>가 <code>prBase</code>에서 <code>.worktrees/&lt;레포&gt;/&lt;슬러그&gt;</code> 워크트리를 땁니다(메인 체크아웃은 건드리지 않음). 이미 있으면 이어 쓸지 묻습니다. <code>/call</code>은 뜬 에이전트가 브랜치를 묻습니다.</li>
+            <li><code>scripts/delegate.sh &lt;에이전트&gt; --cwd &lt;워크트리&gt; --plan &lt;계획서&gt;</code> — 레포 workspace 한 탭에 pane(<code>🤖 &lt;에이전트&gt; · &lt;브랜치&gt;</code>)을 나란히 띄웁니다. FE 세션에는 보호 훅이 걸립니다(직접 커밋·<code>add -A</code>·push·<code>gh pr</code> 차단).</li>
+            <li>레포를 넘는 작업은 공유 패키지를 먼저 끝내고 소비 레포로 넘깁니다. 같은 기능을 여러 서비스에 넣으면 계획서의 공통 스펙(문구·동작·env 키)을 같이 봅니다.</li>
           </ul>
 
           <h4 id="statusbar">pane 하단 상태바</h4>
@@ -656,27 +657,29 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           </div>
         </div>
         <div class="step" data-n="4">
-          <h3>검증</h3>
-          <div class="who">reviewer</div>
+          <h3>작업 · 커밋 (pane 에서 반복)</h3>
+          <div class="who">FE 에이전트</div>
           <ul>
-            <li>계획서 경로와 대상 레포를 받아 diff를 읽고, 각 레포의 lint·typecheck·test를 실행합니다.</li>
-            <li>수정 필요 항목은 해당 FE 에이전트에 재디스패치합니다. 검증 실패는 숨기지 않고 그대로 전달합니다.</li>
+            <li>사용자가 pane 에서 여러 번 요청합니다. 요청마다 Status 가 <code>in_progress</code> ↔ <code>ready_for_review</code> 로 바뀌어 현황판 카드가 진행 중 ↔ 리뷰를 오갑니다.</li>
+            <li>작업 뒤 표준 검증 스크립트(<code>scripts/verify/*.sh</code>)를 돌리고 출력 표를 그대로 보고합니다.</li>
+            <li>커밋은 사용자가 <strong>"커밋해줘"</strong>라고 할 때만 <code>scripts/commit.sh</code>로 합니다 — 지정 파일만·엄격 검증·계획서 <code>## Commits</code> 기록. 메인 체크아웃·보호 브랜치·검증 실패면 거부합니다.</li>
           </ul>
         </div>
         <div class="step" data-n="5">
-          <h3>보고</h3>
-          <div class="who">헤르메스</div>
+          <h3>검증 · 보고 · push/PR</h3>
+          <div class="who">reviewer · 헤르메스</div>
           <ul>
-            <li>서비스별 변경 파일, 주요 변경, 검증 결과, 남은 위험을 요약합니다.</li>
-            <li>이 시점까지 커밋은 되어 있지 않습니다. 커밋과 PR은 사용자가 결정합니다.</li>
+            <li>"리뷰해줘" — reviewer 가 계획서와 워크트리를 받아 diff를 읽고 검증 스크립트를 다시 돌려 에이전트 보고와 비교합니다. 수정 필요 항목은 사용자 확인 뒤 그 FE pane 에서 이어서 지시합니다.</li>
+            <li>서비스별 변경 파일·주요 변경·검증 결과·<code>## Commits</code>·남은 위험을 요약합니다. 검증 실패는 숨기지 않습니다.</li>
+            <li><strong>push·PR 은 헤르메스가</strong> 여러 레포 순서·공개 범위를 확인하고 사용자에게 묻고 합니다. 에이전트는 하지 않습니다.</li>
           </ul>
         </div>
         <div class="step" data-n="6">
           <h3>정리</h3>
           <div class="who">헤르메스</div>
           <ul>
-            <li>작업 종료가 확인되면 계획서를 <code>plans/archive/유형/</code>으로 옮깁니다. 후속 작업이 남았으면 그대로 둡니다.</li>
-            <li><code>scripts/archive-plans.sh</code>가 30일 이상 지났고 최근 git log에 언급되지 않은 계획서를 일괄 정리합니다.</li>
+            <li>끝난 카드는 현황판 완료 칸의 <strong>[아카이브]</strong> — 계획서는 <code>plans/archive/&lt;유형&gt;/</code>, 이슈는 <code>issues/archive/</code>, 이슈 워크트리도 정리합니다(미커밋·push 안 된 커밋이 있으면 남김).</li>
+            <li>이슈는 완료 기준이 채워지면 <code>완료 가능</code> 배지가 붙고 헤르메스가 완료로 옮깁니다. 안전망: <code>scripts/archive-plans.sh</code>(30일 이상 + 최근 git log 미언급).</li>
           </ul>
         </div>
       </div>
@@ -708,7 +711,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         <div class="rule">
           <h3>dispatch-protocol</h3>
           <ul>
-            <li>승인된 계획서가 있어야 디스패치</li>
+            <li>계획서(정식은 승인 후 · 경량은 지시가 곧 승인)가 있어야 디스패치 — <code>delegate.sh --plan</code> 필수</li>
             <li>독립 작업은 한 응답에서 동시 호출</li>
             <li>결과 보고에서 변경 파일·검증 결과·남은 위험 확인</li>
           </ul>
@@ -733,7 +736,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 ├── hermes.config.json         <span class="c">담당 레포 목록 · 브랜치 · 에이전트 매핑 (정본)</span>
 ├── repos/                     <span class="c">레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)</span>
 ├── .claude/
-│   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · packages-fe · reviewer</span>
+│   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · bznav-rn-app · packages-fe · reviewer</span>
 │   ├── rules/                 <span class="c">language · coding-standards · git-workflow · dispatch-protocol</span>
 │   ├── skills/                <span class="c">call · board · sync · diagram · guide · monitor</span>
 │   └── settings.json
@@ -834,6 +837,6 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
       </div>
     </section>
 
-    <footer>hermes · Claude Code workspace · 문서 기준일 2026-09-15 · 원본 docs/playbook.html · /sync 시 함께 갱신</footer>
+    <footer>hermes · Claude Code workspace · 문서 기준일 2026-09-30 · 원본 docs/playbook.html · /sync 시 함께 갱신</footer>
   </main>
 </div>
