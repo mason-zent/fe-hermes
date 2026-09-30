@@ -4988,7 +4988,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 1064 818" data-layout-contract="readable-v2" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="standard">
+      <svg viewBox="0 0 1096 818" data-layout-contract="readable-v2" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="standard">
         <title id="archify-diagram-title">헤르메스 작업 흐름 · 경량</title>
         <desc id="archify-diagram-description">대부분의 작업 — 레포 하나 · 문구 · 버그 하나 · 조사 · /call. 계획서는 자동 기록, 지시가 곧 승인, pane 에서 커밋·리뷰·PR 까지 (원본: CLAUDE.md · 정식은 hermes-flow-formal)</desc>
         <!-- Definitions -->
@@ -5070,7 +5070,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <path data-edge-from="approve" data-edge-to="branch" data-edge-label="바로" data-edge-key="3" data-edge-id="e4" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="608.2,154;608.2,253;685.2,253" d="M 608.2 154 L 608.2 253 L 685.2 253" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="branch" data-edge-to="pane" data-edge-label="pane" data-edge-key="4" data-edge-id="e5" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="823.2,253;839.2,253;839.2,576;754.2,576;754.2,555" d="M 823.2 253 L 839.2 253 L 839.2 576 L 754.2 576 L 754.2 555" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="pane" data-edge-to="agent" data-edge-label="지시" data-edge-key="5" data-edge-id="e6" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="730.2,555;730.2,592;1015.2,592;1015.2,521;999.2,521" d="M 730.2 555 L 730.2 592 L 1015.2 592 L 1015.2 521 L 999.2 521" class="a-emphasis" data-animate="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-        <path data-edge-from="agent" data-edge-to="review" data-edge-label="리뷰해줘" data-edge-key="6" data-edge-id="e7" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="999.2,509;1043.6,509;1043.6,253;999.2,253" d="M 999.2 509 L 1043.6 509 L 1043.6 253 L 999.2 253" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="agent" data-edge-to="review" data-edge-label="리뷰해줘 (선택)" data-edge-key="6" data-edge-id="e7" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="999.2,509;1077.2,509;1077.2,253;999.2,253" d="M 999.2 509 L 1077.2 509 L 1077.2 253 L 999.2 253" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="review" data-edge-to="report" data-edge-label="승인 기록" data-edge-key="7" data-edge-id="e8" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="930.2,219;930.2,154" d="M 930.2 219 L 930.2 154" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="issues" data-edge-to="req" data-edge-key="8" data-edge-id="s1" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="48,655;32,655;32,120;48,120" d="M 48 655 L 32 655 L 32 120 L 48 120" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="config" data-edge-to="route" data-edge-key="9" data-edge-id="s2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="332,655;348,655;348,265;332,265" d="M 332 655 L 348 655 L 348 265 L 332 265" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
@@ -5113,8 +5113,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="608.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">&quot;정식으로&quot; 하면 바꾼다</text>
         </g>
 
-        <g id="node-report" data-node-id="report" data-node-label="PR 올려줘" tabindex="0" role="button" aria-label="Focus PR 올려줘, 미리보기 → base·제목 확인, 사용자 › 작업 · 리뷰 · PR" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="미리보기 → base·제목 확인" data-node-tag="에이전트가 ship.sh 로 draft" data-node-context="사용자 › 작업 · 리뷰 · PR">
-          <title>PR 올려줘 · 미리보기 → base·제목 확인 · 사용자 › 작업 · 리뷰 · PR · 에이전트가 ship.sh 로 draft</title>
+        <g id="node-report" data-node-id="report" data-node-label="PR 올려줘" tabindex="0" role="button" aria-label="Focus PR 올려줘, 리뷰 없이도 가능 · 미리보기 확인, 사용자 › 작업 · 리뷰 · PR" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="리뷰 없이도 가능 · 미리보기 확인" data-node-tag="에이전트가 ship.sh 로 draft" data-node-context="사용자 › 작업 · 리뷰 · PR">
+          <title>PR 올려줘 · 리뷰 없이도 가능 · 미리보기 확인 · 사용자 › 작업 · 리뷰 · PR · 에이전트가 ship.sh 로 draft</title>
           <rect x="861.2" y="86" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="861.2" y="86" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:9" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(867.2 92) scale(0.6875)">
@@ -5124,7 +5124,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="930.2" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">PR 올려줘</text>
-          <text data-detail="context" x="930.2" y="124" class="t-muted" font-size="8" text-anchor="middle">미리보기 → base·제목 확인</text>
+          <text data-detail="context" x="930.2" y="124" class="t-muted" font-size="6.7" text-anchor="middle">리뷰 없이도 가능 · 미리보기 확인</text>
         <text data-detail="fine" x="930.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">에이전트가 ship.sh 로 draft</text>
         </g>
 
@@ -5164,8 +5164,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="754.2" y="275" class="t-backend" font-size="7" text-anchor="middle">/call 은 에이전트가 브랜치</text>
         </g>
 
-        <g id="node-review" data-node-id="review" data-node-label="reviewer pane" tabindex="0" role="button" aria-label="Focus reviewer pane, &quot;리뷰해줘&quot; · 옆 pane, 헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR" aria-pressed="false" data-node-kind="backend" data-node-sublabel="&quot;리뷰해줘&quot; · 옆 pane" data-node-tag="승인 @HEAD 기록" data-node-context="헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR">
-          <title>reviewer pane · &quot;리뷰해줘&quot; · 옆 pane · 헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR · 승인 @HEAD 기록</title>
+        <g id="node-review" data-node-id="review" data-node-label="reviewer pane" tabindex="0" role="button" aria-label="Focus reviewer pane, &quot;리뷰해줘&quot; · 옆 pane, 헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR" aria-pressed="false" data-node-kind="backend" data-node-sublabel="&quot;리뷰해줘&quot; · 옆 pane" data-node-tag="안 하면 PR 전에 한 번 더 묻는다" data-node-context="헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR">
+          <title>reviewer pane · &quot;리뷰해줘&quot; · 옆 pane · 헤르메스 · reviewer › 옆 pane › 작업 · 리뷰 · PR · 안 하면 PR 전에 한 번 더 묻는다</title>
           <rect x="861.2" y="219" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="861.2" y="219" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:12" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(867.2 225) scale(0.6875)">
@@ -5173,7 +5173,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           </g>
           <text data-node-label="" data-detail-anchor="" x="930.2" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">reviewer pane</text>
           <text data-detail="context" x="930.2" y="257" class="t-muted" font-size="8" text-anchor="middle">&quot;리뷰해줘&quot; · 옆 pane</text>
-        <text data-detail="fine" x="930.2" y="275" class="t-backend" font-size="7" text-anchor="middle">승인 @HEAD 기록</text>
+        <text data-detail="fine" x="930.2" y="275" class="t-backend" font-size="6.9" text-anchor="middle">안 하면 PR 전에 한 번 더 묻는다</text>
         </g>
 
         <g id="node-outofscope" data-node-id="outofscope" data-node-label="레포 모호 · 범위 밖" tabindex="0" role="button" aria-label="Focus 레포 모호 · 범위 밖, 콘솔? 웹? · 백엔드, 멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 요청 · 판단 · 자동 기록" aria-pressed="false" data-node-kind="security" data-node-sublabel="콘솔? 웹? · 백엔드" data-node-tag="멈추고 사용자에게" data-node-context="멈춤 · 확인 필요 › 여기서 멈추고 묻는다 › 요청 · 판단 · 자동 기록">
@@ -5342,9 +5342,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="857.7" y="572" width="30" height="14" rx="3" class="c-mask"/>
           <text x="872.7" y="582" class="t-edge-emphasis" font-size="8" text-anchor="middle">지시</text>
         </g>
-        <g data-detail="context" data-edge-from="agent" data-edge-to="review" data-edge-label="리뷰해줘" data-edge-key="6" data-edge-id="e7">
-          <rect x="997.1999999999999" y="489" width="48.4" height="14" rx="3" class="c-mask"/>
-          <text x="1021.4" y="499" class="t-edge-default" font-size="8" text-anchor="middle">리뷰해줘</text>
+        <g data-detail="context" data-edge-from="agent" data-edge-to="review" data-edge-label="리뷰해줘 (선택)" data-edge-key="6" data-edge-id="e7">
+          <rect x="997.2" y="489" width="82" height="14" rx="3" class="c-mask"/>
+          <text x="1038.2" y="499" class="t-edge-default" font-size="8" text-anchor="middle">리뷰해줘 (선택)</text>
         </g>
         <g data-detail="context" data-edge-from="review" data-edge-to="report" data-edge-label="승인 기록" data-edge-key="7" data-edge-id="e8">
           <rect x="903.6" y="176.5" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
@@ -5612,10 +5612,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>리뷰 · PR (pane 에서 끝까지)</h3>
         </div>
         <ul>
+          <li>리뷰는 선택이다 — 안 해도 커밋·PR 은 막히지 않는다. PR 미리보기에 ⚠️ 가 뜨고 올릴지 한 번 더 묻는다</li>
           <li>&quot;리뷰해줘&quot; — 옆에 reviewer pane. 결론은 계획서 - Review result: 승인|수정 필요 @HEAD</li>
           <li>&quot;PR 올려줘&quot; — ship.sh 미리보기(base 후보·커밋·검증·리뷰·제목·본문) → 확인 → draft PR</li>
           <li>제목 type(범위): 티켓 요약 · 본문 공통 템플릿 (git.md &quot;PR 제목·본문&quot;)</li>
-          <li>리뷰가 지금 HEAD 승인이 아니면 한 번 더 묻는다. 리뷰어 지정·Ready 전환은 GitHub 에서</li>
+          <li>리뷰어 지정·Ready 전환은 GitHub 에서</li>
         </ul>
       </div>
 
@@ -5627,7 +5628,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <ul>
           <li>레포가 모호하면 묻는다 — 케어·환급은 운영 콘솔과 사용자 웹이 다른 레포다</li>
           <li>브랜치가 이미 있으면 이어 쓸지 묻는다</li>
-          <li>커밋·PR 이 거부되면 이유를 그대로 전하고 묻는다(미커밋 · commit.sh 안 거친 커밋 · 제목 형식)</li>
+          <li>커밋·PR 이 거부되면 이유를 그대로 전하고 묻는다(미커밋 · commit.sh 안 거친 커밋 · 제목 형식 — 리뷰 여부로는 거부하지 않는다)</li>
           <li>여러 레포·API·구조 변경으로 커지면 멈추고 알린다 → 헤르메스가 정식 흐름으로 옮긴다</li>
           <li>공통 규칙·재개·정리는 정식 흐름 다이어그램 카드에 있다</li>
         </ul>
