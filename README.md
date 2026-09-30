@@ -24,8 +24,7 @@ git clone https://github.com/mason-zent/fe-hermes.git
 cd fe-hermes
 claude                      # 켤 때 repos/<레포> 링크를 알아서 연결한다 (수동: scripts/setup.sh [--root <경로>])
 ```
-- `/feature 기능 설명` — 계획서 → 승인 → 병렬 디스패치 → 리뷰 → 보고
-- `/bugfix 버그 설명`
+- 그냥 말하기 — "refund·hub 에 공지 배너 똑같이 넣어줘", "환급 콘솔 페이지네이션 버그 원인 찾아줘" → 헤르메스가 라우팅 → 계획서 → 승인 → 디스패치 → 리뷰 → 보고
 - `/call 에이전트` — 담당 에이전트를 pane 으로 바로 띄운다. 브랜치 이름은 에이전트가 물어 워크트리를 만들고, 요청도 그 pane 에서 직접 쓴다(빈 지시 경량 계획서)
 - `/review 대상`
 - `/status` — repos/ 에 연결된 레포 전체 현황
@@ -46,7 +45,7 @@ hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
 .claude/agents/           서브에이전트 13개
 .claude/rules/            언어·코드·Git·디스패치 규칙
-.claude/skills/           /feature /bugfix /call /branch /review /status /monitor /board /sync /diagram /guide
+.claude/skills/           /call /branch /review /status /monitor /board /sync /diagram /guide
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
 docs/diagrams/            다이어그램 (Archify 생성. index.html 이 목록, 원본은 *.json, 재생성법은 그 폴더 README)
 docs/services.md          서비스 비교표
@@ -72,6 +71,6 @@ scripts/sync-fingerprint.mjs  기준 브랜치 지문 생성·비교 (/sync 가 
 
 ## 확장하기
 상세는 `docs/extending.md` (터미널에서 `/guide`).
-- **스킬 추가**: `.claude/skills/<이름>/SKILL.md` 하나 만들면 `/<이름>`으로 바로 뜬다. frontmatter에 `name`, `description`, 필요하면 `argument-hint`를 두고, 본문에서 `$ARGUMENTS`로 인자를 받는다. 기존 `feature/SKILL.md`를 복사해서 고치는 게 가장 빠르다.
+- **스킬 추가**: `.claude/skills/<이름>/SKILL.md` 하나 만들면 `/<이름>`으로 바로 뜬다. frontmatter에 `name`, `description`, 필요하면 `argument-hint`를 두고, 본문에서 `$ARGUMENTS`로 인자를 받는다. 기존 `call/SKILL.md`를 복사해서 고치는 게 가장 빠르다.
 - **에이전트 추가**: `.claude/agents/<이름>.md`. frontmatter의 `description`이 헤르메스가 라우팅할 때 읽는 문장이니 "어떤 요청이면 이 에이전트"를 구체적으로 적는다. description 안에 콜론+공백(`: `)이 들어가면 YAML이 깨진다.
 - **같이 갱신할 곳**: 스킬이나 에이전트를 추가하면 `CLAUDE.md`의 팀 표·Skills 표, **`AGENTS.md`**, 이 README, `docs/playbook.html`도 손본다. `/sync`는 레포 쪽 변화만 반영하고 hermes 자체 구조 변화는 잡지 않으니, 헤르메스에게 "방금 추가한 스킬 문서에도 반영해줘"라고 하면 된다.

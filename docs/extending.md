@@ -6,7 +6,7 @@
 - `.claude/skills/<이름>/SKILL.md` 하나 만들면 `/<이름>`으로 바로 뜬다
 - frontmatter에 `name`, `description`, 필요하면 `argument-hint`를 둔다
 - 본문에서 `$ARGUMENTS`로 인자를 받는다
-- 기존 `.claude/skills/feature/SKILL.md`를 복사해서 고치는 게 가장 빠르다
+- 기존 `.claude/skills/call/SKILL.md`를 복사해서 고치는 게 가장 빠르다
 
 ```yaml
 ---

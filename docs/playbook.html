@@ -298,7 +298,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
-      <span>agents 13 · skills 11</span>
+      <span>agents 13 · skills 9</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
 <!-- END:generated:last-sync -->
@@ -329,7 +329,7 @@ claude          # 🔗 레포 7개를 자동으로 연결했습니다 …
 
 # 그 다음 자연어로 요청하거나 슬래시 커맨드를 씁니다
 /status
-/feature hub 메시지 템플릿 목록에 미리보기 컬럼 추가</code></pre>
+hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
       <div class="note">
         <strong>헤르메스는 코드를 직접 쓰지 않습니다.</strong> 탐색과 계획, 배분, 검증, 보고만 합니다. 실제 파일 수정은 항상 담당 FE 에이전트가 자기 레포 안에서만 합니다. 그래서 여러 서비스에 걸친 작업도 서로 파일을 건드리지 않고 동시에 진행됩니다.
       </div>
@@ -464,38 +464,26 @@ claude          # 🔗 레포 7개를 자동으로 연결했습니다 …
 
     <section id="skills">
       <h2>슬래시 커맨드</h2>
-      <p>8개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
+      <p>9개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
       <div class="note">
         <strong>슬래시 커맨드는 헤르메스 세션에서만 씁니다.</strong> FE 에이전트 pane 에는 슬래시 커맨드가 아예 노출되지 않습니다(도구는 Read·Edit·Write·Bash 뿐). 라우팅·계획서·디스패치는 팀리드의 일이지 담당 엔지니어의 일이 아니기 때문입니다.
         <br><br>
         에이전트 pane 에서는 <strong>평문으로 그냥 지시</strong>하면 됩니다. 그 pane 은 담당 레포가 이미 고정되어 있으므로(하단 상태바에 표시됩니다) <code>refund</code> 같은 레포 접두사도 붙일 필요가 없습니다.
-<pre><code>헤르메스 세션 → /feature refund 파트너 목록에 상태 필터 추가
+<pre><code>헤르메스 세션 → refund 파트너 목록에 상태 필터 추가해줘
 에이전트 pane → 파트너 목록에 상태 필터 추가해줘</code></pre>
       </div>
       <div class="cmds">
-        <article class="cmd">
-          <div class="cmd-head"><kbd>/feature <span class="arg">기능 설명</span></kbd><span class="tag">plan-first</span></div>
-          <p class="what">신규 기능 개발. 대상 서비스를 라우팅하고 계획서를 써서 승인을 받은 뒤, 담당 FE 에이전트에게 배분합니다.</p>
-          <div class="flow"><span>라우팅</span><span>탐색</span><span class="hi">계획서</span><span class="hi">승인</span><span>병렬 디스패치</span><span>reviewer</span><span>보고</span></div>
+        <article class="cmd wide">
+          <div class="cmd-head"><kbd>그냥 말하기</kbd><span class="tag">plan-first</span></div>
+          <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 경량 또는 정식 계획서(결정 콘솔)를 쓴 뒤 승인 → 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
+          <div class="flow"><span>라우팅</span><span>탐색</span><span class="hi">계획서</span><span class="hi">승인</span><span>디스패치</span><span>reviewer</span><span>보고</span></div>
           <dl>
-            <dt>언제</dt><dd>새 화면·컴포넌트·기능. 여러 서비스에 같은 기능을 넣을 때 특히 유용</dd>
-            <dt>산출물</dt><dd><code>plans/feature/YYYYMMDD-제목.md</code> + 같은 이름의 <code>.html</code> 결정 콘솔</dd>
+            <dt>기능</dt><dd>여러 레포·API·구조 변경이면 정식 계획서, 서비스 간 같은 기능은 공통 스펙(문구·동작·env 키)을 계획서에 적고 공유 패키지를 먼저</dd>
+            <dt>버그</dt><dd>원인이 프론트·API·공유 패키지 중 어디인지 먼저 가르고, 재현 조건을 적은 뒤 수정 전·후를 같은 방법으로 비교합니다(<code>AGENTS.md</code> 5절)</dd>
           </dl>
-<pre><code>/feature refund 파트너 목록에 상태 필터와 검색 추가
-/feature hub와 refund 사이드바에 공지 배너 동일하게 추가</code></pre>
-        </article>
-
-        <article class="cmd">
-          <div class="cmd-head"><kbd>/bugfix <span class="arg">버그 설명</span></kbd><span class="tag">plan-first</span></div>
-          <p class="what">버그 원인 분석 후 수정. 원인이 프론트인지 API 응답인지 공유 패키지인지 먼저 가르고, 프론트 밖이면 알려줍니다.</p>
-          <div class="flow"><span>의심 서비스</span><span>원인 추적</span><span class="hi">계획서</span><span class="hi">승인</span><span>디스패치</span><span>reviewer</span><span>보고</span></div>
-          <dl>
-            <dt>언제</dt><dd>재현되는 오동작. 원인 파악이 먼저 필요한 경우</dd>
-            <dt>계획서</dt><dd>단일 버그는 <strong>경량 계획서</strong>(사용자 지시가 곧 승인). 여러 레포·API·구조 변경이나 결정이 필요하면 정식(결정 콘솔)</dd>
-            <dt>예외</dt><dd>정식 대상이어도 "바로 고쳐"라고 명시하면 경량으로 바로 디스패치. 계획서 자체는 건너뛰지 않습니다</dd>
-          </dl>
-<pre><code>/bugfix refund 파트너 목록 페이지네이션이 2페이지에서 멈춤
-/bugfix hub 메시지 큐에서 대량 발송 모달이 닫히지 않음</code></pre>
+<pre><code>refund 파트너 목록에 상태 필터와 검색 추가해줘
+hub와 refund 사이드바에 공지 배너 똑같이 넣어줘
+환급 콘솔 파트너 목록 페이지네이션이 2페이지에서 멈춰 — 원인 찾아줘</code></pre>
         </article>
 
         <article class="cmd">
@@ -784,7 +772,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 ├── .claude/
 │   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · packages-fe · reviewer</span>
 │   ├── rules/                 <span class="c">language · coding-standards · git-workflow · dispatch-protocol</span>
-│   ├── skills/                <span class="c">feature · bugfix · review · status · sync · guide</span>
+│   ├── skills/                <span class="c">call · branch · review · status · board · monitor · diagram · sync · guide</span>
 │   └── settings.json
 ├── .sync/
 │   └── snapshots/             <span class="c">레포별 기준 브랜치 지문 baseline (/sync 비교 기준)</span>
@@ -824,7 +812,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
             <li><code>.claude/skills/&lt;이름&gt;/SKILL.md</code> 하나 만들면 <code>/&lt;이름&gt;</code>으로 바로 뜹니다</li>
             <li>frontmatter에 <code>name</code>, <code>description</code>, 필요하면 <code>argument-hint</code>를 둡니다</li>
             <li>본문에서 <code>$ARGUMENTS</code>로 인자를 받습니다</li>
-            <li>기존 <code>feature/SKILL.md</code>를 복사해서 고치는 게 가장 빠릅니다</li>
+            <li>기존 <code>call/SKILL.md</code>를 복사해서 고치는 게 가장 빠릅니다</li>
           </ul>
         </div>
         <div class="rule">

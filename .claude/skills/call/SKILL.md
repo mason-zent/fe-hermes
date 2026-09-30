@@ -28,5 +28,5 @@ argument-hint: "<에이전트> — 예: bznav-plus-fe · refund-fe"
 - 직접 `git commit`·`git add -A`·`git push`·`gh pr` 은 FE 세션 보호 훅이 막는다. push·PR 은 헤르메스에게
 
 ## 주의
-- 요청이 여러 레포·API·구조 변경으로 커지면 에이전트가 멈추고 알린다 → 헤르메스가 정식 계획서(`/feature`)로 옮긴다
+- 요청이 여러 레포·API·구조 변경으로 커지면 에이전트가 멈추고 알린다 → 헤르메스가 정식 계획서(`docs/plan-template.md`)로 옮긴다
 - 커밋·PR 은 사용자가 정한다
