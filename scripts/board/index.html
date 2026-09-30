@@ -30,6 +30,7 @@
   .live .tip:empty, .live .tip span:empty { display: none; }
   .usage { margin-left: auto; display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; font-size: 12px; }
   .usage[hidden] { display: none; }
+  main[hidden] { display: none; }
   .usage .cli { display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 10px; }
   .usage .cli.stale { opacity: .55; }
   .usage .cli.empty { color: var(--muted); }
@@ -171,6 +172,11 @@
       <input id="history-q" type="search" placeholder="제목·요약·레포·커밋으로 찾기" aria-label="히스토리 검색">
       <select id="history-kind" aria-label="종류"><option value="">전체</option><option value="issue">이슈</option><option value="plan">계획서만</option></select>
       <select id="history-repo" aria-label="레포"><option value="">모든 레포</option></select>
+      <span class="tabs" role="group" aria-label="묶어 보기">
+        <button type="button" data-group="day" aria-selected="false">일</button>
+        <button type="button" data-group="month" aria-selected="true">월</button>
+        <button type="button" data-group="year" aria-selected="false">년</button>
+      </span>
       <span class="count" id="history-count"></span>
     </div>
     <div id="history" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
@@ -336,6 +342,8 @@
 
   // ── 히스토리 ──────────────────────────────────────────────────────────
   let historyItems = [];
+  let historyGroup = 'month';
+  try { historyGroup = localStorage.getItem('board-history-group') || 'month'; } catch (error) { /* 무시 */ }
   const commitsBlock = (text) => {
     const lines = section(text, 'Commits');
     return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
@@ -376,10 +384,21 @@
     document.getElementById('history-count').textContent = `${shown.length} / ${historyItems.length}건`;
     if (!historyItems.length) { box.innerHTML = '<div class="empty-history">아직 보관한 일이 없어요. 완료 칸 카드의 [아카이브]를 누르면 여기로 와요.</div>'; return; }
     if (!shown.length) { box.innerHTML = '<div class="empty-history">조건에 맞는 일이 없어요</div>'; return; }
+    // 묶는 단위 — 일(YYYY-MM-DD) · 월(YYYY-MM) · 년(YYYY)
+    const width = { day: 10, month: 7, year: 4 }[historyGroup];
+    const label = (key) => {
+      if (!key) return '날짜 없음';
+      const [year, monthPart, dayPart] = key.split('-');
+      if (historyGroup === 'year') return `${year}년`;
+      if (historyGroup === 'month') return `${year}년 ${Number(monthPart)}월`;
+      return `${year}년 ${Number(monthPart)}월 ${Number(dayPart)}일`;
+    };
+    const counts = shown.reduce((map, item) => map.set((item.archivedAt || '').slice(0, width), (map.get((item.archivedAt || '').slice(0, width)) || 0) + 1), new Map());
     let month = '';
     box.innerHTML = shown.map((item) => {
       const day = (item.archivedAt || '').slice(0, 10);
-      const head = day.slice(0, 7) !== month ? `<div class="month">${esc((month = day.slice(0, 7)) || '날짜 없음')}</div>` : '';
+      const key = day.slice(0, width);
+      const head = key !== month ? `<div class="month">${esc(label((month = key)))} · ${counts.get(key)}건</div>` : '';
       const tags = [
         `<span class="pill kind-${item.kind}">${item.kind === 'issue' ? '이슈' : '계획서'}</span>`,
         item.repo ? `<span class="pill">${esc(item.repo)}</span>` : '',
@@ -412,6 +431,17 @@
     renderHistory();
   };
   ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', renderHistory));
+  const groupButtons = document.querySelectorAll('[data-group]');
+  const markGroup = () => groupButtons.forEach((button) => button.setAttribute('aria-selected', String(button.dataset.group === historyGroup)));
+  groupButtons.forEach((button) => {
+    button.onclick = () => {
+      historyGroup = button.dataset.group;
+      try { localStorage.setItem('board-history-group', historyGroup); } catch (error) { /* 무시 */ }
+      markGroup();
+      renderHistory();
+    };
+  });
+  markGroup();
   const showTab = (tab) => {
     const isHistory = tab === 'history';
     document.getElementById('view-now').hidden = isHistory;
