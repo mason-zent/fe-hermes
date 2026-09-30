@@ -87,6 +87,7 @@ const readPlan = (path) => {
   const mtime = statSync(path).mtimeMs
   return {
     kind: 'plan',
+    created: createdAt(path),
     id: relative(ROOT, path),
     title: plain(text.match(/^#\s+(.+)$/m)?.[1] ?? basename(path, '.md')),
     type: path.split('/').at(archived ? -2 : -2),
@@ -104,6 +105,14 @@ const readPlan = (path) => {
     mtime,
     html: existsSync(path.replace(/\.md$/, '.html')) ? relative(ROOT, path.replace(/\.md$/, '.html')) : null,
   }
+}
+
+// 카드의 "시작" 시각 — 파일이 처음 생긴 때. birthtime 이 없거나(0) 수정 시각보다 뒤면 파일명 앞 YYYYMMDD 를 쓴다
+const createdAt = (path) => {
+  const { birthtimeMs, mtimeMs } = statSync(path)
+  if (birthtimeMs > 0 && birthtimeMs <= mtimeMs) return birthtimeMs
+  const day = basename(path).match(/^(\d{4})(\d{2})(\d{2})/)
+  return day ? new Date(`${day[1]}-${day[2]}-${day[3]}T00:00:00+09:00`).getTime() : mtimeMs
 }
 
 // ── 이슈 ────────────────────────────────────────────────────────────────
@@ -165,6 +174,7 @@ const readIssue = (path) => {
     reason: meta.reason || '',
     body,
     summary: plain(body.split('\n').find((line) => line.trim() && !line.startsWith('#')) ?? ''),
+    created: createdAt(path),
     mtime: statSync(path).mtimeMs,
   }
 }
@@ -474,7 +484,7 @@ const collect = async () => {
     const plan = plans.find((entry) => entry.id === issue.plan || entry.issue === issue.id)
     if (!plan) continue
     merged.add(plan.id)
-    issue.linkedPlan = { id: plan.id, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
+    issue.linkedPlan = { id: plan.id, created: plan.created, mtime: plan.mtime, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
     // 계획서가 리뷰 단계면 이슈 카드도 리뷰 칸에
     if (issue.status === 'in_progress' && plan.status === 'ready_for_review') issue.column = 'review'
     if (plan.working && issue.column !== 'done') issue.column = 'doing'
@@ -544,7 +554,7 @@ const moveCard = (id, column) => {
   let next = text.replace(oldStatus, newStatus)
   if (oldUpdated) next = next.replace(oldUpdated, newUpdated)
   writeFileSync(path, next)
-  // 결정 콘솔 html 안의 md 사본(plan-md)도 같이 — CLAUDE.md 1단계 "같은 턴에 동기화"
+  // 예전 정식 계획서의 결정 콘솔 html 안 md 사본(plan-md)도 같이 — 새 계획서는 html 이 없다
   const htmlPath = path.replace(/\.md$/, '.html')
   if (existsSync(htmlPath)) {
     let html = readFileSync(htmlPath, 'utf8')

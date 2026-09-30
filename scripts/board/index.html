@@ -167,6 +167,27 @@
   const STATUS_LABEL = { working: '작업 중', idle: '대기', blocked: '입력 대기', done: '끝남', unknown: '?' };
   const esc = (value) => String(value ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
   const ago = (sec) => (sec < 60 ? `${sec}초 전` : sec < 3600 ? `${Math.round(sec / 60)}분 전` : `${Math.round(sec / 3600)}시간 전`);
+  // 카드 시각 — 오늘이면 시:분, 올해면 월/일 시:분, 그 전이면 연/월/일
+  const clock = (ms) => {
+    const date = new Date(ms);
+    const time = date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) return `오늘 ${time}`;
+    if (date.getFullYear() === today.getFullYear()) return `${date.getMonth() + 1}/${date.getDate()} ${time}`;
+    return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+  };
+  const since = (ms) => {
+    const sec = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (sec < 86_400) return ago(sec);
+    return `${Math.round(sec / 86_400)}일 전`;
+  };
+  // 시작(파일이 생긴 때) · 최근 진행(마지막 수정). 이슈에 계획서가 붙어 있으면 둘 중 늦은 수정 시각
+  const when = (card) => {
+    const created = card.created || card.mtime;
+    const touched = Math.max(card.mtime || 0, card.linkedPlan?.mtime || 0);
+    const full = (ms) => new Date(ms).toLocaleString('ko-KR', { hour12: false });
+    return `<div class="line when" title="시작 ${full(created)} · 최근 진행 ${full(touched)}">🕒 시작 ${clock(created)} · 최근 <b>${clock(touched)}</b> (${since(touched)})</div>`;
+  };
   let previous = new Map();
   let lastState = null;
   let targetPane = '';
@@ -444,6 +465,7 @@
     const progress = card.progress ? `<div class="progress" title="${card.progress.checked}/${card.progress.total}"><i style="width:${Math.round((card.progress.checked / card.progress.total) * 100)}%"></i></div><div class="line">진행 ${card.progress.checked}/${card.progress.total}</div>` : '';
     return `<div class="card" data-key="${esc(card.id)}" draggable="${!card.archived}">
       <div class="title">${esc(card.title)}</div>
+      ${when(card)}
       <div class="tags">${tags.join('')}</div>
       ${card.statusNote ? `<div class="line">${esc(card.statusNote)}</div>` : ''}
       ${progress}
@@ -478,6 +500,7 @@
     if (card.severity) tags.push(`<span class="pill ${card.severity === 'high' ? 'bad' : card.severity === 'medium' ? 'warn' : ''}">${esc(card.severity)}</span>`);
     return `<div class="card" data-key="${esc(card.id)}" draggable="true">
       <div class="title">${esc(card.title)}</div>
+      ${when(card)}
       <div class="tags">${tags.join('')}</div>
       ${card.summary ? `<div class="line">${esc(card.summary)}</div>` : ''}
       <div class="line">${esc(card.source)}</div>
