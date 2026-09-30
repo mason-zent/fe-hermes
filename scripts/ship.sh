@@ -14,7 +14,7 @@
 #   --base <브랜치>      PR 대상. 여러 번 주면 PR 을 각각 연다(bznav-rn-app 의 prd·dev 양쪽 관례)
 #   --title "<제목>"     형식: type(범위): [티켓 ]요약 — 규칙은 docs/knowledge/common/git.md "PR 제목·본문"
 #   --body-file <파일>   본문. 없으면 미리보기가 만든 초안을 쓴다. 필수 절(작업 내용·변경 사항·검증·확인 필요)이 있어야 한다
-#   --no-review-ok       reviewer 승인 기록(- Review result: 승인 @<HEAD>)이 없어도 올린다 — 사용자가 확인했을 때만
+#   --no-review-ok       리뷰 승인이 없거나 지금 커밋된 내용과 달라도 올린다 — 사용자가 확인했을 때만(리뷰는 선택이다)
 #   --repo-agent <이름>  (헤르메스 전용) 여러 에이전트가 붙은 계획서에서 이 에이전트의 레포 몫만 올린다.
 #                        FE 세션에서는 보호 훅이 이 옵션을 막는다 — 순서 조율은 헤르메스가 한다
 #   --yes                실제로 보낸다. 없으면 미리보기만
@@ -73,9 +73,10 @@ HEAD_SHA="$(git -C "$TOP" rev-parse --short HEAD)"
 
 # ── 2. 계획서 — 레포 하나짜리인지, HEAD 가 기록된 커밋인지, 리뷰 기록 ────────────
 HEAD_FULL="$(git -C "$TOP" rev-parse HEAD)"
-PLAN_INFO="$(python3 - "$HERMES_DIR/$PLAN" "$HERMES_DIR/hermes.config.json" "$HEAD_FULL" "$BRANCH" <<'PYEOF'
+HEAD_TREE="$(git -C "$TOP" rev-parse 'HEAD^{tree}')"
+PLAN_INFO="$(python3 - "$HERMES_DIR/$PLAN" "$HERMES_DIR/hermes.config.json" "$HEAD_FULL" "$BRANCH" "$HEAD_TREE" <<'PYEOF'
 import json, re, sys, pathlib
-text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'); cfg = json.load(open(sys.argv[2])); head, branch = sys.argv[3:5]
+text = pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'); cfg = json.load(open(sys.argv[2])); head, branch, head_tree = sys.argv[3:6]
 agents = set()
 for repo in cfg['repos']:
     agents.update(repo.get('agents') or [])
@@ -96,16 +97,30 @@ if commits:
         sha = re.search(r'`([0-9a-f]{6,40})`', entry)
         if sha and head.startswith(sha.group(1)) and branch in entry:
             recorded = entry.strip()
-# reviewer 가 끝에 남기는 결론 줄 — "- Review result: 승인 @<sha> …". 마지막 줄을 본다
+# reviewer 가 끝에 남기는 결론 줄 — "- Review result: 승인 @<sha> · tree <리뷰한 내용> …". 마지막 줄을 본다
+# 승인은 **리뷰한 파일 내용(tree)** 에 묶는다 — 리뷰 → 커밋 순서여도 커밋된 내용(HEAD^{tree})이 같으면 승인이다.
+# tree 가 없는 옛 줄은 커밋 SHA 로 본다
 # 여러 레포 계획서는 브랜치마다 한 줄 — 이 브랜치 줄(없으면 브랜치 표시 없는 옛 줄)만 본다
 lines = re.findall(r'^- Review result:.*$', text, re.M)
 mine = [row for row in lines if f'🌿 {branch} ' in row + ' '] or [row for row in lines if '🌿' not in row]
-results = [hit.groups() for hit in (re.match(r'^- Review result:\s*(.+?)\s*@\s*([0-9a-f]{6,40})', row) for row in mine) if hit]
+results = []
+for row in mine:
+    hit = re.match(r'^- Review result:\s*(.+?)\s*@\s*([0-9a-f]{6,40})', row)
+    if hit:
+        tree = re.search(r'· tree ([0-9a-f]{6,40})', row)
+        results.append((hit.group(1), hit.group(2), tree.group(1) if tree else ''))
 if not results:
     review = 'none' if not re.search(r'^- Review:', text, re.M) else 'pending'
 else:
-    verdict, sha = results[-1]
-    review = 'ok' if verdict.startswith('승인') and head.startswith(sha) else ('stale' if verdict.startswith('승인') else 'changes')
+    verdict, sha, tree = results[-1]
+    same = head_tree.startswith(tree) if tree else head.startswith(sha)
+    if not verdict.startswith('승인'):
+        review = 'changes'
+    elif same:
+        review = 'ok'
+    else:
+        review = 'stale'
+
 title = (re.search(r'^# (.+)$', text, re.M) or [None, ''])[1].strip()
 print(len(found)); print(','.join(sorted(found))); print(recorded); print(review); print(title)
 PYEOF
@@ -122,8 +137,8 @@ fi
 [ -n "$RECORDED" ] || fail "HEAD($HEAD_SHA)가 계획서 Commits 에 없다 — scripts/commit.sh 로 커밋한 것만 올린다(검증 기록이 있어야 한다)"
 case "$RECORDED" in *"검증 생략"*) VERIFY_WARN="⚠️ 이 커밋은 검증 없이 커밋됐다(사용자 지시)";; *) VERIFY_WARN="";; esac
 case "$REVIEWED" in
-  ok) REVIEW_NOTE="reviewer 승인 @$HEAD_SHA" ;;
-  stale) REVIEW_NOTE="⚠️ reviewer 승인 뒤에 새 커밋이 있다 — 다시 리뷰받거나, 이대로 올릴지 사용자에게 확인(올리면 --no-review-ok)" ;;
+  ok) REVIEW_NOTE="reviewer 승인 — 리뷰한 내용과 커밋된 내용이 같다" ;;
+  stale) REVIEW_NOTE="⚠️ reviewer 가 승인한 뒤 내용이 바뀌었다(리뷰 뒤 수정·다른 파일 커밋) — 다시 리뷰받거나, 이대로 올릴지 사용자에게 확인(올리면 --no-review-ok)" ;;
   changes) REVIEW_NOTE="⚠️ reviewer 결론이 승인이 아니다(수정 필요) — 반영·재리뷰하거나, 이대로 올릴지 사용자에게 확인(올리면 --no-review-ok)" ;;
   pending) REVIEW_NOTE="⚠️ reviewer 를 띄웠지만 결론 기록(- Review result:)이 없다 — 이대로 올릴지 사용자에게 확인(올리면 --no-review-ok)" ;;
   *) REVIEW_NOTE="⚠️ reviewer 기록 없음 — 리뷰 없이 올릴지 사용자에게 확인(올리면 --no-review-ok)" ;;

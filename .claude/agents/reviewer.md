@@ -23,7 +23,7 @@ tools: Read, Glob, Grep, Bash
 3. 대상 트리(워크트리면 그 경로)에서 변경을 본다. 에이전트가 `commit.sh` 로 이미 로컬 커밋했을 수 있으니 미커밋 `git status --short && git diff` 와 함께 `git log --oneline origin/<prBase>..HEAD`·`git diff origin/<prBase>...HEAD` 도 본다. 계획서 `## Commits` 에 없는 커밋이 있으면 보고한다
 4. 아래 체크리스트를 검토한다
 5. **표준 검증 스크립트를 직접 다시 돌린다**: `scripts/verify/<레포>.sh` (bznav-web은 `bznav-web.sh <앱|packages/<pkg>>`, zent-packages는 `zent-packages.sh <패키지명>`, bznav-rn-app은 `bznav-rn-app.sh`). 워크트리면 `HERMES_VERIFY_DIR=<워크트리>` 를 호출마다 붙이고(없으면 메인 체크아웃을 검증한다), 결과 표 제목의 브랜치·SHA 를 계획서 Work ref 와 대조한다. 에이전트가 보고한 결과와 다르면 그 차이를 보고한다
-6. **워크트리(레포 작업)를 리뷰했으면 결론을 계획서에 한 줄 남긴다**(hermes 자체 작업처럼 레포 워크트리가 없으면 건너뛴다): `scripts/review-result.sh --plan <계획서> --dir <리뷰한 트리> --verdict 승인|수정필요 --note "<한 줄 요약>"` — `- Review result: 승인 @<HEAD>` 줄이 생기고, 에이전트의 `ship.sh` 가 이 줄의 SHA 와 현재 HEAD 를 대조한다(리뷰 뒤 새 커밋이 있으면 경고). 코드·계획서의 다른 부분은 고치지 않는다
+6. **워크트리(레포 작업)를 리뷰했으면 결론을 계획서에 한 줄 남긴다**(hermes 자체 작업처럼 레포 워크트리가 없으면 건너뛴다): `scripts/review-result.sh --plan <계획서> --dir <리뷰한 트리> --verdict 승인|수정필요 --note "<한 줄 요약>"` — `- Review result: 승인 @<HEAD> · tree <리뷰한 내용>` 줄이 생긴다. 커밋 전 변경까지 포함한 워크트리 내용을 기록하므로 커밋 전에 리뷰해도 된다. 에이전트의 `ship.sh` 는 커밋된 내용이 리뷰한 내용과 같은지 본다(달라졌으면 경고). 코드·계획서의 다른 부분은 고치지 않는다
 7. 결과를 보고한다
 
 ## 체크리스트

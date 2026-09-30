@@ -55,16 +55,16 @@
 ### 3단계: 작업 브랜치 → 디스패치
 - **디스패치 전에 작업 브랜치·워크트리.** 먼저 `docs/knowledge/common/git.md` "작업 브랜치 만들기" 절을 읽고, `scripts/new-branch.sh` 가 `prBase` 에서 `.worktrees/<레포>/<슬러그>` 로 딴다(메인 체크아웃은 건드리지 않는다). **브랜치가 이미 있으면**(로컬·원격) 상태를 알려 주고 "그대로 이어 쓸까요?" → `--reuse`. 건너뛴 레포에는 디스패치하지 않는다
 - `/call` 은 브랜치를 **뜬 에이전트가 선택지로 묻는다**(최근 작업 브랜치 후보 · 새 브랜치)
-- **`scripts/delegate.sh <에이전트> --cwd <워크트리> --plan <계획서>`** — `--plan` 없이는 띄우지 않는다. 계획서 경로가 지시 맨 앞에 들어가고, Work ref 에 워크트리·브랜치·pane 이 적힌다. FE 세션에는 **보호 훅**이 걸린다(git commit 직접·`add -A`·push·`gh pr` 차단)
+- **`scripts/delegate.sh <에이전트> --cwd <워크트리> --plan <계획서>`** — `--plan` 없이는 띄우지 않는다. 계획서 경로가 지시 맨 앞에 들어가고, Work ref 에 워크트리·브랜치·pane 이 적힌다. FE 세션에는 **보호 훅**이 걸린다(git commit·push·`gh pr create` 직접, `add -A` 차단 — `commit.sh`·`ship.sh` 로만)
 - **배치는 workspace = 레포**, 그 한 탭에 pane 을 나란히(`🤖 <에이전트> · <브랜치>`). `reviewer`·단발 조사는 `--here`
-- **레포를 넘는 작업은 순차로** — 공유 패키지를 먼저 끝내고 소비 레포에 넘긴다. 독립적인 서비스는 동시에. 같은 기능을 여러 서비스에 넣으면 계획서에 **공통 스펙**(문구·동작·env 키)을 적는다
+- **레포를 넘는 작업은 순차로** — 공유 패키지를 먼저 끝내고 소비 레포에 넘긴다. 서로 독립적인 서비스는 동시에. 같은 기능을 여러 서비스에 넣으면 계획서에 **공통 스펙**(문구·동작·env 키)을 적는다
 - 기본은 **프롬프트 없이 pane 을 열고 그 안에서 지시**한다. 한 번에 끝나는 조사만 프롬프트를 싣는다. 프롬프트 구성: `.claude/rules/dispatch-protocol.md`
 
 ### 4단계: 작업 · 커밋 (pane 에서 반복)
 - 사용자는 pane 에서 여러 번 요청한다. 에이전트는 요청마다 시작할 때 Status `in_progress`, 끝나면 `ready_for_review` 로 바꾸고 계획서 `## 지시`·Progress·결과를 쌓는다 → 현황판 카드가 **진행 중 ↔ 리뷰** 를 오간다(에이전트가 working 이면 진행 중)
 - 에이전트는 작업한 뒤 **같은 검증 스크립트**(`scripts/verify/*.sh`, 워크트리면 `HERMES_VERIFY_DIR`)를 돌리고 출력 표를 그대로 보고한다
 - **커밋은 사용자가 "커밋해줘" 라고 할 때만, `scripts/commit.sh` 로만.** 지정 파일만 스테이징 → 엄격 검증 → 검증 전후가 같을 때만 커밋 → 계획서 `## Commits` 기록. 메인 체크아웃·보호 브랜치·남의 스테이징·검증 실패면 **거부**하고 이유를 전해 사용자에게 묻는다
-- **레포 하나짜리 작업은 pane 에서 끝까지 간다** — "리뷰해줘" → 에이전트가 옆에 reviewer pane(`delegate.sh reviewer --cwd <워크트리> --here`, 결론은 `review-result.sh` 로 계획서에), "PR 올려줘" → 에이전트가 `scripts/ship.sh` 미리보기 → 사용자 확인 → draft PR(`docs/knowledge/common/git.md` "PR 올리기"·"PR 제목·본문"). 헤르메스로 돌아오지 않는다
+- **레포 하나짜리 작업은(경량·정식 무관) pane 에서 끝까지 간다** — 순서는 작업 → 리뷰(선택) → 커밋 → PR. 리뷰는 커밋 전 변경까지 포함한 내용을 기록하므로 커밋 전후 어느 쪽에 해도 되고, 안 해도 커밋·PR 은 막히지 않는다(PR 전에 한 번 더 묻는다). "리뷰해줘" → 에이전트가 옆에 reviewer pane(`delegate.sh reviewer --cwd <워크트리> --here`, 결론은 `review-result.sh` 로 계획서에), "PR 올려줘" → 에이전트가 `scripts/ship.sh` 미리보기 → 사용자 확인 → draft PR(`docs/knowledge/common/git.md` "PR 올리기"·"PR 제목·본문"). 헤르메스로 돌아오지 않는다
 
 ### 5단계: 검증 · 보고 · push/PR
 - (여러 레포 작업 · 헤르메스가 맡은 작업) `reviewer` 에게 계획서 경로 + 대상 레포(워크트리면 `--cwd <워크트리>`)를 넘겨 리뷰. 수정 필요 항목은 사용자에게 보여 주고 확인받은 뒤, 그 작업을 하던 FE 에이전트 pane 에서 이어서 지시한다
@@ -74,7 +74,7 @@
 - **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 예전 계획서에 html 이 있으면 `commit.sh`·현황판이 `plan-md` 를 같이 맞춘다
 
 ### 6단계: 정리
-- 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 계획서 `plans/archive/<유형>/`(md+html), 이슈 `issues/archive/`(+ 연결 경량 계획서), 이슈 워크트리 정리(미커밋·push 안 된 커밋이 있으면 남긴다)
+- 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 계획서 `plans/archive/<유형>/`(md, 예전 html 이 있으면 함께), 이슈 `issues/archive/`(+ 연결 경량 계획서), 이슈 워크트리 정리(미커밋·push 안 된 커밋이 있으면 남긴다)
 - 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
 - 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
