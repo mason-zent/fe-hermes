@@ -5063,7 +5063,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <path data-edge-from="review" data-edge-to="commit" data-edge-label="승인" data-edge-key="7" data-edge-id="r2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="800.2,682;800.2,702;889.2,702;889.2,509;857.2,509" d="M 800.2 682 L 800.2 702 L 889.2 702 L 889.2 509 L 857.2 509" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="issues" data-edge-to="req" data-edge-key="8" data-edge-id="s1" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="48,774;20,774;20,108;48,108" d="M 48 774 L 20 774 L 20 108 L 48 108" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="plan" data-edge-to="planfile" data-edge-key="9" data-edge-id="s2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="413,287;413,740" d="M 413 287 L 413 740" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-        <path data-edge-from="pr" data-edge-to="board" data-edge-key="10" data-edge-id="s3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="987.4000000000001,555;987.4000000000001,740" d="M 987.4000000000001 555 L 987.4000000000001 740" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+        <path data-edge-from="planfile" data-edge-to="board" data-edge-label="처음부터 카드" data-edge-key="10" data-edge-id="s3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="482,774;918.4000000000001,774" d="M 482 774 L 918.4000000000001 774" class="a-dashed" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <path data-edge-from="route" data-edge-to="outofscope" data-edge-label="모호" data-edge-key="11" data-edge-id="x1" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="306,265;322,265;322,442;237,442;237,421" d="M 306 265 L 322 265 L 322 442 L 237 442 L 237 421" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
         <path data-edge-from="branch" data-edge-to="skipped" data-edge-label="이미 있음" data-edge-key="12" data-edge-id="x2" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="520,265;504,265;504,442;589,442;589,421" d="M 520 265 L 504 265 L 504 442 L 589 442 L 589 421" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
         <path data-edge-from="commit" data-edge-to="commitstop" data-edge-label="거부" data-edge-key="13" data-edge-id="x3" data-composition-routing="workflow-v2-auto" data-edge-role="error" data-composition-points="719.2,521;703.2,521;703.2,296;788.2,296;788.2,353" d="M 719.2 521 L 703.2 521 L 703.2 296 L 788.2 296 L 788.2 353" class="a-security" data-animate="edge" style="--step:12" stroke-width="1.4" marker-end="url(#arrowhead-security)"/>
@@ -5247,8 +5247,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="413" y="796" class="t-database" font-size="7" text-anchor="middle">Review result · PR 링크</text>
         </g>
 
-        <g id="node-board" data-node-id="board" data-node-label="현황판 /board" tabindex="0" role="button" aria-label="Focus 현황판 /board, 카드가 파일을 따른다, 기록 · 현황판 › 커밋 · PR" aria-pressed="false" data-node-kind="database" data-node-sublabel="카드가 파일을 따른다" data-node-tag="제목을 누르면 계획서" data-node-context="기록 · 현황판 › 커밋 · PR">
-          <title>현황판 /board · 카드가 파일을 따른다 · 기록 · 현황판 › 커밋 · PR · 제목을 누르면 계획서</title>
+        <g id="node-board" data-node-id="board" data-node-label="현황판 /board" tabindex="0" role="button" aria-label="Focus 현황판 /board, 계획서가 생기면 카드, 기록 · 현황판 › 커밋 · PR" aria-pressed="false" data-node-kind="database" data-node-sublabel="계획서가 생기면 카드" data-node-tag="Status 따라 칸 이동" data-node-context="기록 · 현황판 › 커밋 · PR">
+          <title>현황판 /board · 계획서가 생기면 카드 · 기록 · 현황판 › 커밋 · PR · Status 따라 칸 이동</title>
           <rect x="918.4000000000001" y="740" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="918.4000000000001" y="740" width="138" height="68" rx="6" class="c-database" data-animate="node" style="--step:12" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(924.4000000000001 746) scale(0.6875)">
@@ -5256,8 +5256,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="987.4000000000001" y="761" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">현황판 /board</text>
-          <text data-detail="context" x="987.4000000000001" y="778" class="t-muted" font-size="8" text-anchor="middle">카드가 파일을 따른다</text>
-        <text data-detail="fine" x="987.4000000000001" y="796" class="t-database" font-size="7" text-anchor="middle">제목을 누르면 계획서</text>
+          <text data-detail="context" x="987.4000000000001" y="778" class="t-muted" font-size="8" text-anchor="middle">계획서가 생기면 카드</text>
+        <text data-detail="fine" x="987.4000000000001" y="796" class="t-database" font-size="7" text-anchor="middle">Status 따라 칸 이동</text>
         </g>
 
         <!-- Edge labels -->
@@ -5295,7 +5295,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         </g>
 
 
-
+        <g data-detail="context" data-edge-from="planfile" data-edge-to="board" data-edge-label="처음부터 카드" data-edge-key="10" data-edge-id="s3">
+          <rect x="664" y="754" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="700.2" y="764" class="t-edge-dashed" font-size="8" text-anchor="middle">처음부터 카드</text>
+        </g>
         <g data-detail="context" data-edge-from="route" data-edge-to="outofscope" data-edge-label="모호" data-edge-key="11" data-edge-id="x1">
           <rect x="264.5" y="422" width="30" height="14" rx="3" class="c-mask"/>
           <text x="279.5" y="432" class="t-edge-security" font-size="8" text-anchor="middle">모호</text>
@@ -5517,7 +5520,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <ul>
           <li>① 요청 — 대화 · /call · 이슈 [처리 시작]</li>
           <li>② 판단 — 헤르메스: 📋 경량으로 진행합니다 — 이유 · 경로 (/call 은 에이전트가 알림)</li>
-          <li>③ 계획서 — plans/task/…md 자동 생성. 보여 주지 않고 승인도 없다</li>
+          <li>③ 계획서 — plans/task/…md 자동 생성. 보여 주지 않고 승인도 없다. 이때 현황판에 카드가 생긴다</li>
           <li>④ pane — 브랜치·워크트리 준비. /call 은 에이전트가 브랜치를 묻고, 대화로 온 작업은 헤르메스가 미리 만든다</li>
           <li>⑤ 작업 — 요청 → 수정 → 검증 표 보고를 여러 번</li>
           <li>⑥ 리뷰 (선택) — &quot;리뷰해줘&quot; → 옆 reviewer pane. 수정 필요면 ⑤ 로</li>

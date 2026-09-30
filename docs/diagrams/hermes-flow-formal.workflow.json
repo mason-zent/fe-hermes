@@ -48,7 +48,7 @@
           "agent",
           "board"
         ],
-        "note": "이슈 → 계획서 Checkpoint·Commits → 현황판 칸반. 현황판은 파일을 따라 움직입니다."
+        "note": "이슈 → 계획서(만들어지면 현황판 카드) → Checkpoint·Commits 가 쌓이며 카드가 Status 를 따라 움직입니다."
       },
       {
         "id": "knowledge",
@@ -366,9 +366,9 @@
       "col": 4,
       "type": "database",
       "label": "현황판 /board",
-      "sublabel": "칸반 · 동작 중 에이전트",
+      "sublabel": "계획서가 생기면 카드",
       "width": 138,
-      "tag": "파일을 따라 움직인다"
+      "tag": "Status 따라 칸 이동"
     },
     {
       "id": "know",
@@ -490,7 +490,8 @@
       "id": "s5",
       "from": "agent",
       "to": "board",
-      "variant": "dashed"
+      "variant": "dashed",
+      "label": "Status"
     },
     {
       "id": "s6",
