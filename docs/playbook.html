@@ -322,12 +322,10 @@
   <main>
     <section id="start">
       <h2>시작하기</h2>
-      <p>fe-hermes 폴더에서 Claude Code를 열면 그 세션이 곧 헤르메스가 됩니다. 처음 한 번 <code>scripts/setup.sh</code>를 돌려 담당 레포들을 <code>repos/&lt;레포&gt;</code> 링크로 연결합니다. 레포들이 fe-hermes 상위 폴더에 나란히 있으면 인자 없이, 다른 곳이면 <code>--root &lt;경로&gt;</code>를 줍니다.</p>
-      <p><strong>잊어도 괜찮습니다.</strong> 링크가 없는 채로 <code>claude</code>를 켜면 터미널에 안내가 뜨고, 아무 말이나 입력하면 헤르메스가 먼저 "레포 연결을 지금 할까요?"라고 물어 <code>setup.sh</code>를 대신 돌립니다(기본 위치 — 거기서 레포를 찾았을 때만 / 다른 폴더 지정 / 나중에). 새 레포가 <code>hermes.config.json</code>에 추가돼 링크가 빠졌을 때도 같습니다.</p>
+      <p>fe-hermes 폴더에서 Claude Code를 열면 그 세션이 곧 헤르메스가 됩니다. <strong>따로 설정할 것은 없습니다.</strong> 켤 때마다 담당 레포 연결(<code>repos/&lt;레포&gt;</code> 링크)을 확인하고, 빠진 게 있으면 fe-hermes 상위 폴더에서 찾아 알아서 연결합니다. 거기에도 없는 레포가 있을 때만 헤르메스가 위치를 묻습니다.</p>
 <pre><code>git clone https://github.com/mason-zent/fe-hermes.git
 cd fe-hermes
-scripts/setup.sh
-claude
+claude          # 🔗 레포 7개를 자동으로 연결했습니다 …
 
 # 그 다음 자연어로 요청하거나 슬래시 커맨드를 씁니다
 /status
@@ -800,7 +798,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   ├── feature/  bugfix/  refactor/
 │   └── archive/               <span class="c">종료된 계획서 (gitignore 대상)</span>
 └── scripts/
-    ├── setup.sh               <span class="c">팀원 최초 설정 — repos/ 링크 + 도구 점검</span>
+    ├── setup.sh               <span class="c">repos/ 링크 + 도구 점검 — claude 를 켤 때 훅(hooks/setup-check.py)이 알아서 돌린다</span>
     ├── verify/&lt;레포&gt;.sh        <span class="c">표준 검증 (lint·타입·테스트 → 표 요약). 에이전트·reviewer 공용</span>
     ├── delegate.sh            <span class="c">위임을 herdr pane 에서 보이게 실행 (claude --agent)</span>
     ├── agent-monitor.py       <span class="c">백그라운드 서브에이전트 로그 실시간 모니터 (렌더러)</span>
