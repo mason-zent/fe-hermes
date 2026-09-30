@@ -52,5 +52,5 @@
 - **개발·PR 브랜치는 별개다** — **5개 앱 모두 PR base 는 `dev`**, 릴리즈는 `prd-<앱>`. 문서 기준(`prd-<앱>`)과 PR base(`dev`)를 같은 것으로 취급하지 않는다
 - **PR 은 헤르메스가 만든다.** 원문 `.github/skills/create-pr` 는 참고만 — 그 스킬은 아직 brand·refund·sena 를 `dev-ecs` 로 보내는 base 추론을 적고 있어 따르면 폐기 브랜치로 간다
 - ⚠️ **`dev-ecs` 는 폐기됐다.** 레포에 `chore: dev-ecs 브랜치 제거에 따른 워크플로우 및 문서 정리` 커밋이 있고, 2026-09-09 이후 갱신이 없으며 `dev` 에 없는 커밋도 없다. base 로 쓰지 않는다
-- **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있고, 5개 앱 모두 base 가 `dev` 라 어느 앱으로 따든 같다. `/branch REF-#### bznav:<앱>`
+- **`packages/*` 작업도 브랜치는 앱으로 딴다.** 모노레포라 앱으로 딴 워크트리에 `packages/**` 가 함께 들어 있고, 5개 앱 모두 base 가 `dev` 라 어느 앱으로 따든 같다. `scripts/new-branch.sh REF-#### bznav:<앱>`
 - 커밋 `type(scope): 설명` (예 `fix(refund): REF-3728 ...`). 응답·PR·리뷰는 한글 존댓말

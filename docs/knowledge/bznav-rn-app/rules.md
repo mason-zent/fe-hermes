@@ -9,7 +9,7 @@
 - `yarn env:*`(`eas env:pull`)도 실행하지 않는다 — EAS 의 시크릿을 로컬 `.env` 로 끌어온다
 - 패키지 매니저는 **yarn 1**(`yarn.lock`, 버전은 `package.json` `packageManager`). pnpm·npm 으로 설치하지 않고 lockfile 을 새로 만들지 않는다. 설치는 `yarn install --frozen-lockfile`, Node 는 `.nvmrc`(Node 20 계열 — `gotchas.md`)
 - **expo CLI 명령은 `APP_VARIANT` 가 들어간 package 스크립트로만 돌린다**(`start:dev:lan`·`prebuild:clean:dev`·`ios-device:dev` …). `app.config.js` 가 `APP_VARIANT` 없이 throw 하므로 `yarn start`·`yarn ios`·`yarn android` 는 실패한다
-- 작업 브랜치는 **`prd` 에서** 딴다. 이름 `feature/v<앱버전>/<티켓>`(예 `feature/v5.1.2/SENA-269`). 헤르메스 `/branch`·`scripts/new-branch.sh` 는 티켓만 주면 `feature/<티켓>` 을 만드므로 **브랜치 이름을 `feature/v<앱버전>/<티켓>` 전체로 준다**(슬래시가 있으면 그대로 쓴다). PR 은 헤르메스 담당(`## Git`)
+- 작업 브랜치는 **`prd` 에서** 딴다. 이름 `feature/v<앱버전>/<티켓>`(예 `feature/v5.1.2/SENA-269`). 헤르메스 `scripts/new-branch.sh` 는 티켓만 주면 `feature/<티켓>` 을 만드므로 **브랜치 이름을 `feature/v<앱버전>/<티켓>` 전체로 준다**(슬래시가 있으면 그대로 쓴다). PR 은 헤르메스 담당(`## Git`)
 - **피그마·UI 작업에서 디자인 시스템에 없는 컴포넌트·옵션은 만들지 않고 먼저 묻는다**(레포 `CLAUDE.md`). 무엇이 없는지, DS 에 추가할지를 함께 전달
 - UI 는 `AppText`(RN `Text` 직접 사용 금지) + NativeWind 토큰 클래스. 임의 hex·토큰 외 픽셀값·`cn()` 없는 조건부 클래스 금지(`.claude/rules/design-system-core.md`)
 - Mixpanel 이벤트는 **`TrackingService` 로만**. `mixpanel-react-native` 직접 import·`track()`·`identify()` 금지(`.claude/rules/tracking.md`)

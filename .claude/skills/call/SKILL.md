@@ -11,7 +11,7 @@ argument-hint: "<에이전트> — 예: bznav-plus-fe · refund-fe"
 권장 방식(CLAUDE.md 3단계 "프롬프트 없이 pane 을 열고 그 안에서 작업을 지시한다")을 한 번에 한다. **헤르메스는 띄우기만 한다.** 브랜치를 묻고 워크트리를 만드는 것, 요청을 받아 진행하는 것은 pane 안의 에이전트가 한다.
 
 ## 동작
-1. 인자 = 에이전트 이름(`.claude/agents/<이름>.md`). 없거나 틀리면 에이전트 목록을 보여 주고 묻는다. `reviewer` 는 이 스킬로 띄우지 않는다(`/review`)
+1. 인자 = 에이전트 이름(`.claude/agents/<이름>.md`). 없거나 틀리면 에이전트 목록을 보여 주고 묻는다. `reviewer` 는 이 스킬로 띄우지 않는다(리뷰는 헤르메스에게 "리뷰해줘" — 계획서·워크트리를 붙여 `delegate.sh reviewer` 로 띄운다)
 2. 바로 실행한다:
    ```bash
    scripts/delegate.sh <에이전트> --plan new "<에이전트> 작업 (pane 에서 지시)" --ask-branch

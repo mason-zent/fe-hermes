@@ -6,7 +6,7 @@
 
 ```
 /guide 그림                  ← 목록을 브라우저로 연다
-/guide pane                  ← 메뉴에서 "다이어그램" 선택
+/guide                       ← 메뉴에서 "다이어그램" 선택
 open docs/diagrams/index.html
 ```
 
@@ -58,7 +58,7 @@ open docs/diagrams/index.html
 
 ## 무엇을 그렸나
 
-요청 → 라우팅 → 작업 카드 → 승인 → `/branch` → 에이전트 pane → 구현·검증 → reviewer → 보고.
+요청 → 라우팅 → 작업 카드 → 승인 → 브랜치(`new-branch.sh`) → 에이전트 pane → 구현·검증 → reviewer → 보고.
 
 레인 5개로 **누가 무엇을 하는지**를 나눴다 — 사용자 / 헤르메스 / 멈춤·확인 필요 / FE 에이전트 / 정본·기록. 가이드 뷰 3개로 나눠 볼 수 있다.
 

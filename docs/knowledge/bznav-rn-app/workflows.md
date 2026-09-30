@@ -3,7 +3,7 @@
 체크리스트대로 진행하고, 보고서에 각 항목의 완료 여부를 적는다. 파일 패턴은 `patterns.md` 번호를 참고. 모든 작업 보고에 **배포 경로(코드 푸시 가능 / 스토어 빌드 필요)** 를 적는다(판단은 E).
 
 ## 0. 시작 전 (공통)
-1. 워크트리 경로에서 `git status --short --branch` — `prd` 에서 딴 `feature/v<앱버전>/<티켓>` 인지. `feature/<티켓>`(헤르메스 `/branch` 기본 이름)이면 헤르메스에 이름 확인을 요청하고, `main`·`develop` 위면 멈추고 보고
+1. 워크트리 경로에서 `git status --short --branch` — `prd` 에서 딴 `feature/v<앱버전>/<티켓>` 인지. `feature/<티켓>`(헤르메스 `scripts/new-branch.sh` 기본 이름)이면 헤르메스에 이름 확인을 요청하고, `main`·`develop` 위면 멈추고 보고
 2. Node·설치는 `rules.md` 필수 절·`gotchas.md` "설치·검증"대로
 3. 웹 화면 변경이 섞여 있으면(웹뷰 안 UI·웹 쪽 브릿지 수신) 그 부분은 헤르메스에 넘긴다
 

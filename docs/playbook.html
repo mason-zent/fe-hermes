@@ -298,7 +298,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-09-15</span>
-      <span>agents 13 · skills 9</span>
+      <span>agents 13 · skills 6</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
 <!-- END:generated:last-sync -->
@@ -328,7 +328,7 @@ cd fe-hermes
 claude          # 🔗 레포 7개를 자동으로 연결했습니다 …
 
 # 그 다음 자연어로 요청하거나 슬래시 커맨드를 씁니다
-/status
+현황 알려줘
 hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
       <div class="note">
         <strong>헤르메스는 코드를 직접 쓰지 않습니다.</strong> 탐색과 계획, 배분, 검증, 보고만 합니다. 실제 파일 수정은 항상 담당 FE 에이전트가 자기 레포 안에서만 합니다. 그래서 여러 서비스에 걸친 작업도 서로 파일을 건드리지 않고 동시에 진행됩니다.
@@ -464,7 +464,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
 
     <section id="skills">
       <h2>슬래시 커맨드</h2>
-      <p>9개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
+      <p>6개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
       <div class="note">
         <strong>슬래시 커맨드는 헤르메스 세션에서만 씁니다.</strong> FE 에이전트 pane 에는 슬래시 커맨드가 아예 노출되지 않습니다(도구는 Read·Edit·Write·Bash 뿐). 라우팅·계획서·디스패치는 팀리드의 일이지 담당 엔지니어의 일이 아니기 때문입니다.
         <br><br>
@@ -480,49 +480,15 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
           <dl>
             <dt>기능</dt><dd>여러 레포·API·구조 변경이면 정식 계획서, 서비스 간 같은 기능은 공통 스펙(문구·동작·env 키)을 계획서에 적고 공유 패키지를 먼저</dd>
             <dt>버그</dt><dd>원인이 프론트·API·공유 패키지 중 어디인지 먼저 가르고, 재현 조건을 적은 뒤 수정 전·후를 같은 방법으로 비교합니다(<code>AGENTS.md</code> 5절)</dd>
+            <dt>리뷰</dt><dd>"리뷰해줘" — reviewer 를 계획서·워크트리에 붙여 띄우고, 표준 검증 스크립트를 다시 돌려 에이전트 보고와 비교합니다</dd>
+            <dt>현황</dt><dd>"현황 알려줘" — 레포별 브랜치·미커밋·최근 커밋, 보호 브랜치에 서 있는 메인 체크아웃 경고. 계획서는 <code>/board</code></dd>
+            <dt>브랜치</dt><dd>디스패치 전에 헤르메스가 <code>scripts/new-branch.sh</code> 로 <code>prBase</code> 에서 워크트리를 땁니다(<code>docs/knowledge/common/git.md</code>). 이미 있으면 이어 쓸지 묻습니다</dd>
           </dl>
 <pre><code>refund 파트너 목록에 상태 필터와 검색 추가해줘
 hub와 refund 사이드바에 공지 배너 똑같이 넣어줘
-환급 콘솔 파트너 목록 페이지네이션이 2페이지에서 멈춰 — 원인 찾아줘</code></pre>
-        </article>
-
-        <article class="cmd">
-          <div class="cmd-head"><kbd>/branch <span class="arg">티켓|이름 대상...</span></kbd><span class="tag plain">디스패치 전</span></div>
-          <p class="what">작업을 시작하기 전에 <strong>작업 브랜치와 워크트리를 만듭니다.</strong> 로컬 작업 트리는 브랜치가 제각각이라, 확인 없이 FE 에이전트를 보내면 남의 작업 브랜치 위에 얹히거나 미커밋 변경과 섞입니다.</p>
-          <p class="what"><strong>기본은 워크트리입니다.</strong> 메인 체크아웃(<code>repos/&lt;레포&gt;</code>)은 그대로 두고 <code>.worktrees/&lt;레포&gt;/&lt;브랜치 슬러그&gt;</code>(hermes 안, gitignore)에 별도 작업 공간을 만듭니다. 그래서 <strong>레포에 미커밋 변경이 있거나 남이 다른 브랜치를 물고 있어도 시작할 수 있고, 한 레포에서 여러 작업을 동시에 돌릴 수 있습니다.</strong> 메인 체크아웃은 소스트리·IDE에서 보던 그대로 남습니다. 메인에서 바로 분기하려면 <code>--in-place</code>(이때는 미커밋 변경이 있으면 건너뜁니다).</p>
-          <p class="what">브랜치를 딸 기준은 <code>hermes.config.json</code>의 <code>prBase</code>(개발 브랜치)이고 문서·지식의 기준(운영 반영분)과 <strong>다릅니다</strong> — 콘솔 4개와 bznav 5개 앱은 모두 <code>dev</code>, zent-packages는 <code>main</code>입니다. (<code>dev-ecs</code>는 폐기됐습니다.) 이름은 전 레포 공통 관례인 <code>feature/REF-####</code>가 기본입니다. 만든 브랜치·base SHA·워크트리 경로는 계획서 Checkpoint의 <code>Work ref</code>에 기록되어 <code>/new</code> 이후 재개에 쓰입니다. 작업이 끝나면 <code>wt-sync</code>로 메인 체크아웃에 반영하고 <code>git worktree remove</code>로 정리합니다.</p>
-          <div class="flow"><span>대상·이름 확정</span><span>prBase 조회</span><span class="hi">워크트리 생성</span><span>origin 최신에서 분기</span><span>Checkpoint 기록</span></div>
-          <dl>
-            <dt>언제</dt><dd>계획서 승인 직후, FE 에이전트에 디스패치하기 바로 전</dd>
-            <dt>결과</dt><dd>레포별 <code>base SHA → 새 브랜치</code>와 워크트리 경로. 건너뛴 레포와 사유</dd>
-          </dl>
-<pre><code>/branch REF-3820 refund hub          # 콘솔 두 곳에 워크트리 생성
-/branch REF-3820 bznav:care-web      # bznav 는 앱을 지정
-/branch fix/qa-로그인-오류 care        # 이름 직접 지정
-/branch REF-3820 refund --in-place   # 워크트리 없이 메인에서 분기</code></pre>
-        </article>
-
-        <article class="cmd">
-          <div class="cmd-head"><kbd>/review <span class="arg">대상</span></kbd><span class="tag plain">read-only</span></div>
-          <p class="what">지정 레포의 커밋 전 변경사항(uncommitted diff)을 reviewer가 검토합니다. 관련 계획서가 있으면 그 기준으로 봅니다.</p>
-          <div class="flow"><span>레포 확정</span><span>계획서 찾기</span><span class="hi">reviewer</span><span>결과 보고</span><span>필요 시 재배분</span></div>
-          <dl>
-            <dt>언제</dt><dd>에이전트 작업 후 최종 확인, 또는 사람이 직접 고친 코드를 한 번 훑고 싶을 때</dd>
-            <dt>결과</dt><dd>승인 가능 / 수정 필요 + 파일:라인별 항목, lint·typecheck 실행 결과</dd>
-          </dl>
-<pre><code>/review hub-fe 메시지 템플릿 변경
-/review client-brics-refund</code></pre>
-        </article>
-
-        <article class="cmd">
-          <div class="cmd-head"><kbd>/status</kbd><span class="tag plain">인자 없음</span></div>
-          <p class="what">repos/에 연결된 담당 레포 전체의 git 현황과 진행 중인 계획서를 한 번에 봅니다. 작업을 시작하기 전 어디가 어수선한지 확인하는 용도입니다.</p>
-          <div class="flow"><span>브랜치</span><span>미커밋 변경</span><span>최근 커밋 5개</span><span class="hi">진행 중 plans</span></div>
-          <dl>
-            <dt>언제</dt><dd>세션 시작 시, 또는 다른 사람이 만든 변경이 남아 있는지 볼 때</dd>
-            <dt>결과</dt><dd>레포별 브랜치·변경 파일 수·최근 커밋 요약, 계획서 목록과 상태(승인 대기 / 진행 중)</dd>
-          </dl>
-<pre><code>/status</code></pre>
+환급 콘솔 파트너 목록 페이지네이션이 2페이지에서 멈춰 — 원인 찾아줘
+refund 변경 리뷰해줘
+현황 알려줘</code></pre>
         </article>
 
         <article class="cmd">
@@ -571,20 +537,17 @@ hub와 refund 사이드바에 공지 배너 똑같이 넣어줘
         </article>
 
         <article class="cmd wide">
-          <div class="cmd-head"><kbd>/guide <span class="arg">스킬 · pane · 열기 · 그림 · 팀 · 흐름 (선택)</span></kbd><span class="tag plain">read-only</span></div>
-          <p class="what">사용·확장 가이드를 터미널에 그대로 보여줍니다. 인자 없이 치면 <code>docs/extending.md</code>(스킬·에이전트 추가 방법)를 채팅에 출력하고, <code>스킬</code>을 붙이면 <strong>지금 쓸 수 있는 슬래시 커맨드 목록</strong>(이름·인자·설명)을 <code>.claude/skills</code>에서 읽어 보여줍니다. <code>pane</code>을 붙이면 현재 pane 오른쪽에 새 pane을 열고 <strong>선택형 메뉴</strong>를 띄웁니다 — 마우스 클릭 또는 ↑/↓·휠·숫자로 골라 Enter로 실행하며, 항목은 <strong>⚡ 실행·확인</strong>(① 스킬 목록·실행 ② 에이전트·담당 레포·라우팅 ③ git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(④ 플레이북 열기 ⑤ 서비스 맵 ⑥ 작업 흐름 ⑦ 확장 가이드) 두 그룹입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>의 frontmatter를 그때그때 읽으므로 스킬을 추가하면 메뉴에 자동으로 나오고, 번호를 고른 뒤 <kbd>⏎</kbd>로 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 <code>/&lt;스킬&gt;</code>을 실행합니다(기존 세션은 건드리지 않음). <kbd>v</kbd>는 SKILL.md 본문 보기입니다. 문서는 마크다운 뷰어(glow 또는 내장 <code>scripts/mdview.py</code>)로 서식 있게 열리고, 특정 파일은 <code>/guide pane &lt;파일&gt;</code>으로 직접 띄웁니다(herdr는 <code>herdr pane split</code>, tmux는 <code>split-window</code>, 둘 다 아니면 새 Ghostty 창). <code>열기</code>는 이 플레이북 HTML을, <code>그림</code>은 <strong>다이어그램 목록</strong>을 브라우저로 엽니다 — 담당 서비스 10개를 <strong>구조 · 화면 맵 · 요청 흐름</strong> 세 각도로 그린 인터랙티브 HTML이고(비즈넵 웹 5개와 모바일 앱은 화면 전수를 담은 심층 추가), 헤르메스 작업 흐름도 같이 있습니다. 노드를 클릭하면 상세가 뜨고 <code>SRC</code> 배지가 붙은 노드는 실제 파일을 가리킵니다. 각 그림은 <strong>대표 화면 하나를 정해 그 코드만</strong> 그린 것이라 같은 앱의 다른 화면에 그대로 옮기면 안 됩니다.</p>
-          <div class="flow"><span>스킬 · 문서 읽기</span><span class="hi">본문 그대로 출력</span><span>원본 경로 표시</span></div>
+          <div class="cmd-head"><kbd>/guide <span class="arg">파일 · 열기 · 그림 (선택)</span></kbd><span class="tag plain">read-only</span></div>
+          <p class="what">인자 없이 치면 현재 pane 오른쪽에 <strong>선택형 메뉴</strong>를 띄웁니다. 마우스 클릭 또는 ↑/↓·숫자로 골라 Enter, <kbd>q</kbd>로 닫습니다. 항목은 <strong>⚡ 실행·확인</strong>(스킬 목록·실행 · 에이전트·담당 레포·라우팅 · git 현황·진행 중 계획서)과 <strong>📘 문서</strong>(플레이북 · 다이어그램 · 서비스 맵 · 확장 가이드)입니다. 스킬 목록은 <code>.claude/skills/*/SKILL.md</code>를 그때그때 읽으므로 스킬을 추가하면 자동으로 나오고, 고른 뒤 인자를 입력하면 <strong>아래에 새 pane을 열어 별도 헤르메스 세션</strong>으로 실행합니다. <code>열기</code>는 이 플레이북을, <code>그림</code>은 <strong>다이어그램 목록</strong>(작업 흐름 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층)을 브라우저로 엽니다. 각 그림은 <strong>대표 화면 하나를 정해 그 코드만</strong> 그린 것이라 같은 앱의 다른 화면에 그대로 옮기면 안 됩니다.</p>
+          <div class="flow"><span>메뉴</span><span class="hi">스킬 · 에이전트 · git 현황 · 문서</span></div>
           <dl>
-            <dt>언제</dt><dd>헤르메스에게 뭘 시킬 수 있는지 훑을 때, 어느 레포 작업인지 헷갈릴 때, 스킬·에이전트 추가 절차가 기억나지 않을 때</dd>
-            <dt>결과</dt><dd>문서 본문 그대로. 파일은 수정하지 않음</dd>
+            <dt>언제</dt><dd>뭘 시킬 수 있는지 훑을 때, 어느 레포 작업인지 헷갈릴 때, 문서·다이어그램을 볼 때</dd>
+            <dt>결과</dt><dd>메뉴 pane 또는 브라우저. 파일은 수정하지 않음</dd>
           </dl>
-<pre><code>/guide           # 확장 가이드를 채팅에 출력
-/guide 스킬      # 쓸 수 있는 슬래시 커맨드 목록
-/guide pane      # 오른쪽 pane 에 선택형 메뉴 (herdr/tmux)
-/guide pane CLAUDE.md # 메뉴 대신 파일을 less 로
+<pre><code>/guide           # 오른쪽 pane 에 메뉴 (herdr/tmux)
+/guide CLAUDE.md # 메뉴 대신 파일을 뷰어로
 /guide 열기      # docs/playbook.html 을 브라우저로
-/guide 그림      # 다이어그램 목록 (서비스 10개 × 구조·화면 맵·요청 흐름)
-/guide 팀        # 에이전트 · 담당 레포 · 라우팅 기준</code></pre>
+/guide 그림      # 다이어그램 목록</code></pre>
         </article>
 
         <article class="cmd wide">
@@ -676,7 +639,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
               <tbody>
                 <tr><td>📁</td><td>레포 이름</td><td>청록</td></tr>
                 <tr><td>🌿</td><td>작업 브랜치</td><td>초록</td></tr>
-                <tr><td>⚠️</td><td><strong>보호 브랜치</strong> — <code>prd</code> <code>main</code> <code>master</code> <code>dev</code> <code>prd-*</code> <code>release/*</code>. 여기서 코드를 고치면 안 됩니다. <code>/branch</code> 로 작업 브랜치를 먼저 만드세요</td><td>빨강·굵게</td></tr>
+                <tr><td>⚠️</td><td><strong>보호 브랜치</strong> — <code>prd</code> <code>main</code> <code>master</code> <code>dev</code> <code>prd-*</code> <code>release/*</code>. 여기서 코드를 고치면 안 됩니다. 헤르메스에게 작업 브랜치를 먼저 만들어 달라고 하세요(<code>scripts/new-branch.sh</code>)</td><td>빨강·굵게</td></tr>
                 <tr><td><code>✎</code></td><td>수정된 파일 수</td><td>노랑</td></tr>
                 <tr><td><code>+</code></td><td>추가된 파일 수 (신규·스테이징)</td><td>초록</td></tr>
                 <tr><td><code>-</code></td><td>삭제된 파일 수</td><td>빨강</td></tr>
@@ -772,7 +735,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 ├── .claude/
 │   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · packages-fe · reviewer</span>
 │   ├── rules/                 <span class="c">language · coding-standards · git-workflow · dispatch-protocol</span>
-│   ├── skills/                <span class="c">call · branch · review · status · board · monitor · diagram · sync · guide</span>
+│   ├── skills/                <span class="c">call · board · sync · diagram · guide · monitor</span>
 │   └── settings.json
 ├── .sync/
 │   └── snapshots/             <span class="c">레포별 기준 브랜치 지문 baseline (/sync 비교 기준)</span>
@@ -793,7 +756,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── monitor-pane.sh        <span class="c">모니터를 pane 에 띄움·재사용 (/monitor)</span>
     ├── board.sh               <span class="c">현황판 서버를 pane 에 띄우고 브라우저로 (/board) — 서버·화면은 board/</span>
     ├── archive-plans.sh
-    ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide pane)</span>
+    ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)</span>
     ├── mdview.py              <span class="c">터미널 마크다운 뷰어 (glow 없을 때 내장 렌더러)</span>
     └── sync-fingerprint.mjs   <span class="c">기준 브랜치 지문 생성·비교</span></code></pre>

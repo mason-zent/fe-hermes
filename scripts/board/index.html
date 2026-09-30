@@ -180,7 +180,7 @@
       in_progress: [['진행 상황', (card) => `${card.id} 이슈 진행 상황을 알려줘.`]],
     },
     plan: {
-      planned: [['진행 지시', (card) => `${card.id} 계획서대로 진행하자. 결정 사항이 확정됐는지, 대상 레포 브랜치·미커밋 상태를 먼저 확인해 보고하고, 내 확인 뒤 /branch 로 워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄워줘(scripts/delegate.sh --cwd). 헤르메스가 직접 코드를 고치지 않는다.`]],
+      planned: [['진행 지시', (card) => `${card.id} 계획서대로 진행하자. 결정 사항이 확정됐는지, 대상 레포 브랜치·미커밋 상태를 먼저 확인해 보고하고, 내 확인 뒤 scripts/new-branch.sh 로 워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄워줘(scripts/delegate.sh --cwd). 헤르메스가 직접 코드를 고치지 않는다.`]],
       in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`]],
       blocked: [['막힌 것 풀기', (card) => `${card.id} 가 막혀 있다(${card.blocked}). 무엇이 필요한지 정리해줘.`]],
       // 헤르메스를 거치지 않는다 — reviewer 를 계획서의 담당 레포 workspace(워크트리)에 바로 띄운다

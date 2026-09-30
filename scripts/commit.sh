@@ -63,7 +63,7 @@ if [ "$TOP" = "$MAIN" ] && [ $ALLOW_MAIN = 0 ]; then
   fail "메인 체크아웃(repos/$REPO)이다. 워크트리에서 커밋하거나, 사용자가 명시하면 --allow-main-checkout"
 fi
 git -C "$TOP" worktree list --porcelain | grep -qxF "worktree $TOP" || [ "$TOP" = "$MAIN" ] || fail "등록된 워크트리가 아니다: $TOP"
-BRANCH="$(git -C "$TOP" symbolic-ref --short -q HEAD)" || fail "detached HEAD 다 — 브랜치를 만든 워크트리에서 커밋한다(/branch)"
+BRANCH="$(git -C "$TOP" symbolic-ref --short -q HEAD)" || fail "detached HEAD 다 — 브랜치를 만든 워크트리에서 커밋한다(scripts/new-branch.sh)"
 case "$BRANCH" in
   dev|main|master|stg|prd|prd-*|release/*|dev-*) fail "보호 브랜치($BRANCH)에는 커밋하지 않는다" ;;
 esac

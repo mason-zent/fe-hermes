@@ -20,7 +20,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 브랜치
 
-- 작업 브랜치는 **`prd` 에서 딴 `feature/v<앱버전>/<티켓>`** 이다. 헤르메스 `/branch` 기본 이름은 `feature/<티켓>` 이므로, 브랜치가 그렇게 돼 있으면 사용자에게 알린다. 릴리스·핫픽스 브랜치와 PR 대상은 `rules.md` `## Git`
+- 작업 브랜치는 **`prd` 에서 딴 `feature/v<앱버전>/<티켓>`** 이다. 헤르메스 `scripts/new-branch.sh` 기본 이름은 `feature/<티켓>` 이므로, 브랜치가 그렇게 돼 있으면 사용자에게 알린다. 릴리스·핫픽스 브랜치와 PR 대상은 `rules.md` `## Git`
 - `main`·`develop` 은 기준으로 쓰지 않는다
 
 ## 시작 전 (작업 크기와 무관하게 항상)
