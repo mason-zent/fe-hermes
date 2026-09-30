@@ -31,7 +31,7 @@ import { join, dirname, relative, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
-import { archiveBundle, listHistory, readHistoryItem } from './archive.mjs'
+import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -696,6 +696,7 @@ const toTrash = (relPath) => {
 const archiveCard = async (id) => {
   const moved = []
   const notes = []
+  let lastBundle = null
   if (id.startsWith('issues/')) {
     const path = safePath(id, 'issues')
     if (!path || basename(path) === 'README.md') return { error: '이슈 파일을 찾지 못했어요' }
@@ -709,14 +710,20 @@ const archiveCard = async (id) => {
     // 연결된 계획서와 한 폴더로 묶어 보관한다(archive.mjs) — 이슈 plan: 은 새 위치로 고쳐진다
     const bundle = archiveBundle(id)
     if (bundle.error) return { error: bundle.error }
+    lastBundle = bundle
     moved.push(...bundle.moved)
   } else {
     const path = safePath(id, 'plans')
     if (!path) return { error: '계획서를 찾지 못했어요' }
     const bundle = archiveBundle(id)
     if (bundle.error) return { error: bundle.error }
+    lastBundle = bundle
     moved.push(...bundle.moved)
   }
+  // 보관한 것만 로컬 커밋(push 는 헤르메스)
+  const committed = commitArchive([lastBundle])
+  if (committed.sha) moved.push(`커밋 ${committed.sha}`)
+  if (committed.error) notes.push(`커밋하지 못했어요 — ${committed.error}`)
   return { moved: moved.filter(Boolean), notes }
 }
 

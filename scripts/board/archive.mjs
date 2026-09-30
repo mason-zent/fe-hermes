@@ -10,12 +10,13 @@
  * 이슈의 plan: 과 계획서의 Issue: 는 새 위치로 고쳐 서로를 가리키게 한다.
  * 현황판 [아카이브](server.mjs) · 30일 안전망(archive-plans.sh) · 예전 plans/archive·issues/archive 이전이 모두 이 함수를 쓴다.
  *
- * 사용: node scripts/board/archive.mjs <issues/…md | plans/…md> [--dry-run]
+ * 사용: node scripts/board/archive.mjs <issues/…md | plans/…md> [--dry-run] [--no-commit]   보관한 것만 로컬 커밋(push 는 안 함)
  *       node scripts/board/archive.mjs --migrate [--dry-run]   예전 plans/archive/**·issues/archive/* 를 이 형태로 옮긴다
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, readdirSync, statSync, rmSync } from 'node:fs'
 import { join, dirname, basename, normalize, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 export const ARCHIVE_DIR = 'archive'
@@ -92,7 +93,28 @@ export const archiveBundle = (rawId, { dryRun = false } = {}) => {
   }
   const meta = { archivedAt: stamp(), title: titleOf(issueText, planText), kind: issue ? 'issue' : 'plan', from: { issue: issue || null, plan: plan || null, html: html || null } }
   writeFileSync(join(ROOT, dir, 'meta.json'), `${JSON.stringify(meta, null, 2)}\n`)
-  return { dir, moved: [issue && `${issue} → ${target.issue}`, plan && `${plan} → ${target.plan}`, html && `${html} → ${target.html}`, leftIssue && `${leftIssue} 의 plan: → ${target.plan} (이슈는 열려 있어 남김)`].filter(Boolean) }
+  return { dir, title: meta.title, paths: [dir, issue, plan, html, leftIssue].filter(Boolean), moved: [issue && `${issue} → ${target.issue}`, plan && `${plan} → ${target.plan}`, html && `${html} → ${target.html}`, leftIssue && `${leftIssue} 의 plan: → ${target.plan} (이슈는 열려 있어 남김)`].filter(Boolean) }
+}
+
+/**
+ * 보관한 것만 로컬 커밋한다 — 옮긴 경로만 지정하므로 다른 세션이 스테이징해 둔 변경은 섞이지 않는다.
+ * push 는 하지 않는다(헤르메스가 맡는다). 반환: { sha } 또는 { error }
+ */
+export const commitArchive = (results) => {
+  const done = results.filter((result) => result.dir && !result.error && !result.dryRun)
+  if (!done.length) return { skipped: true }
+  const git = (...args) => execFileSync('git', ['-C', ROOT, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  try {
+    // 원래 자리(이슈)는 추적 중이면 삭제로, plans/** 는 gitignore 라 무시된다
+    const tracked = new Set(git('ls-files', '--', ...done.flatMap((result) => result.paths.slice(1))).split('\n').filter(Boolean))
+    const paths = [...new Set(done.flatMap((result) => [result.dir, ...result.paths.slice(1).filter((path) => tracked.has(path))]))]
+    git('add', '-A', '--', ...paths)
+    const title = done.length === 1 ? done[0].title || done[0].dir : `${done.length}건`
+    git('commit', '-q', '-m', `docs: 아카이브 — ${title}`, '--', ...paths)
+    return { sha: git('rev-parse', '--short', 'HEAD') }
+  } catch (error) {
+    return { error: String(error.stderr || error.message).trim().split('\n').slice(-2).join(' ') }
+  }
 }
 
 // ── 히스토리(현황판) ─────────────────────────────────────────────────────
@@ -106,6 +128,34 @@ const front = (text) =>
       .map((match) => [match[1], match[2].replace(/\s+#.*$/, '').trim()]),
   )
 const plainLine = (value) => value.replace(/\*\*/g, '').replace(/`/g, '').trim()
+
+// 레포 이름 하나로 맞춘다 — 이슈 repo: 는 그대로, 계획서는 Agent:(에이전트 이름)나 파일 이름에서 hermes.config.json 으로 찾는다
+// 표기는 이슈 repo: 와 같다(web-op · bznav-web/plus-web · bznav-web/packages · hermes)
+const REPO_OF_AGENT = (() => {
+  const map = new Map([['헤르메스', 'hermes'], ['hermes', 'hermes']])
+  try {
+    const config = JSON.parse(read('hermes.config.json'))
+    for (const repo of config.repos ?? []) {
+      for (const agent of repo.agents ?? []) map.set(agent, repo.name)
+      if (repo.packagesAgent) map.set(repo.packagesAgent, `${repo.name}/packages`)
+      for (const [app, info] of Object.entries(repo.apps ?? {})) if (info.agent) map.set(info.agent, `${repo.name}/${app}`)
+    }
+  } catch (error) {
+    // config 를 못 읽으면 헤르메스 이름만 맞춘다
+  }
+  return map
+})()
+const repoOfPlan = (agentField, dirName, workRef) => {
+  // Agent: 의 첫 낱말(괄호·공백 앞) — "(헤르메스 직접 …)" 처럼 괄호로 시작하면 괄호 안 첫 낱말
+  const word = agentField.replace(/^\(/, '').split(/[\s(—·+]/)[0]
+  if (REPO_OF_AGENT.has(word)) return REPO_OF_AGENT.get(word)
+  // 파일 이름 YYYYMMDD-<에이전트|hermes|헤르메스>-…
+  const fromName = dirName.replace(/^\d{8}-/, '')
+  for (const [agent, repo] of REPO_OF_AGENT) if (fromName.startsWith(`${agent}-`)) return repo
+  // Work ref 가 hermes 체크아웃이면 헤르메스 자체 작업
+  if (/^hermes\b/.test(workRef)) return 'hermes'
+  return ''
+}
 
 export const listHistory = () => {
   const base = join(ROOT, ARCHIVE_DIR)
@@ -130,7 +180,7 @@ export const listHistory = () => {
         archivedAt: meta.archivedAt || '',
         title: meta.title || issueMeta.title || planText.match(/^#\s+(.+)$/m)?.[1] || name,
         kind: issueText ? 'issue' : 'plan',
-        repo: issueMeta.repo || (agent.startsWith('(') ? '' : agent.split(/[\s(]/)[0]),
+        repo: issueMeta.repo || repoOfPlan(agent, name, plainLine(checkpoint.match(/^-\s*Work ref:\s*(.+)$/m)?.[1] ?? '')),
         issueKind: issueMeta.kind || '',
         severity: issueMeta.severity || '',
         status: issueMeta.status || plainLine(checkpoint.match(/^-\s*Status:\s*(.+)$/m)?.[1] ?? ''),
@@ -181,6 +231,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const results = args.includes('--migrate') ? migrateOld({ dryRun }) : args.filter((arg) => !arg.startsWith('--')).map((id) => archiveBundle(id, { dryRun }))
   if (!results.length) { console.error('사용: node scripts/board/archive.mjs <issues/…md | plans/…md> [--dry-run] | --migrate [--dry-run]'); process.exit(2) }
   let failed = 0
+  if (!dryRun && !args.includes('--no-commit')) {
+    const committed = commitArchive(results)
+    if (committed.sha) console.log(`커밋 ${committed.sha} (push 는 하지 않음)`)
+    if (committed.error) console.error(`⚠️ 커밋하지 못했어요: ${committed.error}`)
+  }
   for (const result of results) {
     if (result.error) { failed += 1; console.error(`✖ ${result.error}`); continue }
     console.log(`${dryRun ? '(미리 보기) ' : ''}✔ ${result.dir}`)
