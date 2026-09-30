@@ -474,7 +474,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
       <div class="cmds">
         <article class="cmd wide">
           <div class="cmd-head"><kbd>그냥 말하기</kbd><span class="tag">plan-first</span></div>
-          <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 경량 또는 정식 계획서(결정 콘솔)를 쓴 뒤 승인 → 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
+          <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 <strong>경량인지 정식인지 정해 한 줄로 알려 줍니다</strong>(📋 경량으로 진행합니다 — 이유 · 경로). 경량은 계획서를 자동 기록하고 바로 pane 으로, 정식은 결정 표로 승인받은 뒤 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
           <div class="flow"><span>라우팅</span><span>탐색</span><span class="hi">계획서</span><span class="hi">승인</span><span>디스패치</span><span>reviewer</span><span>보고</span></div>
           <dl>
             <dt>기능</dt><dd>여러 레포·API·구조 변경이면 정식 계획서, 서비스 간 같은 기능은 공통 스펙(문구·동작·env 키)을 계획서에 적고 공유 패키지를 먼저</dd>
@@ -617,7 +617,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 
     <section id="flow">
       <h2>작업 흐름</h2>
-      <p>헤르메스는 어떤 요청이든 아래 순서로 움직입니다. <strong>모든 작업은 계획서 하나에 묶이고</strong>, 확정 전에는 어떤 에이전트도 파일을 건드리지 않습니다. 진행 상황은 현황판(<code>/board</code>)에서 실시간으로 봅니다. 원본은 <code>CLAUDE.md</code> "작업 흐름"입니다.</p>
+      <p>헤르메스는 요청마다 <strong>경량인지 정식인지 먼저 정해 한 줄로 알립니다.</strong> 대부분인 <strong>경량</strong>(레포 하나 · 문구 · 버그 하나 · 조사 · <code>/call</code>)은 계획서를 자동으로 기록만 하고 승인 단계 없이 에이전트 pane 에서 커밋·리뷰·PR 까지 갑니다. <strong>정식</strong>(여러 레포·API·구조 변경)만 아래 6단계를 모두 거칩니다. 어느 쪽이든 모든 작업은 계획서 하나에 묶입니다. 그림은 <code>/guide 그림</code> 의 <b>작업 흐름 · 경량</b>, <b>작업 흐름 · 정식</b> 두 장입니다. 진행 상황은 현황판(<code>/board</code>)에서 실시간으로 봅니다. 원본은 <code>CLAUDE.md</code> "작업 흐름"입니다.</p>
       <div class="steps">
         <div class="step" data-n="1">
           <h3>요청 · 계획서</h3>
@@ -625,8 +625,9 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <ul>
             <li>요청은 세 갈래로 들어옵니다 — <strong>대화</strong>(담당자를 모르거나 여러 레포·기능·버그 원인 찾기), <strong><code>/call &lt;에이전트&gt;</code></strong>(담당자를 알 때), <strong>현황판 이슈 카드의 [처리 시작]</strong>.</li>
             <li>대상 서비스를 정하고 관련 코드를 탐색합니다. "케어·환급"만 나오면 운영 콘솔인지 사용자 웹인지 묻습니다.</li>
-            <li><strong>정식 계획서</strong> — 새 기능·여러 레포·API·구조 변경. <code>plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md</code> + 같은 이름의 <code>.html</code>(결정 콘솔).</li>
-            <li><strong>경량 계획서</strong> — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. <code>plans/task/…md</code> 하나.</li>
+            <li><strong>경량인지 정식인지 헤르메스가 정하고 한 줄로 알립니다</strong> — <code>📋 경량으로 진행합니다 — 이유 · 경로</code>. "정식으로"라고 하면 바꿉니다. <code>/call</code> 은 항상 경량이고 뜬 에이전트가 같은 줄을 알립니다.</li>
+            <li><strong>정식 계획서</strong> — 새 기능·여러 레포·API·구조 변경. <code>plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md</code> 하나.</li>
+            <li><strong>경량 계획서</strong> — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. <code>plans/task/…md</code> 하나. 따로 보여 주지 않고 기록만 하며, 현황판 카드 제목을 누르면 볼 수 있습니다.</li>
             <li>그 자리에서 고치지 않은 발견은 <code>issues/*.md</code>로 등록합니다.</li>
           </ul>
         </div>
@@ -634,7 +635,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <h3>사용자 승인</h3>
           <div class="who">사용자</div>
           <ul>
-            <li>정식: HTML을 열어 선택지를 고르고 <strong>[프롬프트로 복사]</strong>한 결정을 채팅에 붙여넣습니다. 헤르메스가 md를 확정하고 html에 <code>decided</code>를 채우면 "확정 완료".</li>
+            <li>정식: 헤르메스가 <strong>결정 표</strong>(# · 결정 · 선택지 · 추천 ★ · 영향)를 대화에 보여 줍니다. "추천대로", "D2 는 B" 처럼 대화로 고르면 md 에 확정값을 적고 "✅ 확정"을 알립니다. html 결정 콘솔은 쓰지 않습니다.</li>
             <li>경량: 사용자의 지시가 곧 승인입니다. 정식 대상이어도 <strong>"바로 고쳐"</strong>라고 하면 경량으로 바로 갑니다(보고에 그 사실을 적음).</li>
           </ul>
         </div>
@@ -765,8 +766,8 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   ├── services.md            <span class="c">서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
 │   ├── knowledge/             <span class="c">지식 베이스 — common/(팀 공통 규칙) · &lt;레포&gt;/rules.md(레포 규칙) · structure·patterns·gotchas·workflows</span>
 │   ├── extending.md           <span class="c">스킬 · 에이전트 추가 방법 (/guide 로 열람)</span>
-│   ├── plan-template.md
-│   └── plan-template.html     <span class="c">결정 콘솔 + md 렌더링 뷰</span>
+│   ├── plan-template.md       <span class="c">정식 계획서 (결정은 터미널 표)</span>
+│   └── plan-template-light.md <span class="c">경량 계획서</span>
 ├── plans/
 │   ├── feature/  bugfix/  refactor/
 │   └── archive/               <span class="c">종료된 계획서 (gitignore 대상)</span>
@@ -837,7 +838,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         </details>
         <details>
           <summary>급한 수정은 어떻게 하나요?</summary>
-          <div class="a">"바로 고쳐"라고 명시하면 결정 콘솔 단계를 건너뛰고 <strong>경량 계획서</strong>(<code>plans/task/…</code>, 사용자 지시가 곧 승인)로 바로 디스패치합니다. 계획서 없이 디스패치하는 예외는 없습니다. reviewer 검증은 그대로 진행합니다.</div>
+          <div class="a">"바로 고쳐"라고 명시하면 결정 표 단계를 건너뛰고 <strong>경량 계획서</strong>(<code>plans/task/…</code>, 사용자 지시가 곧 승인)로 바로 디스패치합니다. 계획서 없이 디스패치하는 예외는 없습니다. reviewer 검증은 그대로 진행합니다.</div>
         </details>
         <details>
           <summary>백엔드 API가 아직 없는데 화면부터 만들 수 있나요?</summary>

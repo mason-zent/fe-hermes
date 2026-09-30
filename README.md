@@ -49,7 +49,7 @@ docs/diagrams/            다이어그램 (Archify 생성. index.html 이 목록
 docs/services.md          서비스 비교표
 docs/knowledge/           지식 베이스: common/(팀 공통 규칙) · <레포>/rules.md(레포 규칙) · 레포 지식 (README.md 참고)
 docs/extending.md         스킬·에이전트 추가 방법 (/guide)
-docs/plan-template.*      계획서 템플릿 (md + 결정 콘솔 html)
+docs/plan-template*.md    계획서 템플릿 (정식 · 경량, 결정은 터미널 표)
 plans/{feature,bugfix,refactor,archive}/   작업계획서 (gitignore)
 issues/                   sync·다이어그램·리뷰에서 찾은 이슈 — 한 이슈 = 파일 하나 (형식은 그 폴더 README). 현황판 이슈 칸
 scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)

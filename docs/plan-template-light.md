@@ -4,7 +4,7 @@
 
 | 종류 | 언제 | 파일 | 승인 |
 |---|---|---|---|
-| 정식 | 새 기능 · 여러 레포 · API·구조 변경 | `plans/{feature,bugfix,refactor}/…` `.md` + `.html`(결정 콘솔) — `docs/plan-template.md` | 결정 콘솔의 결정을 붙여넣어 확정 |
+| 정식 | 새 기능 · 여러 레포 · API·구조 변경 | `plans/{feature,bugfix,refactor}/…` `.md` 하나 — `docs/plan-template.md` | 헤르메스가 보여 준 결정 표를 대화로 확정 |
 | **경량** | 문구·스타일 수정 · 버그 하나 · 확인·조사 · 직접 부른 에이전트 작업 · 긴급 수정 | `plans/task/YYYYMMDD-<에이전트>-<요약>.md` 하나 — **이 템플릿** | **사용자의 지시가 곧 승인** |
 
 - 손으로 쓰지 않는다. `node scripts/new-plan.mjs --agent <에이전트> --summary "<요약>"` 이 만든다. `scripts/delegate.sh --plan new "<요약>"` 과 현황판 [처리 시작] 은 이걸 부른다

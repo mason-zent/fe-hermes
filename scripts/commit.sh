@@ -174,7 +174,7 @@ else:
 if updated == text or line not in updated:
     sys.exit(1)   # 기록이 안 됐다 — 아래에서 경고
 path.write_text(updated, encoding='utf-8')
-# 정식 계획서는 같은 이름의 .html(결정 콘솔)이 md 본문을 <script id="plan-md"> 에 그대로 담는다 — 같이 맞춘다(AGENTS 규칙: md↔html 동기화)
+# 예전 정식 계획서는 같은 이름의 .html(결정 콘솔 — 지금은 만들지 않는다)이 md 본문을 <script id="plan-md"> 에 그대로 담는다 — 같이 맞춘다(AGENTS 규칙: md↔html 동기화)
 html = path.with_suffix('.html')
 if html.exists():
     page = html.read_text(encoding='utf-8')

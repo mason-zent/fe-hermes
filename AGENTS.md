@@ -163,7 +163,7 @@ scripts/verify/bznav-rn-app.sh
 
 ## 5. 작업 규칙 (2.2의 **필수 규칙** — 작업 종류와 무관하게 항상 적용)
 
-- **모든 작업은 계획서 하나에 묶인다.** 큰 작업은 정식 계획서(`docs/plan-template.md`, md + 결정 콘솔 html), 문구 수정·버그 하나·확인·조사·긴급 수정은 경량 계획서(`plans/task/…md`, `docs/plan-template-light.md` — `node scripts/new-plan.mjs` 가 만든다). 계획서 없이 작업하는 예외는 없다. 정식 대상이어도 사용자가 "바로 고쳐"라고 명시하면 경량으로 바로 진행하되, 보고에 그 사실을 적는다. 끝나면 계획서 Checkpoint(Status·Progress·Validation)를 채운다
+- **모든 작업은 계획서 하나에 묶인다.** 큰 작업은 정식 계획서(`docs/plan-template.md`, md 하나 — 결정은 대화의 결정 표로 확정해 md 에 기록), 문구 수정·버그 하나·확인·조사·긴급 수정은 경량 계획서(`plans/task/…md`, `docs/plan-template-light.md` — `node scripts/new-plan.mjs` 가 만든다). 계획서 없이 작업하는 예외는 없다. 정식 대상이어도 사용자가 "바로 고쳐"라고 명시하면 경량으로 바로 진행하되, 보고에 그 사실을 적는다. **경량인지 정식인지는 시작할 때 한 줄로 알린다**(`📋 경량으로 진행합니다 — 이유 · 경로`). 끝나면 계획서 Checkpoint(Status·Progress·Validation)를 채운다
 - **작업은 새 작업 브랜치에서 시작한다.** 지금 체크아웃된 브랜치에 그냥 얹지 않는다. 브랜치를 딸 기준은 `hermes.config.json` 의 `prBase`(개발 브랜치)이고, 문서·지식의 기준(`branch`, 운영 반영분)과 다르다. 기본은 **워크트리**로 만들어 메인 체크아웃을 건드리지 않는다 — 레포에 미커밋 변경이 있어도 시작할 수 있고 여러 작업을 동시에 돌릴 수 있다. 미커밋 변경을 stash 하지 않는다(남의 작업일 수 있다). 절차는 `docs/knowledge/common/git.md` "작업 브랜치 만들기"
 - 담당 범위 밖은 수정하지 않는다. 필요하면 멈추고 보고한다
 - 작업 중 요청이 여러 레포·API·구조 변경으로 커지면 멈추고 알린다 — 정식 계획서로 옮긴다(헤르메스가 맡는다)

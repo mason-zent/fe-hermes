@@ -35,22 +35,22 @@
 
 ## 작업 흐름 (Plan-First)
 
-> 이 절의 내용은 `docs/diagrams/hermes-flow.html`(= `/guide 그림`, 가이드 메뉴 "작업 흐름")의 카드에도 그대로 들어 있다. **여기를 고치면 `docs/diagrams/hermes-flow.workflow.json` 의 `cards` 도 같이 고치고 HTML 을 다시 만든다** (방법: `docs/diagrams/README.md`). 진행 상황은 현황판(`/board`)에서 실시간으로 본다.
+> 이 절의 내용은 다이어그램 두 장 — **경량 흐름** `docs/diagrams/hermes-flow-light.html` · **정식 흐름** `docs/diagrams/hermes-flow-formal.html`(= `/guide 그림`) — 의 카드에도 들어 있다. **여기를 고치면 해당 `docs/diagrams/hermes-flow-{light,formal}.workflow.json` 의 `cards`·노드도 같이 고치고 HTML 을 다시 만든다** (방법: `docs/diagrams/README.md`). 진행 상황은 현황판(`/board`)에서 실시간으로 본다.
 
 ### 1단계: 요청 · 계획서
 - **요청은 세 갈래로 들어온다.** ① 대화 — 담당자를 모르거나 여러 레포·기능·버그 원인 찾기면 그냥 말한다(헤르메스가 라우팅·계획서) ② `/call <에이전트>` — 담당자를 알 때. pane 을 먼저 띄우고 요청은 그 pane 에서 ③ 현황판 이슈 카드의 [처리 시작]. sync·리뷰·다이어그램 작업에서 찾았지만 그 자리에서 고치지 않은 것은 `issues/*.md` 로 등록해 둔다
 - 요청을 파악하고 대상 서비스를 정한다(복수 가능). "케어·환급" 만 나오면 콘솔인지 사용자 웹인지 묻는다
 - 대상 레포의 관련 코드를 탐색한다(Explore 또는 직접 읽기). 지식은 **작업 유형에 필요한 절만** 읽는다(`AGENTS.md` 2.2~2.3)
+- **경량인지 정식인지 헤르메스가 정하고, 시작할 때 한 줄로 알린다** — `📋 경량으로 진행합니다 — <이유> · <계획서 경로>` (정식으로 하려면 "정식으로") / `📋 정식으로 진행합니다 — <이유> · 결정 N개 · <경로>`. 사용자가 "정식으로"·"바로 고쳐"로 바꿀 수 있다. `/call` 은 항상 경량이고 뜬 에이전트가 첫 보고에 같은 줄을 붙인다
 - **모든 작업은 계획서 하나에 묶인다. 예외 없다.**
-  - **정식** — 새 기능·여러 레포·API·구조 변경. `plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md` + 같은 이름 `.html`(결정 콘솔, `docs/plan-template.html` 복사 후 `PLAN.decisions[]`·`plan-md` 만 채움). 개요 다음에 **Checkpoint**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions / Commits)
+  - **정식** — 새 기능·여러 레포·API·구조 변경. `plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md` **하나**(`docs/plan-template.md`). 개요 다음에 **Checkpoint**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions / Commits). html 결정 콘솔은 만들지 않는다(예전 계획서에 있는 html 은 그대로 둔다)
   - **경량** — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. `plans/task/…md` 하나(`scripts/new-plan.mjs`, `docs/plan-template-light.md`). 사용자 지시가 곧 승인
-- 정식은 md↔html 을 **같은 턴에 동기화**한다(결정 사항↔`decisions[]`, 본문↔`plan-md`)
 
 ### 2단계: 사용자 승인
-- 정식: `.md`(상세)와 `.html`(결정 콘솔) 경로를 함께 제시 → 사용자가 선택지를 고르고 **[프롬프트로 복사]**한 결정을 붙여넣음 → `.md` 확정, `decisions[]` 에 `decided` → "✅ 확정 완료"
-- 경량: 사용자의 지시가 곧 승인. 결정 콘솔 없이 3단계로
-- 정식 대상이어도 사용자가 **"바로 고쳐"** 라고 명시하면 결정 콘솔 없이 경량 계획서로 바로 디스패치한다 — 계획서 자체는 생략하지 않고, 보고에 그 사실을 적는다
-- 수정 요청이면 양쪽 갱신 후 재승인. **확정 전에는 디스패치하지 않는다**
+- 정식: `.md` 경로와 함께 **결정 표를 대화에 보여 준다** — `| # | 결정 | 선택지 | 추천 ★ | 영향 |`. 사용자가 대화로 고르면("추천대로", "D2 는 B") `.md` "사용자 결정 사항"·Checkpoint `Decisions` 에 확정 기록 → "✅ 확정" 한 줄
+- 경량: 사용자의 지시가 곧 승인. 결정 표 없이 3단계로
+- 정식 대상이어도 사용자가 **"바로 고쳐"** 라고 명시하면 결정 표 없이 경량 계획서로 바로 디스패치한다 — 계획서 자체는 생략하지 않고, 보고에 그 사실을 적는다
+- 수정 요청이면 `.md` 갱신 후 결정 표를 다시 보여 주고 재승인. **확정 전에는 디스패치하지 않는다**
 
 ### 3단계: 작업 브랜치 → 디스패치
 - **디스패치 전에 작업 브랜치·워크트리.** 먼저 `docs/knowledge/common/git.md` "작업 브랜치 만들기" 절을 읽고, `scripts/new-branch.sh` 가 `prBase` 에서 `.worktrees/<레포>/<슬러그>` 로 딴다(메인 체크아웃은 건드리지 않는다). **브랜치가 이미 있으면**(로컬·원격) 상태를 알려 주고 "그대로 이어 쓸까요?" → `--reuse`. 건너뛴 레포에는 디스패치하지 않는다
@@ -71,7 +71,7 @@
 - 에이전트가 보고한 검증 결과를 그대로 확인한다. **실패를 숨기지 않는다**
 - 서비스별 변경 파일·주요 변경·검증 결과·**`## Commits`**·남은 위험을 요약해 보고
 - **여러 레포에 걸친 작업의 push·PR 은 헤르메스가** 순서(공유 패키지 먼저)·공개 범위를 확인하고 사용자에게 물은 뒤 레포마다 `scripts/ship.sh --repo-agent <에이전트>` 로 올린다. 레포 하나짜리는 에이전트가 pane 에서 올린다(4단계)
-- **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 정식이면 html `plan-md` 도 같은 턴에
+- **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 예전 계획서에 html 이 있으면 `commit.sh`·현황판이 `plan-md` 를 같이 맞춘다
 
 ### 6단계: 정리
 - 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 계획서 `plans/archive/<유형>/`(md+html), 이슈 `issues/archive/`(+ 연결 경량 계획서), 이슈 워크트리 정리(미커밋·push 안 된 커밋이 있으면 남긴다)
@@ -100,7 +100,7 @@
 | `/board` | 현황판 — 로컬 서버를 띄워 브라우저에서 실시간으로 본다. 지금 동작 중인 에이전트 · 계획서 칸반(Checkpoint Status) · `issues/` 이슈. 카드를 끌어 상태를 바꾸고, 버튼으로 헤르메스 pane 에 지시를 보낸다 (`/board stop`) |
 | `/sync` | 담당 레포의 운영 기준 브랜치를 훑어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서는 `node scripts/build-derived.mjs`가 생성. 다이어그램 근거가 운영 코드와 어긋났는지 `node scripts/check-diagrams.mjs`로 점검 |
 | `/diagram` | 다이어그램 다시 그리기 — 운영 기준 코드로 구조·화면 맵·요청 흐름(비즈넵 웹·모바일 앱은 심층까지)을 그리고 검증·목록 갱신, 그리다 찾은 문제는 `issues/` 등록. `/diagram brand` 처럼 서비스를 주거나, 비우면 전체. `/diagram 점검` 은 다시 그리지 않고 근거만 점검 |
-| `/guide` | 오른쪽 pane 에 가이드 메뉴(스킬 목록·실행 · 에이전트·라우팅 · git 현황 · 문서). `/guide <파일>` 은 그 파일을 뷰어로, `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
+| `/guide` | 오른쪽 pane 에 가이드 메뉴(스킬 목록·실행 · 에이전트·라우팅 · git 현황 · 문서). `/guide <파일>` 은 그 파일을 뷰어로, `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 경량·정식 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
 
 **커맨드가 없는 것은 말로 한다.** 기능·버그(1단계) · 리뷰("리뷰해줘" → 5단계, `delegate.sh reviewer`) · 현황("현황 알려줘" → `docs/knowledge/common/git.md` "현황 점검") · 브랜치(3단계, 같은 파일 "작업 브랜치 만들기").
 

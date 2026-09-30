@@ -49,8 +49,9 @@ open docs/diagrams/index.html
 | 데이터 출처 지도 | 출처 → 관문 → 서비스. 계열마다 관문이 완전히 다르다 | `data-sources.dataflow.json` |
 
 **`workflow`(작업 절차)는 걷어냈다.** `workflows.md` 텍스트가 더 정확하고 정보량도 많았다.
-그림으로 옮기면서 절차 문장이 단정으로 바뀌어 오류가 생기기도 했다. `hermes-flow.workflow.json`
-(헤르메스 자신의 Plan-First 흐름)만 남겼다.
+그림으로 옮기면서 절차 문장이 단정으로 바뀌어 오류가 생기기도 했다. 헤르메스 자신의 흐름만 남겼고,
+**경량**(`hermes-flow-light.workflow.json` — 대부분의 작업, pane 에서 PR 까지)과 **정식**(`hermes-flow-formal.workflow.json` —
+여러 레포·결정 표·순차 디스패치)으로 나눠 그린다(2026-09-30). 두 장은 노드 배치·화살표 뼈대가 같고 이름·카드만 다르다.
 
 아직 없는 것: bznav `packages/*`, `zent-packages`. 화면이 없는 패키지 레포라 성격이 달라 뒤로 미뤘다.
 
@@ -101,11 +102,13 @@ npx skills add tt-a1i/archify -g
 git clone --depth 1 https://github.com/tt-a1i/archify.git /tmp/archify
 A=/tmp/archify/archify
 
-# 작업 흐름 (workflow) — standard 품질로 만든다. "작업·커밋·PR" 노드에 선이 6개 몰려
+# 작업 흐름 (workflow) 두 장 — standard 품질로 만든다. "작업·커밋" 노드에 선이 6개 몰려
 # showcase(선 간격·화살촉 거리 같은 모양새 기준)는 통과하지 못한다(issues/archive/20260930-hermes-flow-diagram-archify-validate.md).
 # 서비스 다이어그램은 아래처럼 showcase 를 유지한다
-node $A/bin/archify.mjs validate workflow docs/diagrams/hermes-flow.workflow.json --quality standard --json
-node $A/bin/archify.mjs deliver  workflow docs/diagrams/hermes-flow.workflow.json docs/diagrams/hermes-flow.html --quality standard --json
+for k in light formal; do
+  node $A/bin/archify.mjs validate workflow docs/diagrams/hermes-flow-$k.workflow.json --quality standard --json
+  node $A/bin/archify.mjs deliver  workflow docs/diagrams/hermes-flow-$k.workflow.json docs/diagrams/hermes-flow-$k.html --quality standard --json
+done
 
 # 레포 구조 (architecture) — sources 를 쓰므로 --repo-root 가 필요하다
 node $A/bin/archify.mjs validate architecture docs/diagrams/client-brics-refund.architecture.json \
