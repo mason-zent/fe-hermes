@@ -269,10 +269,13 @@
   let targetPane = '';
 
   // 카드 상태별 액션 — 헤르메스에게 보낼 지시문 초안. 보내기 전에 창에서 고칠 수 있다
+  // 이슈 [처리 시작] 에서 "담당 에이전트로 바로(조사만)" 를 고르면 쓰는 지시문 — 운영 기준 detached 워크트리에서 조사만, 코드 수정 없음
+  const INVESTIGATE = (card) => `${card.id} 이슈를 맡는다. 순서대로 한다: ① git status --short --branch 로 담당 레포의 현재 브랜치·미커밋 변경을 먼저 보고한다(체크아웃·stash 하지 않는다) ② 이슈의 근거를 기준 ref 에서 git show·ls-tree 로 확인한다 ③ ${card.type === 'check' ? '확인 결과를 이슈 파일 끝에 "## 확인 결과 (날짜 · 에이전트)" 절로 파일:줄 근거와 함께 적는다' : '원인과 고칠 범위를 정리해 보고한다 — 코드는 수정하지 않는다(계획서 승인 뒤 헤르메스가 브랜치를 만들어 다시 맡긴다)'}. 이슈 파일 말고는 수정하지 않는다. 커밋하지 않는다.`;
   const ACTIONS = {
     issue: {
       // 헤르메스가 직접 하지 않는다 — 라우팅 → 브랜치 확인 → 담당 에이전트 pane 디스패치 순서를 지시문에 박는다
-      open: [['처리 시작', (card) => `${card.id} 이슈를 맡는다. 순서대로 한다: ① git status --short --branch 로 담당 레포의 현재 브랜치·미커밋 변경을 먼저 보고한다(체크아웃·stash 하지 않는다) ② 이슈의 근거를 기준 ref 에서 git show·ls-tree 로 확인한다 ③ ${card.type === 'check' ? '확인 결과를 이슈 파일 끝에 "## 확인 결과 (날짜 · 에이전트)" 절로 파일:줄 근거와 함께 적는다' : '원인과 고칠 범위를 정리해 보고한다 — 코드는 수정하지 않는다(계획서 승인 뒤 헤르메스가 브랜치를 만들어 다시 맡긴다)'}. 이슈 파일 말고는 수정하지 않는다. 커밋하지 않는다.`, 'dispatch']],
+      // 기본은 헤르메스가 처리한다(판단 → 계획서 → prBase 브랜치 → 담당 에이전트). 팝업에서 "담당 에이전트로 바로(조사만)" 로 바꿀 수 있다
+      open: [['처리 시작', (card) => `${card.id} 이슈를 처리해줘. 이슈를 읽고 담당 레포·에이전트를 확인한 뒤 경량/정식을 판단해 📋 한 줄로 알리고 계획서를 만들어 이슈 plan: 에 연결한다. 대상 레포의 브랜치·미커밋 상태를 보고하고 내 확인을 받은 뒤 scripts/new-branch.sh 로 prBase 에서 작업 브랜치·워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄운다(scripts/delegate.sh --cwd --plan). 이슈는 운영 기준 ref 에서 찾은 것이니 prBase 에서도 그대로인지 먼저 확인하게 한다. 헤르메스가 직접 코드를 고치지 않는다.`, 'issue']],
       planned: [['계획 보기', (card) => `${card.id} 이슈에 연결된 계획서${card.plan ? ` ${card.plan}` : ''} 상태를 알려줘.`]],
       in_progress: [['진행 상황', (card) => `${card.id} 이슈 진행 상황을 알려줘.`]],
     },
@@ -624,6 +627,29 @@
     pendingId = id;
     const dialog = document.getElementById('ask');
     const to = document.getElementById('ask-to');
+    if (mode === 'issue') {
+      // 받는 곳을 고른다 — 헤르메스(처리) 또는 담당 에이전트로 바로(조사만). 고르면 지시문도 바뀐다
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      const hermes = (lastState?.panes || []).find((entry) => entry.role === 'hermes');
+      const route = (choice) => {
+        if (choice === 'hermes') {
+          if (!hermes) return false;
+          ask(title, text, 'pane', agent, id);
+          targetPane = hermes.id;
+          document.getElementById('ask-to').innerHTML = `→ 받는 곳 <b>헤르메스</b> · ${esc(hermes.id)} — 판단 → 계획서 → prBase 브랜치 → 담당 에이전트까지 이어서 처리해요 ${picker('hermes')}`;
+        } else {
+          ask(title, INVESTIGATE(card), 'dispatch', agent, id);
+          document.getElementById('ask-to').innerHTML += ` ${picker('investigate')}`;
+        }
+        document.getElementById('ask-route').onchange = (event) => route(event.target.value);
+        return true;
+      };
+      const picker = (current) => `<br>보내는 곳 바꾸기 <select id="ask-route"><option value="hermes" ${current === 'hermes' ? 'selected' : ''}>헤르메스로 (처리)</option><option value="investigate" ${current === 'investigate' ? 'selected' : ''}>담당 에이전트로 바로 (조사만 · 코드 수정 없음)</option></select>`;
+      if (route('hermes')) return;
+      toast('헤르메스 pane 이 없어서 담당 에이전트로 바로(조사만) 보내요');
+      route('investigate');
+      return;
+    }
     if (mode === 'dispatch') {
       const names = lastState?.agents || [];
       to.innerHTML = `→ 담당 에이전트 <select id="ask-agent">${names.map((name) => `<option ${name === agent ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select> 를 그 레포 workspace 에 새 pane 으로 띄워요`;
@@ -649,7 +675,8 @@
     document.getElementById('ask-send').disabled = false;
     document.getElementById('ask-title').textContent = title;
     document.getElementById('ask-text').value = text;
-    dialog.showModal();
+    // 이슈 팝업에서 받는 곳을 바꾸면 열린 채로 다시 그린다
+    if (!dialog.open) dialog.showModal();
   };
   document.getElementById('ask-cancel').onclick = () => document.getElementById('ask').close();
   // 팝업 안에 진행·오류를 보여 준다 — 알림(toast)은 모달 뒤에 가려 안 보인다

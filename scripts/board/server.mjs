@@ -14,7 +14,7 @@
  *
  * 쓰기는 두 가지뿐이다 (브라우저 버튼)
  *   - POST /api/move   카드를 다른 칸으로 — 이슈 frontmatter status, 계획서 Checkpoint Status(md 와 html 의 plan-md 사본 둘 다)
- *   - POST /api/dispatch 이슈마다 워크트리(.worktrees/<레포>/issue-<이슈>, 운영 기준 ref · detached)를 만들고
+ *   - POST /api/dispatch (이슈 [처리 시작] → "담당 에이전트로 바로(조사만)") 이슈마다 워크트리(.worktrees/<레포>/issue-<이슈>, 운영 기준 ref · detached — 조사 전용, 코드 수정 없음)를 만들고
  *     담당 에이전트를 그 레포 workspace 에 새 pane 으로 띄운다(scripts/delegate.sh --cwd). 한 레포에서 여러 이슈를 동시에 돌려도 부딪히지 않게
  *   - POST /api/worktree-remove 끝난 이슈의 워크트리를 지운다(미커밋 변경이 있으면 거부)
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
