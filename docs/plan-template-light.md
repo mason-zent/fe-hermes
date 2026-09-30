@@ -11,7 +11,7 @@
 - 작업이 커지면(여러 레포·API 변경·결정이 필요) 정식 계획서로 옮기고 경량판에는 그 경로를 적는다
 - 담당 에이전트는 끝날 때 Checkpoint 의 Status·Progress·Validation 을 채운다. 현황판 칸반이 이 Status 를 따라 움직인다
 - 버그 수정이면 `AGENTS.md` 5절의 버그 수정 규칙(재현 먼저 · 수정 전·후 비교)을 따른다
-- 경량판에는 html 이 없다. 그래서 "md↔html 동기화" 규칙은 적용되지 않는다
+- 경량판에는 html 이 없다(정식도 이제 md 하나다)
 
 <!-- BEGIN:template -->
 # {{title}}

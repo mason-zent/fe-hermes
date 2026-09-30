@@ -5,7 +5,7 @@
     "title": "헤르메스 작업 흐름 · 경량",
     "animation": "trace",
     "visual_preset": "signal-flow",
-    "quality_profile": "showcase",
+    "quality_profile": "standard",
     "views": [
       {
         "id": "happy-path",
@@ -227,7 +227,7 @@
       "label": "PR 올려줘",
       "sublabel": "미리보기 → base·제목 확인",
       "width": 138,
-      "tag": "draft PR 은 에이전트가"
+      "tag": "에이전트가 ship.sh 로 draft"
     },
     {
       "id": "route",
@@ -257,7 +257,7 @@
       "label": "pane 띄우기",
       "sublabel": "delegate.sh --plan",
       "width": 138,
-      "tag": "브랜치는 에이전트가 묻는다"
+      "tag": "/call 은 에이전트가 브랜치"
     },
     {
       "id": "review",
@@ -287,7 +287,7 @@
       "label": "브랜치 있음",
       "sublabel": "이어 쓸지 묻는다",
       "width": 138,
-      "tag": "진행 중 브랜치는 이어 쓰지 않는다"
+      "tag": "다른 pane 브랜치는 고르지 않음"
     },
     {
       "id": "commitstop",
@@ -305,9 +305,9 @@
       "col": 4,
       "type": "backend",
       "label": "에이전트 pane",
-      "sublabel": "브랜치 묻기 · 워크트리",
+      "sublabel": "워크트리 · 보호 훅",
       "width": 138,
-      "tag": "보호 훅 · workspace = 레포"
+      "tag": "workspace = 레포"
     },
     {
       "id": "agent",
@@ -506,7 +506,8 @@
         "문구·스타일 수정 · 버그 하나 · 확인·조사 · 직접 부른 에이전트(/call) · 긴급 수정 — 레포 하나",
         "헤르메스가 라우팅하며 정하고 시작할 때 한 줄로 알린다: 📋 경량으로 진행합니다 — 이유 · 경로",
         "\"정식으로\" 라고 하면 정식 흐름으로, 정식 대상이어도 \"바로 고쳐\" 면 경량으로",
-        "/call <에이전트> 는 항상 경량 — 뜬 에이전트가 첫 보고에 같은 줄을 붙인다"
+        "/call <에이전트> 는 항상 경량 — 뜬 에이전트가 첫 보고에 같은 줄을 붙인다",
+        "이슈 [처리 시작] 은 지금 브랜치 없는(detached) 워크트리로 띄워 커밋·PR 전에 브랜치가 필요하다 — issues/20260930-hermes-board-issue-start-detached.md"
       ]
     },
     {
@@ -522,7 +523,8 @@
       "dot": "violet",
       "title": "pane 에서 작업 · 커밋",
       "items": [
-        "에이전트가 브랜치를 물어 prBase 에서 워크트리를 만든다. 진행 중인 브랜치를 이어 쓰기로 고르지 않는다",
+        "브랜치: /call 은 뜬 에이전트가 물어 prBase 에서 워크트리를 만들고, 대화로 들어온 경량 작업은 헤르메스가 new-branch.sh 로 만들어 띄운다",
+        "같은 브랜치를 쓰는 다른 pane 이 있으면 그 브랜치를 이어 쓰기로 고르지 않는다",
         "같은 레포에 작업이 또 생기면 /call 을 한 번 더 — 옆에 pane, 새 브랜치",
         "요청을 여러 번 주고받는다. 요청마다 Status in_progress → ready_for_review",
         "작업 뒤 같은 검증 스크립트를 돌리고 출력 표를 그대로 보고한다",

@@ -103,7 +103,7 @@ git clone --depth 1 https://github.com/tt-a1i/archify.git /tmp/archify
 A=/tmp/archify/archify
 
 # 작업 흐름 (workflow) 두 장 — standard 품질로 만든다. "작업·커밋" 노드에 선이 6개 몰려
-# showcase(선 간격·화살촉 거리 같은 모양새 기준)는 통과하지 못한다(issues/archive/20260930-hermes-flow-diagram-archify-validate.md).
+# showcase(선 간격·화살촉 거리 같은 모양새 기준)는 통과하지 못한다(issues/20260930-hermes-flow-diagram-archify-validate.md).
 # 서비스 다이어그램은 아래처럼 showcase 를 유지한다
 for k in light formal; do
   node $A/bin/archify.mjs validate workflow docs/diagrams/hermes-flow-$k.workflow.json --quality standard --json

@@ -5,7 +5,7 @@
     "title": "헤르메스 작업 흐름 · 정식",
     "animation": "trace",
     "visual_preset": "signal-flow",
-    "quality_profile": "showcase",
+    "quality_profile": "standard",
     "views": [
       {
         "id": "happy-path",
@@ -206,7 +206,7 @@
       "col": 0,
       "type": "frontend",
       "label": "요청",
-      "sublabel": "대화 · /call · [처리 시작]",
+      "sublabel": "대화 · 이슈 [처리 시작]",
       "width": 138,
       "tag": "케어·환급은 콘솔? 웹? 묻는다"
     },

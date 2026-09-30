@@ -630,7 +630,7 @@ const dispatchAgent = async (issueId, agent, text, job) => {
   }
   const sha = (await run('git', ['-C', worktree.path, 'rev-parse', '--short', 'HEAD']))?.trim() ?? '?'
   step('worktree', 'done', `${worktree.rel} @ ${sha}`)
-  const header = `작업 디렉토리는 이 이슈 전용 워크트리 ${worktree.path} 다 (origin/${worktree.branch} @ ${sha}, detached — 브랜치 없음). 코드는 이 안에서만 읽는다. repos/${worktree.repo} 메인 체크아웃은 다른 작업이 올라가 있으니 읽지 않는다. `
+  const header = `첫 보고 맨 앞에 '📋 경량으로 진행합니다 — 이슈 처리 · <계획서 경로>' 한 줄을 붙인다(계획서가 정식이면 '📋 정식으로 진행합니다'). 작업 디렉토리는 이 이슈 전용 워크트리 ${worktree.path} 다 (origin/${worktree.branch} @ ${sha}, detached — 브랜치 없음). 코드는 이 안에서만 읽는다. repos/${worktree.repo} 메인 체크아웃은 다른 작업이 올라가 있으니 읽지 않는다. `
 
   // 모든 작업은 계획서 하나에 묶인다 — 이슈에 계획서가 없으면 경량 계획서를 만들어 연결한다
   step('plan', 'running')

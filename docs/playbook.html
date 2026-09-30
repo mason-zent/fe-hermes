@@ -475,7 +475,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
         <article class="cmd wide">
           <div class="cmd-head"><kbd>그냥 말하기</kbd><span class="tag">plan-first</span></div>
           <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 <strong>경량인지 정식인지 정해 한 줄로 알려 줍니다</strong>(📋 경량으로 진행합니다 — 이유 · 경로). 경량은 계획서를 자동 기록하고 바로 pane 으로, 정식은 결정 표로 승인받은 뒤 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
-          <div class="flow"><span>라우팅</span><span>탐색</span><span class="hi">계획서</span><span class="hi">승인</span><span>디스패치</span><span>reviewer</span><span>보고</span></div>
+          <div class="flow"><span>라우팅</span><span class="hi">📋 경량? 정식?</span><span>경량: 자동 기록 → pane</span><span>정식: 결정 표 승인 → 디스패치 → reviewer</span><span>보고</span></div>
           <dl>
             <dt>기능</dt><dd>여러 레포·API·구조 변경이면 정식 계획서, 서비스 간 같은 기능은 공통 스펙(문구·동작·env 키)을 계획서에 적고 공유 패키지를 먼저</dd>
             <dt>버그</dt><dd>원인이 프론트·API·공유 패키지 중 어디인지 먼저 가르고, 재현 조건을 적은 뒤 수정 전·후를 같은 방법으로 비교합니다(<code>AGENTS.md</code> 5절)</dd>
