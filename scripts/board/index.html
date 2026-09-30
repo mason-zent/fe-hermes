@@ -96,13 +96,6 @@
   #detail { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 64px); }
   #detail .body { overflow-y: auto; max-height: calc(100vh - 190px); padding-right: 4px; }
   #detail h4 { margin: 14px 0 6px; font-size: 13px; color: var(--muted); }
-  .bundle { display: grid; gap: 6px; margin: 10px 0 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
-  .bundle .b-head { font-size: 12px; font-weight: 600; color: var(--muted); }
-  .bundle .b-files { display: flex; flex-wrap: wrap; gap: 6px; }
-  .bundle .b-file { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--text); text-decoration: none; cursor: pointer; font-family: inherit; }
-  .bundle .b-file:hover { border-color: var(--accent); }
-  .bundle .b-file small { color: var(--muted); }
-  .bundle .b-link { font-size: 11.5px; color: var(--muted); }
   .part { margin-top: 16px; padding-top: 12px; border-top: 2px solid var(--line); }
   .part > .p-head { display: flex; align-items: baseline; gap: 8px; font-size: 14px; font-weight: 700; }
   .part > .p-head small { font-weight: 400; font-size: 11.5px; color: var(--muted); }
@@ -392,30 +385,11 @@
       if (!response.ok) throw new Error(data.error || response.status);
       const item = historyItems.find((entry) => entry.dir === dir);
       document.getElementById('detail-title').textContent = item?.title || data.meta?.title || dir;
-      const from = data.meta?.from ? Object.values(data.meta.from).filter(Boolean).join(' · ') : '';
-      document.getElementById('detail-meta').textContent = `보관 ${data.meta?.archivedAt || '?'} · ${dir}${from ? ` · 원래 ${from}` : ''}`;
-      const origin = data.meta?.from || {};
-      const file = (kind, icon, name, origin) => `<button type="button" class="b-file" data-jump="${kind}">${icon} ${name}${origin ? ` <small>← ${esc(origin)}</small>` : ''}</button>`;
-      const files = [
-        data.issue ? file('issue', '📄', 'issue.md', origin.issue) : '',
-        data.plan ? file('plan', '📋', 'plan.md', origin.plan) : '',
-        origin.html ? file('plan', '🗂', 'plan.html', origin.html) : '',
-        data.meta ? '<span class="b-file" style="cursor:default">🧾 meta.json</span>' : '',
-      ].join('');
-      const linkNote = () => {
-        if (data.issue && data.plan) return '이슈의 <code>plan:</code> 과 계획서의 <code>Issue:</code> 가 서로를 가리켜요';
-        if (data.issue) return '연결된 계획서 없이 이슈만 보관됐어요';
-        return '연결된 이슈 없이 계획서만 보관됐어요';
-      };
-      const linked = linkNote();
-      const bundleBox = `<div class="bundle"><div class="b-head">📎 묶음 — ${esc(dir)}/</div><div class="b-files">${files}</div><div class="b-link">${linked}</div></div>`;
-      const issueBody = data.issue ? `<div class="part issue" id="part-issue"><div class="p-head">📄 이슈 <small>issue.md</small></div>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}</div>` : '';
-      const planBody = data.plan ? `<div class="part plan" id="part-plan"><div class="p-head">📋 계획서 <small>plan.md</small></div>${planBlocks(data.plan)}${commitsBlock(data.plan)}</div>` : '';
+      document.getElementById('detail-meta').textContent = `보관 ${data.meta?.archivedAt || '?'}`;
+      const issueBody = data.issue ? `<div class="part issue" id="part-issue"><div class="p-head">📄 이슈 <small>archive/${esc(dir)}/issue.md</small></div>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}</div>` : '';
+      const planBody = data.plan ? `<div class="part plan" id="part-plan"><div class="p-head">📋 계획서 <small>archive/${esc(dir)}/plan.md</small></div>${planBlocks(data.plan)}${commitsBlock(data.plan)}</div>` : '';
       const body = document.getElementById('detail-body');
-      body.innerHTML = bundleBox + issueBody + planBody;
-      body.querySelectorAll('[data-jump]').forEach((button) => {
-        button.onclick = () => document.getElementById(`part-${button.dataset.jump}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+      body.innerHTML = issueBody + planBody;
     } catch (error) {
       document.getElementById('detail-title').textContent = '불러오지 못했어요';
       document.getElementById('detail-body').innerHTML = `<p>${esc(error.message)}</p>`;
