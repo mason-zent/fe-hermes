@@ -425,6 +425,14 @@ const readUsage = () =>
   })
 
 // ── 모으기 ──────────────────────────────────────────────────────────────
+// 보호 브랜치(statusline.sh 와 같은 목록)는 여러 계획서가 같이 쓰므로 브랜치로는 붙이지 않는다.
+// hermes 자체 작업은 모두 main 이라, 그냥 포함 검사를 하면 main 에서 도는 pane 하나가 hermes 계획서 전부를 진행 중으로 끌고 갔다
+const PROTECTED_BRANCH = /^(prd|main|master|dev|dev-ecs|prd-.+|release\/.+)$/
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// delegate.sh 가 적는 "🌿 <브랜치>" 형식으로 정확히 같을 때만 (feature/A 가 feature/A-2 에 붙지 않게)
+const branchMatches = (workRef, branch) =>
+  Boolean(branch) && !PROTECTED_BRANCH.test(branch) && new RegExp(`🌿 ${escapeRegExp(branch)}(?=[\\s@·(]|$)`).test(workRef)
+
 const collect = async () => {
   const now = Date.now()
   // archive 는 보드에서 치운 것 — 보이지 않는다
@@ -453,7 +461,7 @@ const collect = async () => {
   for (const plan of plans) {
     // delegate.sh 가 Work ref 에 "pane <id>" 를 적는다. 없으면 브랜치로 맞춘다
     plan.agents = panes
-      .filter((pane) => pane.role === 'agent' && (plan.workRef.includes(`pane ${pane.id} `) || plan.workRef.endsWith(`pane ${pane.id}`) || plan.review.includes(`pane ${pane.id} `) || (pane.branch && plan.workRef.includes(pane.branch))))
+      .filter((pane) => pane.role === 'agent' && (plan.workRef.includes(`pane ${pane.id} `) || plan.workRef.endsWith(`pane ${pane.id}`) || plan.review.includes(`pane ${pane.id} `) || branchMatches(plan.workRef, pane.branch)))
       .map((pane) => pane.id)
     // 에이전트가 지금 일하고 있으면 진행 중 칸에 — 요청을 여러 번 주고받으면 계획서 Status 가 리뷰에 머물러 있어도
     // 실제로는 작업 중이다. 파일은 바꾸지 않고 보여 주는 칸만 (끝나 대기로 돌아가면 다시 리뷰 칸)
