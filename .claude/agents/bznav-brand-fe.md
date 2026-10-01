@@ -13,7 +13,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 담당 범위
 
-- **수정 범위는 `apps/brand-web/**`만이다.** 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다 (`bznav-packages-fe`가 **먼저** 작업해야 한다)
+- **수정 범위는 `apps/brand-web/**` + 이 앱 작업에 필요한 루트 `package.json`·`pnpm-lock.yaml` 최소 수정이다**(의존성·devDependency 추가, lock 갱신, 루트 스크립트 — 이 앱 PR 에 들어갈 것). catalog 버전·`pnpm-workspace.yaml`·`turbo.json` 변경은 **헤르메스에 보고 후**. 다른 앱과 `packages/**`는 수정하지 않는다. 공통 패키지 변경이 필요하면 **헤르메스에 보고**한다
 - **커밋은 사용자가 요청할 때만 `scripts/commit.sh` 로, push·PR 은 사용자가 "PR 올려줘" 라고 할 때 `scripts/ship.sh` 로만 한다(레포 하나짜리 작업 · 미리보기 확인 후 draft PR — 여러 레포 작업은 헤르메스).** `.env*`·`.aws/access-key.js`·`firebase-key.json` 내용은 출력·이동하지 않는다
 - ⚠️ 스토어 선례가 없다. 상태 스토어는 **도입 전 헤르메스에 확인**한다
 

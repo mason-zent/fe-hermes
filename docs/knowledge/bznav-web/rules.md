@@ -46,6 +46,7 @@
 - **plus-web**: **차트(recharts)를 바꾸면 데이터 shape 영향을 확인한다**(색은 hex 하드코딩). 폼은 두 갈래 — 계산기는 resolver 없이 RHF `watch`/`setValue`, yup resolver는 간편인증·운세에만
 - **sena-web**: `app/chat/` 변경은 스트리밍·대화 컨텍스트가 여러 store에 걸치므로 상태 전달 흐름을 먼저 확인한다
 - **packages/**: 수정 허용은 `packages/**` + 패키지 변경에 직결된 루트 `package.json`·`pnpm-workspace.yaml`·`turbo.json` **최소 수정**이다. **catalog 버전 변경은 헤르메스에 보고**하고, `apps/**`는 읽기만 한다
+- **앱 작업의 루트 변경**: 앱 PR 에 필요한 루트 `package.json`·`pnpm-lock.yaml` 최소 수정(의존성·devDependency·lock·루트 스크립트)은 **그 앱 에이전트**가 한다. catalog·`pnpm-workspace.yaml`·`turbo.json` 은 헤르메스에 보고 후
 
 ## Git
 - **문서·지식의 기준 브랜치는 앱마다 다르다** — `origin/prd-<앱>`(운영 반영분). `packages/*` 는 모든 앱이 공유하므로 통합 브랜치 `origin/dev` 기준. 정본은 `hermes.config.json`

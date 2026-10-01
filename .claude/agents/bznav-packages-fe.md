@@ -13,7 +13,7 @@ tools: Read, Glob, Grep, Edit, Write, Bash, AskUserQuestion
 
 ## 담당 범위
 
-- **수정 허용은 `packages/**` + 패키지 변경에 직결된 루트 설정 최소 수정**(`package.json`, `pnpm-workspace.yaml`, `turbo.json`)이다. 이 예외를 넘어가지 않는다
+- **수정 허용은 `packages/**` + 패키지 변경에 직결된 루트 설정 최소 수정**(`package.json`, `pnpm-workspace.yaml`, `turbo.json`)이다. 이 예외를 넘어가지 않는다. **앱 작업에 필요한 루트 변경(의존성·lock·루트 스크립트)은 그 앱 에이전트가 한다** — 이 에이전트는 `packages/**` 변경과 그 정리만 맡는다
 - **catalog 버전 변경은 루트 파일이므로 헤르메스에 보고**한 뒤에 한다
 - `apps/**`는 **읽기만** 한다. 앱 코드를 고치지 않는다
 - **packages 변경이 포함된 작업에서는 앱 에이전트보다 먼저 실행**한다. 끝나면 영향 앱·영향 범위·필요한 후속 앱 에이전트를 보고에 명시해 헤르메스가 넘길 수 있게 한다

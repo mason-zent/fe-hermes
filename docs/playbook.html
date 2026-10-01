@@ -444,7 +444,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
 
     <section id="routing">
       <h2>라우팅</h2>
-      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. 판단이 안 서면 <code>repos/*</code>에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다. "케어"·"환급"만 나오면 운영 콘솔(care-fe/refund-fe)인지 사용자 웹(bznav-care-fe/bznav-refund-fe)인지 반드시 확인합니다. bznav 여러 앱과 <code>packages/**</code>가 함께 바뀌면 bznav-packages-fe를 먼저, 발행 패키지와 소비 레포가 함께 바뀌면 packages-fe를 먼저 보냅니다.</p>
+      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. 판단이 안 서면 <code>repos/*</code>에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다. "케어"·"환급"만 나오면 운영 콘솔(care-fe/refund-fe)인지 사용자 웹(bznav-care-fe/bznav-refund-fe)인지 반드시 확인합니다. bznav 앱 작업에 필요한 루트 변경(<code>package.json</code>·lock)은 그 앱 에이전트가 하고, <code>packages/**</code>가 함께 바뀔 때만 bznav-packages-fe를 먼저, 발행 패키지와 소비 레포가 함께 바뀌면 packages-fe를 먼저 보냅니다.</p>
       <div class="route">
         <div class="kw">환급 콘솔, refund-service, 랜딩 SEO 어드민, 파트너·광고·간편신청 관리</div><div class="to">refund-fe</div>
         <div class="kw">권한·역할·기능·메뉴 관리, 사이드바·brics-menus, 리소스 센터, 감사 로그, 접근 요청, 메시지 플랫폼, 알림톡 제어, hub</div><div class="to">hub-fe</div>

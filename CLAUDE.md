@@ -27,7 +27,7 @@
 
 상세 프로필은 `.claude/agents/*.md`. 담당 범위·기준 브랜치·라우팅 기준은 공통 문서 1절을 따른다.
 
-- bznav 여러 앱 + `packages/**`가 함께 바뀌면 **bznav-packages-fe 먼저**, 그 뒤 앱 에이전트 병렬
+- bznav **앱 작업에 필요한 루트 변경**(`package.json`·`pnpm-lock.yaml` — 의존성·devDependency·lock·루트 스크립트)은 **그 앱 에이전트**가 그 앱 PR 에서 한다. `packages/**` 가 함께 바뀔 때만 bznav-packages-fe 먼저, 그 뒤 앱 에이전트 병렬
 - 발행 패키지(zent-packages)와 소비 레포가 함께 바뀌면 **packages-fe 먼저**
 - 판단이 안 서면 Explore 에이전트로 `repos/*`에서 키워드를 찾고, 그래도 모호하면 사용자에게 확인
 

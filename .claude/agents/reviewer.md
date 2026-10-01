@@ -31,7 +31,7 @@ tools: Read, Glob, Grep, Bash
 - [ ] **계획서 준수**: 승인 범위 밖 변경 없음, 결정 사항 그대로 구현됨, 미구현 항목 없음
 - [ ] **변경 필요성**: 각 변경이 요청·승인 범위의 구현, 검증, 필수 규칙 준수 중 하나에 필요한지 설명할 수 있는가. 관련 없는 정리·재포맷·선제적 일반화(요청 안 한 옵션·prop·범용 계층)가 섞이지 않았는가. 줄별 대응표는 요구하지 않는다
 - [ ] **필수 규칙 준수**: 해당 레포 `rules.md` "필수" 절의 항목이 지켜졌는지 (용어 규칙, 금지 사항, 허용 범위 예외). 국소 수정이라도 예외가 아니다
-- [ ] **범위 준수**: bznav 앱 에이전트가 다른 앱·`packages/**`를 건드리지 않았는지, `packages-fe`가 `frontend/**`와 `.changeset/`만 바꿨는지, `bznav-packages-fe`의 루트 설정 수정이 허용 예외 안인지, `bznav-rn-app` 이 웹(bznav-web)을 건드리지 않았고 배포 명령을 실행하지 않았는지, 네이티브·배포 설정 변경은 승인 범위 안이고 배포 경로(코드 푸시 가능 / 스토어 빌드 필요)를 보고했는지
+- [ ] **범위 준수**: bznav 앱 에이전트가 다른 앱·`packages/**`를 건드리지 않았는지, `packages-fe`가 `frontend/**`와 `.changeset/`만 바꿨는지, `bznav-packages-fe`의 루트 설정 수정이 허용 예외 안인지, bznav 앱 에이전트의 루트 `package.json`·`pnpm-lock.yaml` 수정이 그 앱 작업에 필요한 최소인지(catalog·`pnpm-workspace.yaml`·`turbo.json` 은 보고 대상), `bznav-rn-app` 이 웹(bznav-web)을 건드리지 않았고 배포 명령을 실행하지 않았는지, 네이티브·배포 설정 변경은 승인 범위 안이고 배포 경로(코드 푸시 가능 / 스토어 빌드 필요)를 보고했는지
 - [ ] **zent-packages 릴리스 조건**: 브랜치 diff 에 `.changeset/*.md` 추가가 있는지(`git diff --name-only --diff-filter=A origin/main...HEAD -- .changeset` — 표준 스크립트는 미커밋만 본다), bump 수준, 소비 레포 영향 보고
 - [ ] **레포 규칙 준수**: 해당 레포의 Prettier 설정(레포마다 다르다), 파일 네이밍, `any` 미사용, 이번 변경으로 생긴 미사용 import·변수·함수 없음(기존 미사용 코드는 이번 변경의 결함과 구분해 보고)
 - [ ] **기존 패턴 일치**: 권한 가드 위치, 라우트 구조, 레이어 분리(web-op), 생성물(Orval·Relay) 직접 수정 여부
