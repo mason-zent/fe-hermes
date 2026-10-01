@@ -45,8 +45,12 @@ pathlib.Path(context_out).write_text("\n".join(parts), encoding="utf-8")
 # 상위 디렉터리에서 자동 로드되는 hermes 문서를 뺀다 (위 컨텍스트에 이미 들어 있다)
 excludes = [str(hermes / "CLAUDE.md"), str(hermes / "AGENTS.md"), str(hermes / ".claude/rules/**")]
 # FE 세션 보호 훅 — git commit 직접·add -A 는 commit.sh 로 안내, push·gh pr 차단 (scripts/hooks/commit-guard.py)
-guard = {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": f"python3 {hermes / 'scripts/hooks/commit-guard.py'}"}]}]}
+# 시크릿 출력 차단 훅은 reviewer 포함 모든 세션에 (scripts/hooks/secret-guard.py — 토큰은 무조건 노출 금지)
+secret_hook = {"type": "command", "command": f"python3 {hermes / 'scripts/hooks/secret-guard.py'}"}
+guard = {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": f"python3 {hermes / 'scripts/hooks/commit-guard.py'}"}, secret_hook]}]}
 settings = {"claudeMdExcludes": excludes}
 if agent != "reviewer":
     settings["hooks"] = guard
+else:
+    settings["hooks"] = {"PreToolUse": [{"matcher": "Bash", "hooks": [secret_hook]}]}
 pathlib.Path(settings_out).write_text(json.dumps(settings), encoding="utf-8")

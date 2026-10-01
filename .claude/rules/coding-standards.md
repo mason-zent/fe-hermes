@@ -25,3 +25,4 @@
 
 ## 보안
 - `.env*`, 토큰, 키 파일 내용은 출력·커밋하지 않는다
+- **토큰·키·비밀번호는 무조건 노출 금지.** 값은 어떤 경로로든 출력하지 않는다 — 파일 읽기(`.npmrc`·`.env*`·키 파일, `git show/diff/log` 포함), `npm/pnpm/yarn config get·list`, `printenv`·`env`, `echo $…TOKEN`, `gh auth token`, 로그·보고·커밋 메시지·계획서 모두. 확인이 필요하면 **있는지·참조 형태(`${…}`)·길이·HTTP 상태 코드만** 본다(`curl -s -o /dev/null -w '%{http_code}'`). 봐야 하면 `sed 's/_authToken=.*/_authToken=***/'` 로 가린 뒤. 실수로 노출되면 즉시 멈추고 사용자에게 알려 폐기·재발급을 권한다. 모든 세션(헤르메스·FE·reviewer)에 `scripts/hooks/secret-guard.py` 가 걸려 흔한 경로를 막는다(보안 경계는 아니다 — 규칙이 우선)
