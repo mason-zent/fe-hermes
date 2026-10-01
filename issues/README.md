@@ -18,7 +18,7 @@ agent:                  # 담당 에이전트. 비우면 repo 로 hermes.config.
 kind: code              # code | diagram | knowledge | check(확인만 필요)
 severity: medium        # high | medium | low
 source: sync 2026-09-28 # 어디서 찾았나
-plan:                   # code: 계획서 경로
+plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
 pr:                     # code: PR 번호 (담당 레포)
 fix:                    # knowledge·diagram: 수정 커밋 sha (여러 개면 쉼표)
 reason:                 # wontfix: 하지 않는 이유

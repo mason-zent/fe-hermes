@@ -514,6 +514,9 @@ const collect = async () => {
   for (const issue of issues) {
     const plan = plans.find((entry) => entry.id === issue.plan || entry.issue === issue.id)
     if (!plan) continue
+    // 아직 열린(open) 이슈가 다른 작업의 계획서를 가리키면 "그 작업 중 발견" 이다 — 합치면 진행 중 계획서 카드가
+    // 이슈 칸으로 빨려 들어가 사라진다. 계획서가 이 이슈를 위해 만든 것(Issue:)일 때만 합친다
+    if (issue.status === 'open' && plan.issue !== issue.id) continue
     merged.add(plan.id)
     issue.linkedPlan = { id: plan.id, grade: plan.grade, owner: plan.owner, created: plan.created, mtime: plan.mtime, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
     // 계획서가 리뷰 단계면 이슈 카드도 리뷰 칸에
