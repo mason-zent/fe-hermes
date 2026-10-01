@@ -287,6 +287,7 @@ fi
   echo 'trap cleanup EXIT INT TERM'
   echo "cd '$WORKDIR' || exit 1"
   [ -n "$REPO_DIR" ] && echo "export HERMES_REPO_DIR='$REPO_DIR'"
+  echo "export HERMES_AGENT='$AGENT'"
   [ -n "$EXTRA_FILES" ] && echo "export HERMES_VERIFY_DIR='$WORK_TOP'"
   [ -n "$CONSUMERS" ] && echo "export ZENT_CONSUMERS='$CONSUMERS'"
   if [ -n "$PROMPT" ]; then
@@ -310,6 +311,9 @@ fi
 # verify 스크립트가 hermes 루트 기준이라 cwd 자체는 그대로 두고 읽는 곳만 바꾼다.
 BRANCH_FROM="${GIVEN_CWD:-${REPO_DIR:-$WORKDIR}}"
 BRANCH_NAME="$(git -C "$BRANCH_FROM" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+# /call(--ask-branch) 은 아직 브랜치를 정하지 않았다 — 메인 체크아웃 브랜치를 적으면 엉뚱한 작업으로 보인다.
+# 에이전트가 브랜치를 고르면 new-branch.sh 가 pane 이름을 그 브랜치로 바꾼다(HERMES_AGENT)
+[ "$ASK_BRANCH" = 1 ] && BRANCH_NAME="브랜치 선택 중"
 PANE_TITLE="🤖 $AGENT"
 [ -n "$BRANCH_NAME" ] && [ "$BRANCH_NAME" != "HEAD" ] && PANE_TITLE="$PANE_TITLE · $BRANCH_NAME"
 herdr pane rename "$PANE" "$PANE_TITLE" >/dev/null 2>&1 || true

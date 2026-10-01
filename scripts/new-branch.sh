@@ -205,6 +205,12 @@ for target in "${TARGETS[@]}"; do
   created=$((created+1))
 done
 
+# 에이전트 pane 안에서(/call) 브랜치를 정했으면 pane 이름을 그 브랜치로 — 띄울 때는 아직 몰라서 "브랜치 선택 중" 이다.
+# HERMES_AGENT 는 delegate.sh 가 에이전트 pane 에만 넣는다(헤르메스 pane 에서 돌리면 이름을 건드리지 않는다)
+if [ $created -gt 0 ] && [ $DRY_RUN -eq 0 ] && [ -n "${HERMES_AGENT:-}" ] && [ -n "${HERDR_PANE_ID:-}" ] && command -v herdr >/dev/null 2>&1; then
+  herdr pane rename "$HERDR_PANE_ID" "🤖 $HERMES_AGENT · $BRANCH" >/dev/null 2>&1 && echo "🏷  pane 이름: 🤖 $HERMES_AGENT · $BRANCH"
+fi
+
 echo ""
 echo "생성: ${created}, 건너뜀: ${skipped}"
 if [ $skipped -gt 0 ]; then
