@@ -20,6 +20,7 @@
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
  *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
+ *   - POST /api/hermes-new 이슈 [처리 시작] → 헤르메스: 새 헤르메스 pane(🧭 헤르메스 · <이슈>)을 열어 그 안에서 처리한다 — 떠 있는 헤르메스 대화에 섞지 않는다
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
  *     정식 계획서 결정 콘솔(/plans/*.html)의 [이대로 진행] 도 이걸로 PLAN.hermesPane 에 보낸다
  *   브라우저가 보내기 전에 지시문을 보여주고 고치게 한다
@@ -607,6 +608,39 @@ const sendToPane = async (paneId, text) => {
   return null
 }
 
+// 이슈 [처리 시작] → 헤르메스: 떠 있는 헤르메스 pane 에 끼워 넣지 않고 **새 헤르메스 pane** 을 열어 그 안에서 처리한다.
+// 하던 대화 한가운데에 다른 이슈가 섞이지 않게 — 이슈 하나에 세션 하나. 자리는 헤르메스 pane 옆(없으면 현황판 pane 옆)
+const openHermesPane = async (issueId, text) => {
+  const issuePath = safePath(issueId, 'issues')
+  if (!issuePath) return { error: '이슈 파일을 찾지 못했어요' }
+  const prompt = text.trim()
+  if (!prompt || prompt.length > 4000) return { error: '지시문이 비어 있거나 너무 길어요' }
+  const base = (snapshot?.panes ?? []).find((pane) => pane.role === 'hermes')
+  const splitArgs = base ? ['pane', 'split', base.id] : ['pane', 'split', '--current']
+  const out = await run('herdr', [...splitArgs, '--direction', 'right', '--ratio', '0.5', '--cwd', ROOT, '--no-focus'])
+  let pane = ''
+  try {
+    pane = JSON.parse(out ?? '').result.pane.pane_id
+  } catch {
+    return { error: '새 pane 을 열지 못했어요 (herdr pane split)' }
+  }
+  const title = (readIssue(issuePath)?.title ?? basename(issueId, '.md')).slice(0, 30)
+  await run('herdr', ['pane', 'rename', pane, `🧭 헤르메스 · ${title}`])
+  // 지시문은 따옴표·줄바꿈이 섞여 있어 파일로 넘긴다(delegate.sh 와 같은 방식). 끝나면 러너가 지운다
+  const stamp = randomBytes(4).toString('hex')
+  const promptFile = join(tmpdir(), `hermes-issue-prompt-${stamp}`)
+  const runner = join(tmpdir(), `hermes-issue-runner-${stamp}`)
+  writeFileSync(promptFile, prompt)
+  writeFileSync(runner, [
+    '#!/usr/bin/env bash',
+    `trap "rm -f '${promptFile}' '${runner}'" EXIT INT TERM`,
+    `cd '${ROOT}' || exit 1`,
+    `claude "$(cat '${promptFile}')"`,
+  ].join('\n') + '\n', { mode: 0o755 })
+  if ((await run('herdr', ['pane', 'run', pane, runner])) === null) return { error: `pane ${pane} 에서 헤르메스를 실행하지 못했어요` }
+  return { pane }
+}
+
 // 담당 에이전트를 레포 workspace 에 띄운다 — delegate.sh 가 workspace 찾기·pane 이름·임시 파일을 다 한다
 // 디스패치는 몇 초~수십 초 걸린다 — 작업 번호를 바로 돌려주고, 단계마다 SSE(event: job)로 진행을 밀어 준다
 const jobs = new Map()
@@ -869,7 +903,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -887,6 +921,12 @@ createServer(async (request, response) => {
         await refresh()
       })
       return reply(202, { ok: true, job: job.id })
+    }
+    if (url.pathname === '/api/hermes-new') {
+      const result = await openHermesPane(String(body.id ?? ''), String(body.text ?? ''))
+      if (result.error) return reply(400, result)
+      await refresh()
+      return reply(200, { ok: true, ...result })
     }
     if (url.pathname === '/api/review') {
       const result = await dispatchReview(String(body.id ?? ''), String(body.text ?? ''))

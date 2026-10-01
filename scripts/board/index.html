@@ -668,13 +668,11 @@
     if (mode === 'issue') {
       // 받는 곳을 고른다 — 헤르메스(처리) 또는 담당 에이전트로 바로(조사만). 고르면 지시문도 바뀐다
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
-      const hermes = (lastState?.panes || []).find((entry) => entry.role === 'hermes');
       const route = (choice) => {
         if (choice === 'hermes') {
-          if (!hermes) return false;
-          ask(title, text, 'pane', agent, id);
-          targetPane = hermes.id;
-          document.getElementById('ask-to').innerHTML = `→ 받는 곳 <b>헤르메스</b> · ${esc(hermes.id)} — 판단 → 계획서 → prBase 브랜치 → 담당 에이전트까지 이어서 처리해요 ${picker('hermes')}`;
+          // 떠 있는 헤르메스 대화에 섞지 않고 새 헤르메스 pane 을 열어 처리한다(/api/hermes-new)
+          ask(title, text, 'hermes-new', agent, id);
+          document.getElementById('ask-to').innerHTML = `→ 받는 곳 <b>새 헤르메스 pane</b> (🧭 헤르메스 · 이슈 제목) — 판단 → 계획서 → prBase 브랜치 → 담당 에이전트까지 이어서 처리해요. 지금 하던 헤르메스 대화에는 끼어들지 않아요 ${picker('hermes')}`;
         } else {
           ask(title, INVESTIGATE(card), 'dispatch', agent, id);
           document.getElementById('ask-to').innerHTML += ` ${picker('investigate')}`;
@@ -683,9 +681,7 @@
         return true;
       };
       const picker = (current) => `<br>보내는 곳 바꾸기 <select id="ask-route"><option value="hermes" ${current === 'hermes' ? 'selected' : ''}>헤르메스로 (처리)</option><option value="investigate" ${current === 'investigate' ? 'selected' : ''}>담당 에이전트로 바로 (조사만 · 코드 수정 없음)</option></select>`;
-      if (route('hermes')) return;
-      toast('헤르메스 pane 이 없어서 담당 에이전트로 바로(조사만) 보내요');
-      route('investigate');
+      route('hermes');
       return;
     }
     if (mode === 'dispatch') {
@@ -694,6 +690,8 @@
       if (!agent) to.innerHTML += ' — <b>이슈에 담당이 정해져 있지 않아요. 골라 주세요</b>';
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
       if (card?.worktree) to.innerHTML += `<br>워크트리 <code>${esc(card.worktree.rel)}</code> ← ${esc(card.worktree.ref)} (detached${card.worktree.exists ? ', 이미 있어서 그대로 써요' : ', 새로 만들어요'}) · 담당을 바꾸면 그 에이전트의 레포에 만들어요`;
+    } else if (mode === 'hermes-new') {
+      // 받는 곳 안내는 이슈 팝업(route)이 채운다
     } else if (mode === 'review') {
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
       to.innerHTML = `→ <b>reviewer</b> 를 계획서의 담당 레포 workspace 에 새 pane 으로 띄워요${card?.workRef ? `<br>대상 <code>${esc(card.workRef)}</code>` : ''} · 헤르메스는 거치지 않아요`;
@@ -736,6 +734,12 @@
         // 202 — 진행은 SSE event: job 으로 온다 (renderJob)
         currentJob = result.job;
         setStatus('', '');
+        return;
+      }
+      if (pending?.mode === 'hermes-new') {
+        const result = await api('/api/hermes-new', { id: pending.id, text });
+        document.getElementById('ask').close();
+        toast(`새 헤르메스 pane 에서 시작했어요 · ${result.pane}`);
         return;
       }
       if (pending?.mode === 'review') {
@@ -784,6 +788,15 @@
   // 정식 계획서만 제목 옆에 문서 아이콘 — 경량은 표시하지 않는다
   const formalMark = (plan) => plan?.grade === 'formal' ? '<span class="formal-mark" title="정식 계획서 — md + 결정 콘솔">📄</span>' : '';
 
+  // 카드에는 브랜치만 — 워크트리 경로·pane 까지 든 Work ref 전체는 마우스를 올리면. 파일 경로는 카드 상세에 있다
+  // hermes 자체 작업은 워크트리 없이 main 에서 한다 — 🌿 가 없어도 🏠 로 표시해 "아직 시작 안 한 일" 과 구분한다
+  const branchLine = (workRef, id = '') => {
+    const branch = (workRef || '').match(/🌿\s*([^\s·(]+)/)?.[1];
+    if (branch) return `<div class="line" title="${esc(workRef)}">🌿 ${esc(branch)}</div>`;
+    if (/^hermes\b/.test(workRef || '') || /\/\d{8}-hermes-/.test(id)) return `<div class="line" title="${esc(workRef || '')}">🏠 hermes · main</div>`;
+    return '';
+  };
+
   const planCard = (card, panes) => {
     const tags = [`<span class="pill">${esc(card.status)}</span>`];
     if (card.blocked) tags.push(`<span class="pill bad">막힘</span>`);
@@ -792,15 +805,14 @@
     for (const pane of running) tags.push(`<span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`);
     const progress = card.progress ? `<div class="progress" title="${card.progress.checked}/${card.progress.total}"><i style="width:${Math.round((card.progress.checked / card.progress.total) * 100)}%"></i></div><div class="line">진행 ${card.progress.checked}/${card.progress.total}</div>` : '';
     return `<div class="card" data-key="${esc(card.id)}" draggable="${!card.archived}">
-      <div class="title">${formalMark(card)}${esc(card.title)}</div>
+      <div class="title" title="${esc(card.id)}">${formalMark(card)}${esc(card.title)}</div>
       ${when(card)}
       <div class="tags">${tags.join('')}</div>
       ${card.statusNote ? `<div class="line">${esc(card.statusNote)}</div>` : ''}
       ${progress}
       ${card.blocked ? `<div class="line"><b>막힘</b> ${esc(card.blocked)}</div>` : ''}
       ${card.next && card.column !== 'done' ? `<div class="line"><b>다음</b> ${esc(card.next)}</div>` : ''}
-      ${card.workRef ? `<div class="line">🌿 ${esc(card.workRef)}</div>` : ''}
-      <div class="line">${esc(card.id)}${card.updated ? ` · ${esc(card.updated)}` : ''}</div>
+      ${branchLine(card.workRef, card.id)}
       ${card.html ? `<a href="/${esc(card.html)}" target="_blank">결정 콘솔 열기 ↗</a>` : ''}
       ${controls(card)}
     </div>`;
@@ -814,8 +826,7 @@
     const bar = plan.progress ? `<div class="progress"><i style="width:${Math.round((plan.progress.checked / plan.progress.total) * 100)}%"></i></div>` : '';
     return `<div class="line">📋 <b>계획</b> ${esc(plan.status)}${plan.progress ? ` · 진행 ${plan.progress.checked}/${plan.progress.total}` : ''}${running.map((pane) => ` · <span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`).join('')}</div>
       ${bar}
-      ${plan.blocked ? `<div class="line"><b>막힘</b> ${esc(plan.blocked)}</div>` : ''}
-      <div class="line" title="${esc(plan.id)}">${esc(plan.id.replace('plans/', ''))}</div>`;
+      ${plan.blocked ? `<div class="line"><b>막힘</b> ${esc(plan.blocked)}</div>` : ''}`;
   };
 
   const issueCard = (card, panes = []) => {
@@ -827,14 +838,12 @@
     if (card.type) tags.push(`<span class="pill">${esc(card.type)}</span>`);
     if (card.severity) tags.push(`<span class="pill ${card.severity === 'high' ? 'bad' : card.severity === 'medium' ? 'warn' : ''}">${esc(card.severity)}</span>`);
     return `<div class="card" data-key="${esc(card.id)}" draggable="true">
-      <div class="title">${formalMark(card.linkedPlan)}${esc(card.title)}</div>
+      <div class="title" title="${esc([card.summary, card.source && `출처 ${card.source}`, card.id, card.linkedPlan && `계획 ${card.linkedPlan.id}`].filter(Boolean).join('\n'))}">${formalMark(card.linkedPlan)}${esc(card.title)}</div>
       ${when(card)}
       <div class="tags">${tags.join('')}</div>
-      ${card.summary ? `<div class="line">${esc(card.summary)}</div>` : ''}
-      <div class="line">${esc(card.source)}</div>
+      ${card.linkedPlan ? branchLine(card.linkedPlan.workRef, card.linkedPlan.id) : ''}
       ${linkedPlan(card, panes)}
       ${check && card.column !== 'done' && card.column !== 'issue' ? `<div class="checks">${check.checks.map((item) => `<span class="${item.ok ? 'ok' : ''}">${item.ok ? '✓' : '·'} ${esc(item.label)}</span>`).join('')}</div>` : ''}
-      <div class="line">${esc(card.id)}</div>
       ${controls(card)}
     </div>`;
   };
