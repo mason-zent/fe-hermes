@@ -21,6 +21,7 @@
 ## Checkpoint
 - Updated: {{updated}}
 - Status: {{status}}
+- Owner: {{owner}}
 - Agent: {{agent}}
 - Issue: {{issue}}
 - Work ref: (디스패치할 때 채운다 — 워크트리 · 브랜치 · pane)

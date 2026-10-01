@@ -157,9 +157,32 @@ const repoOfPlan = (agentField, dirName, workRef) => {
   return ''
 }
 
+// 보관 폴더 → 처음 커밋한 사람. git log 한 번으로 전부 뽑는다(폴더마다 부르지 않게)
+const archiveAuthors = () => {
+  const authors = new Map()
+  try {
+    const out = execFileSync('git', ['-C', ROOT, '-c', 'core.quotepath=off', 'log', '--diff-filter=A', '--format=%x00%an', '--name-only', '--', `${ARCHIVE_DIR}/*/meta.json`], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 })
+    // 최신 커밋부터 나오므로 뒤에 나온(더 오래된) 값으로 덮어 처음 커밋한 사람을 남긴다
+    for (const block of out.split('\0').filter(Boolean)) {
+      const [author, ...files] = block.split('\n').filter(Boolean)
+      for (const file of files) authors.set(file.split('/')[1], author)
+    }
+  } catch {}
+  return authors
+}
+const localUser = () => {
+  try {
+    return execFileSync('git', ['-C', ROOT, 'config', 'user.name'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
 export const listHistory = () => {
   const base = join(ROOT, ARCHIVE_DIR)
   if (!existsSync(base)) return []
+  const authors = archiveAuthors()
+  const me = localUser()
   return readdirSync(base)
     .filter((name) => statSync(join(base, name)).isDirectory())
     .map((name) => {
@@ -186,6 +209,8 @@ export const listHistory = () => {
         status: issueMeta.status || plainLine(checkpoint.match(/^-\s*Status:\s*(.+)$/m)?.[1] ?? ''),
         fix: issueMeta.fix || '',
         pr: issueMeta.pr || '',
+        // 작업자 — 계획서 Owner: → 이슈 owner: → 보관 커밋 작성자 → (아직 커밋 전이면) 이 워크스페이스 사용자
+        owner: plainLine(checkpoint.match(/^-\s*Owner:\s*(.+)$/m)?.[1] ?? '') || issueMeta.owner || authors.get(name) || me,
         planType: planText ? (meta.from?.plan?.split('/')[1] === 'archive' ? meta.from.plan.split('/')[2] : meta.from?.plan?.split('/')[1]) || '' : '',
         commits,
         summary,

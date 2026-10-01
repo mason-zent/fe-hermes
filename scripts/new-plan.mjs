@@ -11,6 +11,7 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -29,6 +30,15 @@ if (!summary) {
   console.error('사용: node scripts/new-plan.mjs --agent <에이전트> --summary "<한 줄 요약>" [--issue issues/…md] [--prompt-file <파일>]')
   process.exit(2)
 }
+
+// 작업자(사람) — 현황판 카드에 👤 로 뜬다
+const owner = (() => {
+  try {
+    return execFileSync('git', ['-C', ROOT, 'config', 'user.name'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+})()
 
 const now = new Date()
 const stamp = now.toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' })
@@ -52,6 +62,7 @@ const body = template
   .replaceAll('{{title}}', summary)
   .replaceAll('{{updated}}', `${stamp.slice(0, 16)} / ${agent ? `헤르메스 → ${agent}` : '헤르메스'}`)
   .replaceAll('{{status}}', status)
+  .replaceAll('{{owner}}', owner || '(모름)')
   .replaceAll('{{agent}}', agent || '(정해지지 않음)')
   .replaceAll('{{issue}}', issue || '없음')
   .replaceAll('{{prompt}}', prompt ? prompt.split('\n').map((line) => `> ${line}`).join('\n') : '> (지시문 없음 — pane 에서 대화로 지시)')

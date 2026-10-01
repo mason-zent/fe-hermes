@@ -132,20 +132,27 @@
   .history-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
   .history-bar input, .history-bar select { font: inherit; font-size: 13px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); }
   .history-bar input { flex: 1 1 240px; min-width: 0; }
-  .history-bar .count { font-size: 12px; color: var(--muted); margin-left: auto; }
   .history { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); overflow: hidden; }
   .history .month { font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: .04em; padding: 8px 14px 4px; background: var(--bg); border-top: 1px solid var(--line); }
+  /* 날짜 머리글 — 누르면 그날 목록을 접고 편다 */
+  .history button.month { display: flex; align-items: center; gap: 6px; width: 100%; text-align: left; font-family: inherit; border-left: 0; border-right: 0; border-bottom: 0; cursor: pointer; }
+  .history button.month:hover { color: var(--text); }
+  .history button.month:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .history .month .caret { width: 10px; font-size: 9px; }
+  .history .month .n { font-weight: 500; }
   .history .month:first-child { border-top: 0; }
-  .h-row { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); cursor: pointer; text-align: left; background: none; border-left: 0; border-right: 0; border-bottom: 0; font: inherit; color: inherit; width: 100%; }
+  .h-row { display: grid; grid-template-columns: 92px minmax(0, 1fr) 96px; gap: 12px; padding: 10px 14px; border-top: 1px solid var(--line); cursor: pointer; text-align: left; background: none; border-left: 0; border-right: 0; border-bottom: 0; font: inherit; color: inherit; width: 100%; }
   .history .month + .h-row { border-top: 0; }
   .h-row:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
   .h-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .h-date { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 1px; }
   .h-main { min-width: 0; display: grid; gap: 3px; }
+  .h-owner { font-size: 12px; color: var(--muted); padding-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-title { font-weight: 600; font-size: 13.5px; }
   .h-sum { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-tags { display: flex; flex-wrap: wrap; gap: 4px; }
   .pill.kind-issue { color: var(--col-issue); border-color: color-mix(in srgb, var(--col-issue) 40%, transparent); }
+  .formal-mark { margin-right: 4px; font-size: 13px; cursor: default; }
   .pill.kind-plan { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
   .empty-history { padding: 28px 16px; text-align: center; color: var(--muted); font-size: 13px; }
   .history-wrap { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 14px; align-items: start; }
@@ -195,10 +202,10 @@
   <section>
     <h2>히스토리 — 보관한 일 (archive/, git 에 남아요)</h2>
     <div class="history-bar">
-      <input id="history-q" type="search" placeholder="제목·요약·레포·커밋으로 찾기" aria-label="히스토리 검색">
       <select id="history-kind" aria-label="종류"><option value="">전체</option><option value="issue">이슈</option><option value="plan">계획서만</option></select>
       <select id="history-repo" aria-label="레포"><option value="">모든 레포</option></select>
-      <span class="count" id="history-count"></span>
+      <select id="history-owner" aria-label="작업자"><option value="">모든 작업자</option></select>
+      <input id="history-q" type="search" placeholder="제목·요약·레포·작업자·커밋으로 찾기" aria-label="히스토리 검색">
     </div>
     <div class="history-wrap">
       <nav class="h-tree" id="history-tree" aria-label="기간"></nav>
@@ -261,7 +268,9 @@
     const created = card.created || card.mtime;
     const touched = Math.max(card.mtime || 0, card.linkedPlan?.mtime || 0);
     const full = (ms) => new Date(ms).toLocaleString('ko-KR', { hour12: false });
-    return `<div class="line when" title="시작 ${full(created)} · 최근 진행 ${full(touched)}">🕒 시작 ${clock(created)} · 최근 <b>${clock(touched)}</b> (${since(touched)})</div>`;
+    // 작업자 — 이슈는 연결된 계획서의 작업자가 우선, 없으면 이슈를 올린 사람
+    const owner = card.linkedPlan?.owner || card.owner;
+    return `<div class="line when" title="시작 ${full(created)} · 최근 진행 ${full(touched)}">🕒 시작 ${clock(created)} · 최근 <b>${clock(touched)}</b> (${since(touched)})${owner ? ` · 👤 ${esc(owner)}` : ''}</div>`;
   };
   let previous = new Map();
   let lastState = null;
@@ -375,6 +384,7 @@
   // 트리에서 고른 기간 — '' 전체 · 'YYYY' · 'YYYY-MM' · 'YYYY-MM-DD'. 펼친 연·월은 open 에
   let historyPick = '';
   const historyOpen = new Set();
+  const historyFolded = new Set(); // 목록에서 접은 날짜(YYYY-MM-DD)
   const commitsBlock = (text) => {
     const lines = section(text, 'Commits');
     return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
@@ -469,23 +479,33 @@
     const query = document.getElementById('history-q').value.trim().toLowerCase();
     const kind = document.getElementById('history-kind').value;
     const repo = document.getElementById('history-repo').value;
+    const owner = document.getElementById('history-owner').value;
     const filtered = historyItems.filter((item) => {
       if (kind && item.kind !== kind) return false;
       if (repo && item.repo !== repo) return false;
+      if (owner && item.owner !== owner) return false;
       if (!query) return true;
-      return [item.title, item.summary, item.repo, item.dir, ...(item.commits || [])].join(' ').toLowerCase().includes(query);
+      return [item.title, item.summary, item.repo, item.owner, item.dir, ...(item.commits || [])].join(' ').toLowerCase().includes(query);
     });
     renderTree(filtered);
     const shown = filtered.filter((item) => (item.archivedAt || '').startsWith(historyPick));
-    document.getElementById('history-count').textContent = `${filtered.length} / ${historyItems.length}건`;
     document.getElementById('history-crumb').innerHTML = `<b>${esc(pickLabel(historyPick))}</b> · ${shown.length}건`;
     if (!historyItems.length) { box.innerHTML = '<div class="empty-history">아직 보관한 일이 없어요. 완료 칸 카드의 [아카이브]를 누르면 여기로 와요.</div>'; return; }
     if (!shown.length) { box.innerHTML = '<div class="empty-history">이 기간에 맞는 일이 없어요</div>'; return; }
-    // 목록은 날짜(일)별로 머리글을 단다
-    let lastDay = '';
+    // 목록은 날짜(일)별로 머리글을 단다 — 머리글을 누르면 그날 목록을 접는다
+    const perDay = new Map();
+    for (const item of shown) {
+      const day = (item.archivedAt || '').slice(0, 10);
+      perDay.set(day, (perDay.get(day) || 0) + 1);
+    }
+    let lastDay = null;
     box.innerHTML = shown.map((item) => {
       const day = (item.archivedAt || '').slice(0, 10);
-      const head = day !== lastDay ? `<div class="month">${esc(pickLabel((lastDay = day)) || '날짜 없음')}</div>` : '';
+      const folded = historyFolded.has(day);
+      const head = day !== lastDay
+        ? `<button type="button" class="month" data-day="${esc(day)}" aria-expanded="${!folded}"><span class="caret">${folded ? '▶' : '▼'}</span>${esc(pickLabel((lastDay = day)) || '날짜 없음')}<span class="n">· ${perDay.get(day)}건</span></button>`
+        : '';
+      if (folded) return head;
       const tags = [
         bundlePill(item),
         item.repo ? `<span class="pill">${esc(item.repo)}</span>` : '',
@@ -499,8 +519,16 @@
       return `${head}<button type="button" class="h-row" data-dir="${esc(item.dir)}">
         <span class="h-date">${esc((item.archivedAt || '').slice(11, 16))}</span>
         <span class="h-main"><span class="h-title">${esc(item.title)}</span>${item.summary ? `<span class="h-sum">${esc(item.summary)}</span>` : ''}<span class="h-tags">${tags}</span></span>
+        <span class="h-owner" title="작업자">${esc(item.owner || '')}</span>
       </button>`;
     }).join('');
+    box.querySelectorAll('button.month').forEach((head) => {
+      head.onclick = () => {
+        const day = head.dataset.day;
+        if (historyFolded.has(day)) historyFolded.delete(day); else historyFolded.add(day);
+        renderHistory();
+      };
+    });
     box.querySelectorAll('.h-row').forEach((row) => { row.onclick = () => openHistory(row.dataset.dir); });
   };
   const loadHistory = async () => {
@@ -515,12 +543,16 @@
     const current = select.value;
     const repos = [...new Set(historyItems.map((item) => item.repo).filter(Boolean))].sort();
     select.innerHTML = '<option value="">모든 레포</option>' + repos.map((name) => `<option ${name === current ? 'selected' : ''}>${esc(name)}</option>`).join('');
+    const ownerSelect = document.getElementById('history-owner');
+    const currentOwner = ownerSelect.value;
+    const owners = [...new Set(historyItems.map((item) => item.owner).filter(Boolean))].sort();
+    ownerSelect.innerHTML = '<option value="">모든 작업자</option>' + owners.map((name) => `<option ${name === currentOwner ? 'selected' : ''}>${esc(name)}</option>`).join('');
     const latest = historyItems.map((item) => item.archivedAt || '').sort().pop() || '';
     if (latest && !historyOpen.size) { historyOpen.add(latest.slice(0, 4)); historyOpen.add(latest.slice(0, 7)); }
     renderHistory();
   };
   // 검색·필터를 바꾸면 날짜 선택은 전체로 — 고른 기간에 걸려 결과가 비어 보이지 않게
-  ['history-q', 'history-kind', 'history-repo'].forEach((id) => document.getElementById(id).addEventListener('input', () => {
+  ['history-q', 'history-kind', 'history-repo', 'history-owner'].forEach((id) => document.getElementById(id).addEventListener('input', () => {
     historyPick = '';
     renderHistory();
   }));
@@ -737,16 +769,18 @@
     </div>`;
   };
 
+  // 정식 계획서만 제목 옆에 문서 아이콘 — 경량은 표시하지 않는다
+  const formalMark = (plan) => plan?.grade === 'formal' ? '<span class="formal-mark" title="정식 계획서 — md + 결정 콘솔">📄</span>' : '';
+
   const planCard = (card, panes) => {
-    const typeLabel = card.type === 'task' ? '경량' : card.type;
-    const tags = [`<span class="pill">${esc(typeLabel)}</span>`, `<span class="pill">${esc(card.status)}</span>`];
+    const tags = [`<span class="pill">${esc(card.status)}</span>`];
     if (card.blocked) tags.push(`<span class="pill bad">막힘</span>`);
     if (card.working && card.status !== 'in_progress') tags.push('<span class="pill working">에이전트 작업 중</span>');
     const running = (card.agents || []).map((id) => panes.find((pane) => pane.id === id)).filter(Boolean);
     for (const pane of running) tags.push(`<span class="pill ${pane.status === 'working' ? 'working' : ''}">🤖 ${esc(pane.agent)}</span>`);
     const progress = card.progress ? `<div class="progress" title="${card.progress.checked}/${card.progress.total}"><i style="width:${Math.round((card.progress.checked / card.progress.total) * 100)}%"></i></div><div class="line">진행 ${card.progress.checked}/${card.progress.total}</div>` : '';
     return `<div class="card" data-key="${esc(card.id)}" draggable="${!card.archived}">
-      <div class="title">${esc(card.title)}</div>
+      <div class="title">${formalMark(card)}${esc(card.title)}</div>
       ${when(card)}
       <div class="tags">${tags.join('')}</div>
       ${card.statusNote ? `<div class="line">${esc(card.statusNote)}</div>` : ''}
@@ -781,7 +815,7 @@
     if (card.type) tags.push(`<span class="pill">${esc(card.type)}</span>`);
     if (card.severity) tags.push(`<span class="pill ${card.severity === 'high' ? 'bad' : card.severity === 'medium' ? 'warn' : ''}">${esc(card.severity)}</span>`);
     return `<div class="card" data-key="${esc(card.id)}" draggable="true">
-      <div class="title">${esc(card.title)}</div>
+      <div class="title">${formalMark(card.linkedPlan)}${esc(card.title)}</div>
       ${when(card)}
       <div class="tags">${tags.join('')}</div>
       ${card.summary ? `<div class="line">${esc(card.summary)}</div>` : ''}

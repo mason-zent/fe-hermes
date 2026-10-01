@@ -30,7 +30,7 @@ import { createServer } from 'node:http'
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, rmSync, mkdirSync, renameSync } from 'node:fs'
 import { join, dirname, relative, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFile } from 'node:child_process'
+import { execFile, execFileSync } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
 import { createHash, randomBytes } from 'node:crypto'
@@ -54,6 +54,28 @@ const readText = (path) => {
     return null
   }
 }
+
+// ── 작업자 ──────────────────────────────────────────────────────────────
+// 계획서 Checkpoint 의 Owner: · 이슈 frontmatter 의 owner: 가 정본. 없으면 그 파일을 처음 커밋한 사람,
+// 커밋 전이면(plans/** 는 로컬) 이 워크스페이스의 git user.name — 로컬 파일은 이 사람이 만든 것이다
+const LOCAL_USER = (() => {
+  try {
+    return execFileSync('git', ['-C', ROOT, 'config', 'user.name'], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+})()
+// path → { author, at }. 커밋된 파일은 처음 커밋한 사람이 바뀌지 않아 계속 쓰고, 아직 없으면 1분 뒤 다시 본다
+const authorCache = new Map()
+const firstAuthor = async (path) => {
+  const cached = authorCache.get(path)
+  if (cached && (cached.author || Date.now() - cached.at < 60_000)) return cached.author
+  const out = await run('git', ['-C', ROOT, 'log', '--diff-filter=A', '--format=%an', '--', relative(ROOT, path)])
+  const author = out?.trim().split('\n').at(-1) ?? ''
+  authorCache.set(path, { author, at: Date.now() })
+  return author
+}
+const ownerOf = async (declared, path) => declared || (await firstAuthor(path)) || LOCAL_USER
 
 const listFiles = (dir, predicate) => {
   if (!existsSync(dir)) return []
@@ -94,6 +116,9 @@ const readPlan = (path) => {
     id: relative(ROOT, path),
     title: plain(text.match(/^#\s+(.+)$/m)?.[1] ?? basename(path, '.md')),
     type: path.split('/').at(archived ? -2 : -2),
+    // 정식 = feature·bugfix·refactor (md + html 결정 콘솔) · 경량 = plans/task
+    grade: path.split('/').at(-2) === 'task' ? 'light' : 'formal',
+    owner: plain(field(checkpoint, 'Owner')),
     status,
     statusNote: plain(statusRaw.replace(/^(planned|in_progress|blocked|ready_for_review|done)\s*[—-]?\s*/, '')),
     column: STATUS_COLUMN[status] ?? 'plan',
@@ -172,6 +197,7 @@ const readIssue = (path) => {
     source: meta.source || '',
     plan: meta.plan || '',
     agent: meta.agent || agentForRepo(meta.repo || ''),
+    owner: meta.owner || '',
     fix: meta.fix || '',
     pr: meta.pr || '',
     reason: meta.reason || '',
@@ -458,6 +484,7 @@ const collect = async () => {
     .filter(Boolean)
     .filter((issue) => issue.column !== 'done' || now - issue.mtime < DONE_KEEP_DAYS * 86_400_000)
   const [{ available, panes }, worktrees] = await Promise.all([readPanes(), readWorktrees()])
+  await Promise.all([...plans, ...issues].map(async (card) => { card.owner = await ownerOf(card.owner, join(ROOT, card.id)) }))
   const subagents = readSubagents()
 
   // 이슈마다 완료 가능 판정 (issues/README.md "완료 기준")
@@ -487,7 +514,7 @@ const collect = async () => {
     const plan = plans.find((entry) => entry.id === issue.plan || entry.issue === issue.id)
     if (!plan) continue
     merged.add(plan.id)
-    issue.linkedPlan = { id: plan.id, created: plan.created, mtime: plan.mtime, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
+    issue.linkedPlan = { id: plan.id, grade: plan.grade, owner: plan.owner, created: plan.created, mtime: plan.mtime, status: plan.status, progress: plan.progress, blocked: plan.blocked, next: plan.next, workRef: plan.workRef, agents: plan.agents }
     // 계획서가 리뷰 단계면 이슈 카드도 리뷰 칸에
     if (issue.status === 'in_progress' && plan.status === 'ready_for_review') issue.column = 'review'
     if (plan.working && issue.column !== 'done') issue.column = 'doing'

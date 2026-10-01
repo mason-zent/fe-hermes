@@ -25,6 +25,7 @@
 ## Checkpoint
 - Updated: YYYY-MM-DD HH:mm / 작성 주체
 - Status: planned | in_progress | blocked | ready_for_review | done
+- Owner: 작업자(사람) — `git config user.name`. 현황판 카드에 👤 로 뜬다
 - Scope: repo / app / worktree 경로
 - Work ref: 브랜치 + 확인한 HEAD SHA, 미커밋 변경 유무
 - Sync basis: 참조한 knowledge의 기준 ref/SHA (필요할 때만)
