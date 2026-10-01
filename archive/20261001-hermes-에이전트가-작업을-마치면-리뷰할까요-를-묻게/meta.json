@@ -1,0 +1,10 @@
+{
+  "archivedAt": "2026-10-01 11:33",
+  "title": "에이전트가 작업을 마치면 자동으로 리뷰 띄우기 (처음 요청: '리뷰할까요?' 묻기)",
+  "kind": "plan",
+  "from": {
+    "issue": null,
+    "plan": "plans/task/20261001-hermes-에이전트가-작업을-마치면-리뷰할까요-를-묻게.md",
+    "html": null
+  }
+}
