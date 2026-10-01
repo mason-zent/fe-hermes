@@ -4,14 +4,14 @@
 
 | 종류 | 언제 | 파일 | 승인 |
 |---|---|---|---|
-| 정식 | 새 기능 · 여러 레포 · API·구조 변경 | `plans/{feature,bugfix,refactor}/…` `.md` 하나 — `docs/plan-template.md` | 헤르메스가 보여 준 결정 표를 대화로 확정 |
+| 정식 | 새 기능 · 여러 레포 · API·구조 변경 | `plans/{feature,bugfix,refactor}/…` `.md` + `.html`(결정 콘솔) — `docs/plan-template.md` | 결정 콘솔에서 골라 [이대로 진행] |
 | **경량** | 문구·스타일 수정 · 버그 하나 · 확인·조사 · 직접 부른 에이전트 작업 · 긴급 수정 | `plans/task/YYYYMMDD-<에이전트>-<요약>.md` 하나 — **이 템플릿** | **사용자의 지시가 곧 승인** |
 
 - 손으로 쓰지 않는다. `node scripts/new-plan.mjs --agent <에이전트> --summary "<요약>"` 이 만든다. `scripts/delegate.sh --plan new "<요약>"` 과 현황판 [처리 시작] 은 이걸 부른다
 - 작업이 커지면(여러 레포·API 변경·결정이 필요) 정식 계획서로 옮기고 경량판에는 그 경로를 적는다
 - 담당 에이전트는 끝날 때 Checkpoint 의 Status·Progress·Validation 을 채운다. 현황판 칸반이 이 Status 를 따라 움직인다
 - 버그 수정이면 `AGENTS.md` 5절의 버그 수정 규칙(재현 먼저 · 수정 전·후 비교)을 따른다
-- 경량판에는 html 이 없다(정식도 이제 md 하나다)
+- 경량판에는 html 결정 콘솔이 없다(정식만 있다)
 
 <!-- BEGIN:template -->
 # {{title}}

@@ -191,7 +191,7 @@ const html = `<!doctype html>
       <div class="card">
         <div class="t">작업 흐름 · 정식</div>
         <div class="s">여러 레포 · API · 구조 변경</div>
-        <div class="d">요청 → 판단(📋 정식) → 정식 계획서 → 결정 표 승인 → 순차 디스패치 → 헤르메스 교차 리뷰·PR → 보고. 공통 규칙·재개·정리 카드 포함.</div>
+        <div class="d">요청 → 판단(📋 정식) → 정식 계획서 → 결정 콘솔 [이대로 진행] 승인 → 순차 디스패치 → 헤르메스 교차 리뷰·PR → 보고. 공통 규칙·재개·정리 카드 포함.</div>
         <div class="pills"><a class="pill" href="hermes-flow-formal.html">열기</a></div>
       </div>
     </div>

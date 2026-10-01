@@ -1,14 +1,19 @@
 # 작업계획서 템플릿
 
-> 이 문서는 **정식** 계획서(md 하나)다. 문구 수정·버그 하나·확인·조사·긴급 수정은 **경량** 계획서(`docs/plan-template-light.md`, `node scripts/new-plan.mjs`)를 쓴다. 모든 작업은 둘 중 하나에 묶인다.
+> 이 문서는 **정식** 계획서(md + 같은 이름의 html 결정 콘솔)다. 문구 수정·버그 하나·확인·조사·긴급 수정은 **경량** 계획서(`docs/plan-template-light.md`, `node scripts/new-plan.mjs`)를 쓴다. 모든 작업은 둘 중 하나에 묶인다.
 
-파일명: `plans/작업유형/YYYYMMDD-제목.md`
+파일명: `plans/작업유형/YYYYMMDD-제목.md` (+ 같은 이름의 `.html`)
 
-## 결정은 터미널 표로 (html 결정 콘솔은 쓰지 않는다)
+## ⚠️ md + html 결정 콘솔 (필수)
 
-- 선택지가 갈리는 항목은 대화에 **결정 표**로 보여 준다: `| # | 결정 | 선택지 | 추천 ★ | 영향 |`
-- 사용자가 대화로 고르면("추천대로", "D2 는 B") 아래 "사용자 결정 사항"과 Checkpoint `Decisions` 에 **확정값**을 적고 "✅ 확정" 한 줄로 알린다
-- 결정이 바뀌면 md 를 고치고 표를 다시 보여 준다. 예전 계획서에 `.html`(결정 콘솔)이 남아 있으면 지우지 않는다 — `commit.sh`·현황판이 본문 사본을 계속 맞춘다
+- html 은 `node scripts/plan-html.mjs <md> --data <PLAN.json>` 으로 만든다 — `docs/plan-template.html` 을 복사해 **두 블록만** 채운다(스타일/스크립트는 그대로)
+  - **[A] `<script id="plan-data">`의 `PLAN`**: title/type/scope/summary + `decisions[]`(`.md` "사용자 결정 사항"과 1:1) + `hermesPane`(계획서를 만든 헤르메스 pane — 비우면 `herdr pane current`)
+  - **[B] `<script id="plan-md">`**: `.md` 본문 그대로
+- **현황판 주소로 연다**: `scripts/board.sh open <md>` (꺼져 있으면 띄운다). 대화에는 `.md` 경로와 결정마다 제목·추천 한 줄씩만
+- 사용자가 고르고 **[이대로 진행]** → 현황판 서버(`/api/action`)가 `hermesPane` 에 결정 프롬프트를 입력한다. `file://` 로 열었거나 그 pane 이 없으면 버튼이 [프롬프트로 복사] 로 바뀐다
+- 확정되면 `.md` "사용자 결정 사항"·Checkpoint `Decisions` 와 html 각 결정의 `decided` 를 **같은 턴에** 채운다 → 콘솔이 "✅ 확정" 으로 잠긴다
+- **Checkpoint만 바뀐 경우**에도 html `plan-md` 는 맞춘다(`node scripts/plan-html.mjs <md>` · `commit.sh`·현황판도 맞춘다). `decisions[]` 는 **승인된 결정이 바뀔 때만** 건드린다
+- ⚠️ 손으로 치환한다면 **헤더 주석이 끝난 뒤에서만** 찾아 바꾼다. 주석 안의 블록 이름까지 매칭되면 `PLAN` 전체가 주석에 갇혀 빈 화면이 된다
 
 ---
 
@@ -50,7 +55,7 @@
 - 작업 유형: feature / bugfix / refactor
 - 요청 사항: (사용자 요청 요약)
 - 대상 서비스(에이전트): refund-fe / hub-fe / care-fe / op-fe / bznav-{refund,care,brand,sena,plus}-fe / bznav-packages-fe / packages-fe (복수 가능)
-- 사용자 결정 사항: (선택지가 갈리는 항목 — 대화에 결정 표로 보여 주고, 확정되면 값을 적는다)
+- 사용자 결정 사항: (선택지가 갈리는 항목 — 이 목록이 `.html` 의 `decisions[]` 가 된다)
   - 결정 항목 1: **선택값** (옵션 후보 나열)
 
 ## 2. 현재 상태 분석
@@ -106,4 +111,4 @@
 2. **재사용 우선**: 기존 컴포넌트·훅·생성물을 먼저 찾고 새로 만들 것을 최소화
 3. **외부 의존 분리**: 백엔드·공유 패키지 변경은 "외부 의존"으로 따로 적어 사용자가 판단하게 한다
 4. **간결하게**: spec과 배분에 집중
-5. **결정은 터미널 표로**: 사용자가 골라야 하는 항목은 선택지·영향·추천을 표로 보여 주고 대화로 확정받는다
+5. **결정은 html 콘솔로**: 사용자가 골라야 하는 항목은 결정 콘솔에 담아 클릭 → [이대로 진행] 으로 확정받는다

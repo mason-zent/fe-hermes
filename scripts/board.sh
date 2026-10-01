@@ -3,6 +3,8 @@
 # 사용: scripts/board.sh          → 서버가 없으면 herdr pane "📋 현황판" 에 띄우고 브라우저를 연다
 #       scripts/board.sh stop     → 서버를 끈다
 #       scripts/board.sh url      → 주소만 출력
+#       scripts/board.sh open <plans/…html|md> → (서버가 없으면 띄우고) 정식 계획서 결정 콘솔을 현황판 주소로 연다
+#                                  [이대로 진행] 이 헤르메스 pane 으로 보내려면 이 주소로 열어야 한다
 #
 # 포트는 HERMES_BOARD_PORT (기본 4700). 이미 떠 있으면 새로 띄우지 않고 브라우저만 연다.
 # herdr 밖이면 백그라운드(nohup)로 띄우고 로그는 /tmp/hermes-board.log.
@@ -14,8 +16,15 @@ LABEL="📋 현황판"
 
 is_up() { curl -s -o /dev/null --max-time 1 "$URL/api/state"; }
 
+OPEN_PATH=""
 case "${1:-}" in
   url) echo "$URL"; exit 0 ;;
+  open)
+    OPEN_PATH="${2:-}"
+    OPEN_PATH="${OPEN_PATH#"$HERMES_DIR"/}"
+    OPEN_PATH="${OPEN_PATH%.md}"; OPEN_PATH="${OPEN_PATH%.html}.html"
+    case "$OPEN_PATH" in plans/*) ;; *) echo "⚠️  plans/ 안의 계획서 html 만 열 수 있다: ${2:-}" >&2; exit 1 ;; esac
+    [ -f "$HERMES_DIR/$OPEN_PATH" ] || { echo "⚠️  파일이 없다: $OPEN_PATH" >&2; exit 1; } ;;
   stop)
     # 포트를 잡고 있는 node 만 끈다. `pkill -f server.mjs` 는 명령줄에 그 경로가 든 프로세스(지시문에 경로가 적힌 에이전트 세션)까지 죽였다
     PIDS="$(lsof -ti "tcp:$PORT" -sTCP:LISTEN 2>/dev/null | while read -r pid; do ps -o comm= -p "$pid" | grep -q node && echo "$pid"; done)"
@@ -55,6 +64,14 @@ print(found[0]["pane_id"] if found else "")
   for _ in $(seq 1 20); do is_up && break; sleep 0.3; done
   is_up || { echo "⚠️  서버가 뜨지 않았다 — $PLACE 확인" >&2; exit 1; }
   echo "$URL ($PLACE)"
+fi
+
+if [ -n "$OPEN_PATH" ]; then
+  # 한글 경로는 퍼센트 인코딩해서 연다
+  ENCODED="$(python3 -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$OPEN_PATH")"
+  echo "$URL/$ENCODED"
+  command -v open >/dev/null 2>&1 && open "$URL/$ENCODED"
+  exit 0
 fi
 
 # 이미 보고 있는 탭이 있으면 새로 열지 않는다 — 탭마다 실시간 연결을 잡아 브라우저 연결 한도(6)를 채우면 요청이 멈춘다

@@ -3,7 +3,7 @@
  * 끝난 일을 한 폴더로 묶어 보관한다 — archive/<원래 파일 이름>/
  *
  *   issue.md   이슈(있으면)
- *   plan.md    계획서(있으면) · plan.html 은 예전 정식 계획서의 결정 콘솔이 있을 때만
+ *   plan.md    계획서(있으면) · plan.html 은 정식 계획서의 결정 콘솔이 있을 때만
  *   meta.json  { archivedAt, title, kind, from: { issue, plan, html } }
  *
  * archive/ 는 git 에 커밋한다(진행 중 계획서 plans/** 는 로컬 산출물이라 커밋하지 않는다).

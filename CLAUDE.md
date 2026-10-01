@@ -43,14 +43,14 @@
 - 대상 레포의 관련 코드를 탐색한다(Explore 또는 직접 읽기). 지식은 **작업 유형에 필요한 절만** 읽는다(`AGENTS.md` 2.2~2.3)
 - **경량인지 정식인지 헤르메스가 정하고, 시작할 때 한 줄로 알린다** — `📋 경량으로 진행합니다 — <이유> · <계획서 경로>` (정식으로 하려면 "정식으로") / `📋 정식으로 진행합니다 — <이유> · 결정 N개 · <경로>`. 사용자가 "정식으로"·"바로 고쳐"로 바꿀 수 있다. `/call` 은 항상 경량이고 뜬 에이전트가 첫 보고에 같은 줄을 붙인다
 - **모든 작업은 계획서 하나에 묶인다. 예외 없다.**
-  - **정식** — 새 기능·여러 레포·API·구조 변경. `plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md` **하나**(`docs/plan-template.md`). 개요 다음에 **Checkpoint**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions / Commits). html 결정 콘솔은 만들지 않는다(예전 계획서에 있는 html 은 그대로 둔다)
+  - **정식** — 새 기능·여러 레포·API·구조 변경. `plans/{feature,bugfix,refactor}/YYYYMMDD-제목.md`(`docs/plan-template.md`) + 같은 이름 `.html` 결정 콘솔(`node scripts/plan-html.mjs` — `docs/plan-template.html` 복사, `PLAN.decisions[]`·`hermesPane`·`plan-md`). 개요 다음에 **Checkpoint**(Status / Work ref / Progress / Next / Blocked / Validation / Decisions / Commits)
   - **경량** — 문구·버그 하나·확인·조사·직접 부른 에이전트·긴급 수정. `plans/task/…md` 하나(`scripts/new-plan.mjs`, `docs/plan-template-light.md`). 사용자 지시가 곧 승인
 
 ### 2단계: 사용자 승인
-- 정식: `.md` 경로와 함께 **결정 표를 대화에 보여 준다** — `| # | 결정 | 선택지 | 추천 ★ | 영향 |`. 사용자가 대화로 고르면("추천대로", "D2 는 B") `.md` "사용자 결정 사항"·Checkpoint `Decisions` 에 확정 기록 → "✅ 확정" 한 줄
-- 경량: 사용자의 지시가 곧 승인. 결정 표 없이 3단계로
-- 정식 대상이어도 사용자가 **"바로 고쳐"** 라고 명시하면 결정 표 없이 경량 계획서로 바로 디스패치한다 — 계획서 자체는 생략하지 않고, 보고에 그 사실을 적는다
-- 수정 요청이면 `.md` 갱신 후 결정 표를 다시 보여 주고 재승인. **확정 전에는 디스패치하지 않는다**
+- 정식: 결정 콘솔을 **현황판 주소로 연다**(`scripts/board.sh open <md>` — 현황판이 꺼져 있으면 띄운다). 대화에는 `.md` 경로와 결정마다 제목·추천 한 줄씩만 적는다(자세한 비교는 콘솔). 사용자가 콘솔에서 고르고 **[이대로 진행]** 을 누르면 결정이 그 계획서를 만든 헤르메스 pane(`PLAN.hermesPane`)에 입력된다 → `.md` "사용자 결정 사항"·Checkpoint `Decisions` 와 html `decisions[].decided` 를 같은 턴에 채우고(`plan-html.mjs`) "✅ 확정" 한 줄. 대화로 답해도("추천대로", "D2 는 B") 같다. 보낼 수 없으면 콘솔이 [프롬프트로 복사] 로 바뀐다
+- 경량: 사용자의 지시가 곧 승인. 결정 콘솔 없이 3단계로
+- 정식 대상이어도 사용자가 **"바로 고쳐"** 라고 명시하면 결정 콘솔 없이 경량 계획서로 바로 디스패치한다 — 계획서 자체는 생략하지 않고, 보고에 그 사실을 적는다
+- 수정 요청이면 `.md`·`.html` 갱신 후 콘솔을 다시 열어 재승인. **확정 전에는 디스패치하지 않는다**
 
 ### 3단계: 작업 브랜치 → 디스패치
 - **디스패치 전에 작업 브랜치·워크트리.** 먼저 `docs/knowledge/common/git.md` "작업 브랜치 만들기" 절을 읽고, `scripts/new-branch.sh` 가 `prBase` 에서 `.worktrees/<레포>/<슬러그>` 로 딴다(메인 체크아웃은 건드리지 않는다). **브랜치가 이미 있으면**(로컬·원격) 상태를 알려 주고 "그대로 이어 쓸까요?" → `--reuse`. 건너뛴 레포에는 디스패치하지 않는다
@@ -71,7 +71,7 @@
 - 에이전트가 보고한 검증 결과를 그대로 확인한다. **실패를 숨기지 않는다**
 - 서비스별 변경 파일·주요 변경·검증 결과·**`## Commits`**·남은 위험을 요약해 보고
 - **여러 레포에 걸친 작업의 push·PR 은 헤르메스가** 순서(공유 패키지 먼저)·공개 범위를 확인하고 사용자에게 물은 뒤 레포마다 `scripts/ship.sh --repo-agent <에이전트>` 로 올린다. 레포 하나짜리는 에이전트가 pane 에서 올린다(4단계)
-- **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 예전 계획서에 html 이 있으면 `commit.sh`·현황판이 `plan-md` 를 같이 맞춘다
+- **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 정식이면 html `plan-md` 도 같은 턴에 맞춘다(`node scripts/plan-html.mjs <md>` · `commit.sh`·현황판도 맞춘다)
 
 ### 6단계: 정리
 - 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 이슈·계획서를 **`archive/<이름>/` 한 폴더**(`issue.md` · `plan.md` · `meta.json`)로 묶어 보관하고 **git 에 커밋**한다(진행 중 `plans/**` 는 로컬). 이슈 워크트리도 정리(미커밋·push 안 된 커밋이 있으면 남긴다). 지나간 일은 현황판 **[히스토리]** 탭에서 찾는다

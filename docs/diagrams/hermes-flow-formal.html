@@ -4980,7 +4980,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <div class="pulse-dot"></div>
         <h1>헤르메스 작업 흐름 · 정식</h1>
       </div>
-      <p class="subtitle">새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서 → 결정 표로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)</p>
+      <p class="subtitle">새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서(md + 결정 콘솔) → [이대로 진행] 으로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)</p>
     </div>
 
 
@@ -4990,7 +4990,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
       <svg viewBox="0 0 1048 818" data-layout-contract="readable-v2" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="signal-flow" data-quality-profile="standard">
         <title id="archify-diagram-title">헤르메스 작업 흐름 · 정식</title>
-        <desc id="archify-diagram-description">새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서 → 결정 표로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)</desc>
+        <desc id="archify-diagram-description">새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서(md + 결정 콘솔) → [이대로 진행] 으로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)</desc>
         <!-- Definitions -->
         <defs>
           <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -5066,7 +5066,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <!-- Edge paths -->
         <path data-edge-from="req" data-edge-to="route" data-edge-label="요청" data-edge-key="0" data-edge-id="e1" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="186,120;263,120;263,219" d="M 186 120 L 263 120 L 263 219" class="a-default" data-animate="edge" style="--step:0" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="route" data-edge-to="plan" data-edge-label="대상 확정" data-edge-key="1" data-edge-id="e2" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="332,253;393.2,253" d="M 332 253 L 393.2 253" class="a-default" data-animate="edge" style="--step:1" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-        <path data-edge-from="plan" data-edge-to="approve" data-edge-label="결정 표" data-edge-key="2" data-edge-id="e3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="462.2,219;462.2,120;539.2,120" d="M 462.2 219 L 462.2 120 L 539.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="plan" data-edge-to="approve" data-edge-label="결정 콘솔" data-edge-key="2" data-edge-id="e3" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="462.2,219;462.2,120;539.2,120" d="M 462.2 219 L 462.2 120 L 539.2 120" class="a-default" data-animate="edge" style="--step:2" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <path data-edge-from="approve" data-edge-to="branch" data-edge-label="확정" data-edge-key="3" data-edge-id="e4" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="608.2,154;608.2,253;685.2,253" d="M 608.2 154 L 608.2 253 L 685.2 253" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="branch" data-edge-to="pane" data-edge-label="워크트리" data-edge-key="4" data-edge-id="e5" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="823.2,253;839.2,253;839.2,576;754.2,576;754.2,555" d="M 823.2 253 L 839.2 253 L 839.2 576 L 754.2 576 L 754.2 555" class="a-emphasis" data-animate="edge" style="--step:4" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <path data-edge-from="pane" data-edge-to="agent" data-edge-label="지시" data-edge-key="5" data-edge-id="e6" data-composition-routing="workflow-v2-auto" data-edge-role="" data-composition-points="730.2,555;730.2,592;1015.2,592;1015.2,521;999.2,521" d="M 730.2 555 L 730.2 592 L 1015.2 592 L 1015.2 521 L 999.2 521" class="a-emphasis" data-animate="edge" style="--step:5" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
@@ -5098,8 +5098,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="117" y="142" class="t-frontend" font-size="7" text-anchor="middle">케어·환급은 콘솔? 웹? 묻는다</text>
         </g>
 
-        <g id="node-approve" data-node-id="approve" data-node-label="승인" tabindex="0" role="button" aria-label="Focus 승인, 결정 표 · 대화로 확정, 사용자 › 요청 · 계획 · 승인" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="결정 표 · 대화로 확정" data-node-tag="확정 전엔 디스패치 없음" data-node-context="사용자 › 요청 · 계획 · 승인">
-          <title>승인 · 결정 표 · 대화로 확정 · 사용자 › 요청 · 계획 · 승인 · 확정 전엔 디스패치 없음</title>
+        <g id="node-approve" data-node-id="approve" data-node-label="승인" tabindex="0" role="button" aria-label="Focus 승인, 결정 콘솔 · [이대로 진행], 사용자 › 요청 · 계획 · 승인" aria-pressed="false" data-node-kind="frontend" data-node-sublabel="결정 콘솔 · [이대로 진행]" data-node-tag="확정 전엔 디스패치 없음" data-node-context="사용자 › 요청 · 계획 · 승인">
+          <title>승인 · 결정 콘솔 · [이대로 진행] · 사용자 › 요청 · 계획 · 승인 · 확정 전엔 디스패치 없음</title>
           <rect x="539.2" y="86" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="539.2" y="86" width="138" height="68" rx="6" class="c-frontend" data-animate="node" style="--step:3" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="frontend" class="semantic-sigil s-frontend" transform="translate(545.2 92) scale(0.6875)">
@@ -5109,7 +5109,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             <circle cx="6.3" cy="4.8" r=".7" class="sigil-fill"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="608.2" y="107" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">승인</text>
-          <text data-detail="context" x="608.2" y="124" class="t-muted" font-size="8" text-anchor="middle">결정 표 · 대화로 확정</text>
+          <text data-detail="context" x="608.2" y="124" class="t-muted" font-size="8" text-anchor="middle">결정 콘솔 · [이대로 진행]</text>
         <text data-detail="fine" x="608.2" y="142" class="t-frontend" font-size="7" text-anchor="middle">확정 전엔 디스패치 없음</text>
         </g>
 
@@ -5140,15 +5140,15 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <text data-detail="fine" x="263" y="275" class="t-backend" font-size="7" text-anchor="middle">콘솔 ≠ 사용자 웹</text>
         </g>
 
-        <g id="node-plan" data-node-id="plan" data-node-label="정식 계획서" tabindex="0" role="button" aria-label="Focus 정식 계획서, md 하나 · 결정 N개, 헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="md 하나 · 결정 N개" data-node-tag="계획서 없이 디스패치 없음" data-node-context="헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인">
-          <title>정식 계획서 · md 하나 · 결정 N개 · 헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인 · 계획서 없이 디스패치 없음</title>
+        <g id="node-plan" data-node-id="plan" data-node-label="정식 계획서" tabindex="0" role="button" aria-label="Focus 정식 계획서, md + html 결정 콘솔, 헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인" aria-pressed="false" data-node-kind="backend" data-node-sublabel="md + html 결정 콘솔" data-node-tag="계획서 없이 디스패치 없음" data-node-context="헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인">
+          <title>정식 계획서 · md + html 결정 콘솔 · 헤르메스 (팀리드) › Plan-First › 요청 · 계획 · 승인 · 계획서 없이 디스패치 없음</title>
           <rect x="393.2" y="219" width="138" height="68" rx="6" class="c-mask"/>
           <rect x="393.2" y="219" width="138" height="68" rx="6" class="c-backend" data-animate="node" style="--step:2" stroke-width="1.5"/>
           <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(399.2 225) scale(0.6875)">
             <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
           </g>
           <text data-node-label="" data-detail-anchor="" x="462.2" y="240" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">정식 계획서</text>
-          <text data-detail="context" x="462.2" y="257" class="t-muted" font-size="8" text-anchor="middle">md 하나 · 결정 N개</text>
+          <text data-detail="context" x="462.2" y="257" class="t-muted" font-size="8" text-anchor="middle">md + html 결정 콘솔</text>
         <text data-detail="fine" x="462.2" y="275" class="t-backend" font-size="7" text-anchor="middle">계획서 없이 디스패치 없음</text>
         </g>
 
@@ -5326,9 +5326,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="336" y="233" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
           <text x="362.6" y="243" class="t-edge-default" font-size="8" text-anchor="middle">대상 확정</text>
         </g>
-        <g data-detail="context" data-edge-from="plan" data-edge-to="approve" data-edge-label="결정 표" data-edge-key="2" data-edge-id="e3">
-          <rect x="478.90000000000003" y="100" width="43.6" height="14" rx="3" class="c-mask"/>
-          <text x="500.70000000000005" y="110" class="t-edge-default" font-size="8" text-anchor="middle">결정 표</text>
+        <g data-detail="context" data-edge-from="plan" data-edge-to="approve" data-edge-label="결정 콘솔" data-edge-key="2" data-edge-id="e3">
+          <rect x="474.1" y="100" width="53.199999999999996" height="14" rx="3" class="c-mask"/>
+          <text x="500.70000000000005" y="110" class="t-edge-default" font-size="8" text-anchor="middle">결정 콘솔</text>
         </g>
         <g data-detail="context" data-edge-from="approve" data-edge-to="branch" data-edge-label="확정" data-edge-key="3" data-edge-id="e4">
           <rect x="631.7" y="233" width="30" height="14" rx="3" class="c-mask"/>
@@ -5579,7 +5579,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <li>대상 서비스를 정하고 관련 코드를 탐색한다. &quot;케어·환급&quot; 만 나오면 콘솔인지 사용자 웹인지 묻는다</li>
           <li>지식은 작업 유형에 필요한 절만 읽는다 — rules 필수 절과 gotchas 는 항상</li>
           <li>헤르메스가 정하고 한 줄로 알린다: 📋 정식으로 진행합니다 — 이유 · 결정 N개 · 경로</li>
-          <li>정식 계획서는 md 하나(plans/{feature,bugfix,refactor}/…). html 결정 콘솔은 만들지 않는다</li>
+          <li>정식 계획서는 md + 같은 이름 html 결정 콘솔(plans/{feature,bugfix,refactor}/… · scripts/plan-html.mjs). PLAN.hermesPane 에 계획서를 만든 헤르메스 pane</li>
         </ul>
       </div>
 
@@ -5589,10 +5589,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <h3>2단계 · 사용자 승인</h3>
         </div>
         <ul>
-          <li>결정 표를 대화에 보여 준다 — # · 결정 · 선택지 · 추천 ★ · 영향</li>
-          <li>사용자가 대화로 고르면(&quot;추천대로&quot;, &quot;D2 는 B&quot;) md 사용자 결정 사항·Decisions 에 기록 → ✅ 확정</li>
+          <li>결정 콘솔을 현황판 주소로 연다(scripts/board.sh open &lt;md&gt;). 대화에는 경로와 결정마다 제목·추천 한 줄</li>
+          <li>콘솔에서 고르고 [이대로 진행] → 결정이 그 헤르메스 pane 에 입력된다(대화로 답해도 같다) → md·html 에 기록 → ✅ 확정</li>
           <li>정식 대상이어도 &quot;바로 고쳐&quot; 면 경량으로 바로 — 보고에 그 사실을 적는다</li>
-          <li>수정 요청이면 md 를 고치고 표를 다시 보여 준 뒤 재승인</li>
+          <li>수정 요청이면 md·html 을 고치고 콘솔을 다시 열어 재승인</li>
           <li>확정 전에는 디스패치하지 않는다</li>
         </ul>
       </div>

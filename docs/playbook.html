@@ -296,7 +296,7 @@
     <h1>Hermes 플레이북</h1>
     <div class="meta">
       <span>path repos/hermes</span>
-      <span>updated 2026-09-30</span>
+      <span>updated 2026-10-01</span>
       <span>agents 13 · skills 6</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
@@ -474,8 +474,8 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
       <div class="cmds">
         <article class="cmd wide">
           <div class="cmd-head"><kbd>그냥 말하기</kbd><span class="tag">plan-first</span></div>
-          <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 <strong>경량인지 정식인지 정해 한 줄로 알려 줍니다</strong>(📋 경량으로 진행합니다 — 이유 · 경로). 경량은 계획서를 자동 기록하고 바로 pane 으로, 정식은 결정 표로 승인받은 뒤 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
-          <div class="flow"><span>라우팅</span><span class="hi">📋 경량? 정식?</span><span>경량: 자동 기록 → pane</span><span>정식: 결정 표 승인 → 디스패치 → reviewer</span><span>보고</span></div>
+          <p class="what">새 기능·버그는 커맨드 없이 헤르메스에게 말하면 됩니다. 담당 서비스를 찾고(여러 개도), 규모를 보고 <strong>경량인지 정식인지 정해 한 줄로 알려 줍니다</strong>(📋 경량으로 진행합니다 — 이유 · 경로). 경량은 계획서를 자동 기록하고 바로 pane 으로, 정식은 결정 콘솔에서 골라 <strong>[이대로 진행]</strong>으로 승인한 뒤 브랜치 → 디스패치 → reviewer → 보고로 갑니다. 담당 에이전트를 이미 알면 <code>/call</code>이 더 빠릅니다.</p>
+          <div class="flow"><span>라우팅</span><span class="hi">📋 경량? 정식?</span><span>경량: 자동 기록 → pane</span><span>정식: 결정 콘솔 [이대로 진행] → 디스패치 → reviewer</span><span>보고</span></div>
           <dl>
             <dt>기능</dt><dd>여러 레포·API·구조 변경이면 정식 계획서, 서비스 간 같은 기능은 공통 스펙(문구·동작·env 키)을 계획서에 적고 공유 패키지를 먼저</dd>
             <dt>버그</dt><dd>원인이 프론트·API·공유 패키지 중 어디인지 먼저 가르고, 재현 조건을 적은 뒤 수정 전·후를 같은 방법으로 비교합니다(<code>AGENTS.md</code> 5절)</dd>
@@ -635,7 +635,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <h3>사용자 승인</h3>
           <div class="who">사용자</div>
           <ul>
-            <li>정식: 헤르메스가 <strong>결정 표</strong>(# · 결정 · 선택지 · 추천 ★ · 영향)를 대화에 보여 줍니다. "추천대로", "D2 는 B" 처럼 대화로 고르면 md 에 확정값을 적고 "✅ 확정"을 알립니다. html 결정 콘솔은 쓰지 않습니다.</li>
+            <li>정식: 헤르메스가 md 와 같은 이름의 <strong>html 결정 콘솔</strong>을 만들어 현황판 주소로 열어 줍니다(대화에는 경로와 결정마다 제목·추천 한 줄). 콘솔에서 고르고 <strong>[이대로 진행]</strong>을 누르면 결정이 그 계획서를 만든 헤르메스 pane 에 바로 들어갑니다 → md·html 에 확정값을 적고 "✅ 확정". 대화로 "추천대로", "D2 는 B" 라고 답해도 됩니다. 경량에는 결정 콘솔이 없습니다.</li>
             <li>경량: 사용자의 지시가 곧 승인입니다. 정식 대상이어도 <strong>"바로 고쳐"</strong>라고 하면 경량으로 바로 갑니다(보고에 그 사실을 적음).</li>
           </ul>
         </div>
@@ -766,7 +766,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 │   ├── services.md            <span class="c">서비스 비교표 (포트 · 스택 · 검증 명령 · 생성물)</span>
 │   ├── knowledge/             <span class="c">지식 베이스 — common/(팀 공통 규칙) · &lt;레포&gt;/rules.md(레포 규칙) · structure·patterns·gotchas·workflows</span>
 │   ├── extending.md           <span class="c">스킬 · 에이전트 추가 방법 (/guide 로 열람)</span>
-│   ├── plan-template.md       <span class="c">정식 계획서 (결정은 터미널 표)</span>
+│   ├── plan-template.md       <span class="c">정식 계획서 (+ plan-template.html 결정 콘솔)</span>
 │   └── plan-template-light.md <span class="c">경량 계획서</span>
 ├── plans/                     <span class="c">진행 중 계획서 — feature/ bugfix/ refactor/ task/ (로컬, gitignore)</span>
 ├── issues/                    <span class="c">열린 이슈 (현황판 이슈 칸)</span>
@@ -838,7 +838,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         </details>
         <details>
           <summary>급한 수정은 어떻게 하나요?</summary>
-          <div class="a">"바로 고쳐"라고 명시하면 결정 표 단계를 건너뛰고 <strong>경량 계획서</strong>(<code>plans/task/…</code>, 사용자 지시가 곧 승인)로 바로 디스패치합니다. 계획서 없이 디스패치하는 예외는 없습니다. reviewer 검증은 그대로 진행합니다.</div>
+          <div class="a">"바로 고쳐"라고 명시하면 결정 콘솔 단계를 건너뛰고 <strong>경량 계획서</strong>(<code>plans/task/…</code>, 사용자 지시가 곧 승인)로 바로 디스패치합니다. 계획서 없이 디스패치하는 예외는 없습니다. reviewer 검증은 그대로 진행합니다.</div>
         </details>
         <details>
           <summary>백엔드 API가 아직 없는데 화면부터 만들 수 있나요?</summary>
@@ -859,6 +859,6 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
       </div>
     </section>
 
-    <footer>hermes · Claude Code workspace · 문서 기준일 2026-09-30 · 원본 docs/playbook.html · /sync 시 함께 갱신</footer>
+    <footer>hermes · Claude Code workspace · 문서 기준일 2026-10-01 · 원본 docs/playbook.html · /sync 시 함께 갱신</footer>
   </main>
 </div>

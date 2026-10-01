@@ -21,6 +21,7 @@
  *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
+ *     정식 계획서 결정 콘솔(/plans/*.html)의 [이대로 진행] 도 이걸로 PLAN.hermesPane 에 보낸다
  *   브라우저가 보내기 전에 지시문을 보여주고 고치게 한다
  * 다른 사이트가 localhost 로 요청을 보내 헤르메스에 지시를 넣지 못하게, 서버를 띄울 때마다 만드는 토큰과
  * Origin 이 맞는 요청만 받는다.
@@ -556,7 +557,7 @@ const moveCard = (id, column) => {
   let next = text.replace(oldStatus, newStatus)
   if (oldUpdated) next = next.replace(oldUpdated, newUpdated)
   writeFileSync(path, next)
-  // 예전 정식 계획서의 결정 콘솔 html 안 md 사본(plan-md)도 같이 — 새 계획서는 html 이 없다
+  // 정식 계획서의 결정 콘솔 html 안 md 사본(plan-md)도 같이 — 경량 계획서는 html 이 없다
   const htmlPath = path.replace(/\.md$/, '.html')
   if (existsSync(htmlPath)) {
     let html = readFileSync(htmlPath, 'utf8')
@@ -875,11 +876,13 @@ createServer(async (request, response) => {
     return reply(200, { ok: true })
   }
   // 계획서 HTML(결정 콘솔)은 plans/ 안의 것만 연다
+  // 토큰을 넣어 준다 — 콘솔의 [이대로 진행] 이 /api/action 으로 PLAN.hermesPane 에 결정을 보낸다(같은 출처라 Origin 검사도 통과)
   if (url.pathname.startsWith('/plans/') && url.pathname.endsWith('.html')) {
     const path = join(ROOT, decodeURIComponent(url.pathname))
     if (path.startsWith(join(ROOT, 'plans')) && existsSync(path)) {
-      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
-      response.end(readFileSync(path))
+      const html = readFileSync(path, 'utf8').replace('</head>', `<script>window.HERMES_BOARD_TOKEN = ${JSON.stringify(TOKEN)}</script>\n</head>`)
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
+      response.end(html)
       return
     }
   }

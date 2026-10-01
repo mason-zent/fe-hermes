@@ -21,7 +21,7 @@
           "review",
           "report"
         ],
-        "note": "정식 계획서의 결정을 대화의 결정 표로 확정한 뒤, 공유 패키지부터 순서대로 디스패치하고 헤르메스가 교차 리뷰·PR 순서를 챙깁니다."
+        "note": "정식 계획서의 결정을 html 결정 콘솔의 [이대로 진행] 으로 확정한 뒤, 공유 패키지부터 순서대로 디스패치하고 헤르메스가 교차 리뷰·PR 순서를 챙깁니다."
       },
       {
         "id": "safety",
@@ -64,7 +64,7 @@
       }
     ],
     "output": "docs/diagrams/hermes-flow-formal.html",
-    "subtitle": "새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서 → 결정 표로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)"
+    "subtitle": "새 기능 · 여러 레포 · API · 구조 변경. 정식 계획서(md + 결정 콘솔) → [이대로 진행] 으로 승인 → 순차 디스패치 → 헤르메스가 교차 리뷰·PR 순서 (원본: CLAUDE.md · 대부분의 작업은 hermes-flow-light)"
   },
   "lanes": [
     {
@@ -216,7 +216,7 @@
       "col": 3,
       "type": "frontend",
       "label": "승인",
-      "sublabel": "결정 표 · 대화로 확정",
+      "sublabel": "결정 콘솔 · [이대로 진행]",
       "width": 138,
       "tag": "확정 전엔 디스패치 없음"
     },
@@ -246,7 +246,7 @@
       "col": 2,
       "type": "backend",
       "label": "정식 계획서",
-      "sublabel": "md 하나 · 결정 N개",
+      "sublabel": "md + html 결정 콘솔",
       "width": 138,
       "tag": "계획서 없이 디스패치 없음"
     },
@@ -400,7 +400,7 @@
       "id": "e3",
       "from": "plan",
       "to": "approve",
-      "label": "결정 표",
+      "label": "결정 콘솔",
       "variant": "default"
     },
     {
@@ -510,17 +510,17 @@
         "대상 서비스를 정하고 관련 코드를 탐색한다. \"케어·환급\" 만 나오면 콘솔인지 사용자 웹인지 묻는다",
         "지식은 작업 유형에 필요한 절만 읽는다 — rules 필수 절과 gotchas 는 항상",
         "헤르메스가 정하고 한 줄로 알린다: 📋 정식으로 진행합니다 — 이유 · 결정 N개 · 경로",
-        "정식 계획서는 md 하나(plans/{feature,bugfix,refactor}/…). html 결정 콘솔은 만들지 않는다"
+        "정식 계획서는 md + 같은 이름 html 결정 콘솔(plans/{feature,bugfix,refactor}/… · scripts/plan-html.mjs). PLAN.hermesPane 에 계획서를 만든 헤르메스 pane"
       ]
     },
     {
       "dot": "emerald",
       "title": "2단계 · 사용자 승인",
       "items": [
-        "결정 표를 대화에 보여 준다 — # · 결정 · 선택지 · 추천 ★ · 영향",
-        "사용자가 대화로 고르면(\"추천대로\", \"D2 는 B\") md 사용자 결정 사항·Decisions 에 기록 → ✅ 확정",
+        "결정 콘솔을 현황판 주소로 연다(scripts/board.sh open <md>). 대화에는 경로와 결정마다 제목·추천 한 줄",
+        "콘솔에서 고르고 [이대로 진행] → 결정이 그 헤르메스 pane 에 입력된다(대화로 답해도 같다) → md·html 에 기록 → ✅ 확정",
         "정식 대상이어도 \"바로 고쳐\" 면 경량으로 바로 — 보고에 그 사실을 적는다",
-        "수정 요청이면 md 를 고치고 표를 다시 보여 준 뒤 재승인",
+        "수정 요청이면 md·html 을 고치고 콘솔을 다시 열어 재승인",
         "확정 전에는 디스패치하지 않는다"
       ]
     },
