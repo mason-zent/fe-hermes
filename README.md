@@ -65,6 +65,7 @@ scripts/guide-pane.sh     오른쪽 pane 을 열어 메뉴 또는 파일을 띄�
 scripts/guide-menu.sh     선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)
 scripts/mdview.py         터미널 마크다운 뷰어 (의존성 없음, glow 없을 때 사용)
 scripts/new-branch.sh         작업 브랜치·워크트리 생성 (헤르메스 3단계 · /call 에이전트가 호출)
+scripts/wt-copy-local.sh      워크트리에 메인 체크아웃의 git 무시 로컬 파일(.env·.aws 키) 복사 (new-branch.sh 가 호출 · --all)
 scripts/commit.sh             에이전트 로컬 커밋 ("커밋해줘" — 지정 파일만·엄격 검증·계획서 기록)
 scripts/ship.sh               push + draft PR ("PR 올려줘" — 미리보기 → 확인 → 공통 제목·본문 형식, 레포 하나짜리 작업만)
 scripts/statusline.sh         pane 하단 상태바 (레포·브랜치·변경 개수). 표시 규칙은 docs/playbook.html

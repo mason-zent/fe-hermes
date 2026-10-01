@@ -19,6 +19,8 @@
 #
 # 워크트리 위치: <hermes>/.worktrees/<레포>/<브랜치 슬러그>  (gitignore 대상)
 # 정리: git -C repos/<레포> worktree remove <경로>
+# 로컬 파일: 만든 워크트리에 메인 체크아웃의 git 무시 파일(.env·.aws 키 등, hermes.config.json worktreeCopy)을
+#   scripts/wt-copy-local.sh 로 복사한다. 이미 있는 워크트리는 scripts/wt-copy-local.sh --all
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -160,6 +162,7 @@ for target in "${TARGETS[@]}"; do
     if [ "$ok" = 1 ]; then
       echo "♻️  $label — 이어서: $BRANCH ($([ $local_ref = 1 ] && echo 로컬 브랜치 || echo 원격 추적)) 로 워크트리를 만들었다"
       echo "        워크트리: $wt"
+      "$ROOT/scripts/wt-copy-local.sh" "$dir" "$wt"
       created=$((created+1))
     else
       echo "❌ $label — 이어 쓸 워크트리를 만들지 못했다 (git worktree add)"; skipped=$((skipped+1))
@@ -196,6 +199,8 @@ for target in "${TARGETS[@]}"; do
       if git -C "$dir" worktree add "$wt" -b "$BRANCH" "origin/$base" >/dev/null 2>&1; then
         echo "✅ $label — origin/$base ($head) → $BRANCH${stale}"
         echo "        워크트리: $wt"
+        # git 무시 로컬 파일(.env·.aws 키 등)은 worktree add 가 가져오지 않는다 — 메인 체크아웃에서 복사(이름만 보고)
+        "$ROOT/scripts/wt-copy-local.sh" "$dir" "$wt"
         echo "        디스패치: scripts/delegate.sh <에이전트> --cwd $wt --plan <계획서>"
       else
         echo "❌ $label — 워크트리 생성 실패 (git worktree add)"; skipped=$((skipped+1)); continue

@@ -1,6 +1,10 @@
 {
   "$comment": "헤르메스가 담당하는 레포 목록. 경로는 reposRoot 기준이며 scripts/setup.sh 가 repos/<name> 링크를 만든다. branch = 문서·지식의 기준(운영 반영분). prBase = 작업 브랜치를 딸 기준이자 PR 대상(개발 브랜치). 둘은 다르다. bznav-web 은 앱마다 다르므로 apps 안에서 지정한다.",
   "reposRoot": "..",
+  "worktreeCopy": {
+    "$comment": "워크트리를 만들 때 메인 체크아웃에서 복사할 git 무시 로컬 파일(scripts/wt-copy-local.sh). gitignore 식 — 슬래시 없으면 어느 깊이의 파일 이름에나, 있으면 레포 루트 기준 경로. 내용은 출력하지 않는다",
+    "include": [".env", ".env.*", ".aws/*", ".claude/settings.local.json"]
+  },
   "repos": [
     { "name": "client-brics-refund", "agents": ["refund-fe"], "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
     { "name": "client-brics-hub",    "agents": ["hub-fe"],    "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },

@@ -655,7 +655,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <h3>작업 브랜치 → 디스패치</h3>
           <div class="who">헤르메스 → FE 에이전트</div>
           <ul>
-            <li>디스패치 전에 <code>scripts/new-branch.sh</code>가 <code>prBase</code>에서 <code>.worktrees/&lt;레포&gt;/&lt;슬러그&gt;</code> 워크트리를 땁니다(메인 체크아웃은 건드리지 않음). 이미 있으면 이어 쓸지 묻습니다. <code>/call</code>은 뜬 에이전트가 브랜치를 묻습니다.</li>
+            <li>디스패치 전에 <code>scripts/new-branch.sh</code>가 <code>prBase</code>에서 <code>.worktrees/&lt;레포&gt;/&lt;슬러그&gt;</code> 워크트리를 땁니다(메인 체크아웃은 건드리지 않음). <code>.env</code>·<code>.aws</code> 키 같은 git 무시 로컬 파일은 메인 체크아웃에서 복사합니다(<code>scripts/wt-copy-local.sh</code>). 이미 있으면 이어 쓸지 묻습니다. <code>/call</code>은 뜬 에이전트가 브랜치를 묻습니다.</li>
             <li><code>scripts/delegate.sh &lt;에이전트&gt; --cwd &lt;워크트리&gt; --plan &lt;계획서&gt;</code> — 레포 workspace 한 탭에 pane(<code>🤖 &lt;에이전트&gt; · &lt;브랜치&gt;</code>)을 나란히 띄웁니다. FE 세션에는 보호 훅이 걸립니다(직접 커밋·<code>add -A</code>·push·<code>gh pr create</code> 차단 — <code>commit.sh</code>·<code>ship.sh</code> 로만).</li>
             <li>레포를 넘는 작업은 공유 패키지를 먼저 끝내고 소비 레포로 넘깁니다. 같은 기능을 여러 서비스에 넣으면 계획서의 공통 스펙(문구·동작·env 키)을 같이 봅니다.</li>
           </ul>
