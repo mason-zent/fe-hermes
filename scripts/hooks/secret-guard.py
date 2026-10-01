@@ -67,7 +67,10 @@ for pattern, reason in rules:
         sys.exit(2)
 
 # 시크릿 파일을 읽는 명령 — 같은 조각에 읽는 도구와 시크릿 파일이 함께 있으면 막는다(값을 가리는 sed 치환이 있으면 통과)
-for piece in re.split(r"[;&|\n]+", text):
+# 공백이 든 큰따옴표 문장(지시문·커밋 메시지)은 파일 경로가 아니다 — "…git grep … .npmrc 값은 출력하지 않는다…" 같은 글자를 읽기로 보지 않게 뺀다.
+# 공백 없는 큰따옴표("$HOME/.npmrc")는 경로일 수 있어 남긴다
+file_text = re.sub(r'"[^"]*\s[^"]*"', '""', text)
+for piece in re.split(r"[;&|\n]+", file_text):
     # git 제외 pathspec(':!.npmrc' · ':(exclude).env') 는 읽는 게 아니라 빼는 것 — 지우고 본다
     piece = re.sub(r"[\"']?:(!|\(exclude\))[^\s\"']+[\"']?", ' ', piece)
     if re.search(READERS, piece) and re.search(SECRET_FILE, piece) and not MASKED:
