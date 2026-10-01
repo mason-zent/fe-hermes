@@ -28,7 +28,7 @@
  */
 import { createServer } from 'node:http'
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, rmSync, mkdirSync, renameSync } from 'node:fs'
-import { join, dirname, relative, basename } from 'node:path'
+import { join, dirname, relative, basename, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execFile, execFileSync } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
@@ -799,6 +799,15 @@ const readBody = (request) =>
     })
   })
 
+// 잘못된 퍼센트 인코딩(%E0%A4%A 등)이면 decodeURIComponent 가 던진다 — 서버가 죽지 않게 빈 경로(= 404)로
+const safeDecodedPath = (pathname) => {
+  try {
+    return join(ROOT, decodeURIComponent(pathname))
+  } catch {
+    return ''
+  }
+}
+
 const allowed = (request) => {
   const origin = request.headers.origin
   const okOrigin = origin === `http://localhost:${PORT}` || origin === `http://127.0.0.1:${PORT}`
@@ -902,11 +911,20 @@ createServer(async (request, response) => {
     await refresh()
     return reply(200, { ok: true })
   }
+  // 보관된 결정 콘솔(archive/<이름>/plan.html) — 히스토리에서 읽기 전용으로 본다. 토큰을 넣지 않아 [이대로 진행] 은 복사로 바뀐다
+  if (url.pathname.startsWith('/archive/') && url.pathname.endsWith('/plan.html')) {
+    const path = safeDecodedPath(url.pathname)
+    if (path && path.startsWith(join(ROOT, 'archive') + sep) && existsSync(path)) {
+      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
+      response.end(readFileSync(path))
+      return
+    }
+  }
   // 계획서 HTML(결정 콘솔)은 plans/ 안의 것만 연다
   // 토큰을 넣어 준다 — 콘솔의 [이대로 진행] 이 /api/action 으로 PLAN.hermesPane 에 결정을 보낸다(같은 출처라 Origin 검사도 통과)
   if (url.pathname.startsWith('/plans/') && url.pathname.endsWith('.html')) {
-    const path = join(ROOT, decodeURIComponent(url.pathname))
-    if (path.startsWith(join(ROOT, 'plans')) && existsSync(path)) {
+    const path = safeDecodedPath(url.pathname)
+    if (path && path.startsWith(join(ROOT, 'plans')) && existsSync(path)) {
       const html = readFileSync(path, 'utf8').replace('</head>', `<script>window.HERMES_BOARD_TOKEN = ${JSON.stringify(TOKEN)}</script>\n</head>`)
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
       response.end(html)

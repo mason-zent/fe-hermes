@@ -4,7 +4,11 @@
  *
  *   node scripts/plan-html.mjs <plans/…md> --data <PLAN.json>   # 처음 만들 때 (docs/plan-template.html 복사)
  *   node scripts/plan-html.mjs <plans/…md> [--data <PLAN.json>] # 이미 있으면 plan-md 를 md 로 다시 맞추고, --data 가 있으면 PLAN 도 바꾼다
- *   옵션 --pane <id> : [이대로 진행] 이 보낼 헤르메스 pane. 없으면 PLAN.hermesPane → 없으면 `herdr pane current`
+ *   node scripts/plan-html.mjs <plans/…md> --add <결정.json>    # 리뷰 뒤 결정을 덧붙인다 — 기존 결정(확정분은 잠긴 채)은 두고 새 결정만 연다.
+ *                                                               html 이 없으면(경량 계획서) 템플릿으로 새로 만든다. 결정.json 은 decisions[] 배열(또는 { decisions: [] })
+ *   node scripts/plan-html.mjs <plans/…md> --decide r1='<label>' [r2='<label>' …]  # 확정을 기록한다 — 그 id 에만 decided 를 채우고 나머지는 그대로
+ *                                                               (--data 로 PLAN 전체를 바꾸면 기존 결정이 지워진다 — 확정에는 이걸 쓴다)
+ *   옵션 --pane <id> : [이대로 진행] 이 보낼 pane(계획서를 만든 헤르메스, 리뷰 뒤 결정이면 그 작업 에이전트). 없으면 PLAN.hermesPane → 없으면 `herdr pane current`
  *
  * PLAN.json 은 title·type·scope·summary·decisions[] (형식은 docs/plan-template.html 헤더 주석). mdFile 은 자동으로 채운다.
  * 치환은 헤더 주석이 끝난 뒤에서만 한다 — 주석 안의 블록 이름까지 바꾸면 PLAN 이 주석에 갇혀 빈 화면이 된다.
@@ -34,8 +38,26 @@ if (!mdFile.startsWith('plans/') || !existsSync(mdPath)) {
 }
 const htmlPath = mdPath.replace(/\.md$/, '.html')
 const dataPath = option('data')
-if (!existsSync(htmlPath) && !dataPath) {
-  console.error('⚠️  html 이 없다 — 처음 만들 때는 --data <PLAN.json> 이 필요하다')
+const addPath = option('add')
+// --decide 뒤의 id=label 들 (다음 -- 옵션 전까지)
+const decideIndex = argv.indexOf('--decide')
+const decides = []
+if (decideIndex >= 0) {
+  for (const arg of argv.slice(decideIndex + 1)) {
+    if (arg.startsWith('--')) break
+    decides.push(arg)
+  }
+}
+if (decideIndex >= 0 && (!decides.length || decides.some((pair) => !/^[^=]+=.+/.test(pair)))) {
+  console.error("⚠️  --decide 는 id='label' 형식이다 (예: --decide r1='A 유지' r2='B 되돌림')")
+  process.exit(1)
+}
+if (decides.length && !existsSync(htmlPath)) {
+  console.error('⚠️  html 이 없다 — --decide 는 결정 콘솔이 있는 계획서에만 쓴다')
+  process.exit(1)
+}
+if (!existsSync(htmlPath) && !dataPath && !addPath) {
+  console.error('⚠️  html 이 없다 — 처음 만들 때는 --data <PLAN.json> (리뷰 뒤 결정이면 --add <결정.json>) 이 필요하다')
   process.exit(1)
 }
 
@@ -53,8 +75,54 @@ if (!current) {
 let plan
 if (dataPath) {
   plan = JSON.parse(readFileSync(dataPath, 'utf8'))
-} else {
+} else if (existsSync(htmlPath)) {
   plan = new Function(`return (${current[2]})`)()
+} else {
+  // 경량 계획서에 처음 결정 콘솔을 붙일 때 — 제목은 md 의 첫 제목
+  const title = readFileSync(mdPath, 'utf8').match(/^#\s+(.+)$/m)?.[1] ?? mdFile
+  plan = { title, type: 'task', scope: '-', summary: '리뷰 뒤 다시 결정할 사항', decisions: [] }
+}
+if (addPath) {
+  const added = JSON.parse(readFileSync(addPath, 'utf8'))
+  const list = Array.isArray(added) ? added : added.decisions ?? []
+  // 콘솔은 id·title·options[].label 로 동작한다 — 빠지면 바로 거부
+  const broken = list.find((decision) => !decision?.id || !decision.title || !Array.isArray(decision.options) || !decision.options.length || decision.options.some((item) => !item?.label))
+  if (broken) {
+    console.error(`⚠️  결정 형식이 틀렸다 — id·title·options[{label}] 가 필요하다: ${JSON.stringify(broken).slice(0, 120)}`)
+    process.exit(1)
+  }
+  // 리뷰를 두 번 돌면 reviewer 는 다시 R1 부터 매긴다 — 겹치는 r 번호는 다음 빈 번호로 바꾼다
+  const taken = new Set((plan.decisions ?? []).map((decision) => decision.id))
+  const nextReviewId = () => {
+    let number = 1
+    while (taken.has(`r${number}`)) number += 1
+    return `r${number}`
+  }
+  for (const decision of list) {
+    if (taken.has(decision.id)) {
+      if (!/^r\d+$/i.test(decision.id)) {
+        console.error(`⚠️  결정 id 가 겹친다: ${decision.id} — 다른 id 로 다시`)
+        process.exit(1)
+      }
+      const renamed = nextReviewId()
+      console.log(`   ${decision.id} → ${renamed} (이미 있는 번호라 바꿨다 — 제목의 번호도 확인)`)
+      decision.title = decision.title.replace(new RegExp(`^${decision.id}\\b`, 'i'), renamed.toUpperCase())
+      decision.id = renamed
+    }
+    taken.add(decision.id)
+  }
+  plan.decisions = [...(plan.decisions ?? []), ...list]
+}
+for (const pair of decides) {
+  const [id, ...rest] = pair.split('=')
+  const label = rest.join('=')
+  const decision = (plan.decisions ?? []).find((item) => item.id === id)
+  if (!decision) {
+    console.error(`⚠️  그런 결정이 없다: ${id} (있는 것: ${(plan.decisions ?? []).map((item) => item.id).join(', ')})`)
+    process.exit(1)
+  }
+  if (!decision.options.some((item) => item.label === label)) console.log(`   ${id}: '${label}' 는 선택지 label 과 다르다 — 그대로 기록한다`)
+  decision.decided = label
 }
 plan.mdFile = mdFile
 
@@ -72,7 +140,10 @@ const previousPane = (() => {
     return ''
   }
 })()
-plan.hermesPane = option('pane') || plan.hermesPane || previousPane || currentPane()
+// 리뷰 뒤 결정(--add)은 그 결정을 덧붙인 pane(작업 에이전트)으로 보낸다 — 처음 계획서를 만든 헤르메스가 아니라
+plan.hermesPane = addPath
+  ? option('pane') || currentPane() || plan.hermesPane || previousPane
+  : option('pane') || plan.hermesPane || previousPane || currentPane()
 
 // PLAN 안의 < 는 \u003c 로 — 문자열에 </script> 가 있어도 블록이 끊기지 않게
 const planJson = JSON.stringify(plan, null, 2).replace(/</g, '\\u003c')

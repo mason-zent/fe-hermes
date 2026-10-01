@@ -389,6 +389,16 @@
     const lines = section(text, 'Commits');
     return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
   };
+  // 히스토리 한 묶음 — 확정한 결정 · 리뷰 뒤 결정 · 리뷰 결론(계획서에 쌓인 '- Review result:' 줄, 적힌 순서대로)
+  const decisionsBlock = (text) => {
+    const decided = section(text, 'Decisions');
+    const afterReview = section(text, '리뷰 뒤 결정');
+    return (decided ? `<h4>결정</h4>${markdown(decided)}` : '') + (afterReview ? `<h4>리뷰 뒤 결정</h4>${markdown(afterReview)}` : '');
+  };
+  const reviewsBlock = (text) => {
+    const lines = text.split('\n').filter((line) => /^\s*-\s*Review result:/.test(line)).map((line) => line.replace(/^\s*-\s*Review result:\s*/, '- '));
+    return lines.length ? `<h4>리뷰</h4>${markdown(lines.join('\n'))}` : '';
+  };
   const openHistory = async (dir) => {
     const dialog = document.getElementById('detail');
     document.getElementById('detail-title').textContent = '불러오는 중이에요…';
@@ -402,8 +412,10 @@
       const item = historyItems.find((entry) => entry.dir === dir);
       document.getElementById('detail-title').textContent = item?.title || data.meta?.title || dir;
       document.getElementById('detail-meta').textContent = `보관 ${data.meta?.archivedAt || '?'}`;
-      const issueBody = data.issue ? `<div class="part issue" id="part-issue"><div class="p-head">📄 이슈 <small>archive/${esc(dir)}/issue.md</small></div>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}</div>` : '';
-      const planBody = data.plan ? `<div class="part plan" id="part-plan"><div class="p-head">📋 계획서 <small>archive/${esc(dir)}/plan.md</small></div>${planBlocks(data.plan)}${commitsBlock(data.plan)}</div>` : '';
+      const issueBody = data.issue ? `<div class="part issue" id="part-issue"><div class="p-head">📄 이슈 <small>${esc(dir)}/issue.md</small></div>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}</div>` : '';
+      // 결정 콘솔(plan.html)이 묶여 있으면 읽기 전용으로 연다 — 토큰을 넣지 않아 보낼 수 없다. dir 은 이미 archive/<이름>
+      const consoleLink = data.html ? ` <a href="/${dir.split('/').map(encodeURIComponent).join('/')}/plan.html" target="_blank">결정 콘솔 열기 ↗</a>` : '';
+      const planBody = data.plan ? `<div class="part plan" id="part-plan"><div class="p-head">📋 계획서 <small>${esc(dir)}/plan.md</small>${consoleLink}</div>${planBlocks(data.plan)}${decisionsBlock(data.plan)}${reviewsBlock(data.plan)}${commitsBlock(data.plan)}</div>` : '';
       const body = document.getElementById('detail-body');
       body.innerHTML = issueBody + planBody;
     } catch (error) {

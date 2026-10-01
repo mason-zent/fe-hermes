@@ -25,7 +25,7 @@
 
      [A] script#plan-data 의 PLAN 객체
          - title/type/scope/mdFile/summary
-         - hermesPane : 계획서를 만든 헤르메스 pane id (herdr pane current, 예 'w2:p33')
+         - hermesPane : [이대로 진행] 이 보낼 pane id — 계획서를 만든 헤르메스, 리뷰 뒤 결정이면 그 작업 에이전트 (herdr pane current, 예 'w2:p33')
          - decisions[] : .md "사용자 결정 사항"과 1:1
            · 승인 전: options[] 만 채운다 (decided 생략)
            · 확정 후: 각 결정에 decided 를 채운다
@@ -133,6 +133,7 @@ const PLAN = {
   .badge.type-feature { background:#eff6ff; color:#2563eb; border-color:#bfdbfe; }
   .badge.type-bugfix  { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
   .badge.type-refactor{ background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe; }
+  .badge.type-task    { background:#f0fdf4; color:#16a34a; border-color:#bbf7d0; }
   .badge.scope { background:#f8fafc; color:var(--muted); border-color:var(--border); }
   .md-link { display:inline-block; margin-top:14px; font-size:13px; color:var(--muted); text-decoration:none; }
   .md-link:hover { color: var(--primary); text-decoration: underline; }
@@ -470,9 +471,9 @@ const PLAN = {
     });
     const left = unresolved();
     const status = document.getElementById('status');
-    if (sent) status.innerHTML = '<b>✅ 헤르메스(' + escapeText(PLAN.hermesPane) + ')에 보냈습니다.</b> 확정되면 이 화면이 잠깁니다.';
-    else if (sendError) status.innerHTML = '⚠️ ' + escapeText(sendError) + ' — [프롬프트로 복사] 후 헤르메스에 붙여넣어 주세요.';
-    else if (left.length === 0) status.innerHTML = '<b>모든 필수 결정 완료.</b> [이대로 진행] 을 누르면 헤르메스에 바로 보냅니다.';
+    if (sent) status.innerHTML = '<b>✅ ' + escapeText(PLAN.hermesPane) + ' 에 보냈습니다.</b> 확정되면 이 화면이 잠깁니다.';
+    else if (sendError) status.innerHTML = '⚠️ ' + escapeText(sendError) + ' — [프롬프트로 복사] 후 ' + escapeText(PLAN.hermesPane || '담당') + ' pane 에 붙여넣어 주세요.';
+    else if (left.length === 0) status.innerHTML = '<b>모든 필수 결정 완료.</b> [이대로 진행] 을 누르면 ' + escapeText(PLAN.hermesPane) + ' pane 에 바로 보냅니다.';
     else status.innerHTML = '필수 결정 <b>' + left.length + '개</b> 남음: ' +
       left.map((dec) => escapeText(dec.title)).join(', ');
     document.getElementById('btn-copy').disabled = left.length > 0;
@@ -652,7 +653,7 @@ const PLAN = {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || '보내지 못했어요 (' + response.status + ')');
       sent = true;
-      document.getElementById('btn-send').textContent = '✅ 헤르메스에 보냄';
+      document.getElementById('btn-send').textContent = '✅ 보냄';
     } catch (error) {
       fallbackToCopy(error.message || '보내지 못했어요');
     } finally {
@@ -660,7 +661,7 @@ const PLAN = {
       render();
     }
   }
-  if (!PLAN.hermesPane) fallbackToCopy('보낼 헤르메스 pane 이 계획서에 적혀 있지 않아요');
+  if (!PLAN.hermesPane) fallbackToCopy('보낼 pane 이 계획서에 적혀 있지 않아요');
   else if (!boardToken) fallbackToCopy('현황판 주소로 열지 않아 보낼 수 없어요 (scripts/board.sh open <이 파일>)');
   document.getElementById('btn-send').addEventListener('click', sendToHermes);
   document.getElementById('btn-copy').addEventListener('click', () => copy(buildPrompt()));
