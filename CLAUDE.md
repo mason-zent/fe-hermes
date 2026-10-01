@@ -100,6 +100,7 @@
 | `/board` | 현황판 — 로컬 서버를 띄워 브라우저에서 실시간으로 본다. 지금 동작 중인 에이전트 · 계획서 칸반(Checkpoint Status) · `issues/` 이슈. 카드를 끌어 상태를 바꾸고, 버튼으로 헤르메스 pane 에 지시를 보낸다 (`/board stop`) |
 | `/sync` | 담당 레포의 운영 기준 브랜치를 훑어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서는 `node scripts/build-derived.mjs`가 생성. 다이어그램 근거가 운영 코드와 어긋났는지 `node scripts/check-diagrams.mjs`로 점검 |
 | `/diagram` | 다이어그램 다시 그리기 — 운영 기준 코드로 구조·화면 맵·요청 흐름(비즈넵 웹·모바일 앱은 심층까지)을 그리고 검증·목록 갱신, 그리다 찾은 문제는 `issues/` 등록. `/diagram brand` 처럼 서비스를 주거나, 비우면 전체. `/diagram 점검` 은 다시 그리지 않고 근거만 점검 |
+| `/seo-feedback` | 슬랙 `seo-health-bznav` 의 SEO Health 봇 리포트(환급·세나·케어)를 직전 리포트와 비교해 **서비스당 이슈 하나**(`kind: seo`)를 만들거나 갱신(슬랙에는 보내지 않음). 매주 월 08:15 launchd 자동 실행(`scripts/seo-feedback.sh install` 한 맥에서만), 수동 실행분은 직접 부른다 |
 | `/guide` | 오른쪽 pane 에 가이드 메뉴(스킬 목록·실행 · 에이전트·라우팅 · git 현황 · 문서). `/guide <파일>` 은 그 파일을 뷰어로, `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 경량·정식 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
 
 **커맨드가 없는 것은 말로 한다.** 기능·버그(1단계) · 리뷰("리뷰해줘" → 5단계, `delegate.sh reviewer`) · 현황("현황 알려줘" → `docs/knowledge/common/git.md` "현황 점검") · 브랜치(3단계, 같은 파일 "작업 브랜치 만들기").

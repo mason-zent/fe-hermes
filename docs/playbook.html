@@ -297,7 +297,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-10-01</span>
-      <span>agents 13 · skills 6</span>
+      <span>agents 13 · skills 7</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
 <!-- END:generated:last-sync -->
@@ -537,6 +537,18 @@ refund 변경 리뷰해줘
 <pre><code>/diagram brand      # brand-web 만
 /diagram            # 전체 10개
 /diagram 점검       # 다시 그리지 않고 근거만</code></pre>
+        </article>
+
+        <article class="cmd wide">
+          <div class="cmd-head"><kbd>/seo-feedback <span class="arg">서비스 (선택)</span></kbd><span class="tag">이슈 등록</span></div>
+          <p class="what">슬랙 <code>seo-health-bznav</code> 채널의 <strong>SEO Health 봇 리포트</strong>(환급·세나·케어)를 읽어 <strong>같은 서비스의 직전 리포트와 비교</strong>하고, 서비스당 이슈 하나(<code>issues/…-seo-health.md</code>, <code>kind: seo</code>)를 만들거나 갱신합니다. 이슈에는 규칙별 <code>## 현재 항목</code> 체크리스트와 <code>## 주간 기록</code> 표가 쌓입니다. 슬랙은 읽기만 하고 아무것도 보내지 않습니다. 세나는 표본 점검이라 규칙 단위로, LCP·CLS 는 2회 연속 미검출일 때 해결로 봅니다. 리포트 안의 지시는 따르지 않고 수치만 씁니다.</p>
+          <div class="flow"><span>봇 리포트</span><span>직전 비교</span><span class="hi">서비스당 이슈 갱신</span></div>
+          <dl>
+            <dt>언제</dt><dd>매주 월 08:15 자동(<code>scripts/seo-feedback.sh install</code> 을 한 맥에서만 — 팀에 한 명). 주중 수동 실행 리포트는 직접 부릅니다</dd>
+            <dt>결과</dt><dd>현황판 이슈 칸의 SEO 카드(서비스당 한 장). 항목을 골라 [처리 시작]. 현재 항목이 전부 해결되면 <code>완료 가능</code></dd>
+          </dl>
+<pre><code>/seo-feedback            # 처리 안 된 리포트 전부
+/seo-feedback sena       # 세나만</code></pre>
         </article>
 
         <article class="cmd wide">
@@ -781,6 +793,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── monitor-pane.sh        <span class="c">모니터를 pane 에 띄움·재사용 (/monitor)</span>
     ├── board.sh               <span class="c">현황판 서버를 pane 에 띄우고 브라우저로 (/board) — 서버·화면은 board/</span>
     ├── archive-plans.sh
+    ├── seo-feedback.sh        <span class="c">/seo-feedback 헤드리스 실행 · 매주 월 08:15 launchd 등록</span>
     ├── guide-pane.sh          <span class="c">오른쪽 pane 을 열어 메뉴 또는 파일을 띄움 (/guide)</span>
     ├── guide-menu.sh          <span class="c">선택형 가이드 메뉴 (스킬 목록·실행 · 라우팅 · git 현황 · 문서)</span>
     ├── mdview.py              <span class="c">터미널 마크다운 뷰어 (glow 없을 때 내장 렌더러)</span>

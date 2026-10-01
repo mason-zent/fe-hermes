@@ -246,6 +246,12 @@ const doneCheck = async (issue) => {
     let allIn = shas.length > 0
     for (const sha of shas) if ((await run('git', ['-C', ROOT, 'merge-base', '--is-ancestor', sha, 'origin/main'])) === null) allIn = false
     checks.push({ label: shas.length ? `fix: ${shas.join(', ')} push 됨` : 'fix: 수정 커밋 sha', ok: allIn })
+  } else if (issue.type === 'seo') {
+    // 서비스당 하나로 매주 갱신되는 SEO Health 이슈(/seo-feedback) — 현재 항목이 전부 해결([x])이면 끝
+    const current = issue.body.match(/^## 현재 항목\s*\n([\s\S]*?)(?=^## |$(?![\s\S]))/m)?.[1] ?? ''
+    const items = current.split('\n').filter((line) => /^\s*- \[[ x]\]/i.test(line))
+    const resolved = items.filter((line) => /^\s*- \[x\]/i.test(line))
+    checks.push({ label: items.length ? `## 현재 항목 ${resolved.length}/${items.length} 해결` : '## 현재 항목 절', ok: items.length > 0 && resolved.length === items.length })
   } else if (issue.type === 'code') {
     const planPath = issue.plan ? join(ROOT, issue.plan) : ''
     const planDone = planPath && existsSync(planPath) && /^- Status:.*\bdone\b/m.test(readText(planPath) ?? '')

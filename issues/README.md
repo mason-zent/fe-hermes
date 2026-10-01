@@ -15,7 +15,7 @@ title: 한 줄 제목
 status: open            # open | planned | in_progress | done | wontfix
 repo: web-op            # 레포 (bznav 는 bznav-web/<앱>, 공통 패키지는 bznav-web/packages)
 agent:                  # 담당 에이전트. 비우면 repo 로 hermes.config.json 에서 찾는다
-kind: code              # code | diagram | knowledge | check(확인만 필요)
+kind: code              # code | diagram | knowledge | check(확인만 필요) | seo(/seo-feedback 가 서비스당 하나로 매주 갱신)
 severity: medium        # high | medium | low
 source: sync 2026-09-28 # 어디서 찾았나
 plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
@@ -47,6 +47,7 @@ reason:                 # wontfix: 하지 않는 이유
 | `check` | `## 확인 결과` 절이 있다 · `## 후속` 절의 모든 줄이 `- [x]` 이거나 존재하는 `issues/…md` 를 가리킨다(후속이 없으면 `- [x] 없음`) |
 | `knowledge` · `diagram` | `fix:` 의 커밋이 전부 hermes `origin/main` 에 들어 있다 |
 | `code` | `plan:` 계획서 Status 가 `done` · `pr:` 이 GitHub 에서 MERGED |
+| `seo` | `## 현재 항목` 의 모든 줄이 `- [x]`(해결) — 해결 판정은 `/seo-feedback` 이 직전 리포트와 비교해 한다 |
 | `wontfix` | `reason:` 이 비어 있지 않다 |
 
 **완료로 옮기기**
