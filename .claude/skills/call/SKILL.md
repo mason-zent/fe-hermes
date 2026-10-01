@@ -25,7 +25,7 @@ argument-hint: "<에이전트> — 예: bznav-plus-fe · refund-fe"
 
 ## 커밋
 - 사용자가 그 pane 에서 **"커밋해줘"** 라고 하면 에이전트가 `scripts/commit.sh` 로 로컬 커밋한다 — 워크트리·보호 브랜치·기존 스테이징·지정 파일을 확인하고 엄격 검증 뒤 커밋, 계획서 `## Commits` 에 기록. 메인 체크아웃이면 거부되고 사용자가 명시해야 `--allow-main-checkout`
-- **"리뷰해줘"** → 에이전트가 `scripts/delegate.sh reviewer --cwd <워크트리> --here --plan <계획서>` 로 같은 탭 옆에 reviewer pane 을 띄운다. reviewer 는 결론을 계획서 `- Review result:` 줄로 남긴다
+- 에이전트가 코드를 바꾼 요청을 보고하면 **자동으로 리뷰를 띄운다**(묻지 않음). 자동 리뷰나 **"리뷰해줘"** → 에이전트가 `scripts/delegate.sh reviewer --cwd <워크트리> --here --plan <계획서>` 로 같은 탭 옆에 reviewer pane 을 띄운다. reviewer 는 결론을 계획서 `- Review result:` 줄로 남긴다
 - **"PR 올려줘"** → 에이전트가 `scripts/ship.sh` 미리보기를 보여 주고 base·제목을 확인받은 뒤 draft PR (레포 하나짜리 작업만. 규칙 `docs/knowledge/common/git.md` "PR 올리기")
 - 직접 `git commit`·`git add -A`·`git push`·`gh pr create` 는 FE 세션 보호 훅이 막는다. 여러 레포에 걸친 작업의 push·PR 은 헤르메스에게
 
