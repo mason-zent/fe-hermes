@@ -1,0 +1,13 @@
+{
+  "name": "hermes-qa",
+  "private": true,
+  "type": "module",
+  "description": "QA 시뮬레이션 — 변경 파일의 영향 화면을 찾아 실제 브라우저로 연다 (plans/feature/20261002-QA-시뮬레이션-영향-화면.md)",
+  "dependencies": {
+    "dependency-cruiser": "18.5.0",
+    "pixelmatch": "7.2.0",
+    "playwright": "1.63.0",
+    "pngjs": "7.0.0",
+    "typescript": "5.9.3"
+  }
+}

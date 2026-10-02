@@ -41,4 +41,19 @@ for tool in git node pnpm claude herdr; do
 done
 
 echo
+echo "QA 시뮬레이션 도구 (scripts/qa — Playwright·dependency-cruiser):"
+if [ -d "$HERMES_DIR/scripts/qa/node_modules" ]; then
+  echo "  ✔ 의존성 있음"
+elif command -v npm >/dev/null 2>&1 && (cd "$HERMES_DIR/scripts/qa" && npm ci --silent >/dev/null 2>&1); then
+  echo "  ✔ 의존성 설치 (npm ci)"
+else
+  echo "  ✖ 설치 실패 — cd scripts/qa && npm ci"
+fi
+if [ -d "$HERMES_DIR/scripts/qa/node_modules/playwright" ]; then
+  if (cd "$HERMES_DIR/scripts/qa" && npx --no-install playwright install chromium >/dev/null 2>&1); then echo "  ✔ Chromium 준비"
+  else echo "  ✖ Chromium 설치 실패 — cd scripts/qa && npx playwright install chromium"; fi
+fi
+echo "  · 로그인 세션은 각자 한 번: node scripts/qa/login.mjs (이메일 로그인 — docs/knowledge/common/verify.md \"QA 시뮬레이션\")"
+
+echo
 if [ "$missing" -gt 0 ]; then echo "⚠️  레포 $missing 개가 연결되지 않았습니다. 해당 에이전트는 동작하지 않습니다."; else echo "✅ 준비 완료. hermes 폴더에서 claude 를 실행하세요."; fi

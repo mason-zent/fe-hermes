@@ -48,6 +48,8 @@ hermes 루트에서 `scripts/verify/bznav-web.sh refund-web`을 실행하고(워
 
 ⚠️ **라우팅·빌드 설정·의존성을 바꿨으면 `pnpm --filter refund-web build` 를 따로 돌린다.** 표준 스크립트는 lint·타입·테스트만 돌고 build 는 대신해 주지 않는다 (`rules.md` 의 변경 범위별 검증 표).
 
+**QA 시뮬레이션** — 화면에 닿는 코드를 바꾼 요청을 보고할 때는 자동 리뷰를 띄우기 **전에** hermes 루트에서 `node scripts/qa/run.mjs --cwd <워크트리> --app refund-web --plan <계획서>` 를 돌리고 끝 줄(통과·변화·실패·이동됨·로그인 필요·샘플 필요)을 보고에 붙인다. 사용자가 "QA 돌려줘" 라고 해도 같다. ❌ 실패는 원문 에러와 함께, 🟡 변화는 의도한 변경인지 한 줄로 적는다. 🔒 로그인 필요가 많으면 사용자에게 `node scripts/qa/login.mjs` 로 세션 저장을 권한다(비밀번호를 묻거나 저장하지 않는다). 문서·테스트만 바꿨거나 영향 화면이 0개면 생략하고 그 사실을 적는다. 판정 뜻은 `docs/knowledge/common/verify.md` "QA 시뮬레이션"
+
 같은 오류가 3회 반복되면 접근을 재검토하고 헤르메스에 보고한다.
 
 ## 보고

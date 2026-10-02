@@ -1,0 +1,35 @@
+{
+  "$comment": "QA 시뮬레이션 화면 설정 (D6). 동적 라우트는 samples 에 열 URL 을, 단계형 화면은 entry 에 앞 단계 URL 을 적는다(D8). 적지 않은 동적 라우트는 '샘플 필요' 로 표시만 한다. 키는 impact.mjs 의 route(파일 경로 기준, [param] 그대로)",
+  "app": "refund-web",
+  "devPort": 3200,
+  "signInPath": "/auth/sign-in",
+  "signOutPath": "/auth/sign-out",
+  "ciPath": "/auth/ci-request",
+  "profiles": {
+    "$comment": "세션 상태별 기대 결과(①). session = .qa-auth/<앱>.<session>.json (login.mjs --profile). authScreens = AuthGuard 화면이 가야 할 곳(경로 앞부분 · 'stay' 머무름 · null 기대 없음). 화면별로 다르면 routes[화면].expect[프로필]",
+    "logout": { "session": null, "authScreens": "/auth/sign-", "note": "로그아웃 — 로그인 화면은 로그인으로 보내야 정상" },
+    "login": { "session": "login", "authScreens": "/auth/ci-request", "note": "이메일 로그인 · 본인인증 전 dev 계정 — 본인인증 화면으로 보내야 정상" },
+    "verified": { "session": "verified", "authScreens": "stay", "note": "본인인증까지 마친 dev 계정 — 그 화면에 머물러야 정상" }
+  },
+  "viewports": [
+    { "name": "desktop", "width": 1280, "height": 800 },
+    { "name": "mobile", "width": 390, "height": 844 }
+  ],
+  "timeoutMs": 45000,
+  "concurrency": 3,
+  "diffMinPixels": 50,
+  "ignoreConsole": [
+    "Download the React DevTools",
+    "\\[Fast Refresh\\]",
+    "\\[HMR\\]"
+  ],
+  "routes": {
+    "/help/guide/[slug]": { "samples": ["/help/guide/tax-refund-check", "/help/guide/business-tax-refund"] },
+    "/simple/[corpType]/apply": { "samples": ["/simple/indis/apply", "/simple/corps/apply"] },
+    "/simple/[corpType]/apply/success": { "samples": ["/simple/indis/apply/success"] },
+    "/survey/reopen/[questionCode]": { "entry": "/survey/reopen", "note": "질문 코드는 API 가 준다 — 설문 재개 첫 화면에서 들어간다" },
+    "/event/[...slug]": { "samples": [], "note": "BE 콘텐츠 페이지 — 살아 있는 이벤트 slug 를 적어 주세요" },
+    "/landing/[...slug]": { "samples": [], "note": "BE 콘텐츠 페이지 — 살아 있는 랜딩 slug 를 적어 주세요" },
+    "/home/[...content]": { "samples": [], "note": "BE 콘텐츠 페이지 (/home/{slug}, /home/event/{slug})" }
+  }
+}
