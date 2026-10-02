@@ -88,6 +88,20 @@
   .wt { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; }
   .card[draggable="true"] { cursor: grab; }
   .card.dragging { opacity: .45; }
+  .hermes-board { grid-template-columns: repeat(3, minmax(220px, 1fr)); }
+  /* 넓은 화면은 한 화면에 맞춘다 — 페이지는 스크롤하지 않고 칸반이 남은 높이를 채워 칸마다 따로 스크롤(칸 제목은 고정). 좁은 화면은 그대로 페이지 스크롤 */
+  @media (min-width: 721px) and (min-height: 560px) {
+    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    header { flex: none; }
+    #view-now:not([hidden]), #view-hermes:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding-bottom: 14px; }
+    #view-history:not([hidden]) { flex: 1; min-height: 0; overflow-y: auto; }
+    main > section { flex: none; }
+    main > section.board-section { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+    .board-section .board { flex: 1; min-height: 0; grid-auto-rows: minmax(0, 1fr); align-items: stretch; }
+    .board-section .col { min-height: 0; overflow-y: auto; padding-top: 0; }
+    .board-section .col-head { position: sticky; top: 0; z-index: 1; background: inherit; padding-top: 10px; padding-bottom: 6px; margin-bottom: 2px; }
+    .worktrees { max-height: 64px; overflow-y: auto; }
+  }
   .col.drop { outline: 2px dashed var(--accent); outline-offset: -4px; }
   .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
   button, select, textarea { font: inherit; color: inherit; }
@@ -179,6 +193,7 @@
     <span class="tip" role="tooltip"><span id="live-state"></span><span id="updated"></span><span id="sync"></span></span></h1>
   <nav class="tabs" role="tablist" aria-label="보기">
     <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true">현황</button>
+    <button type="button" role="tab" id="tab-hermes" data-tab="hermes" aria-selected="false">헤르메스</button>
     <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
   </nav>
   <span class="live-note" id="live-text">연결 중…</span>
@@ -189,13 +204,19 @@
     <h2>지금 동작 중</h2>
     <div id="agents" class="agents"></div>
   </section>
-  <section>
+  <section class="board-section">
     <h2>칸반</h2>
     <div id="board" class="board"></div>
   </section>
   <section>
     <h2>워크트리 (.worktrees)</h2>
     <div id="worktrees" class="worktrees"></div>
+  </section>
+</main>
+<main id="view-hermes" hidden>
+  <section class="board-section">
+    <h2>헤르메스 — hermes 자체 이슈·작업 (담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝)</h2>
+    <div id="hermes-board" class="board hermes-board"></div>
   </section>
 </main>
 <main id="view-history" hidden>
@@ -246,6 +267,17 @@
     ['review', '리뷰', 'var(--col-review)'],
     ['done', '완료', 'var(--col-done)'],
   ];
+  // 헤르메스 칸 — 계획·리뷰 단계가 따로 없다(헤르메스가 이 세션에서 바로 고친다). 서비스 칸반의 칸 값을 셋으로 접는다
+  const HERMES_COLUMNS = [
+    ['issue', '할 일', 'var(--col-issue)'],
+    ['doing', '진행 중', 'var(--col-doing)'],
+    ['done', '완료', 'var(--col-done)'],
+  ];
+  const laneColumn = (card) => {
+    if (card.scope !== 'hermes') return card.column;
+    if (card.column === 'done') return 'done';
+    return card.column === 'issue' || card.column === 'plan' ? 'issue' : 'doing';
+  };
   const STATUS_LABEL = { working: '작업 중', idle: '대기', blocked: '입력 대기', done: '끝남', unknown: '?' };
   const esc = (value) => String(value ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
   const ago = (sec) => (sec < 60 ? `${sec}초 전` : sec < 3600 ? `${Math.round(sec / 60)}분 전` : `${Math.round(sec / 3600)}시간 전`);
@@ -296,6 +328,11 @@
     },
   };
 
+  // hermes 이슈 [처리 시작] — 디스패치하지 않는다. 헤르메스가 경량 계획서로 바로 고치고, 커밋·push 하면 fix: 로 완료
+  const HERMES_ACTIONS = {
+    open: [['처리 시작', (card) => `${card.id} 이슈를 처리해줘. hermes 자체 이슈라 담당 에이전트로 보내지 않고 헤르메스가 직접 고친다. 경량 계획서를 만들어 이슈 plan: 에 연결하고, 고친 뒤 확인한 결과와 함께 보고한다. 커밋은 내가 말하면 hermes main 에 하고, 이슈에 fix: <커밋> · status: done 을 적어 push 까지 한다.`]],
+  };
+  const actionsFor = (card) => ((card.scope === 'hermes' && card.kind === 'issue' && HERMES_ACTIONS[card.status]) || (ACTIONS[card.kind] || {})[card.status] || []);
   const api = async (path, body) => {
     const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Board-Token': TOKEN }, body: JSON.stringify(body) });
     const result = await response.json().catch(() => ({}));
@@ -568,17 +605,17 @@
     historyPick = '';
     renderHistory();
   }));
+  const TABS = ['now', 'hermes', 'history'];
   const showTab = (tab) => {
-    const isHistory = tab === 'history';
-    document.getElementById('view-now').hidden = isHistory;
-    document.getElementById('view-history').hidden = !isHistory;
-    document.getElementById('tab-now').setAttribute('aria-selected', String(!isHistory));
-    document.getElementById('tab-history').setAttribute('aria-selected', String(isHistory));
-    if (isHistory) loadHistory();
-    try { history.replaceState(null, '', isHistory ? '#history' : location.pathname); } catch (error) { /* 무시 */ }
+    for (const name of TABS) {
+      document.getElementById(`view-${name}`).hidden = name !== tab;
+      document.getElementById(`tab-${name}`).setAttribute('aria-selected', String(name === tab));
+    }
+    if (tab === 'history') loadHistory();
+    try { history.replaceState(null, '', tab === 'now' ? location.pathname : `#${tab}`); } catch (error) { /* 무시 */ }
   };
   document.querySelectorAll('.tabs [data-tab]').forEach((button) => { button.onclick = () => showTab(button.dataset.tab); });
-  if (location.hash === '#history') showTab('history');
+  if (TABS.includes(location.hash.slice(1))) showTab(location.hash.slice(1));
 
   // 팝업 바깥(배경)을 누르면 그 팝업의 취소·닫기 버튼을 누른 것과 같게 — 안에서 드래그하다 밖에서 뗀 건 무시
   document.querySelectorAll('dialog').forEach((dialog) => {
@@ -758,7 +795,7 @@
   };
 
   const controls = (card) => {
-    const actions = ((ACTIONS[card.kind] || {})[card.status] || [])
+    const actions = actionsFor(card)
       .map(([label], index) => `<button class="btn" data-act="${index}" data-id="${esc(card.id)}">${label}</button>`)
       .join('');
     const movable = !card.archived;
@@ -832,7 +869,8 @@
   const issueCard = (card, panes = []) => {
     const tags = [];
     if (card.repo) tags.push(`<span class="pill">${esc(card.repo)}</span>`);
-    tags.push(`<span class="pill">${card.agent ? `🤖 ${esc(card.agent)}` : '담당 미정'}</span>`);
+    if (card.scope === 'hermes') tags.push('<span class="pill">🧭 헤르메스</span>');
+    else tags.push(`<span class="pill">${card.agent ? `🤖 ${esc(card.agent)}` : '담당 미정'}</span>`);
     const check = card.doneCheck;
     if (check?.ready && card.column !== 'done') tags.push('<span class="pill ready">완료 가능</span>');
     if (card.type) tags.push(`<span class="pill">${esc(card.type)}</span>`);
@@ -860,11 +898,13 @@
     agentsBox.scrollLeft = agentsScroll;
 
     const cards = state.cards || [];
-    document.getElementById('board').innerHTML = COLUMNS.map(([key, label, color]) => {
-      const inColumn = cards.filter((card) => card.column === key).sort((left, right) => right.mtime - left.mtime);
+    const drawLane = (lane, columns) => columns.map(([key, label, color]) => {
+      const inColumn = cards.filter((card) => (card.scope === 'hermes') === (lane === 'hermes') && laneColumn(card) === key).sort((left, right) => right.mtime - left.mtime);
       const body = inColumn.map((card) => (card.kind === 'plan' ? planCard(card, state.panes || []) : issueCard(card, state.panes || []))).join('') || '<div class="empty">비어 있어요</div>';
-      return `<div class="col" data-col="${key}"><div class="col-head"><span class="bar" style="background:${color}"></span>${label}<span class="count">${inColumn.length}</span></div>${body}</div>`;
+      return `<div class="col" data-col="${key}" data-lane="${lane}"><div class="col-head"><span class="bar" style="background:${color}"></span>${label}<span class="count">${inColumn.length}</span></div>${body}</div>`;
     }).join('');
+    document.getElementById('board').innerHTML = drawLane('service', COLUMNS);
+    document.getElementById('hermes-board').innerHTML = drawLane('hermes', HERMES_COLUMNS);
 
     const worktrees = state.worktrees || [];
     document.getElementById('worktrees').innerHTML = worktrees.length
@@ -886,7 +926,7 @@
         const card = findCard(button.dataset.id);
         if (!card) return;
         if (button.dataset.act === 'free') return ask('직접 지시', `${card.id} `);
-        const [label, build, mode] = ACTIONS[card.kind][card.status][Number(button.dataset.act)];
+        const [label, build, mode] = actionsFor(card)[Number(button.dataset.act)];
         ask(label, build(card), mode || 'pane', card.agent || '', card.id);
       };
     });
@@ -956,7 +996,10 @@
         column.classList.remove('drop');
         const id = event.dataTransfer.getData('text/plain');
         const card = findCard(id);
-        if (card && card.column !== column.dataset.col) moveTo(id, column.dataset.col);
+        // 서비스 칸반 ↔ 헤르메스 칸 사이로는 옮기지 않는다(repo·Agent 로 정해진다)
+        if (!card || (card.scope === 'hermes') !== (column.dataset.lane === 'hermes') || laneColumn(card) === column.dataset.col) return;
+        // 헤르메스 칸 '할 일' 에 계획서를 놓으면 planned
+        moveTo(id, card.kind === 'plan' && column.dataset.col === 'issue' ? 'plan' : column.dataset.col);
       };
     });
 

@@ -120,6 +120,9 @@ const readPlan = (path) => {
     // 정식 = feature·bugfix·refactor (md + html 결정 콘솔) · 경량 = plans/task
     grade: path.split('/').at(-2) === 'task' ? 'light' : 'formal',
     owner: plain(field(checkpoint, 'Owner')),
+    // hermes 자체 작업 — 서비스 칸반과 따로 [헤르메스] 탭에 보인다. 경량은 Agent: hermes,
+    // 정식은 Agent 줄이 없으니 Work ref 가 hermes 체크아웃("hermes 메인 체크아웃 · main …")인 것으로 본다(FE 워크트리는 절대 경로라 안 걸린다)
+    scope: plain(field(checkpoint, 'Agent')) === 'hermes' || /^hermes\b/.test(plain(field(checkpoint, 'Work ref'))) ? 'hermes' : 'service',
     status,
     statusNote: plain(statusRaw.replace(/^(planned|in_progress|blocked|ready_for_review|done)\s*[—-]?\s*/, '')),
     column: STATUS_COLUMN[status] ?? 'plan',
@@ -193,6 +196,8 @@ const readIssue = (path) => {
     status,
     column: ISSUE_COLUMN[status] ?? 'issue',
     repo: meta.repo || '',
+    // repo: hermes 는 헤르메스 자체 이슈 — 담당 에이전트·PR 없이 헤르메스가 직접 고치고 main 에 커밋·push 하면 끝
+    scope: meta.repo === 'hermes' ? 'hermes' : 'service',
     severity: meta.severity || '',
     type: meta.kind || '',
     source: meta.source || '',
@@ -241,7 +246,8 @@ const doneCheck = async (issue) => {
       return !(linked && existsSync(join(ROOT, linked[0])))
     })
     checks.push({ label: items.length ? `## 후속 ${items.length - open.length}/${items.length} 정리` : '## 후속 절 (없으면 "- [x] 없음")', ok: items.length > 0 && open.length === 0 })
-  } else if (issue.type === 'knowledge' || issue.type === 'diagram') {
+  } else if (issue.type === 'knowledge' || issue.type === 'diagram' || issue.scope === 'hermes') {
+    // hermes 자체 이슈는 kind 와 무관하게 이 기준 — PR 없이 main 에 커밋·push 하므로 fix: 커밋이 origin/main 에 있으면 끝
     const shas = issue.fix.split(/[,\s]+/).filter(Boolean)
     let allIn = shas.length > 0
     for (const sha of shas) if ((await run('git', ['-C', ROOT, 'merge-base', '--is-ancestor', sha, 'origin/main'])) === null) allIn = false

@@ -7,6 +7,7 @@ sync·다이어그램 작업·리뷰 중에 찾았지만 **그 자리에서 고�
 - 현황판 [처리 시작]은 **기본으로 헤르메스 pane 에 보낸다** — 헤르메스가 판단(📋 경량/정식) → 계획서 → `prBase` 에서 작업 브랜치 → 담당 에이전트 디스패치까지 이어서 한다
 - 팝업에서 **"담당 에이전트로 바로(조사만)"** 를 고르면 `agent`(없으면 repo 의 담당)를 그 레포 workspace 에 새 pane 으로 띄운다. 이슈마다 워크트리(`.worktrees/<레포>/issue-<이슈>`, 운영 기준 ref · detached)를 만들고 **코드는 수정하지 않는다** — 원인·범위를 보고하고, 확인 이슈면 결과를 이 파일 끝 "## 확인 결과" 에 적는다. 고치기로 하면 헤르메스가 브랜치를 만들어 다시 맡긴다
 - 끝난 이슈는 현황판 완료 칸의 [아카이브] 로 연결 계획서와 함께 `archive/<이름>/`(`issue.md` · `plan.md` · `meta.json`)에 묶여 보관되고 git 에 커밋된다. 지나간 이슈는 현황판 [히스토리] 탭에서 찾는다. 잘못 만든 이슈는 [삭제] — 휴지통 `.board-trash/` 로 옮겨져 되살릴 수 있다
+- **hermes 자체 이슈**(`repo: hermes` — 스크립트·현황판·문서·규칙)는 서비스 칸반이 아니라 현황판 헤더의 **[헤르메스] 탭**(할 일 · 진행 중 · 완료)에 뜬다. 담당 에이전트·워크트리·PR 이 없다 — [처리 시작]을 누르면 헤르메스가 경량 계획서로 직접 고치고, 사용자가 커밋하라고 하면 hermes `main` 에 커밋한 뒤 `fix: <sha>` · `status: done` 을 적어 push 한다. `kind` 와 무관하게 완료 기준은 `fix:` 커밋이 `origin/main` 에 있는 것. `Agent: hermes` 이거나 `Work ref` 가 `hermes` 로 시작하는(hermes 체크아웃) 계획서도 같은 탭에 뜬다
 - 대화에서만 말하고 끝내지 않는다. 다음 세션에서도 보이게 여기 남긴다
 
 ```markdown
@@ -20,7 +21,7 @@ severity: medium        # high | medium | low
 source: sync 2026-09-28 # 어디서 찾았나
 plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
 pr:                     # code: PR 번호 (담당 레포)
-fix:                    # knowledge·diagram: 수정 커밋 sha (여러 개면 쉼표)
+fix:                    # knowledge·diagram·repo: hermes: 수정 커밋 sha (여러 개면 쉼표)
 reason:                 # wontfix: 하지 않는 이유
 ---
 
@@ -45,7 +46,7 @@ reason:                 # wontfix: 하지 않는 이유
 |---|---|
 | 공통 | 이 이슈 파일이 **커밋·push** 됐다 — 작업 트리와 hermes `origin/main` 사이에 차이가 없다 |
 | `check` | `## 확인 결과` 절이 있다 · `## 후속` 절의 모든 줄이 `- [x]` 이거나 존재하는 `issues/…md` 를 가리킨다(후속이 없으면 `- [x] 없음`) |
-| `knowledge` · `diagram` | `fix:` 의 커밋이 전부 hermes `origin/main` 에 들어 있다 |
+| `knowledge` · `diagram` · **`repo: hermes`**(kind 무관) | `fix:` 의 커밋이 전부 hermes `origin/main` 에 들어 있다 |
 | `code` | `plan:` 계획서 Status 가 `done` · `pr:` 이 GitHub 에서 MERGED |
 | `seo` | `## 현재 항목` 의 모든 줄이 `- [x]`(해결) — 해결 판정은 `/seo-feedback` 이 직전 리포트와 비교해 한다 |
 | `wontfix` | `reason:` 이 비어 있지 않다 |
