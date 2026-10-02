@@ -39,6 +39,15 @@ node scripts/qa/history.mjs [--open [런 id]] [--plan <계획서>]          # QA
 # 현황판(/board) [QA] 탭 — 같은 이력을 실시간으로. 계획서 카드 [QA 실행] 으로도 돌린다(한 번에 하나)
 ```
 
+**전체 검수**(요청할 때만 — 정기 자동 실행 없음): 코드 diff 에 안 보이는 깨짐(API 응답·CMS·공통 패키지·환경)을 서비스 전체로 본다. 영향 QA 와 달리 기준 서버 대신 **승인한 기준 사진**(`.qa-baselines/<앱>/<프로필>/`, git 무시)과 비교한다.
+```bash
+node scripts/qa/run.mjs --suite --app refund-web [--profile login] [--headed]   # 최신 origin/<prBase>(qa-base) · 화면 전부 + 흐름 씬
+node scripts/qa/approve.mjs <런 id> [--key <화면>]                              # 결과를 기준 사진으로 승인 (현황판 QA 탭 [기준으로 승인])
+```
+- 판정 추가: 🆕 기준 없음(처음 검수 — 승인하면 다음부터 기준) · 🙋 사람 필요(흐름 씬의 사람 단계 — `--headed` 로 돌리면 창에서 진행). 실패·이동 화면은 전체 승인에 올리지 않는다(콕 집으면 올림). 승인할 때 그 화면의 문제 목록도 함께 저장해 다음 검수에서 "알려진 문제"로 뺀다
+- **흐름 씬** `scripts/qa/scenarios/<앱>/*.json` — 단계(`goto`·`expectUrl`·`expectText`·`click`·`fill`·`mock`(응답 흉내)·`human`(사람 단계)·`wait`·`screenshot`), 형식은 `scripts/qa/scenario.mjs` 머리말. 비밀 값(비밀번호 등)은 씬에 적지 않는다. refund-web 은 로그인 가드 · 본인인증 가드 · 본인인증 성공/실패(응답 흉내) · 실제 본인인증(사람) 5개
+- 요청: 대화("환급 웹 전체 검수 돌려줘") 또는 현황판 QA 탭 [전체 검수 시작]. 화면 전부라 수십 분 걸릴 수 있고(추측) `heavy.sh` 차례를 기다린다
+
 **세션 프로필**(`routes/<앱>.json` `profiles`, `run.mjs --profile`): `logout`(로그인 화면은 로그인으로 가야 정상) · `login`(이메일 로그인·본인인증 전 — 본인인증 화면으로 가야 정상) · `verified`(본인인증까지 — 머물러야 정상). 기대와 다르게 가면 ❌. 기본은 세션이 저장된 첫 프로필. 세션 파일 `.qa-auth/<앱>.<프로필>.json`
 - ⚠️ **간편로그인(네이버·카카오)으로는 세션이 안 생긴다** — SSO 가 localhost 로 돌려보내지 않고 운영 도메인(refund.bznav.com)으로 보낸다(2026-10-02 확인). 이메일 로그인을 쓴다
 - 본인인증까지 마친 세션: `login.mjs --profile verified --from login --path /auth/ci-request`

@@ -186,6 +186,11 @@
   @media (max-width: 720px) { .h-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
   @media (max-width: 720px) { header { flex-wrap: wrap; } .usage { margin-left: 0; } main { padding: 12px 16px 32px; } }
   /* QA 탭 */
+  .qa-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 12px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .qa-top .sub { color: var(--muted); font-size: 12px; flex: 1 1 260px; }
+  .qa-top select { font: inherit; font-size: 12.5px; }
+  .qa-steps { margin: 4px 0 0; padding-left: 18px; font-size: 11.5px; }
+  .qa-steps .no { color: var(--bad); }
   .qa-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
   .qa-runs { display: grid; gap: 6px; max-height: calc(100vh - 170px); overflow-y: auto; }
   .qa-run { text-align: left; font: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; color: var(--text); display: grid; gap: 2px; }
@@ -246,6 +251,12 @@
 <main id="view-qa" hidden>
   <section>
     <h2>QA 시뮬레이션 — 수정한 건의 영향 화면을 실제 브라우저로 (scripts/qa · .qa-runs/)</h2>
+    <div class="qa-top">
+      <b>전체 검수</b><span class="sub">서비스 화면 전부 + 흐름 씬 · 최신 개발 브랜치 · 승인한 기준 사진과 비교 · 요청할 때만</span>
+      <select id="qa-app" aria-label="앱"></select>
+      <select id="qa-profile" aria-label="세션 프로필"></select>
+      <button type="button" class="btn" id="qa-suite">전체 검수 시작</button>
+    </div>
     <div class="qa-wrap">
       <nav class="qa-runs" id="qa-runs" aria-label="QA 런"><div class="empty-history">불러오는 중이에요…</div></nav>
       <div class="qa-detail" id="qa-detail"><div class="empty-history">왼쪽에서 런을 고르세요. 계획서 카드의 [QA 실행] 으로 새로 돌릴 수 있어요</div></div>
@@ -644,9 +655,46 @@
   const QA_STATUS = {
     pass: ['✅', '통과', 'ok'], expected: ['☑️', '기대대로 이동', 'ok'], changed: ['🟡', '화면 변화', 'warn'], fail: ['❌', '실패', 'bad'],
     redirected: ['↪️', '이동됨', ''], login: ['🔒', '로그인 필요', ''], ci: ['🪪', '본인인증 필요', ''], sample: ['📝', '샘플 필요', ''],
-    queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'],
+    queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'], new: ['🆕', '기준 없음', 'run'], human: ['🙋', '사람 필요', 'warn'],
   };
-  const QA_ORDER = ['running', 'fail', 'changed', 'login', 'ci', 'redirected', 'sample', 'expected', 'pass', 'queued'];
+  const QA_ORDER = ['running', 'fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'new', 'expected', 'pass', 'queued'];
+  // [전체 검수] — 앱·세션 프로필 고르기
+  let qaApps = [];
+  const loadQaApps = async () => {
+    try { qaApps = (await (await fetch('/api/qa/apps')).json()).apps || []; } catch (error) { qaApps = []; }
+    const appSelect = document.getElementById('qa-app');
+    const current = appSelect.value;
+    appSelect.innerHTML = qaApps.map((entry) => `<option value="${esc(entry.app)}">${esc(entry.app)} (흐름 씬 ${entry.scenarios})</option>`).join('') || '<option value="">설정된 앱 없음</option>';
+    if (current) appSelect.value = current;
+    const fillProfiles = () => {
+      const entry = qaApps.find((item) => item.app === appSelect.value);
+      document.getElementById('qa-profile').innerHTML = (entry?.profiles || []).map((item) => `<option value="${esc(item.name)}" title="${esc(item.note)}">세션 ${esc(item.name)}${item.session ? '' : ' (세션 없음)'}</option>`).join('');
+      const saved = (entry?.profiles || []).find((item) => item.session && item.name !== 'logout');
+      if (saved) document.getElementById('qa-profile').value = saved.name;
+    };
+    appSelect.onchange = fillProfiles;
+    fillProfiles();
+  };
+  document.getElementById('qa-suite').onclick = async () => {
+    const app = document.getElementById('qa-app').value;
+    const profile = document.getElementById('qa-profile').value;
+    if (!app) return toast('전체 검수 설정(scripts/qa/routes/<앱>.json)이 있는 앱이 없어요');
+    if (!confirm(`${app} 전체 검수를 시작할까요? (세션 ${profile} · 화면 전부라 수십 분 걸릴 수 있어요 · 다른 무거운 작업이 돌면 끝날 때까지 기다려요)`)) return;
+    try {
+      await api('/api/qa-suite', { app, profile });
+      toast(`${app} 전체 검수를 시작했어요 — 무거운 명령 차례를 기다린 뒤 돌아요`);
+      qaSelected = '';
+      setTimeout(loadQa, 1500);
+    } catch (error) { toast(`시작하지 못했어요: ${error.message}`); }
+  };
+  const approveQa = async (id, key) => {
+    if (!confirm(key ? `${key} 화면을 기준 사진으로 승인할까요?` : '이 전체 검수의 화면(기준 없음·변화·통과)을 기준 사진으로 승인할까요? 실패·이동 화면은 올리지 않아요')) return;
+    try {
+      const result = await api('/api/qa-approve', { id, key: key || '' });
+      toast(`기준 승인 — 화면 ${result.screens}개 · 스크린샷 ${result.shots}장`);
+      loadQa();
+    } catch (error) { toast(`승인하지 못했어요: ${error.message}`); }
+  };
   let qaSelected = '';
   let qaTimer = null;
   const qaLive = (run) => ['preparing', 'running'].includes(run?.status);
@@ -655,26 +703,32 @@
   const stopQa = () => { clearTimeout(qaTimer); qaTimer = null; };
   const loadQa = async () => {
     stopQa();
+    if (!qaApps.length) loadQaApps();
     let runs = [];
+    let heavy = {};
     try {
-      runs = (await (await fetch('/api/qa/runs')).json()).runs || [];
+      const payload = await (await fetch('/api/qa/runs')).json();
+      runs = payload.runs || [];
+      heavy = payload.heavy || {};
     } catch (error) {
       document.getElementById('qa-runs').innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
       return;
     }
     if (!qaSelected && runs.length) qaSelected = runs[0].id;
-    document.getElementById('qa-runs').innerHTML = runs.length ? runs.map((run) => {
+    // 무거운 명령 차례를 기다리는 중 — 아직 run.json 이 없어 목록에 안 보이므로 맨 위에 따로 알린다
+    const waitingCard = heavy.waiting ? `<div class="qa-run" style="cursor:default"><b>⏳ 차례 대기 중</b><span class="sub">다른 무거운 명령이 끝나면 시작해요${heavy.holder ? ` — 지금: ${esc(heavy.holder)}` : ''}</span></div>` : '';
+    document.getElementById('qa-runs').innerHTML = waitingCard + (runs.length ? runs.map((run) => {
       const percent = run.screens ? Math.round((run.finished / run.screens) * 100) : 0;
       return `<button type="button" class="qa-run" data-qa="${esc(run.id)}" aria-current="${run.id === qaSelected}">
-        <b>${qaLive(run) ? '⏳ ' : ''}${esc(qaWhen(run.startedAt))} · ${esc(run.app)}</b>
+        <b>${qaLive(run) ? '⏳ ' : ''}${esc(qaWhen(run.startedAt))} · ${run.kind === 'suite' ? '전체 검수 · ' : ''}${esc(run.app)}</b>
         <span class="sub">${esc(run.branch)} @${esc(run.head)}${run.profile ? ` · ${esc(run.profile)}` : ''}${run.plan ? ` · ${esc(run.plan.split('/').pop().replace(/\.md$/, ''))}` : ''}</span>
         <span class="sub">${run.status === 'error' ? `오류 — ${esc(run.error || '')}` : qaLive(run) ? `${esc(run.phase || '')} · ${run.finished}/${run.screens}` : esc(qaSummaryChips(run.summary) || '영향 화면 없음')}</span>
         ${qaLive(run) ? `<span class="qa-bar"><span style="width:${percent}%"></span></span>` : ''}
       </button>`;
-    }).join('') : '<div class="empty-history">아직 QA 런이 없어요 — 계획서 카드의 [QA 실행] 또는 node scripts/qa/run.mjs</div>';
+    }).join('') : '<div class="empty-history">아직 QA 런이 없어요 — 계획서 카드의 [QA 실행] 또는 node scripts/qa/run.mjs</div>');
     document.querySelectorAll('[data-qa]').forEach((button) => { button.onclick = () => { qaSelected = button.dataset.qa; loadQa(); }; });
     const live = await loadQaRun(qaSelected);
-    if (live || runs.some(qaLive)) qaTimer = setTimeout(loadQa, 1500);
+    if (live || runs.some(qaLive) || heavy.waiting) qaTimer = setTimeout(loadQa, heavy.waiting ? 4000 : 1500);
   };
   const loadQaRun = async (id) => {
     const box = document.getElementById('qa-detail');
@@ -704,15 +758,30 @@
         ${screen.note ? `<div class="why">📝 ${esc(screen.note)}</div>` : ''}
         ${(screen.problems || []).slice(0, 3).map((problem) => `<div class="problem">[${esc(problem.viewport)}] ${esc(problem.text)}</div>`).join('')}
         ${shots ? `<div class="qa-shots">${shots}</div>` : ''}
+        ${run.kind === 'suite' && run.status === 'done' ? (screen.approved ? '<div class="sub">✔ 기준 승인됨</div>' : ['new', 'changed', 'fail', 'redirected'].includes(screen.status) ? `<div><button type="button" class="btn" data-approve="${esc(screen.key)}">이 화면 기준으로 승인</button></div>` : '') : ''}
       </div>`;
     }).join('');
-    box.innerHTML = `<div class="qa-head"><h3>${qaLive(run) ? '⏳ ' : ''}${esc(run.app)} · ${esc(run.branch)} @${esc(run.head)}</h3>
+    const scenarioCards = (run.scenarios || []).map((scenario) => {
+      const [icon, label, tone] = QA_STATUS[scenario.status] || QA_STATUS.queued;
+      const steps = (scenario.steps || []).map((step) => `<li class="${step.ok ? '' : 'no'}">${step.ok ? '✔' : '✖'} ${esc(step.label)}${step.detail ? ` <span class="sub">${esc(step.detail)}</span>` : ''}</li>`).join('');
+      const shots = (scenario.shots || []).map((shot) => `<a href="${base}${esc(shot.file)}" target="_blank" rel="noopener"><img loading="lazy" src="${base}${esc(shot.file)}" alt="">${esc(shot.name)}</a>`).join('');
+      return `<div class="qa-card ${tone}"><div class="url">${icon} ${esc(scenario.name)}</div>
+        <div class="sub">${label} · 세션 ${esc(scenario.profile)}${scenario.viewport ? ` · ${esc(scenario.viewport)}` : ''}</div>
+        ${scenario.why ? `<div class="why">${esc(scenario.why)}</div>` : ''}
+        <ol class="qa-steps">${steps}</ol>
+        ${shots ? `<div class="qa-shots">${shots}</div>` : ''}</div>`;
+    }).join('');
+    box.innerHTML = `<div class="qa-head"><h3>${qaLive(run) ? '⏳ ' : ''}${run.kind === 'suite' ? '전체 검수 · ' : ''}${esc(run.app)} · ${esc(run.branch)} @${esc(run.head)}</h3>
         <span class="sub">${esc(qaWhen(run.startedAt))} · ${run.base ? `기준 ${esc(run.base.ref)}@${esc(run.base.sha)}` : '기준 비교 없음'} · 세션 ${esc(run.profile || '')}${run.plan ? ` · ${esc(run.plan)}` : ''}</span>
         ${run.status === 'done' ? `<a class="sub" href="${base}report.html" target="_blank" rel="noopener">리포트 열기 ↗</a>` : ''}</div>
       <div class="qa-chips"><span class="qa-chip">${esc(run.phase || '')}</span>${QA_ORDER.filter((key) => counts[key]).map((key) => `<span class="qa-chip">${QA_STATUS[key][0]} ${QA_STATUS[key][1]} ${counts[key]}</span>`).join('')}${run.totalScreens ? `<span class="qa-chip">영향 ${new Set((run.screens || []).map((screen) => screen.route)).size} / 전체 ${run.totalScreens}</span>` : ''}</div>
       ${run.status === 'error' ? `<div class="problem" style="color:var(--bad)">오류 — ${esc(run.error || '')}</div>` : ''}
+      ${run.kind === 'suite' && run.status === 'done' ? `<div style="margin:0 0 10px"><button type="button" class="btn" data-approve-all="1">기준으로 승인 (기준 없음·변화·통과 전부)</button> <span class="sub">승인한 사진이 다음 전체 검수의 비교 기준이 돼요</span></div>` : ''}
+      ${scenarioCards ? `<h3 style="font-size:13px;margin:4px 0 8px">흐름 씬 ${(run.scenarios || []).length}개</h3><div class="qa-grid" style="margin-bottom:14px">${scenarioCards}</div><h3 style="font-size:13px;margin:4px 0 8px">화면 ${(run.screens || []).length}개</h3>` : ''}
       <div class="qa-grid">${cards || '<div class="empty-history">영향 화면을 찾는 중이거나 없어요</div>'}</div>
       <div class="qa-log">${esc((run.log || []).slice(-12).join('\n'))}</div>`;
+    box.querySelectorAll('[data-approve]').forEach((button) => { button.onclick = () => approveQa(run.id, button.dataset.approve); });
+    box.querySelectorAll('[data-approve-all]').forEach((button) => { button.onclick = () => approveQa(run.id, ''); });
     return qaLive(run);
   };
   const TABS = ['now', 'hermes', 'qa', 'history'];

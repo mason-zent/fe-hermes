@@ -13,13 +13,16 @@
  *   --base-url <url>    이미 떠 있는 기준 서버를 쓴다
  *   --profile <이름>     세션 프로필(routes/<앱>.json profiles — 예: logout · login · verified). 기본은 세션이 저장된 첫 프로필
  *   --keep-servers      끝나도 dev 서버를 끄지 않는다(다음 실행·login.mjs 에서 재사용)
+ *   --suite             전체 검수(D11·D12) — 영향 분석 대신 화면 전부 + 흐름 씬(scenarios/<앱>/*.json), 기준 서버 대신 승인한 기준 사진(.qa-baselines/)과 비교.
+ *                       --cwd 를 안 주면 최신 origin/<prBase> 의 qa-base 워크트리에서 돈다. 변화는 approve.mjs 로 기준 승인
  *   --headed            브라우저 창을 띄워 여는 모습을 보여 준다(동시 1개 · 창 하나에서 화면 이동 · 진행 표시 · 천천히 스크롤)
  *   --slow <ms>         --headed 의 속도(기본 700 — 클수록 느리다)
  *
+ * 무거운 명령이라 scripts/heavy.sh 잠금을 잡고 돈다 — 다른 세션의 install·build·QA 가 돌면 끝날 때까지 기다린다(그동안 run.json 은 아직 없다).
  * 산출물: .qa-runs/<런 id>/run.json · shots/*.png · server-*.log (git 무시). 현황판 QA 탭이 run.json 을 읽는다.
  * 판정(D8): 통과 pass · 화면 변화 changed · 실패 fail(기준에 없던 에러) · 이동됨 redirected · 로그인 필요 login · 샘플 필요 sample
  */
-import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, realpathSync, openSync, appendFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, realpathSync, openSync, appendFileSync, readdirSync, copyFileSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
 import { execFileSync, spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
@@ -27,6 +30,8 @@ import { chromium } from 'playwright'
 import pixelmatch from 'pixelmatch'
 import { PNG } from 'pngjs'
 import { buildReport, buildIndex } from './report.mjs'
+import { runScenario } from './scenario.mjs'
+import { baselineDir, readBaselineProblems } from './baseline.mjs'
 
 const QA_DIR = dirname(fileURLToPath(import.meta.url))
 const HERMES = join(QA_DIR, '..', '..')
@@ -37,14 +42,46 @@ const option = (name) => {
 }
 const flag = (name) => argv.includes(`--${name}`)
 
+// 무거운 명령 규칙(AGENTS.md 5절) — pnpm install·gen:relay·next dev 두 개를 돌리므로 런 전체를 scripts/heavy.sh 잠금 하나로 감싼다.
+// 잠금이 없으면 heavy.sh 를 거쳐 자기 자신을 다시 띄운다(다른 세션의 install·build·QA 가 끝날 때까지·부하가 내려갈 때까지 기다림)
+if (!process.env.HERMES_HEAVY_HELD) {
+  const { spawnSync } = await import('node:child_process')
+  const heavy = join(HERMES, 'scripts', 'heavy.sh')
+  const relaunched = spawnSync(heavy, [process.execPath, fileURLToPath(import.meta.url), ...argv], { stdio: 'inherit' })
+  process.exit(relaunched.status ?? 1)
+}
+
 const appName = option('app') || 'refund-web'
-const cwdOption = option('cwd')
+const suite = flag('suite')
+const git = (args, cwd) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+
+// 전체 검수는 지금 개발 브랜치(origin/<prBase>) 그대로를 본다 — qa-base 워크트리를 최신으로 맞춰 쓴다
+function prepareSuiteTree() {
+  const mainCheckout = realpathSync(join(HERMES, 'repos', 'bznav-web'))
+  const config = JSON.parse(readFileSync(join(HERMES, 'hermes.config.json'), 'utf8'))
+  const prBase = config.repos.find((repo) => repo.name === 'bznav-web')?.apps?.[appName]?.prBase ?? 'dev'
+  try {
+    git(['fetch', '--quiet', 'origin', prBase], mainCheckout)
+  } catch {
+    console.log(`⚠️  origin/${prBase} fetch 실패 — 로컬에 있는 ref 로 진행`)
+  }
+  const target = git(['rev-parse', `origin/${prBase}`], mainCheckout)
+  const basePath = join(HERMES, '.worktrees', 'bznav-web', 'qa-base')
+  if (!existsSync(basePath)) {
+    git(['worktree', 'add', '--detach', basePath, target], mainCheckout)
+    execFileSync(join(HERMES, 'scripts', 'wt-copy-local.sh'), [mainCheckout, basePath], { stdio: 'ignore' })
+  } else if (git(['rev-parse', 'HEAD'], basePath) !== target) {
+    git(['checkout', '--detach', '--force', target], basePath)
+  }
+  return basePath
+}
+
+const cwdOption = option('cwd') || (suite ? prepareSuiteTree() : '')
 if (!cwdOption || !existsSync(cwdOption)) {
-  console.error('사용: node scripts/qa/run.mjs --cwd <워크트리> [--app refund-web] [--plan <계획서>] [--no-base] [--keep-servers]')
+  console.error('사용: node scripts/qa/run.mjs --cwd <워크트리> [--app refund-web] [--plan <계획서>] [--no-base] [--keep-servers]  ·  전체 검수: --suite [--profile <이름>]')
   process.exit(2)
 }
 const routesConfig = JSON.parse(readFileSync(join(QA_DIR, 'routes', `${appName}.json`), 'utf8'))
-const git = (args, cwd) => execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 const repoRoot = realpathSync(git(['rev-parse', '--show-toplevel'], cwdOption))
 const appRel = join('apps', appName)
 const planPath = option('plan')
@@ -71,20 +108,23 @@ mkdirSync(join(runDir, 'shots'), { recursive: true })
 const run = {
   id: runId,
   app: appName,
+  kind: suite ? 'suite' : 'impact',
   plan: planPath ? relative(HERMES, join(process.cwd(), planPath)) : null,
   cwd: repoRoot,
   branch: git(['rev-parse', '--abbrev-ref', 'HEAD'], repoRoot).replace(/^HEAD$/, '(detached)'),
   head: git(['rev-parse', '--short', 'HEAD'], repoRoot),
   base: null,
   status: 'preparing', // preparing → running → done | error
-  phase: '영향 화면 찾는 중',
+  phase: suite ? '전체 검수 준비' : '영향 화면 찾는 중',
   startedAt: new Date().toISOString(),
   finishedAt: null,
   changed: [],
   global: [],
   totalScreens: 0,
   screens: [],
+  scenarios: [],
   summary: {},
+  scenarioSummary: {},
   log: []
 }
 const saveRun = () => {
@@ -121,6 +161,7 @@ function loadImpact() {
   const impactArgs = [join(QA_DIR, 'impact.mjs'), '--cwd', repoRoot, '--app', appName, '--json']
   if (option('files')) impactArgs.push('--files', option('files'))
   if (option('base')) impactArgs.push('--base', option('base'))
+  if (suite) impactArgs.push('--all')
   return JSON.parse(execFileSync(process.execPath, impactArgs, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
 }
 
@@ -440,8 +481,9 @@ async function main() {
 
   // 작업 트리가 곧 기준 워크트리면 같은 코드라 비교할 게 없고, 한 폴더에 dev 서버 둘은 Next 가 막는다
   const sameAsBase = repoRoot === join(HERMES, '.worktrees', 'bznav-web', 'qa-base')
-  if (sameAsBase && !flag('no-base')) say('작업 트리가 기준 워크트리(qa-base)라 전·후 비교를 건너뜀')
-  const useBase = !flag('no-base') && !sameAsBase
+  if (sameAsBase && !flag('no-base') && !suite) say('작업 트리가 기준 워크트리(qa-base)라 전·후 비교를 건너뜀')
+  const useBase = !flag('no-base') && !sameAsBase && !suite
+  if (suite) say(`전체 검수 — 기준 서버 대신 승인한 기준 사진과 비교 (.qa-baselines/${appName}/${profileName})`)
   if (useBase && !option('base-url')) {
     const config = JSON.parse(readFileSync(join(HERMES, 'hermes.config.json'), 'utf8'))
     const prBase = config.repos.find((repo) => repo.name === 'bznav-web')?.apps?.[appName]?.prBase ?? 'dev'
@@ -501,14 +543,22 @@ async function main() {
           visit(contexts[viewport.name].head, headUrl, screen.url, join(runDir, files.head), `${order}/${queue.length} 작업 · ${viewport.name}`),
           baseUrl ? visit(contexts[viewport.name].base, baseUrl, screen.url, join(runDir, files.base), `${order}/${queue.length} 기준 · ${viewport.name}`) : Promise.resolve(null)
         ])
+        // 전체 검수 — 승인한 기준 사진·그때의 문제 목록과 비교(D12)
+        const baselineShot = suite ? join(baselineDir(appName, profileName), `${slug}.${viewport.name}.png`) : null
+        const hasBaseline = Boolean(baselineShot && existsSync(baselineShot))
+        if (hasBaseline) copyFileSync(baselineShot, join(runDir, files.base))
         // 기준 화면에도 있던 에러는 이번 변경 탓이 아니다 — 새로 생긴 것만 실패로 센다
-        const baseKeys = new Set((base?.problems ?? []).map(problemKey))
+        const knownProblems = suite ? readBaselineProblems(appName, profileName, `${slug}.${viewport.name}`) : base?.problems ?? []
+        const baseKeys = new Set(knownProblems.map(problemKey))
         const newProblems = head.problems.filter((problem) => !baseKeys.has(problemKey(problem)))
-        const diff = base ? compareShots(join(runDir, files.head), join(runDir, files.base), join(runDir, files.diff)) : null
+        const diff = base || hasBaseline ? compareShots(join(runDir, files.head), join(runDir, files.base), join(runDir, files.diff)) : null
+        if (suite && !hasBaseline) screen.noBaseline = true
         viewportResults.push({ viewport: viewport.name, head, base, newProblems, diff })
         screen.viewports.push({
           name: viewport.name,
-          shots: { head: files.head, base: base ? files.base : null, diff: diff ? files.diff : null },
+          shots: { head: files.head, base: base || (suite && !screen.noBaseline) ? files.base : null, diff: diff ? files.diff : null },
+          slug: `${slug}.${viewport.name}`,
+          headProblems: head.problems,
           finalPath: head.finalPath,
           baseFinalPath: base?.finalPath ?? null,
           ms: head.ms,
@@ -519,29 +569,69 @@ async function main() {
       screen.baseProblems = viewportResults.reduce((total, result) => total + result.head.problems.length - result.newProblems.length, 0)
       screen.expect = expectationOf(screen)
       screen.status = judge(screen, viewportResults)
+      // 기준 사진이 아직 없는 화면 — 처음 검수. 승인하면 다음부터 기준이 된다
+      if (suite && screen.noBaseline && screen.status === 'pass') screen.status = 'new'
       screen.problems = viewportResults.flatMap((result) => result.newProblems.map((problem) => ({ ...problem, viewport: result.viewport })))
       say(`${statusIcon(screen.status)} ${screen.key}${screen.problems.length ? ` — ${screen.problems[0].text}` : ''}`)
     }
   }
   await Promise.all(Array.from({ length: headed ? 1 : routesConfig.concurrency ?? 3 }, worker))
+  if (suite) await runScenarios(browser, headUrl)
   await browser.close()
   return finish()
 }
 
-const STATUS_ICONS = { pass: '✅', expected: '☑️', changed: '🟡', fail: '❌', redirected: '↪️', login: '🔒', ci: '🪪', sample: '📝' }
+// ── 흐름 씬 (D10·D11) — 씬마다 자기 세션 프로필·뷰포트로 ───────────
+async function runScenarios(browser, origin) {
+  const dir = join(QA_DIR, 'scenarios', appName)
+  const files = existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith('.json')).sort() : []
+  if (!files.length) return
+  const only = option('scenarios') ? option('scenarios').split(',') : null
+  const scenarios = files
+    .map((name) => ({ file: name, ...JSON.parse(readFileSync(join(dir, name), 'utf8')) }))
+    .filter((scenario) => !only || only.some((key) => scenario.file.includes(key)))
+  for (const scenario of scenarios) run.scenarios.push({ file: scenario.file, name: scenario.name, why: scenario.why ?? '', profile: scenario.profile ?? 'logout', status: 'queued', steps: [], shots: [] })
+  setPhase(`흐름 씬 ${scenarios.length}개`)
+  for (const [index, scenario] of scenarios.entries()) {
+    const entry = run.scenarios[index]
+    entry.status = 'running'
+    saveRun()
+    const scenarioProfile = profiles[entry.profile] ?? { session: null }
+    const sessionFile = scenarioProfile.session ? join(HERMES, '.qa-auth', `${appName}.${scenarioProfile.session}.json`) : null
+    const viewport = routesConfig.viewports.find((item) => item.name === scenario.viewport) ?? routesConfig.viewports[0]
+    if (sessionFile && !existsSync(sessionFile)) {
+      Object.assign(entry, { status: 'login', steps: [{ label: `세션 ${entry.profile} 없음 — node scripts/qa/login.mjs --profile ${scenarioProfile.session}`, ok: false, detail: '' }] })
+      say(`🔒 씬 ${entry.name}`)
+      continue
+    }
+    const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, storageState: sessionFile ?? undefined, isMobile: viewport.width < 600, locale: 'ko-KR' })
+    const slug = `scenario-${scenario.file.replace(/\.json$/, '').replace(/[^\w가-힣-]+/g, '_')}`
+    const result = await runScenario(context, scenario, { origin, slug, runDir, headed, showBanner, hideBanner })
+    await context.close()
+    Object.assign(entry, result, { viewport: viewport.name })
+    const stopped = result.steps.find((step) => !step.ok)
+    say(`${statusIcon(result.status)} 씬 ${entry.name}${stopped ? ` — ${stopped.label}: ${stopped.detail}` : ''}`)
+  }
+}
+
+const STATUS_ICONS = { pass: '✅', expected: '☑️', changed: '🟡', fail: '❌', redirected: '↪️', login: '🔒', ci: '🪪', sample: '📝', new: '🆕', human: '🙋' }
 const statusIcon = (status) => STATUS_ICONS[status] ?? '·'
 
 function finish() {
   const counts = {}
   for (const screen of run.screens) counts[screen.status] = (counts[screen.status] ?? 0) + 1
   run.summary = counts
+  const scenarioCounts = {}
+  for (const scenario of run.scenarios) scenarioCounts[scenario.status] = (scenarioCounts[scenario.status] ?? 0) + 1
+  run.scenarioSummary = scenarioCounts
   run.status = 'done'
   run.finishedAt = new Date().toISOString()
   setPhase('끝')
-  const line = `[${run.profile}] 통과 ${counts.pass ?? 0} · 기대대로 이동 ${counts.expected ?? 0} · 변화 ${counts.changed ?? 0} · 실패 ${counts.fail ?? 0} · 이동됨 ${counts.redirected ?? 0} · 로그인 필요 ${counts.login ?? 0} · 본인인증 필요 ${counts.ci ?? 0} · 샘플 필요 ${counts.sample ?? 0}`
+  const scenarioLine = run.scenarios.length ? ` · 흐름 씬 ${run.scenarios.length}개(통과 ${scenarioCounts.pass ?? 0} · 실패 ${scenarioCounts.fail ?? 0} · 사람 필요 ${scenarioCounts.human ?? 0} · 로그인 필요 ${scenarioCounts.login ?? 0})` : ''
+  const line = `${suite ? '전체 검수 ' : ''}[${run.profile}] ${suite ? `기준 없음 ${counts.new ?? 0} · ` : ''}통과 ${counts.pass ?? 0} · 기대대로 이동 ${counts.expected ?? 0} · 변화 ${counts.changed ?? 0} · 실패 ${counts.fail ?? 0} · 이동됨 ${counts.redirected ?? 0} · 로그인 필요 ${counts.login ?? 0} · 본인인증 필요 ${counts.ci ?? 0} · 샘플 필요 ${counts.sample ?? 0}${scenarioLine}`
   console.log(`\n📋 QA ${run.id}\n${line}\n결과: ${relative(HERMES, runDir)}/run.json`)
   if (run.plan) writeQaResult(line)
-  return counts.fail ? 1 : 0
+  return counts.fail || scenarioCounts.fail ? 1 : 0
 }
 
 // 계획서 Checkpoint 에 "- QA result:" 한 줄 (있으면 바꾼다)

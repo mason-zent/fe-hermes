@@ -33,3 +33,4 @@ repos/
 scripts/qa/node_modules/
 .qa-runs/
 .qa-auth/
+.qa-baselines/

@@ -20,6 +20,7 @@
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
  *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
  *   - GET  /api/qa/runs      QA 시뮬레이션 런 목록(.qa-runs/) · /api/qa/run?id= 런 하나 · /qa-runs/<id>/<파일> 스크린샷·리포트
+ *   - GET  /api/qa/apps      전체 검수할 수 있는 앱·세션 프로필 · POST /api/qa-suite [전체 검수](요청할 때만) · POST /api/qa-approve [기준으로 승인]
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
  *   - POST /api/hermes-new 이슈 [처리 시작] → 헤르메스: 새 헤르메스 pane(🧭 헤르메스 · <이슈>)을 열어 그 안에서 처리한다 — 떠 있는 헤르메스 대화에 섞지 않는다
@@ -37,6 +38,7 @@ import { execFile, execFileSync, spawn } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
 import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
+import { approveRun as approveQaRun } from '../qa/baseline.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -868,7 +870,7 @@ const QA_TYPES = { '.png': 'image/png', '.html': 'text/html; charset=utf-8', '.j
 // 끝나지 않았는데 2분 넘게 run.json 이 그대로면 죽은 런 — 목록에 계속 ⏳ 로 남지 않게 '중단' 으로 보여 준다
 const qaStale = (run) => ['preparing', 'running'].includes(run.status) && Date.now() - statSync(join(QA_RUNS_DIR, run.id, 'run.json')).mtimeMs > 120_000
 const qaSummary = (run) => ({
-  id: run.id, app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile,
+  id: run.id, kind: run.kind ?? 'impact', app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile,
   status: run.status, phase: run.phase, error: run.error, startedAt: run.startedAt, finishedAt: run.finishedAt, summary: run.summary,
   screens: run.screens?.length ?? 0, finished: (run.screens ?? []).filter((screen) => !['queued', 'running'].includes(screen.status)).length,
   ...(qaStale(run) ? { status: 'error', error: '응답 없음 — 중단된 런' } : {})
@@ -906,6 +908,49 @@ function startQaRun(planId) {
   child.unref()
   qaChild = child
   return { ok: true, app, worktree }
+}
+
+// 무거운 명령 잠금(scripts/heavy.sh) — QA 는 이 차례를 기다린다. 지금 누가 쥐고 있는지 + 이 현황판이 띄운 QA 가 기다리는 중인지
+function heavyLockState() {
+  const lock = process.env.HERMES_HEAVY_LOCK || '/tmp/hermes-heavy.lock'
+  let holder = ''
+  try {
+    holder = readFileSync(join(lock, 'what'), 'utf8').trim()
+  } catch {
+    holder = ''
+  }
+  const launched = Boolean(qaChild && qaChild.exitCode === null && qaChild.signalCode === null)
+  return { holder, waiting: launched && !activeQaRun() }
+}
+
+// 전체 검수 가능한 앱 — scripts/qa/routes/<앱>.json 이 있는 것. 프로필마다 세션이 저장돼 있는지
+function qaApps() {
+  const dir = join(ROOT, 'scripts', 'qa', 'routes')
+  if (!existsSync(dir)) return []
+  return readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => {
+    const app = name.replace(/\.json$/, '')
+    const config = JSON.parse(readFileSync(join(dir, name), 'utf8'))
+    const profiles = Object.entries(config.profiles ?? {}).filter(([key]) => !key.startsWith('$')).map(([key, settings]) => ({
+      name: key, note: settings.note ?? '', session: !settings.session || existsSync(join(ROOT, '.qa-auth', `${app}.${settings.session}.json`))
+    }))
+    const scenarioDir = join(ROOT, 'scripts', 'qa', 'scenarios', app)
+    return { app, profiles, scenarios: existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((file) => file.endsWith('.json')).length : 0 }
+  })
+}
+// [전체 검수] — 최신 개발 브랜치(qa-base)로 화면 전부 + 흐름 씬. 한 번에 하나
+function startQaSuite(app, profile) {
+  const known = qaApps().find((entry) => entry.app === app)
+  if (!known) return { error: `전체 검수 설정이 없는 앱이에요 — scripts/qa/routes/${app}.json` }
+  if (profile && !known.profiles.some((entry) => entry.name === profile)) return { error: `프로필 ${profile} 이 없어요` }
+  if (qaChild && qaChild.exitCode === null && qaChild.signalCode === null) return { error: '이 현황판이 띄운 QA 가 아직 돌고 있어요 — QA 탭에서 진행을 보세요' }
+  const running = activeQaRun()
+  if (running) return { error: `다른 QA 가 돌고 있어요 — ${running.id} (${running.phase})` }
+  mkdirSync(QA_RUNS_DIR, { recursive: true })
+  writeFileSync(join(QA_RUNS_DIR, 'launch.log'), `${new Date().toISOString()} suite ${app} ${profile ?? ''}\n`, { flag: 'a' })
+  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, ...(profile ? ['--profile', profile] : [])]
+  qaChild = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: 'ignore' })
+  qaChild.unref()
+  return { ok: true, app, profile: profile || '(기본)' }
 }
 
 const allowed = (request) => {
@@ -950,7 +995,11 @@ createServer(async (request, response) => {
   }
   if (url.pathname === '/api/qa/runs') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
-    return response.end(JSON.stringify({ runs: listQaRuns().slice(0, 60).map(qaSummary) }))
+    return response.end(JSON.stringify({ runs: listQaRuns().slice(0, 60).map(qaSummary), heavy: heavyLockState() }))
+  }
+  if (url.pathname === '/api/qa/apps') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify({ apps: qaApps() }))
   }
   if (url.pathname === '/api/qa/run') {
     const id = String(url.searchParams.get('id') ?? '')
@@ -997,7 +1046,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -1015,6 +1064,16 @@ createServer(async (request, response) => {
         await refresh()
       })
       return reply(202, { ok: true, job: job.id })
+    }
+    if (url.pathname === '/api/qa-suite') {
+      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''))
+      return reply(result.error ? 400 : 202, result)
+    }
+    if (url.pathname === '/api/qa-approve') {
+      const id = String(body.id ?? '')
+      if (!QA_ID.test(id)) return reply(400, { error: '런 id 가 올바르지 않아요' })
+      const result = approveQaRun(id, body.key ? [String(body.key)] : null)
+      return reply(result.error ? 400 : 200, result.error ? result : { ok: true, screens: result.screens, shots: result.shots })
     }
     if (url.pathname === '/api/qa-start') {
       const result = startQaRun(String(body.id ?? ''))

@@ -9,6 +9,7 @@
  *   --app    hermes.config.json 의 bznav-web 앱 이름 (파일럿: refund-web)
  *   --base   비교 기준 ref. 기본은 그 앱의 prBase(origin/<prBase>) — merge-base 부터의 변경 + 미커밋 + 추적 안 된 파일
  *   --files  변경 파일을 직접 준다(모노레포 루트 기준, 쉼표). 주면 git 을 보지 않는다
+ *   --all    변경과 무관하게 화면 전부(전체 검수 — run.mjs --suite)
  *   --json   결과를 JSON 으로 (runner·현황판이 읽는다). 없으면 사람이 읽는 표
  */
 import { readFileSync, realpathSync, existsSync } from 'node:fs'
@@ -142,6 +143,10 @@ function traceScreens(modules, changed) {
   const known = new Set(modules.map((module) => module.source))
   const allScreens = modules.map((module) => module.source).filter(isScreen).sort()
 
+  // 전체 검수 — 바뀐 파일과 무관하게 화면 전부
+  if (flag('all')) {
+    return { global: [], screens: allScreens.map((file) => ({ file, route: routeOf(file), distance: 0, changed: '(전체 검수)', via: [file] })) }
+  }
   const globalHits = changed.filter(isGlobalFile)
   if (globalHits.length) {
     return {
@@ -192,7 +197,7 @@ function usesAuthGuard(file) {
   }
 }
 
-const changed = changedFiles()
+const changed = flag('all') ? [] : changedFiles()
 const modules = await buildGraph()
 const { global, screens } = traceScreens(modules, changed)
 const known = new Set(modules.map((module) => module.source))

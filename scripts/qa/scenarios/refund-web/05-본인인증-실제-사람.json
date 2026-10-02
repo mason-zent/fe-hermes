@@ -1,0 +1,14 @@
+{
+  "name": "실제 본인인증 (사람이 끼는 단계)",
+  "profile": "login",
+  "viewport": "desktop",
+  "why": "실제 인증사(PASS 등)를 거쳐 돌아오는 흐름. 창 없이 돌면 사람 단계에서 멈춘다 — --headed 로 돌리고 창에서 직접 인증한다",
+  "steps": [
+    { "goto": "/auth/ci-request" },
+    { "click": { "text": "[필수]", "all": true, "optional": true }, "label": "필수 약관 동의" },
+    { "click": "휴대폰 본인인증 하기" },
+    { "human": "열린 창에서 휴대폰 본인인증을 마쳐 주세요", "untilUrl": "/auth/ci-authentication" },
+    { "wait": 3000 },
+    { "screenshot": "after-real-ci" }
+  ]
+}

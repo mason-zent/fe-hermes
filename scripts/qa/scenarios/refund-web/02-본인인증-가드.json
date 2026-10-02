@@ -1,0 +1,12 @@
+{
+  "name": "본인인증 가드 — 본인인증 전 계정은 본인인증 요청으로",
+  "profile": "login",
+  "viewport": "mobile",
+  "why": "로그인했지만 본인인증 전이면(CiGuard) 본인인증 요청 화면으로 보내고 안내 문구가 보여야 한다",
+  "steps": [
+    { "goto": "/menu" },
+    { "expectUrl": "/auth/ci-request", "label": "본인인증 요청 화면으로 이동" },
+    { "expectText": "휴대폰 본인인증을 진행해주세요" },
+    { "screenshot": "ci-request" }
+  ]
+}

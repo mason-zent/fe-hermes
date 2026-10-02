@@ -103,7 +103,7 @@
 | `/seo-feedback` | 슬랙 `seo-health-bznav` 의 SEO Health 봇 리포트(환급·세나·케어)를 직전 리포트와 비교해 **서비스당 이슈 하나**(`kind: seo`)를 만들거나 갱신(슬랙에는 보내지 않음). 매주 월 08:15 launchd 자동 실행(`scripts/seo-feedback.sh install` 한 맥에서만), 수동 실행분은 직접 부른다 |
 | `/guide` | 오른쪽 pane 에 가이드 메뉴(스킬 목록·실행 · 에이전트·라우팅 · git 현황 · 문서). `/guide <파일>` 은 그 파일을 뷰어로, `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 경량·정식 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
 
-**커맨드가 없는 것은 말로 한다.** 기능·버그(1단계) · 리뷰("리뷰해줘" → 5단계, `delegate.sh reviewer`) · 현황("현황 알려줘" → `docs/knowledge/common/git.md` "현황 점검") · 브랜치(3단계, 같은 파일 "작업 브랜치 만들기").
+**커맨드가 없는 것은 말로 한다.** 전체 검수("환급 웹 전체 검수 돌려줘" → `node scripts/qa/run.mjs --suite --app <앱>`, 요청할 때만 · 현황판 QA 탭 [전체 검수 시작] 도 같다 · `docs/knowledge/common/verify.md` "QA 시뮬레이션") · 기능·버그(1단계) · 리뷰("리뷰해줘" → 5단계, `delegate.sh reviewer`) · 현황("현황 알려줘" → `docs/knowledge/common/git.md` "현황 점검") · 브랜치(3단계, 같은 파일 "작업 브랜치 만들기").
 
 ## 확장
 - 스킬: `.claude/skills/<이름>/SKILL.md` (frontmatter `name`/`description`/`argument-hint`, 본문 `$ARGUMENTS`). 에이전트: `.claude/agents/<이름>.md` (description이 라우팅 문장, 콜론+공백 금지)
