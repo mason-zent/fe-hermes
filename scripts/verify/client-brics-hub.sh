@@ -2,6 +2,8 @@
 # client-brics-hub 표준 검증: lint:check → typecheck → test. 에이전트와 reviewer 가 같은 것을 돌린다.
 # 사용: scripts/verify/client-brics-hub.sh            (hermes 어디서든)
 #       scripts/verify/client-brics-hub.sh --no-test  (jest 생략)
+# 무거운 검증이라 한 대에 하나씩, 부하를 보며 돈다(scripts/heavy.sh — 이미 잠금 안이면 그냥 통과)
+[ -z "${HERMES_HEAVY_HELD:-}" ] && exec "$(cd "$(dirname "$0")/.." && pwd)/heavy.sh" "$0" "$@"
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$HERMES_DIR/scripts/verify/_lib.sh"
 # HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)

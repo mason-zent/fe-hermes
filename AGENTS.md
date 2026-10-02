@@ -173,6 +173,7 @@ scripts/verify/bznav-rn-app.sh
 - 요청 범위 밖의 정리·의존성 업그레이드·파일 이동·전역 포맷팅 금지
 - 포맷은 **작업한 파일만**. 설정은 레포마다 다르다(web-op만 세미콜론·큰따옴표·80칸)
 - 생성물(`__generated__/`, Relay 아티팩트)은 직접 편집하지 않고 생성 명령으로 만든다
+- **무거운 명령은 한 번에 하나씩, 컴퓨터가 버틸 때만** — `pnpm/npm install`·`next build`·`next dev`·`tsc`·테스트·`relay`·`pkg:link/unlink`·`docker build` 는 앞에 `<hermes>/scripts/heavy.sh` 를 붙여 돌린다(한 대 공용 잠금 + 1분 부하가 코어×1.2 를 넘으면 내려갈 때까지 대기, 끝나거나 실패해도 잠금을 푼다). 검증 스크립트(`scripts/verify/*.sh`)·`commit.sh` 검증은 스스로 줄을 선다. 기다리는 동안은 코드 작업을 먼저 하고, `next dev` 는 확인이 끝나면 바로 끈다(잠금을 쥐고 있다). 여러 에이전트를 동시에 띄워도 무거운 명령은 이걸로 자동 조절된다(2026-10-02 동시 빌드로 컴퓨터가 죽은 뒤)
 - **커밋은 사용자가 요청할 때만, `scripts/commit.sh` 로만 한다** — 지정 파일만·워크트리·보호 브랜치 제외·엄격 검증·계획서 `## Commits` 기록(`docs/knowledge/common/git.md`). **push·PR 도 사용자가 "PR 올려줘" 라고 할 때만, `scripts/ship.sh` 로만 한다** — 레포 하나짜리 작업만·미리보기를 보여 주고 base·제목을 확인받은 뒤 draft PR·제목·본문은 공통 형식(`git.md` "PR 제목·본문"). 여러 레포에 걸친 작업은 헤르메스가 순서를 정해 올린다
 - `.env*`, 토큰, 키 파일 내용은 출력·커밋하지 않는다. **토큰·키·비밀번호는 무조건 노출 금지.** 값은 어떤 경로로든 출력하지 않는다 — 파일 읽기(`.npmrc`·`.env*`·키 파일, `git show/diff/log` 포함), `npm/pnpm/yarn config get·list`, `printenv`·`env`, `echo $…TOKEN`, `gh auth token`, 로그·보고·커밋 메시지·계획서 모두. 확인이 필요하면 **있는지·참조 형태(`${…}`)·길이·HTTP 상태 코드만** 본다(`curl -s -o /dev/null -w '%{http_code}'`). 봐야 하면 `sed 's/_authToken=.*/_authToken=***/'` 로 가린 뒤. 실수로 노출되면 즉시 멈추고 사용자에게 알려 폐기·재발급을 권한다. 모든 세션(헤르메스·FE·reviewer)에 `scripts/hooks/secret-guard.py` 가 걸려 흔한 경로를 막는다(보안 경계는 아니다 — 규칙이 우선)
 

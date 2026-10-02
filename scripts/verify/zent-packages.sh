@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # zent-packages(frontend/) 표준 검증: 패키지 타입체크(build=tsc) → lint → test(스크립트가 있는 패키지만) → changeset 존재 확인
 #   scripts/verify/zent-packages.sh <패키지명...>   예: @zenterprise-inc/brics-fe-ui @zenterprise-inc/brics-fe-zent-auth
+# 무거운 검증이라 한 대에 하나씩, 부하를 보며 돈다(scripts/heavy.sh — 이미 잠금 안이면 그냥 통과)
+[ -z "${HERMES_HEAVY_HELD:-}" ] && exec "$(cd "$(dirname "$0")/.." && pwd)/heavy.sh" "$0" "$@"
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/verify/_lib.sh"
 # HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
 REPO_DIR="$(resolve_repo_dir "$HERMES_DIR/repos/zent-packages")"

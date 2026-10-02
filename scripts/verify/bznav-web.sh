@@ -3,6 +3,8 @@
 #   scripts/verify/bznav-web.sh <앱>            예: refund-web · care-web · brand-web · sena-web · plus-web
 #   scripts/verify/bznav-web.sh packages/<pkg>  예: packages/ui  (→ 그 폴더 package.json 의 name 으로 pnpm --filter <name> lint)
 # 규칙 출처: .ai/basic-rule.md 7장. care-web 만 type-check·test:unit 이 있고 나머지는 tsc --noEmit 로 대체.
+# 무거운 검증이라 한 대에 하나씩, 부하를 보며 돈다(scripts/heavy.sh — 이미 잠금 안이면 그냥 통과)
+[ -z "${HERMES_HEAVY_HELD:-}" ] && exec "$(cd "$(dirname "$0")/.." && pwd)/heavy.sh" "$0" "$@"
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"; source "$HERMES_DIR/scripts/verify/_lib.sh"
 # HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
 REPO_DIR="$(resolve_repo_dir "$HERMES_DIR/repos/bznav-web")"

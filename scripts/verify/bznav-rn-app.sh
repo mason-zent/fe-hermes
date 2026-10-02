@@ -4,6 +4,8 @@
 # prd 의 package.json 에 lint·typecheck·test 스크립트가 없다 — eslint.config.js(expo + tanstack query)로 `yarn eslint src`,
 # 타입은 `yarn tsc --noEmit` 을 직접 돌린다. Node 는 .nvmrc(20.19.x) — 다르면 경고 단계로 기록된다.
 # 네이티브 빌드(expo run:*, eas build)·OTA(eas update)는 검증에 넣지 않는다 — 기기·계정이 필요하다.
+# 무거운 검증이라 한 대에 하나씩, 부하를 보며 돈다(scripts/heavy.sh — 이미 잠금 안이면 그냥 통과)
+[ -z "${HERMES_HEAVY_HELD:-}" ] && exec "$(cd "$(dirname "$0")/.." && pwd)/heavy.sh" "$0" "$@"
 HERMES_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$HERMES_DIR/scripts/verify/_lib.sh"
 # HERMES_VERIFY_DIR 가 이 레포의 워크트리면 그쪽을 검증한다 (delegate.sh --cwd 가 넣어준다)
