@@ -94,7 +94,7 @@
     body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
     header { flex: none; }
     #view-now:not([hidden]), #view-hermes:not([hidden]) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding-bottom: 14px; }
-    #view-history:not([hidden]) { flex: 1; min-height: 0; overflow-y: auto; }
+    #view-history:not([hidden]), #view-qa:not([hidden]) { flex: 1; min-height: 0; overflow-y: auto; }
     main > section { flex: none; }
     main > section.board-section { flex: 1; min-height: 0; display: flex; flex-direction: column; }
     .board-section .board { flex: 1; min-height: 0; grid-auto-rows: minmax(0, 1fr); align-items: stretch; }
@@ -185,6 +185,29 @@
   @media (max-width: 720px) { .history-wrap { grid-template-columns: minmax(0, 1fr); } .h-tree { position: static; max-height: 240px; } }
   @media (max-width: 720px) { .h-row { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
   @media (max-width: 720px) { header { flex-wrap: wrap; } .usage { margin-left: 0; } main { padding: 12px 16px 32px; } }
+  /* QA 탭 */
+  .qa-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
+  .qa-runs { display: grid; gap: 6px; max-height: calc(100vh - 170px); overflow-y: auto; }
+  .qa-run { text-align: left; font: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; color: var(--text); display: grid; gap: 2px; }
+  .qa-run[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .qa-run .sub, .qa-detail .sub { color: var(--muted); font-size: 12px; }
+  .qa-bar { height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .qa-bar > span { display: block; height: 100%; background: var(--accent); transition: width .4s; }
+  .qa-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin-bottom: 10px; }
+  .qa-head h3 { margin: 0; font-size: 15px; }
+  .qa-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; }
+  .qa-chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+  .qa-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .qa-card { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--idle); border-radius: 10px; padding: 10px; display: grid; gap: 4px; min-width: 0; }
+  .qa-card.ok { border-left-color: var(--ok); } .qa-card.warn { border-left-color: var(--warn); } .qa-card.bad { border-left-color: var(--bad); } .qa-card.run { border-left-color: var(--accent); }
+  .qa-card .url { font-weight: 600; word-break: break-all; }
+  .qa-card .why { color: var(--muted); font-size: 11.5px; word-break: break-all; }
+  .qa-card .problem { color: var(--bad); font-size: 11.5px; word-break: break-all; }
+  .qa-shots { display: flex; gap: 6px; overflow-x: auto; }
+  .qa-shots a { flex: 0 0 auto; font-size: 10.5px; color: var(--muted); text-align: center; text-decoration: none; }
+  .qa-shots img { display: block; width: 120px; height: 90px; object-fit: cover; object-position: top; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .qa-log { margin-top: 12px; font: 11.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; max-height: 160px; overflow-y: auto; white-space: pre-wrap; }
+  @media (max-width: 720px) { .qa-wrap { grid-template-columns: 1fr; } .qa-runs { max-height: 220px; } }
 </style>
 </head>
 <body>
@@ -194,6 +217,7 @@
   <nav class="tabs" role="tablist" aria-label="보기">
     <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true">현황</button>
     <button type="button" role="tab" id="tab-hermes" data-tab="hermes" aria-selected="false">헤르메스</button>
+    <button type="button" role="tab" id="tab-qa" data-tab="qa" aria-selected="false">QA</button>
     <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
   </nav>
   <span class="live-note" id="live-text">연결 중…</span>
@@ -217,6 +241,15 @@
   <section class="board-section">
     <h2>헤르메스 — hermes 자체 이슈·작업 (담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝)</h2>
     <div id="hermes-board" class="board hermes-board"></div>
+  </section>
+</main>
+<main id="view-qa" hidden>
+  <section>
+    <h2>QA 시뮬레이션 — 수정한 건의 영향 화면을 실제 브라우저로 (scripts/qa · .qa-runs/)</h2>
+    <div class="qa-wrap">
+      <nav class="qa-runs" id="qa-runs" aria-label="QA 런"><div class="empty-history">불러오는 중이에요…</div></nav>
+      <div class="qa-detail" id="qa-detail"><div class="empty-history">왼쪽에서 런을 고르세요. 계획서 카드의 [QA 실행] 으로 새로 돌릴 수 있어요</div></div>
+    </div>
   </section>
 </main>
 <main id="view-history" hidden>
@@ -311,6 +344,8 @@
   // 카드 상태별 액션 — 헤르메스에게 보낼 지시문 초안. 보내기 전에 창에서 고칠 수 있다
   // 이슈 [처리 시작] 에서 "담당 에이전트로 바로(조사만)" 를 고르면 쓰는 지시문 — 운영 기준 detached 워크트리에서 조사만, 코드 수정 없음
   const INVESTIGATE = (card) => `${card.id} 이슈를 맡는다. 순서대로 한다: ① git status --short --branch 로 담당 레포의 현재 브랜치·미커밋 변경을 먼저 보고한다(체크아웃·stash 하지 않는다) ② 이슈의 근거를 기준 ref 에서 git show·ls-tree 로 확인한다 ③ ${card.type === 'check' ? '확인 결과를 이슈 파일 끝에 "## 확인 결과 (날짜 · 에이전트)" 절로 파일:줄 근거와 함께 적는다' : '원인과 고칠 범위를 정리해 보고한다 — 코드는 수정하지 않는다(계획서 승인 뒤 헤르메스가 브랜치를 만들어 다시 맡긴다)'}. 이슈 파일 말고는 수정하지 않는다. 커밋하지 않는다.`;
+  // [QA 실행] — 헤르메스·에이전트를 거치지 않고 현황판 서버가 scripts/qa/run.mjs 를 뒤에서 돌린다(Work ref 워크트리 · 파일럿 refund-web)
+  const QA_ACTION = ['QA 실행', (card) => `영향 화면 QA 시뮬레이션을 돌려요.\n대상: ${card.workRef || '(Work ref 없음)'}\n바뀐 파일 → 영향 화면을 찾아 작업·기준 dev 서버로 데스크톱·모바일 검사 + 스크린샷 비교. 진행은 QA 탭에서 실시간으로 보여요.`, 'qa'];
   const ACTIONS = {
     issue: {
       // 헤르메스가 직접 하지 않는다 — 라우팅 → 브랜치 확인 → 담당 에이전트 pane 디스패치 순서를 지시문에 박는다
@@ -321,10 +356,10 @@
     },
     plan: {
       planned: [['진행 지시', (card) => `${card.id} 계획서대로 진행하자. 결정 사항이 확정됐는지, 대상 레포 브랜치·미커밋 상태를 먼저 확인해 보고하고, 내 확인 뒤 scripts/new-branch.sh 로 워크트리를 만들어 담당 에이전트를 그 레포 workspace pane 에 띄워줘(scripts/delegate.sh --cwd). 헤르메스가 직접 코드를 고치지 않는다.`]],
-      in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`]],
+      in_progress: [['이어서 진행', (card) => `${card.id} Checkpoint 를 읽고, Work ref 와 현재 워크트리 브랜치·diff 가 맞는지 먼저 확인해 보고해줘. 맞으면 Next 를 담당 에이전트 pane 에 이어서 지시한다.`], QA_ACTION],
       blocked: [['막힌 것 풀기', (card) => `${card.id} 가 막혀 있다(${card.blocked}). 무엇이 필요한지 정리해줘.`]],
       // 헤르메스를 거치지 않는다 — reviewer 를 계획서의 담당 레포 workspace(워크트리)에 바로 띄운다
-      ready_for_review: [['리뷰 요청', (card) => `이 계획서를 검증해 줘. 계획서의 지시·결정 대비 구현이 맞는지, 담당 레포 rules.md 필수 절·gotchas 를 지켰는지, 범위 밖 변경은 없는지 본다. 검증 스크립트를 돌려(워크트리면 HERMES_VERIFY_DIR) 출력 표를 붙이고, 계획서 ## Commits 가 있으면 그 커밋과 origin/<prBase>...HEAD 도 본다. 읽기 전용. 보고는 AGENTS.md 6절 형식 + 발견 사항 [심각|중간|낮음] 파일:줄 — 문제 / 근거 / 고칠 것.`, 'review']],
+      ready_for_review: [QA_ACTION, ['리뷰 요청', (card) => `이 계획서를 검증해 줘. 계획서의 지시·결정 대비 구현이 맞는지, 담당 레포 rules.md 필수 절·gotchas 를 지켰는지, 범위 밖 변경은 없는지 본다. 검증 스크립트를 돌려(워크트리면 HERMES_VERIFY_DIR) 출력 표를 붙이고, 계획서 ## Commits 가 있으면 그 커밋과 origin/<prBase>...HEAD 도 본다. 읽기 전용. 보고는 AGENTS.md 6절 형식 + 발견 사항 [심각|중간|낮음] 파일:줄 — 문제 / 근거 / 고칠 것.`, 'review']],
     },
   };
 
@@ -605,13 +640,89 @@
     historyPick = '';
     renderHistory();
   }));
-  const TABS = ['now', 'hermes', 'history'];
+  // ── QA 탭 — .qa-runs/ 런 목록 + 런 하나의 화면 카드. 돌고 있는 동안만 1.5초마다 다시 읽는다
+  const QA_STATUS = {
+    pass: ['✅', '통과', 'ok'], expected: ['☑️', '기대대로 이동', 'ok'], changed: ['🟡', '화면 변화', 'warn'], fail: ['❌', '실패', 'bad'],
+    redirected: ['↪️', '이동됨', ''], login: ['🔒', '로그인 필요', ''], ci: ['🪪', '본인인증 필요', ''], sample: ['📝', '샘플 필요', ''],
+    queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'],
+  };
+  const QA_ORDER = ['running', 'fail', 'changed', 'login', 'ci', 'redirected', 'sample', 'expected', 'pass', 'queued'];
+  let qaSelected = '';
+  let qaTimer = null;
+  const qaLive = (run) => ['preparing', 'running'].includes(run?.status);
+  const qaSummaryChips = (summary) => QA_ORDER.filter((key) => summary?.[key]).map((key) => `${QA_STATUS[key][0]} ${QA_STATUS[key][1]} ${summary[key]}`).join(' · ');
+  const qaWhen = (iso) => (iso ? new Date(iso).toLocaleString('ko-KR', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '');
+  const stopQa = () => { clearTimeout(qaTimer); qaTimer = null; };
+  const loadQa = async () => {
+    stopQa();
+    let runs = [];
+    try {
+      runs = (await (await fetch('/api/qa/runs')).json()).runs || [];
+    } catch (error) {
+      document.getElementById('qa-runs').innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
+      return;
+    }
+    if (!qaSelected && runs.length) qaSelected = runs[0].id;
+    document.getElementById('qa-runs').innerHTML = runs.length ? runs.map((run) => {
+      const percent = run.screens ? Math.round((run.finished / run.screens) * 100) : 0;
+      return `<button type="button" class="qa-run" data-qa="${esc(run.id)}" aria-current="${run.id === qaSelected}">
+        <b>${qaLive(run) ? '⏳ ' : ''}${esc(qaWhen(run.startedAt))} · ${esc(run.app)}</b>
+        <span class="sub">${esc(run.branch)} @${esc(run.head)}${run.profile ? ` · ${esc(run.profile)}` : ''}${run.plan ? ` · ${esc(run.plan.split('/').pop().replace(/\.md$/, ''))}` : ''}</span>
+        <span class="sub">${run.status === 'error' ? `오류 — ${esc(run.error || '')}` : qaLive(run) ? `${esc(run.phase || '')} · ${run.finished}/${run.screens}` : esc(qaSummaryChips(run.summary) || '영향 화면 없음')}</span>
+        ${qaLive(run) ? `<span class="qa-bar"><span style="width:${percent}%"></span></span>` : ''}
+      </button>`;
+    }).join('') : '<div class="empty-history">아직 QA 런이 없어요 — 계획서 카드의 [QA 실행] 또는 node scripts/qa/run.mjs</div>';
+    document.querySelectorAll('[data-qa]').forEach((button) => { button.onclick = () => { qaSelected = button.dataset.qa; loadQa(); }; });
+    const live = await loadQaRun(qaSelected);
+    if (live || runs.some(qaLive)) qaTimer = setTimeout(loadQa, 1500);
+  };
+  const loadQaRun = async (id) => {
+    const box = document.getElementById('qa-detail');
+    if (!id) return false;
+    let run;
+    try {
+      run = await (await fetch(`/api/qa/run?id=${encodeURIComponent(id)}`)).json();
+    } catch (error) {
+      box.innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
+      return false;
+    }
+    if (run.error && !run.id) { box.innerHTML = `<div class="empty-history">${esc(run.error)}</div>`; return false; }
+    const base = `/qa-runs/${encodeURIComponent(run.id)}/`;
+    const counts = {};
+    for (const screen of run.screens || []) counts[screen.status] = (counts[screen.status] || 0) + 1;
+    const screens = [...(run.screens || [])].sort((left, right) => QA_ORDER.indexOf(left.status) - QA_ORDER.indexOf(right.status) || left.distance - right.distance);
+    const cards = screens.map((screen) => {
+      const [icon, label, tone] = QA_STATUS[screen.status] || QA_STATUS.queued;
+      const shots = (screen.viewports || []).flatMap((viewport) => [['작업', viewport.shots.head], ['기준', viewport.shots.base], ['차이', viewport.shots.diff]]
+        .filter(([, file]) => file)
+        .map(([kind, file]) => `<a href="${base}${esc(file)}" target="_blank" rel="noopener"><img loading="lazy" src="${base}${esc(file)}" alt="">${esc(viewport.name)} ${kind}${kind === '차이' && viewport.diff ? ` ${viewport.diff.pixels}px` : ''}</a>`)).join('');
+      const moved = (screen.viewports || []).find((viewport) => screen.url && viewport.finalPath && viewport.finalPath.split('?')[0] !== screen.url.split('?')[0]);
+      return `<div class="qa-card ${tone}">
+        <div class="url">${icon} ${esc(screen.url || screen.route)}</div>
+        <div class="sub">${label}${screen.auth ? ' · 🔒 로그인 화면' : ''}${screen.expect ? ` · 기대 ${screen.expect === 'stay' ? '머무름' : `→ ${esc(screen.expect)}`}` : ''}${moved ? ` · → ${esc(moved.finalPath)}` : ''}${screen.baseProblems ? ` · 기준에도 있던 문제 ${screen.baseProblems}` : ''}</div>
+        <div class="why" title="${esc((screen.via || []).join(' → '))}">${esc(screen.changedFile || '')}${screen.distance ? ` → ${screen.distance}단계` : ''}</div>
+        ${screen.note ? `<div class="why">📝 ${esc(screen.note)}</div>` : ''}
+        ${(screen.problems || []).slice(0, 3).map((problem) => `<div class="problem">[${esc(problem.viewport)}] ${esc(problem.text)}</div>`).join('')}
+        ${shots ? `<div class="qa-shots">${shots}</div>` : ''}
+      </div>`;
+    }).join('');
+    box.innerHTML = `<div class="qa-head"><h3>${qaLive(run) ? '⏳ ' : ''}${esc(run.app)} · ${esc(run.branch)} @${esc(run.head)}</h3>
+        <span class="sub">${esc(qaWhen(run.startedAt))} · ${run.base ? `기준 ${esc(run.base.ref)}@${esc(run.base.sha)}` : '기준 비교 없음'} · 세션 ${esc(run.profile || '')}${run.plan ? ` · ${esc(run.plan)}` : ''}</span>
+        ${run.status === 'done' ? `<a class="sub" href="${base}report.html" target="_blank" rel="noopener">리포트 열기 ↗</a>` : ''}</div>
+      <div class="qa-chips"><span class="qa-chip">${esc(run.phase || '')}</span>${QA_ORDER.filter((key) => counts[key]).map((key) => `<span class="qa-chip">${QA_STATUS[key][0]} ${QA_STATUS[key][1]} ${counts[key]}</span>`).join('')}${run.totalScreens ? `<span class="qa-chip">영향 ${new Set((run.screens || []).map((screen) => screen.route)).size} / 전체 ${run.totalScreens}</span>` : ''}</div>
+      ${run.status === 'error' ? `<div class="problem" style="color:var(--bad)">오류 — ${esc(run.error || '')}</div>` : ''}
+      <div class="qa-grid">${cards || '<div class="empty-history">영향 화면을 찾는 중이거나 없어요</div>'}</div>
+      <div class="qa-log">${esc((run.log || []).slice(-12).join('\n'))}</div>`;
+    return qaLive(run);
+  };
+  const TABS = ['now', 'hermes', 'qa', 'history'];
   const showTab = (tab) => {
     for (const name of TABS) {
       document.getElementById(`view-${name}`).hidden = name !== tab;
       document.getElementById(`tab-${name}`).setAttribute('aria-selected', String(name === tab));
     }
     if (tab === 'history') loadHistory();
+    if (tab === 'qa') loadQa(); else stopQa();
     try { history.replaceState(null, '', tab === 'now' ? location.pathname : `#${tab}`); } catch (error) { /* 무시 */ }
   };
   document.querySelectorAll('.tabs [data-tab]').forEach((button) => { button.onclick = () => showTab(button.dataset.tab); });
@@ -729,6 +840,9 @@
       if (card?.worktree) to.innerHTML += `<br>워크트리 <code>${esc(card.worktree.rel)}</code> ← ${esc(card.worktree.ref)} (detached${card.worktree.exists ? ', 이미 있어서 그대로 써요' : ', 새로 만들어요'}) · 담당을 바꾸면 그 에이전트의 레포에 만들어요`;
     } else if (mode === 'hermes-new') {
       // 받는 곳 안내는 이슈 팝업(route)이 채운다
+    } else if (mode === 'qa') {
+      const card = (lastState?.cards || []).find((entry) => entry.id === id);
+      to.innerHTML = `→ <b>QA 시뮬레이션</b> (scripts/qa/run.mjs) 를 현황판 서버가 뒤에서 돌려요 · 한 번에 하나 · 헤르메스는 거치지 않아요${card?.workRef ? `<br>워크트리 <code>${esc(card.workRef.split(' ')[0])}</code>` : ''}<br>아래 글은 안내라 고쳐도 보내지지 않아요`;
     } else if (mode === 'review') {
       const card = (lastState?.cards || []).find((entry) => entry.id === id);
       to.innerHTML = `→ <b>reviewer</b> 를 계획서의 담당 레포 workspace 에 새 pane 으로 띄워요${card?.workRef ? `<br>대상 <code>${esc(card.workRef)}</code>` : ''} · 헤르메스는 거치지 않아요`;
@@ -777,6 +891,14 @@
         const result = await api('/api/hermes-new', { id: pending.id, text });
         document.getElementById('ask').close();
         toast(`새 헤르메스 pane 에서 시작했어요 · ${result.pane}`);
+        return;
+      }
+      if (pending?.mode === 'qa') {
+        const result = await api('/api/qa-start', { id: pending.id });
+        document.getElementById('ask').close();
+        toast(`QA 를 시작했어요 · ${result.app}`);
+        qaSelected = '';
+        showTab('qa');
         return;
       }
       if (pending?.mode === 'review') {

@@ -62,7 +62,10 @@ if (!profile) {
 // ── 런 기록 ──────────────────────────────────────────────
 const pad = (value) => String(value).padStart(2, '0')
 const now = new Date()
-const runId = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}-${appName}`
+const baseRunId = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}-${appName}`
+// 같은 초에 둘이 시작하면 폴더가 겹친다 — 뒤에 번호를 붙인다
+let runId = baseRunId
+for (let suffix = 2; existsSync(join(HERMES, '.qa-runs', runId)); suffix += 1) runId = `${baseRunId}-${suffix}`
 const runDir = join(HERMES, '.qa-runs', runId)
 mkdirSync(join(runDir, 'shots'), { recursive: true })
 const run = {
@@ -551,6 +554,17 @@ function writeQaResult(line) {
     ? text.replace(/^- QA result:.*$/m, entry)
     : text.replace(/^(- Status:.*)$/m, `$1\n${entry}`)
   writeFileSync(planFile, updated)
+}
+
+// 중간에 끄면(Ctrl+C·kill) dev 서버를 남기지 않고 런을 '중단' 으로 닫는다 — 현황판이 계속 ⏳ 로 보이지 않게
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    run.status = 'error'
+    run.error = `중단됨 (${signal})`
+    stopServers()
+    saveRun()
+    process.exit(130)
+  })
 }
 
 let exitCode = 0

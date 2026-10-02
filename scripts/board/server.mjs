@@ -19,6 +19,8 @@
  *   - POST /api/worktree-remove 끝난 이슈의 워크트리를 지운다(미커밋 변경이 있으면 거부)
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
  *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
+ *   - GET  /api/qa/runs      QA 시뮬레이션 런 목록(.qa-runs/) · /api/qa/run?id= 런 하나 · /qa-runs/<id>/<파일> 스크린샷·리포트
+ *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
  *   - POST /api/hermes-new 이슈 [처리 시작] → 헤르메스: 새 헤르메스 pane(🧭 헤르메스 · <이슈>)을 열어 그 안에서 처리한다 — 떠 있는 헤르메스 대화에 섞지 않는다
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
@@ -31,9 +33,10 @@ import { createServer } from 'node:http'
 import { readFileSync, readdirSync, statSync, existsSync, writeFileSync, rmSync, mkdirSync, renameSync } from 'node:fs'
 import { join, dirname, relative, basename, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execFile, execFileSync } from 'node:child_process'
+import { execFile, execFileSync, spawn } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
+import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -857,6 +860,54 @@ const safeDecodedPath = (pathname) => {
   }
 }
 
+// ── QA 시뮬레이션 (scripts/qa) ─────────────────────────────
+let qaChild = null
+const QA_ID = /^\d{8}-\d{6}-[\w-]+$/
+const QA_TYPES = { '.png': 'image/png', '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.log': 'text/plain; charset=utf-8' }
+// 목록에는 요약만 — 화면별 상세는 런 하나를 열 때
+// 끝나지 않았는데 2분 넘게 run.json 이 그대로면 죽은 런 — 목록에 계속 ⏳ 로 남지 않게 '중단' 으로 보여 준다
+const qaStale = (run) => ['preparing', 'running'].includes(run.status) && Date.now() - statSync(join(QA_RUNS_DIR, run.id, 'run.json')).mtimeMs > 120_000
+const qaSummary = (run) => ({
+  id: run.id, app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile,
+  status: run.status, phase: run.phase, error: run.error, startedAt: run.startedAt, finishedAt: run.finishedAt, summary: run.summary,
+  screens: run.screens?.length ?? 0, finished: (run.screens ?? []).filter((screen) => !['queued', 'running'].includes(screen.status)).length,
+  ...(qaStale(run) ? { status: 'error', error: '응답 없음 — 중단된 런' } : {})
+})
+// 돌고 있는 런 — run.json 이 2분 안에 갱신됐고 끝나지 않은 것(포트 3291·3292 를 쓰므로 한 번에 하나)
+function activeQaRun() {
+  for (const run of listQaRuns().slice(0, 5)) {
+    if (!['preparing', 'running'].includes(run.status)) continue
+    const fresh = Date.now() - statSync(join(QA_RUNS_DIR, run.id, 'run.json')).mtimeMs < 120_000
+    if (fresh) return run
+  }
+  return null
+}
+// 계획서 카드 → QA 대상: Work ref 맨 앞의 워크트리(절대 경로) + 담당 에이전트의 앱(routes/<앱>.json 이 있는 것만 — 파일럿 refund-web)
+function startQaRun(planId) {
+  const path = safePath(planId, 'plans')
+  if (!path) return { error: '계획서를 찾지 못했어요' }
+  const text = readFileSync(path, 'utf8')
+  const workRef = text.match(/^- Work ref:\s*(\S+)/m)?.[1] ?? ''
+  const worktree = workRef.replace(/`/g, '')
+  if (!worktree.startsWith('/') || !existsSync(worktree)) return { error: 'Work ref 에 워크트리 경로가 없어요 — 담당 에이전트가 브랜치를 만든 뒤에 돌릴 수 있어요' }
+  const agent = text.match(/^- Agent:\s*(\S+)/m)?.[1] ?? ''
+  const config = JSON.parse(readFileSync(join(ROOT, 'hermes.config.json'), 'utf8'))
+  const apps = config.repos.find((repo) => repo.name === 'bznav-web')?.apps ?? {}
+  const app = Object.entries(apps).find(([, settings]) => settings.agent === agent)?.[0] ?? Object.keys(apps).find((name) => existsSync(join(worktree, 'apps', name)) && existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${name}.json`)))
+  if (!app || !existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`))) return { error: `QA 시뮬레이션은 아직 refund-web 만 돼요 (scripts/qa/routes/<앱>.json)${agent ? ` — 이 계획서는 ${agent}` : ''}` }
+  // 방금 띄운 런은 run.json 을 쓰기 전일 수 있다 — 이 서버가 띄운 프로세스가 살아 있으면 먼저 거부
+  if (qaChild && qaChild.exitCode === null && qaChild.signalCode === null) return { error: '이 현황판이 띄운 QA 가 아직 돌고 있어요 — QA 탭에서 진행을 보세요' }
+  const running = activeQaRun()
+  if (running) return { error: `다른 QA 가 돌고 있어요 — ${running.id} (${running.phase})` }
+  mkdirSync(QA_RUNS_DIR, { recursive: true })
+  const log = join(QA_RUNS_DIR, 'launch.log')
+  writeFileSync(log, `${new Date().toISOString()} ${planId} ${worktree} ${app}\n`, { flag: 'a' })
+  const child = spawn(process.execPath, [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--cwd', worktree, '--app', app, '--plan', planId], { cwd: ROOT, detached: true, stdio: 'ignore' })
+  child.unref()
+  qaChild = child
+  return { ok: true, app, worktree }
+}
+
 const allowed = (request) => {
   const origin = request.headers.origin
   const okOrigin = origin === `http://localhost:${PORT}` || origin === `http://127.0.0.1:${PORT}`
@@ -897,6 +948,34 @@ createServer(async (request, response) => {
     }
     return response.end(JSON.stringify({ id, text, plan }))
   }
+  if (url.pathname === '/api/qa/runs') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify({ runs: listQaRuns().slice(0, 60).map(qaSummary) }))
+  }
+  if (url.pathname === '/api/qa/run') {
+    const id = String(url.searchParams.get('id') ?? '')
+    const file = join(QA_RUNS_DIR, id, 'run.json')
+    const ok = QA_ID.test(id) && existsSync(file)
+    response.writeHead(ok ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(ok ? readFileSync(file) : JSON.stringify({ error: 'QA 런을 찾지 못했어요' }))
+  }
+  // QA 스크린샷·리포트 — .qa-runs/<런 id>/ 안의 png·html·json·log 만(경로 탈출 404)
+  if (url.pathname.startsWith('/qa-runs/')) {
+    let inner = ''
+    try {
+      inner = decodeURIComponent(url.pathname.slice('/qa-runs/'.length))
+    } catch {
+      inner = ''
+    }
+    const path = join(QA_RUNS_DIR, inner)
+    const type = QA_TYPES[path.slice(path.lastIndexOf('.'))]
+    if (inner && type && QA_ID.test(inner.split('/')[0]) && path.startsWith(QA_RUNS_DIR + sep) && existsSync(path) && statSync(path).isFile()) {
+      response.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-store' })
+      return response.end(readFileSync(path))
+    }
+    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
+    return response.end('not found')
+  }
   // board.sh 가 이미 보고 있는 탭이 있는지 묻는다 — 있으면 새 탭을 열지 않는다
   // 히스토리 — 보관된 일(archive/). 누를 때만 읽는다
   if (url.pathname === '/api/history') {
@@ -918,7 +997,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -936,6 +1015,10 @@ createServer(async (request, response) => {
         await refresh()
       })
       return reply(202, { ok: true, job: job.id })
+    }
+    if (url.pathname === '/api/qa-start') {
+      const result = startQaRun(String(body.id ?? ''))
+      return reply(result.error ? 400 : 202, result)
     }
     if (url.pathname === '/api/hermes-new') {
       const result = await openHermesPane(String(body.id ?? ''), String(body.text ?? ''))

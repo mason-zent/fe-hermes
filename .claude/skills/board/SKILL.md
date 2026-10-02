@@ -21,6 +21,7 @@ argument-hint: "(없음) | stop | url"
 | 지금 동작 중 | `herdr pane list` 의 에이전트 pane(`agent_status`), 최근 30분 백그라운드 서브에이전트 로그 |
 | 칸반 — 이슈 | `issues/*.md` (`status: open`) |
 | 칸반 — 계획·진행 중·리뷰·완료 | `plans/**/*.md` Checkpoint 의 `Status`(planned · in_progress/blocked · ready_for_review · done). 이슈에 연결된 계획서는 이슈 카드 안에 합친다. `archive/` 는 보이지 않는다 |
+| [QA] 탭 — QA 시뮬레이션 런 | `.qa-runs/` 런 목록(최신순) → 런 하나의 영향 화면 카드(판정 · 작업/기준/차이 스크린샷 · 문제 원문 · 리포트 링크). 돌고 있으면 1.5초마다 갱신. 계획서 카드(진행 중·리뷰)의 [QA 실행] 은 헤르메스를 거치지 않고 서버가 Work ref 워크트리로 `scripts/qa/run.mjs` 를 돌린다 — 한 번에 하나, 파일럿 refund-web(`scripts/qa/routes/<앱>.json` 이 있는 앱만) |
 | [헤르메스] 탭 — 할 일·진행 중·완료 | `repo: hermes` 이슈와 hermes 계획서(`Agent: hermes` 또는 `Work ref` 가 `hermes …` — 서비스 칸반에서 빠진다). [처리 시작]은 디스패치 없이 헤르메스가 직접 고친다. 완료 기준은 `fix:` 커밋이 `origin/main` 에 있는 것. 서비스 칸반과 서로 끌어 옮기지 않는다 |
 | 워크트리 | `.worktrees/*/*` 브랜치·미커밋 수 |
 

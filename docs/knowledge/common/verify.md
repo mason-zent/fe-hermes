@@ -36,6 +36,7 @@ node scripts/qa/run.mjs --cwd <워크트리> --app refund-web --plan <계획서>
 node scripts/qa/login.mjs --url http://localhost:3291                  # 로그인 세션 저장 (한 번, 사용자가 직접 **이메일** 로그인)
 node scripts/qa/run.mjs … --headed [--slow 1200]                         # 보이는 창으로 — 창 하나에서 화면 이동 · 진행 띠 · 천천히 스크롤
 node scripts/qa/history.mjs [--open [런 id]] [--plan <계획서>]          # QA 이력 (.qa-runs/index.html · 런마다 report.html)
+# 현황판(/board) [QA] 탭 — 같은 이력을 실시간으로. 계획서 카드 [QA 실행] 으로도 돌린다(한 번에 하나)
 ```
 
 **세션 프로필**(`routes/<앱>.json` `profiles`, `run.mjs --profile`): `logout`(로그인 화면은 로그인으로 가야 정상) · `login`(이메일 로그인·본인인증 전 — 본인인증 화면으로 가야 정상) · `verified`(본인인증까지 — 머물러야 정상). 기대와 다르게 가면 ❌. 기본은 세션이 저장된 첫 프로필. 세션 파일 `.qa-auth/<앱>.<프로필>.json`
