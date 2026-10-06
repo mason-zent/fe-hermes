@@ -12,6 +12,7 @@
   - 환경 변수 통째로 출력: printenv · env(인자 없이) · export -p · set(인자 없이) · declare -x
   - 토큰 변수 출력: echo/printf 에 $…TOKEN·KEY·SECRET·PASSWORD·PASS·AUTH… 가 들어간 것
   - 자격 증명 꺼내기: gh auth token · gh auth status -t/--show-token · git credential fill · security find-*-password -w
+  - 프로세스 전체 인자·환경 변수: pgrep -fl/-a · ps aux/-ef/-e/-E/eww/-o command|args (편집기 helper 인자에 GITHUB_TOKEN=… 이 실린다 — 2026-10-02 사고)
 확인이 필요하면 값 대신 **있는지·길이·해시 앞자리·HTTP 상태 코드**만 본다(예: curl -s -o /dev/null -w '%{http_code}').
 실수 방지용이지 보안 경계가 아니다 — 스크립트 파일 안의 명령까지 보지는 않는다. 막으면 exit 2 (stderr 가 에이전트에게 간다).
 """
@@ -60,6 +61,10 @@ rules = [
     (r"\bgh\s+auth\s+token\b|\bgh\s+auth\s+status\b[^;&|]*(-t\b|--show-token)", "GitHub 토큰을 꺼낸다"),
     (r"\bgit\s+credential\s+fill\b", "git 자격 증명을 꺼낸다"),
     (r"\bsecurity\s+find-\w+-password\b[^;&|]*-w\b", "키체인 비밀번호를 꺼낸다"),
+    # 프로세스 목록의 전체 인자·환경 변수 — 편집기 helper 등은 인자에 환경 변수(GITHUB_TOKEN=…)를 통째로 싣는다(2026-10-02 pgrep -fl 사고)
+    (r"\bpgrep\b[^;&|]*\s-(\w*l\w*f|\w*f\w*l|\w*a)\w*\b|\bpgrep\b[^;&|]*\s-\w*l\w*\b[^;&|]*\s-\w*f|\bpgrep\b[^;&|]*\s-\w*f\w*\b[^;&|]*\s-\w*l", "프로세스 전체 인자를 출력한다(환경 변수·토큰이 섞여 나온다) — pid 만 pgrep -f, 이름은 ps -o pid=,comm="),
+    # macOS ps: -e/-E 환경 변수, -f/-j·BSD u 전체 인자, -o command|args 전체 인자
+    (r"\bps\b[^;&|]*(\s-[a-zA-Z]*[eEfj][a-zA-Z]*\b|\s-[a-zA-Z]*o\s*\S*\b(command|args|cmd)\b)|\bps\s+[a-zA-Z]*[eu][a-zA-Z]*\b","프로세스 전체 인자·환경 변수를 출력한다 — ps -axo pid=,ppid=,comm= 처럼 명령 이름만 본다"),
 ]
 for pattern, reason in rules:
     if re.search(pattern, text):
