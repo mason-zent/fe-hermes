@@ -20,6 +20,8 @@
  *   - POST /api/delete 카드를 휴지통(.board-trash/<날짜>/)으로 옮긴다 — 이슈면 연결된 경량 계획서·워크트리도. 되돌릴 수 있게 지우지 않는다
  *   - POST /api/archive 끝난 카드를 archive/<이름>/ 한 폴더로 보관 — issue.md · plan.md(· plan.html) · meta.json(archive.mjs), 이슈 워크트리 정리. 보드에서 사라지고 히스토리 탭에 뜬다
  *   - GET  /api/qa/runs      QA 시뮬레이션 런 목록(.qa-runs/) · /api/qa/run?id= 런 하나 · /qa-runs/<id>/<파일> 스크린샷·리포트
+ *   - GET  /qa-live?id=      QA 자동화 도구 화면 — 실시간 화면(live/*.jpg)·API 호출·Mixpanel 이벤트(/api/qa/live?id=&since=) 한 페이지
+ *   - GET  /api/qa/tc        QA TC 목록(docs/qa/tc/<앱>.md "B) TC" 표 · 앱별 흐름 씬 파일)
  *   - GET  /api/qa/apps      전체 검수할 수 있는 앱·세션 프로필 · POST /api/qa-suite [전체 검수](요청할 때만) · POST /api/qa-approve [기준으로 승인]
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
@@ -38,6 +40,7 @@ import { execFile, execFileSync, spawn } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
 import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
+import { checkServerUrl } from '../qa/targets.mjs'
 import { approveRun as approveQaRun } from '../qa/baseline.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
@@ -865,12 +868,12 @@ const safeDecodedPath = (pathname) => {
 // ── QA 시뮬레이션 (scripts/qa) ─────────────────────────────
 let qaChild = null
 const QA_ID = /^\d{8}-\d{6}-[\w-]+$/
-const QA_TYPES = { '.png': 'image/png', '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.log': 'text/plain; charset=utf-8' }
+const QA_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8', '.log': 'text/plain; charset=utf-8' }
 // 목록에는 요약만 — 화면별 상세는 런 하나를 열 때
 // 끝나지 않았는데 2분 넘게 run.json 이 그대로면 죽은 런 — 목록에 계속 ⏳ 로 남지 않게 '중단' 으로 보여 준다
 const qaStale = (run) => ['preparing', 'running'].includes(run.status) && Date.now() - statSync(join(QA_RUNS_DIR, run.id, 'run.json')).mtimeMs > 120_000
 const qaSummary = (run) => ({
-  id: run.id, kind: run.kind ?? 'impact', app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile,
+  id: run.id, kind: run.kind ?? 'impact', app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile, group: run.group ?? null,
   status: run.status, phase: run.phase, error: run.error, startedAt: run.startedAt, finishedAt: run.finishedAt, summary: run.summary,
   screens: run.screens?.length ?? 0, finished: (run.screens ?? []).filter((screen) => !['queued', 'running'].includes(screen.status)).length,
   ...(qaStale(run) ? { status: 'error', error: '응답 없음 — 중단된 런' } : {})
@@ -930,16 +933,53 @@ function qaApps() {
   return readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => {
     const app = name.replace(/\.json$/, '')
     const config = JSON.parse(readFileSync(join(dir, name), 'utf8'))
+    // 세션은 대상(D21 — 로컬 서버·dev 서버)마다 따로 저장된다
     const profiles = Object.entries(config.profiles ?? {}).filter(([key]) => !key.startsWith('$')).map(([key, settings]) => ({
-      name: key, note: settings.note ?? '', session: !settings.session || existsSync(join(ROOT, '.qa-auth', `${app}.${settings.session}.json`))
+      name: key, note: settings.note ?? '',
+      session: !settings.session || existsSync(join(ROOT, '.qa-auth', `${app}.${settings.session}.json`))
     }))
     const scenarioDir = join(ROOT, 'scripts', 'qa', 'scenarios', app)
-    return { app, profiles, scenarios: existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((file) => file.endsWith('.json')).length : 0 }
+    return { app, profiles, devUrl: config.devUrl ?? null, local: config.local !== false, scenarios: existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((file) => file.endsWith('.json')).length : 0 }
   })
 }
+// QA TC 목록 — docs/qa/tc/<앱>.md 의 "B) TC" 표를 행 단위로. 문서가 정본이고 여기서는 읽기만 한다
+const QA_TC_APPS = ['refund-web', 'care-web', 'brand-web', 'sena-web', 'plus-web']
+const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, '|').trim())
+function qaTestCases() {
+  const dir = join(ROOT, 'docs', 'qa', 'tc')
+  const apps = []
+  for (const app of QA_TC_APPS) {
+    const file = join(dir, `${app}.md`)
+    if (!existsSync(file)) continue
+    const lines = readFileSync(file, 'utf8').split('\n')
+    const start = lines.findIndex((line) => line.startsWith('## B) TC'))
+    const cases = []
+    let header = null
+    for (const line of lines.slice(start + 1)) {
+      if (line.startsWith('## ')) break
+      if (!line.startsWith('|')) { header = null; continue }
+      const cells = tableCells(line)
+      if (!header) { header = cells; continue }
+      if (cells.every((cell) => /^-+$/.test(cell)) || header[0] !== 'ID') continue
+      const value = Object.fromEntries(header.map((name, index) => [name, cells[index] ?? '']))
+      cases.push({
+        id: value.ID, kind: value['분류'], title: value['제목'], session: value['세션'] || 'logout', viewport: value['뷰포트'],
+        pre: value['사전 조건'], steps: value['단계'], expect: value['기대 결과'], auto: value['자동화'], prio: value['우선'], ref: value['근거']
+      })
+    }
+    const scenarioDir = join(ROOT, 'scripts', 'qa', 'scenarios', app)
+    const scenarios = existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((name) => name.endsWith('.json')).sort() : []
+    apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
+  }
+  return apps
+}
 // [전체 검수] — 최신 개발 브랜치(qa-base)로 화면 전부 + 흐름 씬. 한 번에 하나
-function startQaSuite(app, profile) {
+// target: local | server(주소 입력 — dev·stg·dev-1~3·PR 미리보기, 운영은 거부) (D21) · flow: 비로그인 → 로그인 요청 → 로그인 상태 → 실패 리포트(D18~D20). 라이브 화면(--live)으로 연다
+function startQaSuite(app, profile, target = 'local', flow = false, server = '') {
   const known = qaApps().find((entry) => entry.app === app)
+  if (target === 'local' && known && !known.local) return { error: `${app} 은 로컬 서버로 돌릴 수 없어요 — 서버를 고르고 주소를 넣어 주세요` }
+  const checked = target === 'server' ? checkServerUrl(server || known?.devUrl || '') : null
+  if (checked?.error) return { error: checked.error }
   if (!known) return { error: `전체 검수 설정이 없는 앱이에요 — scripts/qa/routes/${app}.json` }
   if (profile && !known.profiles.some((entry) => entry.name === profile)) return { error: `프로필 ${profile} 이 없어요` }
   if (qaChild && qaChild.exitCode === null && qaChild.signalCode === null) return { error: '이 현황판이 띄운 QA 가 아직 돌고 있어요 — QA 탭에서 진행을 보세요' }
@@ -947,10 +987,10 @@ function startQaSuite(app, profile) {
   if (running) return { error: `다른 QA 가 돌고 있어요 — ${running.id} (${running.phase})` }
   mkdirSync(QA_RUNS_DIR, { recursive: true })
   writeFileSync(join(QA_RUNS_DIR, 'launch.log'), `${new Date().toISOString()} suite ${app} ${profile ?? ''}\n`, { flag: 'a' })
-  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, ...(profile ? ['--profile', profile] : [])]
+  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow ? ['--flow'] : profile ? ['--profile', profile] : [])]
   qaChild = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: 'ignore' })
   qaChild.unref()
-  return { ok: true, app, profile: profile || '(기본)' }
+  return { ok: true, app, target, server: checked?.url ?? null, flow, profile: flow ? '(흐름)' : profile || '(기본)' }
 }
 
 const allowed = (request) => {
@@ -1000,6 +1040,85 @@ createServer(async (request, response) => {
   if (url.pathname === '/api/qa/apps') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
     return response.end(JSON.stringify({ apps: qaApps() }))
+  }
+  // QA 실시간 페이지(QA 자동화 도구 화면) — 화면·API 호출·트래킹 이벤트를 한 페이지에
+  if (url.pathname === '/qa-live') {
+    response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
+    // 토큰을 넣어 준다 — 실패 리포트 모달의 [담당 에이전트에게 조사 맡기기] 가 /api/action 으로 헤르메스 pane 에 보낸다
+    return response.end(readFileSync(join(ROOT, 'scripts/board/qa-live.html'), 'utf8').replace('</head>', `<script>window.HERMES_BOARD_TOKEN = ${JSON.stringify(TOKEN)}</script>\n</head>`))
+  }
+  // 실시간 화면 스트림(MJPEG) — live/<칸>.jpg 가 바뀔 때마다 이어서 보낸다. <img src> 하나로 끊김 없이 그려진다
+  if (url.pathname === '/api/qa/stream') {
+    const id = String(url.searchParams.get('id') ?? '')
+    const slot = String(url.searchParams.get('slot') ?? '')
+    if (!QA_ID.test(id) || !/^[\w-]+$/.test(slot)) {
+      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' })
+      return response.end('not found')
+    }
+    const file = join(QA_RUNS_DIR, id, 'live', `${slot}.jpg`)
+    response.writeHead(200, { 'Content-Type': 'multipart/x-mixed-replace; boundary=frame', 'Cache-Control': 'no-store', Connection: 'keep-alive' })
+    let lastModified = 0
+    const sendFrame = () => {
+      try {
+        const modified = statSync(file).mtimeMs
+        if (modified === lastModified) return
+        lastModified = modified
+        const frame = readFileSync(file)
+        response.write(`--frame\r\nContent-Type: image/jpeg\r\nContent-Length: ${frame.length}\r\n\r\n`)
+        response.write(frame)
+        response.write('\r\n')
+      } catch {
+        // 아직 프레임이 없거나 바꿔 쓰는 중 — 다음 차례에
+      }
+    }
+    // 런이 끝나면 스트림을 닫는다 — 브라우저는 한 주소에 연결을 6개까지만 열어서, 끝난 런의 스트림이 남아 있으면
+    // 현황판의 다른 페이지(결정 콘솔 등)가 열리지 않고 계속 돈다. 2초마다 run.json 을 보고, 끝났으면 마지막 프레임까지 보낸 뒤 닫는다
+    const runFile = join(QA_RUNS_DIR, id, 'run.json')
+    let ticks = 0
+    const timer = setInterval(() => {
+      sendFrame()
+      ticks += 1
+      if (ticks % 40 !== 0) return
+      try {
+        const status = JSON.parse(readFileSync(runFile, 'utf8')).status
+        if (status === 'done' || status === 'error') {
+          clearInterval(timer)
+          response.end()
+        }
+      } catch {
+        // run.json 을 바꿔 쓰는 중 — 다음 차례에
+      }
+    }, 50)
+    request.on('close', () => clearInterval(timer))
+    return sendFrame()
+  }
+  // 실시간 호출 기록 — live.jsonl 을 since(바이트) 뒤부터. 다음에 since 로 next 를 넘긴다
+  if (url.pathname === '/api/qa/live') {
+    const id = String(url.searchParams.get('id') ?? '')
+    const file = join(QA_RUNS_DIR, id, 'live.jsonl')
+    const since = Math.max(0, Number(url.searchParams.get('since')) || 0)
+    let lines = []
+    let next = since
+    if (QA_ID.test(id) && existsSync(file)) {
+      const buffer = readFileSync(file)
+      const end = buffer.lastIndexOf(10) + 1
+      if (end > since) {
+        lines = buffer.subarray(since, end).toString('utf8').split('\n').filter(Boolean).map((line) => {
+          try {
+            return JSON.parse(line)
+          } catch {
+            return null
+          }
+        }).filter(Boolean)
+        next = end
+      }
+    }
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify({ lines, next }))
+  }
+  if (url.pathname === '/api/qa/tc') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify({ apps: qaTestCases() }))
   }
   if (url.pathname === '/api/qa/run') {
     const id = String(url.searchParams.get('id') ?? '')
@@ -1066,7 +1185,7 @@ createServer(async (request, response) => {
       return reply(202, { ok: true, job: job.id })
     }
     if (url.pathname === '/api/qa-suite') {
-      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''))
+      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''))
       return reply(result.error ? 400 : 202, result)
     }
     if (url.pathname === '/api/qa-approve') {

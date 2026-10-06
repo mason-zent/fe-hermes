@@ -2,6 +2,7 @@
   "$comment": "QA 시뮬레이션 화면 설정 (D6). 동적 라우트는 samples 에 열 URL 을, 단계형 화면은 entry 에 앞 단계 URL 을 적는다(D8). 적지 않은 동적 라우트는 '샘플 필요' 로 표시만 한다. 키는 impact.mjs 의 route(파일 경로 기준, [param] 그대로)",
   "app": "refund-web",
   "devPort": 3200,
+  "devUrl": "https://dev.refund.bznav.com",
   "signInPath": "/auth/sign-in",
   "signOutPath": "/auth/sign-out",
   "ciPath": "/auth/ci-request",
@@ -24,12 +25,31 @@
     "\\[HMR\\]"
   ],
   "routes": {
+    "/tax/refund/lookup/queue": { "skip": true, "note": "⚠ 열기만 해도 대기열 알림 신청(requestHometaxBlockNotificationMutation · 알림톡 예약)이 나간다 — 스모크에서 뺀다(docs/qa/tc/refund-web.md RF-028)" },
+    "/tax/refund/lookup/request": { "skip": true, "note": "⚠ 열면 홈택스 실조회(searchRefundV2Mutation)가 자동으로 시작된다 — 스모크에서 뺀다(RF-026)" },
     "/help/guide/[slug]": { "samples": ["/help/guide/tax-refund-check", "/help/guide/business-tax-refund"] },
-    "/simple/[corpType]/apply": { "samples": ["/simple/indis/apply", "/simple/corps/apply"] },
+    "/simple/[corpType]/apply": { "samples": ["/simple/indis/apply", "/simple/corps/apply"], "expect": { "logout": "/simple/timeout" } },
     "/simple/[corpType]/apply/success": { "samples": ["/simple/indis/apply/success"] },
     "/survey/reopen/[questionCode]": { "entry": "/survey/reopen", "note": "질문 코드는 API 가 준다 — 설문 재개 첫 화면에서 들어간다" },
-    "/event/[...slug]": { "samples": [], "note": "BE 콘텐츠 페이지 — 살아 있는 이벤트 slug 를 적어 주세요" },
-    "/landing/[...slug]": { "samples": [], "note": "BE 콘텐츠 페이지 — 살아 있는 랜딩 slug 를 적어 주세요" },
-    "/home/[...content]": { "samples": [], "note": "BE 콘텐츠 페이지 (/home/{slug}, /home/event/{slug})" }
+    "/event/[...slug]": { "samples": [], "samplesFrom": "sitemap", "note": "BE 콘텐츠 페이지 — 주소는 /sitemap.xml(BE getRefundContentPageSitemap)에서 받는다" },
+    "/landing/[...slug]": { "samples": [], "samplesFrom": "sitemap", "note": "BE 콘텐츠 페이지 — 주소는 /sitemap.xml 에서 받는다" },
+    "/home/[...content]": { "samples": [], "samplesFrom": "sitemap", "note": "BE 콘텐츠 페이지 (/home/{slug}, /home/event/{slug}) — 주소는 /sitemap.xml 에서 받는다" },
+    "/404": { "allowStatus": [404], "networkIdle": false, "note": "404 화면은 404 로 응답하는 게 맞다 · dev 에서 요청이 이어져 networkidle 을 기다리지 않는다" },
+    "/hometax-auth/select-method": { "samples": ["/hometax-auth/select-method?type=indis", "/hometax-auth/select-method?type=corps"], "note": "type 쿼리 필수(indis|corps|decision) — 없으면 notFound" },
+    "/hometax-auth/joint-certificate/install": { "samples": ["/hometax-auth/joint-certificate/install?type=indis", "/hometax-auth/joint-certificate/install?type=corps"], "note": "type 쿼리 필수 — 없으면 notFound · 공동인증서 프로그램(로컬 에이전트)에 붙는 요청은 QA 브라우저에 프로그램이 없어 실패한다(환경)", "ignoreConsole": ["AxiosError: Network Error"] },
+    "/hometax-auth/joint-certificate/select": { "samples": ["/hometax-auth/joint-certificate/select?type=indis"], "note": "type 쿼리 필수 — 없으면 notFound · 공동인증서 프로그램(로컬 에이전트)에 붙는 요청은 QA 브라우저에 프로그램이 없어 실패한다(환경)", "ignoreConsole": ["AxiosError: Network Error"] },
+    "/hometax-auth/simple-auth/input": { "samples": ["/hometax-auth/simple-auth/input?from=home"], "note": "from 쿼리 필수 — 틀리면 이동 없이 \"페이지에 접근할 수 없어요\"" },
+    "/tax/refund/bank-account": { "samples": ["/tax/refund/bank-account?type=indis"], "note": "type 쿼리 필수 — 없으면 스피너에서 멈춤" },
+    "/tax/refund/phone-number": { "samples": ["/tax/refund/phone-number?type=indis"], "note": "type 쿼리 필수 — 없으면 스피너에서 멈춤" },
+    "/tax/refund/lookup/result": { "samples": ["/tax/refund/lookup/result?type=indis"], "note": "type 쿼리 필수 · 조회 결과(localStorage) 없으면 빈 결과 — 흐름으로 확인" },
+    "/tax/refund/apply/result": { "samples": ["/tax/refund/apply/result?type=indis"], "note": "신청 결과 데이터가 없으면 /home 으로 — 흐름으로 확인" },
+    "/tax/refund/cancel/prevention": { "samples": ["/tax/refund/cancel/prevention?type=indis"], "note": "신청 건이 정확히 1건이어야 — 없으면 신청 결과로(계정 상태)" },
+    "/trr": { "samples": ["/trr?type=checkDecision"], "note": "type 쿼리(recollect|checkDecision|job_retention) · 0~6시·대기열이면 에러 화면", "expect": { "logout": "/error/unauthorized" } },
+    "/trp": { "expect": { "logout": "/404", "login": "/404", "verified": "/404" }, "note": "token(서버 발급 알림톡 토큰) 없으면 /404 가 정상 — 토큰 있는 경로는 데이터 필요" },
+    "/home/event/share/redirect": { "expect": { "logout": "/", "login": "/", "verified": "/" }, "note": "항상 / 로 보낸다" },
+    "/auth/sign-in": { "expect": { "login": "/auth/ci-request", "verified": "/home" }, "note": "로그인 상태면 returnUrl·/home 으로 보낸다" },
+    "/auth/sign-out": { "expect": { "logout": "/auth/sign-in", "login": "/auth/ci-request", "verified": "/home" }, "note": "일반 브라우저(working_platform web)면 /auth/sign-in 으로 — 파트너·토스 웹뷰에서만 화면이 보인다" },
+    "/redirect": { "expect": { "login": "/auth/ci-request", "verified": "/home" }, "note": "로그인 상태면 returnUrl·/home 으로" },
+    "/service-down": { "expect": { "logout": "/auth/sign-", "login": "/auth/ci-request", "verified": "/home" }, "note": "점검 중이 아니면 /home 으로(proxy.ts) — 이어서 로그인·본인인증 가드" }
   }
 }

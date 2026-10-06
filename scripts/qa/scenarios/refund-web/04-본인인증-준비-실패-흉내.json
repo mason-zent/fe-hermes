@@ -1,7 +1,6 @@
 {
   "name": "본인인증 요청 실패 안내 (응답 흉내)",
   "profile": "login",
-  "viewport": "mobile",
   "why": "인증 준비 API 가 실패하면 '본인인증 요청을 실패했어요' 안내를 띄우고 그 화면에 머문다",
   "steps": [
     { "mock": { "url": "**/ci/v2/prepare", "method": "POST", "status": 500, "json": { "result": false, "message": "QA 흉내 — 서버 오류" } } },

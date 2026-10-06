@@ -1,0 +1,17 @@
+{
+  "name": "메뉴 → 내 정보 (본인인증 완료 계정)",
+  "tc": ["RF-038"],
+  "profile": "verified",
+  "why": "본인인증까지 마친 계정은 메뉴의 [내 정보] 를 누르면 본인인증 요청 없이 내 정보 화면(이메일·이름·가입 일자)으로 가야 한다",
+  "steps": [
+    { "goto": "/menu" },
+    { "expectUrl": "/menu", "label": "메뉴에 머묾(본인인증 요청으로 안 감)" },
+    { "expectEvent": "more_viewed" },
+    { "click": { "role": "button", "name": "내 정보" } },
+    { "expectEvent": "more_body_my-info_clicked", "props": { "page": "more" } },
+    { "expectUrl": "/menu/my", "label": "내 정보 화면으로 이동" },
+    { "expectText": "가입 일자" },
+    { "expectEvent": "my-info_viewed" },
+    { "screenshot": "my-info" }
+  ]
+}

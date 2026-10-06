@@ -11,7 +11,8 @@
     --col-issue: #d1463b; --col-plan: #7a62c9; --col-doing: #3b6fd8; --col-review: #c98a12; --col-done: #2f9e62;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #16171a; --panel: #1f2125; --line: #2e3137; --text: #e8e6e1; --muted: #9a968e; --idle: #6d6a64; }
+    /* color-scheme — 콤보박스·스크롤바 같은 브라우저 기본 컨트롤도 어두운 모양으로 */
+    :root { --bg: #16171a; --panel: #1f2125; --line: #2e3137; --text: #e8e6e1; --muted: #9a968e; --idle: #6d6a64; color-scheme: dark; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 -apple-system, "Apple SD Gothic Neo", "Pretendard", system-ui, sans-serif; }
@@ -188,7 +189,10 @@
   /* QA 탭 */
   .qa-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 12px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
   .qa-top .sub { color: var(--muted); font-size: 12px; flex: 1 1 260px; }
-  .qa-top select { font: inherit; font-size: 12.5px; }
+  /* 콤보박스 — 브라우저 기본(흰 바탕)이면 다크 모드에서 글자가 안 보인다. 현황판 색을 쓴다 */
+  .qa-top select, .tc-filter select { font: inherit; font-size: 12.5px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); }
+  .qa-top select option, .tc-filter select option { background: var(--panel); color: var(--text); }
+  .qa-top input { font: inherit; font-size: 12.5px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: var(--text); width: 260px; max-width: 100%; }
   .qa-steps { margin: 4px 0 0; padding-left: 18px; font-size: 11.5px; }
   .qa-steps .no { color: var(--bad); }
   .qa-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
@@ -211,8 +215,40 @@
   .qa-shots { display: flex; gap: 6px; overflow-x: auto; }
   .qa-shots a { flex: 0 0 auto; font-size: 10.5px; color: var(--muted); text-align: center; text-decoration: none; }
   .qa-shots img { display: block; width: 120px; height: 90px; object-fit: cover; object-position: top; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .qa-events summary { cursor: pointer; font-size: 11.5px; color: #6d28d9; }
+  .qa-events ul { margin: 4px 0 0; padding-left: 16px; font-size: 11px; max-height: 160px; overflow-y: auto; }
+  .qa-events li { word-break: break-all; }
   .qa-log { margin-top: 12px; font: 11.5px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; max-height: 160px; overflow-y: auto; white-space: pre-wrap; }
   @media (max-width: 720px) { .qa-wrap { grid-template-columns: 1fr; } .qa-runs { max-height: 220px; } }
+  /* QA 탭 안 [런 | TC 목록] 전환 · TC 목록 */
+  .qa-switch { display: inline-flex; gap: 4px; margin: 0 0 10px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; }
+  .qa-switch button { font: inherit; font-size: 12.5px; border: 0; background: none; color: var(--muted); padding: 4px 14px; border-radius: 999px; cursor: pointer; }
+  .qa-switch button[aria-selected="true"] { background: var(--accent); color: #fff; }
+  .tc-apps { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+  .tc-apps button { font: inherit; font-size: 12.5px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; cursor: pointer; }
+  .tc-apps button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tc-apps .n { color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+  .tc-filter { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; margin: 0 0 10px; }
+  .tc-filter input { font: inherit; font-size: 12.5px; }
+  .tc-filter input { flex: 1 1 200px; min-width: 0; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); }
+  .tc-meta { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+  .tc-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  .tc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .tc-table th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11.5px; padding: 7px 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); white-space: nowrap; }
+  .tc-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tc-table tr.tc-row { cursor: pointer; }
+  .tc-table tr.tc-row:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tc-table .id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+  .tc-table .nowrap { white-space: nowrap; }
+  .tc-table code { font-size: 11.5px; background: color-mix(in srgb, var(--line) 60%, transparent); padding: 0 3px; border-radius: 3px; word-break: break-all; }
+  .tc-prio { font-weight: 700; } .tc-prio.P0 { color: var(--bad); } .tc-prio.P1 { color: var(--warn); } .tc-prio.P2 { color: var(--muted); }
+  .tc-auto { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; white-space: nowrap; }
+  .tc-auto.done { border-color: var(--ok); color: var(--ok); }
+  .tc-detail td { background: color-mix(in srgb, var(--line) 25%, transparent); }
+  .tc-detail dl { display: grid; grid-template-columns: 80px 1fr; gap: 4px 10px; margin: 0; font-size: 12px; }
+  .tc-detail dt { color: var(--muted); }
+  .tc-detail dd { margin: 0; word-break: break-word; }
+  @media (max-width: 720px) { .tc-table .hide-sm { display: none; } .tc-detail dl { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -251,15 +287,35 @@
 <main id="view-qa" hidden>
   <section>
     <h2>QA 시뮬레이션 — 수정한 건의 영향 화면을 실제 브라우저로 (scripts/qa · .qa-runs/)</h2>
+    <div class="qa-switch" role="tablist" aria-label="QA 보기">
+      <button type="button" role="tab" data-qaview="runs" aria-selected="true">런</button>
+      <button type="button" role="tab" data-qaview="tc" aria-selected="false">TC 목록</button>
+    </div>
+    <div id="qa-view-tc" hidden>
+      <div class="tc-apps" id="tc-apps"></div>
+      <div class="tc-filter">
+        <select id="tc-prio" aria-label="우선"><option value="">우선 전체</option><option>P0</option><option>P1</option><option>P2</option></select>
+        <select id="tc-kind" aria-label="분류"><option value="">분류 전체</option></select>
+        <select id="tc-auto" aria-label="자동화"><option value="">자동화 전체</option><option value="done">자동화됨(씬 있음)</option><option value="todo">아직</option></select>
+        <input type="search" id="tc-search" placeholder="ID·제목·경로·문구 검색" aria-label="TC 검색">
+      </div>
+      <p class="tc-meta" id="tc-meta"></p>
+      <div class="tc-table-wrap"><table class="tc-table"><thead><tr><th>ID</th><th>분류</th><th>제목</th><th class="hide-sm">세션</th><th class="hide-sm">뷰포트</th><th>자동화</th><th>우선</th></tr></thead><tbody id="tc-body"><tr><td colspan="7" class="empty-history">불러오는 중이에요…</td></tr></tbody></table></div>
+    </div>
+    <div id="qa-view-runs">
     <div class="qa-top">
-      <b>전체 검수</b><span class="sub">서비스 화면 전부 + 흐름 씬 · 최신 개발 브랜치 · 승인한 기준 사진과 비교 · 요청할 때만</span>
+      <b>전체 검수</b><span class="sub">서비스 화면 전부 + 흐름 씬 · 대상(로컬 서버=최신 개발 브랜치 코드 / dev 서버=배포본)과 진행 방식을 골라 시작 · 승인한 기준 사진과 비교</span>
       <select id="qa-app" aria-label="앱"></select>
+      <select id="qa-target" aria-label="대상" title="로컬 서버 = 최신 개발 브랜치 코드를 내 컴퓨터에서 · dev 서버 = 배포된 사이트(간편인증 로그인 가능)"><option value="local">🖥 로컬 서버</option><option value="server">☁️ 서버 (주소 입력)</option></select>
+      <input id="qa-server" type="text" placeholder="https://dev-1.refund.bznav.com" aria-label="서버 주소" title="dev · stg · dev-1~3 · PR 미리보기 주소 — 운영 주소는 막혀요" hidden>
+      <select id="qa-mode" aria-label="진행 방식" title="흐름 = 비로그인 → (필요하면 로그인 요청) → 로그인 상태 → 실패 리포트"><option value="flow">🧭 흐름(비로그인→로그인)</option><option value="single">한 세션만</option></select>
       <select id="qa-profile" aria-label="세션 프로필"></select>
       <button type="button" class="btn" id="qa-suite">전체 검수 시작</button>
     </div>
     <div class="qa-wrap">
       <nav class="qa-runs" id="qa-runs" aria-label="QA 런"><div class="empty-history">불러오는 중이에요…</div></nav>
       <div class="qa-detail" id="qa-detail"><div class="empty-history">왼쪽에서 런을 고르세요. 계획서 카드의 [QA 실행] 으로 새로 돌릴 수 있어요</div></div>
+    </div>
     </div>
   </section>
 </main>
@@ -655,9 +711,9 @@
   const QA_STATUS = {
     pass: ['✅', '통과', 'ok'], expected: ['☑️', '기대대로 이동', 'ok'], changed: ['🟡', '화면 변화', 'warn'], fail: ['❌', '실패', 'bad'],
     redirected: ['↪️', '이동됨', ''], login: ['🔒', '로그인 필요', ''], ci: ['🪪', '본인인증 필요', ''], sample: ['📝', '샘플 필요', ''],
-    queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'], new: ['🆕', '기준 없음', 'run'], human: ['🙋', '사람 필요', 'warn'],
+    queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'], new: ['🆕', '기준 없음', 'run'], human: ['🙋', '사람 필요', 'warn'], skip: ['⛔', '건너뜀(부작용)', ''],
   };
-  const QA_ORDER = ['running', 'fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'new', 'expected', 'pass', 'queued'];
+  const QA_ORDER = ['running', 'fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'skip', 'new', 'expected', 'pass', 'queued'];
   // [전체 검수] — 앱·세션 프로필 고르기
   let qaApps = [];
   const loadQaApps = async () => {
@@ -666,22 +722,47 @@
     const current = appSelect.value;
     appSelect.innerHTML = qaApps.map((entry) => `<option value="${esc(entry.app)}">${esc(entry.app)} (흐름 씬 ${entry.scenarios})</option>`).join('') || '<option value="">설정된 앱 없음</option>';
     if (current) appSelect.value = current;
+    // 대상(로컬·dev 서버)·진행 방식(흐름·한 세션)에 따라 — 로컬로 못 돌리는 앱은 dev 서버만, 흐름이면 세션 고르기를 숨긴다
+    const targetSelect = document.getElementById('qa-target');
+    const modeSelect = document.getElementById('qa-mode');
     const fillProfiles = () => {
       const entry = qaApps.find((item) => item.app === appSelect.value);
-      document.getElementById('qa-profile').innerHTML = (entry?.profiles || []).map((item) => `<option value="${esc(item.name)}" title="${esc(item.note)}">세션 ${esc(item.name)}${item.session ? '' : ' (세션 없음)'}</option>`).join('');
+      targetSelect.querySelector('[value="local"]').disabled = entry ? !entry.local : false;
+      if (targetSelect.selectedOptions[0]?.disabled) targetSelect.value = 'server';
+      const server = targetSelect.value === 'server';
+      // 서버 주소 — 앱마다 마지막에 쓴 주소를 기억한다(이 브라우저에만), 없으면 설정의 devUrl
+      const serverInput = document.getElementById('qa-server');
+      serverInput.hidden = !server;
+      let remembered = '';
+      try { remembered = localStorage.getItem(`board.qaServer.${appSelect.value}`) || ''; } catch (error) { remembered = ''; }
+      if (server && !serverInput.dataset.app?.includes(appSelect.value)) { serverInput.value = remembered || entry?.devUrl || ''; serverInput.dataset.app = appSelect.value; }
+      document.getElementById('qa-profile').innerHTML = (entry?.profiles || []).map((item) => {
+        // 서버 세션은 주소마다 따로라 미리 알 수 없다 — 흐름으로 돌리면 없을 때 로그인을 요청한다
+        const note = server ? '' : item.session ? '' : ' (세션 없음)';
+        return `<option value="${esc(item.name)}" title="${esc(item.note)}">세션 ${esc(item.name)}${note}</option>`;
+      }).join('');
       const saved = (entry?.profiles || []).find((item) => item.session && item.name !== 'logout');
       if (saved) document.getElementById('qa-profile').value = saved.name;
+      document.getElementById('qa-profile').hidden = modeSelect.value === 'flow';
     };
     appSelect.onchange = fillProfiles;
+    targetSelect.onchange = fillProfiles;
+    modeSelect.onchange = fillProfiles;
     fillProfiles();
   };
   document.getElementById('qa-suite').onclick = async () => {
     const app = document.getElementById('qa-app').value;
     const profile = document.getElementById('qa-profile').value;
+    const target = document.getElementById('qa-target').value;
+    const server = document.getElementById('qa-server').value.trim();
+    const flow = document.getElementById('qa-mode').value === 'flow';
     if (!app) return toast('전체 검수 설정(scripts/qa/routes/<앱>.json)이 있는 앱이 없어요');
-    if (!confirm(`${app} 전체 검수를 시작할까요? (세션 ${profile} · 화면 전부라 수십 분 걸릴 수 있어요 · 다른 무거운 작업이 돌면 끝날 때까지 기다려요)`)) return;
+    if (target === 'server' && !server) return toast('서버 주소를 넣어 주세요 — 예: https://dev-1.refund.bznav.com');
+    if (target === 'server') { try { localStorage.setItem(`board.qaServer.${app}`, server); } catch (error) { /* 기억 못 해도 진행 */ } }
+    const what = `${target === 'server' ? `☁️ 서버 ${server}` : '🖥 로컬 서버(최신 개발 브랜치 코드)'} · ${flow ? '🧭 흐름 — 비로그인 → 로그인 상태(세션이 없으면 로그인 창을 띄워요)' : `세션 ${profile}`}`;
+    if (!confirm(`${app} 전체 검수를 시작할까요?\n${what}\n화면 전부라 수십 분 걸릴 수 있어요 · 라이브 화면이 새 탭으로 열려요`)) return;
     try {
-      await api('/api/qa-suite', { app, profile });
+      await api('/api/qa-suite', { app, profile, target, flow, server });
       toast(`${app} 전체 검수를 시작했어요 — 무거운 명령 차례를 기다린 뒤 돌아요`);
       qaSelected = '';
       setTimeout(loadQa, 1500);
@@ -745,6 +826,13 @@
     const counts = {};
     for (const screen of run.screens || []) counts[screen.status] = (counts[screen.status] || 0) + 1;
     const screens = [...(run.screens || [])].sort((left, right) => QA_ORDER.indexOf(left.status) - QA_ORDER.indexOf(right.status) || left.distance - right.distance);
+    // 트래킹 이벤트(Mixpanel) — 카드 안에 접어 둔다
+    const qaEvents = (groups) => {
+      const filled = groups.filter(([, events]) => events && events.length);
+      if (!filled.length) return '';
+      const total = filled.reduce((sum, [, events]) => sum + events.length, 0);
+      return `<details class="qa-events"><summary>📊 트래킹 이벤트 ${total}개</summary>${filled.map(([label, events]) => `${label ? `<div class="sub">${esc(label)}</div>` : ''}<ul>${events.map((event) => `<li><b>${esc(event.name)}</b>${event.props ? ` <span class="sub">${esc(event.props)}</span>` : ''}</li>`).join('')}</ul>`).join('')}</details>`;
+    };
     const cards = screens.map((screen) => {
       const [icon, label, tone] = QA_STATUS[screen.status] || QA_STATUS.queued;
       const shots = (screen.viewports || []).flatMap((viewport) => [['작업', viewport.shots.head], ['기준', viewport.shots.base], ['차이', viewport.shots.diff]]
@@ -758,6 +846,7 @@
         ${screen.note ? `<div class="why">📝 ${esc(screen.note)}</div>` : ''}
         ${(screen.problems || []).slice(0, 3).map((problem) => `<div class="problem">[${esc(problem.viewport)}] ${esc(problem.text)}</div>`).join('')}
         ${shots ? `<div class="qa-shots">${shots}</div>` : ''}
+        ${qaEvents((screen.viewports || []).map((viewport) => [viewport.name, viewport.events]))}
         ${run.kind === 'suite' && run.status === 'done' ? (screen.approved ? '<div class="sub">✔ 기준 승인됨</div>' : ['new', 'changed', 'fail', 'redirected'].includes(screen.status) ? `<div><button type="button" class="btn" data-approve="${esc(screen.key)}">이 화면 기준으로 승인</button></div>` : '') : ''}
       </div>`;
     }).join('');
@@ -769,11 +858,13 @@
         <div class="sub">${label} · 세션 ${esc(scenario.profile)}${scenario.viewport ? ` · ${esc(scenario.viewport)}` : ''}</div>
         ${scenario.why ? `<div class="why">${esc(scenario.why)}</div>` : ''}
         <ol class="qa-steps">${steps}</ol>
-        ${shots ? `<div class="qa-shots">${shots}</div>` : ''}</div>`;
+        ${shots ? `<div class="qa-shots">${shots}</div>` : ''}
+        ${qaEvents([['', scenario.events]])}</div>`;
     }).join('');
     box.innerHTML = `<div class="qa-head"><h3>${qaLive(run) ? '⏳ ' : ''}${run.kind === 'suite' ? '전체 검수 · ' : ''}${esc(run.app)} · ${esc(run.branch)} @${esc(run.head)}</h3>
         <span class="sub">${esc(qaWhen(run.startedAt))} · ${run.base ? `기준 ${esc(run.base.ref)}@${esc(run.base.sha)}` : '기준 비교 없음'} · 세션 ${esc(run.profile || '')}${run.plan ? ` · ${esc(run.plan)}` : ''}</span>
-        ${run.status === 'done' ? `<a class="sub" href="${base}report.html" target="_blank" rel="noopener">리포트 열기 ↗</a>` : ''}</div>
+        ${run.status === 'done' ? `<a class="sub" href="${base}report.html" target="_blank" rel="noopener">리포트 열기 ↗</a>` : ''}
+        <a class="sub" href="/qa-live?${run.group ? `group=${encodeURIComponent(run.group)}` : `id=${encodeURIComponent(run.id)}`}" target="_blank" rel="noopener">${run.status === 'done' ? '📋 실패 리포트·라이브 화면 ↗' : '📺 라이브 화면 ↗'}</a></div>
       <div class="qa-chips"><span class="qa-chip">${esc(run.phase || '')}</span>${QA_ORDER.filter((key) => counts[key]).map((key) => `<span class="qa-chip">${QA_STATUS[key][0]} ${QA_STATUS[key][1]} ${counts[key]}</span>`).join('')}${run.totalScreens ? `<span class="qa-chip">영향 ${new Set((run.screens || []).map((screen) => screen.route)).size} / 전체 ${run.totalScreens}</span>` : ''}</div>
       ${run.status === 'error' ? `<div class="problem" style="color:var(--bad)">오류 — ${esc(run.error || '')}</div>` : ''}
       ${run.kind === 'suite' && run.status === 'done' ? `<div style="margin:0 0 10px"><button type="button" class="btn" data-approve-all="1">기준으로 승인 (기준 없음·변화·통과 전부)</button> <span class="sub">승인한 사진이 다음 전체 검수의 비교 기준이 돼요</span></div>` : ''}
@@ -784,6 +875,67 @@
     box.querySelectorAll('[data-approve-all]').forEach((button) => { button.onclick = () => approveQa(run.id, ''); });
     return qaLive(run);
   };
+  // ── QA TC 목록 — docs/qa/tc/<앱>.md "B) TC" 표(/api/qa/tc). 자동화 칸에 "있음" 이 들어가면 자동화됨
+  const TC_APP_NAME = { 'refund-web': '환급', 'care-web': '케어', 'brand-web': '브랜드', 'sena-web': '세나', 'plus-web': '플러스' };
+  const tcState = { apps: null, app: '', open: new Set() };
+  const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  const tcDone = (item) => /있음/.test(item.auto);
+  const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
+  const renderTc = () => {
+    const apps = tcState.apps || [];
+    const all = apps.flatMap((entry) => entry.cases);
+    document.getElementById('tc-apps').innerHTML = [['', '전체', all]].concat(apps.map((entry) => [entry.app, TC_APP_NAME[entry.app] || entry.app, entry.cases]))
+      .map(([key, label, cases]) => `<button type="button" data-tcapp="${esc(key)}" aria-pressed="${tcState.app === key}">${esc(label)}<span class="n">${cases.length} · P0 ${cases.filter((item) => item.prio === 'P0').length} · 자동 ${cases.filter(tcDone).length}</span></button>`).join('');
+    document.querySelectorAll('[data-tcapp]').forEach((button) => { button.onclick = () => { tcState.app = button.dataset.tcapp; renderTc(); }; });
+    const kindSelect = document.getElementById('tc-kind');
+    const kinds = [...new Set(tcCases().map((item) => item.kind).filter(Boolean))];
+    const keepKind = kindSelect.value;
+    kindSelect.innerHTML = '<option value="">분류 전체</option>' + kinds.map((kind) => `<option>${esc(kind)}</option>`).join('');
+    kindSelect.value = kinds.includes(keepKind) ? keepKind : '';
+    const prio = document.getElementById('tc-prio').value;
+    const auto = document.getElementById('tc-auto').value;
+    const query = document.getElementById('tc-search').value.trim().toLowerCase();
+    const rows = tcCases().filter((item) => (!prio || item.prio === prio) && (!kindSelect.value || item.kind === kindSelect.value)
+      && (!auto || (auto === 'done') === tcDone(item))
+      && (!query || Object.values(item).join(' ').toLowerCase().includes(query)));
+    const entry = apps.find((app) => app.app === tcState.app);
+    document.getElementById('tc-meta').innerHTML = entry
+      ? `${esc(entry.doc)} · 흐름 씬 ${entry.scenarios.length}개${entry.scenarios.length ? ` (${entry.scenarios.map((name) => esc(name.replace(/\.json$/, ''))).join(', ')})` : ''} · 화면 설정 ${entry.routes ? '있음' : '없음'} · ${rows.length}개 보임`
+      : `docs/qa/tc/*.md · ${rows.length}개 보임 · 행을 누르면 단계·기대 결과`;
+    document.getElementById('tc-body').innerHTML = rows.length ? rows.map((item) => {
+      const key = `${item.app}:${item.id}`;
+      const detail = tcState.open.has(key) ? `<tr class="tc-detail"><td colspan="7"><dl>
+        <dt>사전 조건</dt><dd>${tcInline(item.pre)}</dd><dt>단계</dt><dd>${tcInline(item.steps)}</dd><dt>기대 결과</dt><dd>${tcInline(item.expect)}</dd>
+        <dt>세션·뷰포트</dt><dd>${esc(item.session)} · ${esc(item.viewport)}</dd><dt>근거</dt><dd>${tcInline(item.ref)}</dd></dl></td></tr>` : '';
+      return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
+        <td class="hide-sm nowrap">${esc(item.session)}</td><td class="hide-sm nowrap">${esc(item.viewport)}</td>
+        <td><span class="tc-auto${tcDone(item) ? ' done' : ''}">${tcInline(item.auto || '–')}</span></td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
+    }).join('') : '<tr><td colspan="7" class="empty-history">맞는 TC 가 없어요</td></tr>';
+    document.querySelectorAll('[data-tc]').forEach((row) => {
+      row.onclick = () => { const key = row.dataset.tc; if (tcState.open.has(key)) tcState.open.delete(key); else tcState.open.add(key); renderTc(); };
+    });
+  };
+  const loadTc = async () => {
+    try {
+      const response = await fetch('/api/qa/tc', { cache: 'no-store' });
+      tcState.apps = (await response.json()).apps;
+      renderTc();
+    } catch (error) {
+      document.getElementById('tc-body').innerHTML = `<tr><td colspan="7" class="empty-history">불러오지 못했어요 — ${esc(error.message)}</td></tr>`;
+    }
+  };
+  ['tc-prio', 'tc-kind', 'tc-auto'].forEach((id) => { document.getElementById(id).onchange = renderTc; });
+  document.getElementById('tc-search').oninput = renderTc;
+  const showQaView = (view) => {
+    document.getElementById('qa-view-runs').hidden = view !== 'runs';
+    document.getElementById('qa-view-tc').hidden = view !== 'tc';
+    document.querySelectorAll('[data-qaview]').forEach((button) => button.setAttribute('aria-selected', String(button.dataset.qaview === view)));
+    if (view === 'tc') loadTc();
+    try { localStorage.setItem('board.qaView', view); } catch (error) { /* 저장 못 해도 보기는 바뀐다 */ }
+  };
+  document.querySelectorAll('[data-qaview]').forEach((button) => { button.onclick = () => showQaView(button.dataset.qaview); });
+  try { if (localStorage.getItem('board.qaView') === 'tc') showQaView('tc'); } catch (error) { /* 무시 */ }
+
   const TABS = ['now', 'hermes', 'qa', 'history'];
   const showTab = (tab) => {
     for (const name of TABS) {

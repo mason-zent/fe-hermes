@@ -1,7 +1,7 @@
 {
   "name": "실제 본인인증 (사람이 끼는 단계)",
   "profile": "login",
-  "viewport": "desktop",
+  "viewports": ["desktop"],
   "why": "실제 인증사(PASS 등)를 거쳐 돌아오는 흐름. 창 없이 돌면 사람 단계에서 멈춘다 — --headed 로 돌리고 창에서 직접 인증한다",
   "steps": [
     { "goto": "/auth/ci-request" },

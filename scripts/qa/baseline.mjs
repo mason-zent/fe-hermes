@@ -10,6 +10,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, copyFileSync } from
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { RUNS_DIR, buildReport, buildIndex } from './report.mjs'
+import { targetKey } from './targets.mjs'
 
 const HERMES = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 export const BASELINES_DIR = join(HERMES, '.qa-baselines')
@@ -40,7 +41,8 @@ export function approveRun(runId, keys = null) {
   const approvable = new Set(['new', 'changed', 'pass', 'expected'])
   const targets = run.screens.filter((screen) => (keys ? keys.includes(screen.key) : approvable.has(screen.status)))
   if (!targets.length) return { error: keys ? '그 화면이 런에 없다' : '승인할 화면이 없다' }
-  const dir = baselineDir(run.app, run.profile)
+  // 대상(로컬·dev 서버)마다 기준 사진을 따로 둔다(D21)
+  const dir = baselineDir(targetKey(run.app, run.target), run.profile)
   mkdirSync(dir, { recursive: true })
   let count = 0
   for (const screen of targets) {

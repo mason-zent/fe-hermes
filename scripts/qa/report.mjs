@@ -22,10 +22,11 @@ export const STATUS = {
   sample: { icon: '📝', label: '샘플 필요', tone: 'muted' },
   new: { icon: '🆕', label: '기준 없음', tone: 'run' },
   human: { icon: '🙋', label: '사람 필요', tone: 'warn' },
+  skip: { icon: '⛔', label: '건너뜀(부작용)', tone: 'muted' },
   queued: { icon: '·', label: '대기', tone: 'muted' },
   running: { icon: '⏳', label: '실행 중', tone: 'run' }
 }
-const ORDER = ['fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'new', 'expected', 'pass', 'running', 'queued']
+const ORDER = ['fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'skip', 'new', 'expected', 'pass', 'running', 'queued']
 
 const escape = (value) =>
   String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character])
@@ -69,6 +70,7 @@ a{color:var(--run);text-decoration:none}a:hover{text-decoration:underline}
 .shots{display:flex;gap:6px;margin-top:8px;overflow-x:auto}.shot{flex:0 0 auto;text-align:center;font-size:11px;color:var(--sub)}
 .shot img{display:block;width:150px;height:110px;object-fit:cover;object-position:top;border:1px solid var(--line);border-radius:6px;background:#fff}
 .problems{margin:8px 0 0;padding-left:18px;font-size:12px;color:var(--bad);word-break:break-all}
+.events{margin:4px 0 0;padding-left:16px;font-size:11.5px;word-break:break-all}details summary{cursor:pointer;font-size:12px}
 table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;color:var(--sub);font-weight:600}
 tr:last-child td{border-bottom:0}.tag{font-size:12px;color:var(--sub)}
@@ -87,6 +89,17 @@ export const when = (iso) => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
+// 트래킹 이벤트(Mixpanel) — 접어 둔 목록. 이름 · 줄인 속성
+function eventList(groups) {
+  const filled = groups.filter(([, events]) => events?.length)
+  if (!filled.length) return ''
+  const total = filled.reduce((sum, [, events]) => sum + events.length, 0)
+  const lists = filled
+    .map(([label, events]) => `${label ? `<div class="tag">${escape(label)}</div>` : ''}<ul class="events">${events.map((event) => `<li><b>${escape(event.name)}</b>${event.props ? ` <span class="tag">${escape(event.props)}</span>` : ''}</li>`).join('')}</ul>`)
+    .join('')
+  return `<details><summary>📊 트래킹 이벤트 ${total}개</summary>${lists}</details>`
+}
+
 // 흐름 씬 — 단계마다 통과/멈춤과 그때 경로, 남긴 스크린샷
 function scenarioSection(run) {
   if (!run.scenarios?.length) return ''
@@ -100,7 +113,8 @@ function scenarioSection(run) {
   ${scenario.why ? `<div class="why">${escape(scenario.why)}</div>` : ''}
   <ol style="margin:6px 0 0;padding-left:18px;font-size:12.5px">${steps}</ol>
   ${(scenario.problems ?? []).length ? `<ul class="problems">${scenario.problems.map((problem) => `<li>${escape(problem.text)}</li>`).join('')}</ul>` : ''}
-  <div class="shots">${shots}</div></div>`
+  <div class="shots">${shots}</div>
+  ${eventList([['', scenario.events]])}</div>`
     })
     .join('\n')
   return `<h2 style="font-size:15px;margin:18px 0 0">흐름 씬 ${run.scenarios.length}개</h2><div class="grid" style="margin-top:10px">${items}</div>`
@@ -136,8 +150,11 @@ export function buildReport(runDir) {
   <div class="tag">${status.label}${screen.auth ? ' · 🔒 로그인 화면' : ''}${screen.entry ? ' · 진입 경로로 열었음' : ''}${screen.expect ? ` · 기대 ${screen.expect === 'stay' ? '머무름' : `→ ${escape(screen.expect)}`}` : ''}${moved ? ` · → ${escape(moved.finalPath)}` : ''}${screen.baseProblems ? ` · 기준에도 있던 문제 ${screen.baseProblems}개` : ''}${screen.approved ? ' · ✔ 기준 승인됨' : ''}</div>
   <div class="why">${escape(screen.route)} ← ${escape(screen.changedFile)}</div>
   ${screen.note ? `<div class="why">📝 ${escape(screen.note)}</div>` : ''}
+  ${screen.flows?.length ? `<div class="why">🔗 흐름에서 확인 — 씬 ${escape(screen.flows.join(', '))}</div>` : ''}
+  ${screen.viewports.some((viewport) => viewport.warnings?.length) ? `<details><summary>⚠ 확인 필요 ${screen.viewports.reduce((total, viewport) => total + (viewport.warnings?.length ?? 0), 0)}개</summary><ul class="events">${screen.viewports.flatMap((viewport) => (viewport.warnings ?? []).map((warning) => `<li>[${escape(viewport.name)}] ${escape(warning.text)}</li>`)).join('')}</ul></details>` : ''}
   ${problems}
   <div class="shots">${shots}</div>
+  ${eventList(screen.viewports.map((viewport) => [viewport.name, viewport.events]))}
   ${via}
 </div>`
     })

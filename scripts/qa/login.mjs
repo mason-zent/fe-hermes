@@ -19,6 +19,7 @@ import { readFileSync, mkdirSync, chmodSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
+import { normalizeTarget, sessionFileOf, sessionKeyOf, checkServerUrl } from './targets.mjs'
 
 const QA_DIR = dirname(fileURLToPath(import.meta.url))
 const HERMES = join(QA_DIR, '..', '..')
@@ -30,11 +31,20 @@ const option = (name) => {
 
 const appName = option('app') || 'refund-web'
 const routesConfig = JSON.parse(readFileSync(join(QA_DIR, 'routes', `${appName}.json`), 'utf8'))
-const origin = option('url') || 'http://localhost:3291'
+// --target server [--server <주소> | --url <주소>] (D21) — 배포된 서버에서 로그인한다. 간편인증도 그 서버로 돌아온다.
+// 세션 파일은 서버 주소(호스트)마다 따로. 운영 주소는 거부
+const target = option('server') ? 'server' : normalizeTarget(option('target'))
+const serverValue = option('server') || option('url') || routesConfig.devUrl
+const checked = target === 'server' ? checkServerUrl(serverValue ?? '') : null
+if (checked?.error) {
+  console.error(`⛔ ${checked.error}`)
+  process.exit(2)
+}
+const origin = target === 'server' ? checked.url : option('url') || 'http://localhost:3291'
 const authDir = join(HERMES, '.qa-auth')
 const profileName = option('profile') || 'login'
-const authFile = join(authDir, `${appName}.${profileName}.json`)
-const fromFile = option('from') ? join(authDir, `${appName}.${option('from')}.json`) : null
+const authFile = sessionFileOf(HERMES, appName, profileName, target, origin)
+const fromFile = option('from') ? sessionFileOf(HERMES, appName, option('from'), target, origin) : null
 if (fromFile && !existsSync(fromFile)) {
   console.error(`⚠️  --from ${option('from')} 세션이 없다 — 먼저 그 프로필로 로그인한다`)
   process.exit(2)
@@ -53,18 +63,34 @@ const page = await context.newPage()
 await page.goto(`${origin}${option('path') || routesConfig.signInPath}`)
 console.log(fromFile
   ? `🔑 ${option('from')} 세션으로 열었습니다. 창에서 남은 단계(본인인증 등)를 마치고 이 서버 화면으로 돌아오면 ${profileName} 로 저장합니다 (10분 제한)`
-  : '🔑 열린 창에서 dev 계정으로 **이메일** 로그인해 주세요(간편로그인은 localhost 로 안 돌아온다). 로그인을 마치고 이 서버 화면으로 돌아오면 저장합니다 (10분 제한)')
+  : target === 'server'
+    ? '🔑 열린 창에서 로그인해 주세요(간편인증 가능). 로그인을 마치고 이 서버 화면으로 돌아오면 저장합니다 (10분 제한)'
+    : '🔑 열린 창에서 dev 계정으로 **이메일** 로그인해 주세요(간편로그인은 localhost 로 안 돌아온다). 로그인을 마치고 이 서버 화면으로 돌아오면 저장합니다 (10분 제한)')
 
 // 간편로그인(네이버·카카오)은 외부 로그인 페이지 → SSO 서버를 거쳐 이 서버로 돌아온다.
 // 외부 페이지로 나간 순간이 아니라, 이 서버로 돌아와 로그인 화면이 아닐 때 끝난 것으로 본다
-const isSignedInPage = (url) => url.origin === new URL(origin).origin && !url.pathname.startsWith('/auth/')
+// /redirect(간편인증이 code 를 들고 돌아오는 곳)는 아직 토큰을 받기 전이다. 그리고 로그인 토큰 쿠키(B_AT*)가 실제로 생겨야 끝난 것으로 본다
+// (2026-10-06 dev 서버 간편인증 — /redirect 에 닿자마자 저장해 토큰 없는 세션이 저장됐다)
+const isSignedInPage = (url) => url.origin === new URL(origin).origin && !url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/redirect')
+const hasToken = async () => (await context.cookies()).some((cookie) => cookie.name.startsWith('B_AT') && cookie.value)
 try {
-  await page.waitForURL((url) => isSignedInPage(url), { timeout: 10 * 60 * 1000 })
+  const deadline = Date.now() + 10 * 60 * 1000
+  // 화면이 로그인 밖이고 토큰 쿠키가 있으며, 그 상태가 2초 동안 유지될 때(중간에 다시 /auth 로 가는 리다이렉트가 끝나게)
+  let stableSince = 0
+  while (Date.now() < deadline) {
+    const ready = !page.isClosed() && isSignedInPage(new URL(page.url())) && (await hasToken())
+    if (!ready) stableSince = 0
+    else if (!stableSince) stableSince = Date.now()
+    else if (Date.now() - stableSince >= 2000) break
+    if (page.isClosed()) throw new Error('창이 닫혔다')
+    await page.waitForTimeout(500)
+  }
+  if (!stableSince || Date.now() >= deadline) throw new Error('시간 초과')
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
   mkdirSync(authDir, { recursive: true, mode: 0o700 })
   const state = await context.storageState({ path: authFile })
   chmodSync(authFile, 0o600)
-  console.log(`✅ 세션 저장 — .qa-auth/${appName}.${profileName}.json (쿠키 ${state.cookies.length}개 · 값은 출력하지 않음)`)
+  console.log(`✅ 세션 저장 — .qa-auth/${sessionKeyOf(appName, target, origin)}.${profileName}.json (쿠키 ${state.cookies.length}개 · 값은 출력하지 않음)`)
 } catch {
   console.error('⚠️  로그인을 마치지 않았다 — 저장하지 않음')
   process.exitCode = 1

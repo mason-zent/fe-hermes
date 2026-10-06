@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QA 라이브</title>
+<!-- QA 자동화 도구 화면 — scripts/qa/run.mjs --live 런의 실시간 화면(live/*.jpg) · API 호출 · Mixpanel 이벤트(live.jsonl)를 한 페이지에. 현황판 서버가 /qa-live?id=<런> 으로 준다 -->
+<style>
+  :root {
+    --bg: #f4f4f2; --panel: #ffffff; --line: #e3e3de; --text: #1d1d1b; --muted: #6b6b66;
+    --accent: #2563eb; --ok: #16a34a; --warn: #d97706; --bad: #dc2626; --event: #6d28d9; --gql: #0369a1; --http: #4b5563; --mock: #b45309;
+    --frame: #e9e9e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141413; --panel: #1e1e1c; --line: #33332f; --text: #ececea; --muted: #9b9b95;
+      --accent: #60a5fa; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --event: #c4b5fd; --gql: #7dd3fc; --http: #cbd5e1; --mock: #fcd34d;
+      --frame: #262624;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141413; --panel: #1e1e1c; --line: #33332f; --text: #ececea; --muted: #9b9b95;
+    --accent: #60a5fa; --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --event: #c4b5fd; --gql: #7dd3fc; --http: #cbd5e1; --mock: #fcd34d;
+    --frame: #262624;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", sans-serif; display: flex; flex-direction: column; }
+  header { padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); display: grid; gap: 6px; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+  h1 { margin: 0; font-size: 15px; }
+  .sub { color: var(--muted); font-size: 12px; }
+  .bar { height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .5s; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; font-size: 12px; background: var(--bg); }
+  a { color: var(--accent); }
+  main { flex: 1; min-height: 0; display: grid; grid-template-columns: 300px minmax(0, 1fr) minmax(340px, 30%); }
+  /* 왼쪽 — 테스트 체크리스트(화면 전부 + 흐름 씬). 끝난 건 결과 아이콘, 진행 중은 강조 */
+  .checklist { min-height: 0; overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); padding: 8px 0 16px; font-size: 12px; }
+  .checklist h2 { position: sticky; top: -8px; z-index: 1; margin: 0; padding: 8px 12px 6px; font-size: 13px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 8px; }
+  .checklist h2 .sub { font-weight: 400; }
+  .check { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 2px 4px; padding: 4px 12px; border-left: 3px solid transparent; }
+  .check .icon { text-align: center; }
+  .check .what { word-break: break-all; }
+  .check .note { grid-column: 2; color: var(--muted); font-size: 11px; }
+  .check.queued { color: var(--muted); }
+  .check.done .what { color: var(--text); }
+  .check.bad .note { color: var(--bad); } .check.warn .note { color: var(--warn); }
+  .check.current { background: color-mix(in srgb, var(--accent) 12%, transparent); border-left-color: var(--accent); font-weight: 600; }
+  .check.current .icon { animation: blink 1s infinite; }
+  .check[data-key] { cursor: pointer; }
+  .check[data-key]:hover { background: var(--bg); }
+  .check .why-list { grid-column: 2; margin: 3px 0 2px; padding-left: 14px; font-weight: 400; font-size: 11px; color: var(--bad); word-break: break-all; }
+  .check .why-list li.base { color: var(--muted); }
+  .check .shot-links { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 11px; font-weight: 400; }
+  .test-steps { grid-column: 2; margin: 4px 0; padding: 0; list-style: none; font-weight: 400; display: grid; gap: 4px; font-size: 11.5px; }
+  .test-steps > li { border-left: 2px solid var(--ok); padding-left: 6px; }
+  .test-steps > li.no { border-left-color: var(--bad); }
+  .test-steps > li.no > b { color: var(--bad); }
+  .test-steps .marks { color: var(--muted); font-size: 11px; }
+  .test-steps .how { color: var(--muted); font-size: 11px; }
+  .test-steps ul { margin: 2px 0 0; padding-left: 14px; word-break: break-all; }
+  .test-steps ul li.base { color: var(--muted); }
+  .test-steps ul li.warn { color: var(--warn); }
+  .test-steps > li.warnstep { border-left-color: var(--warn); }
+  .test-steps > li.warnstep > b { color: var(--warn); }
+  .test-steps .at { color: var(--accent); font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; }
+  /* 상세 팝업 — 체크리스트 항목을 누르면 */
+  dialog#detail { width: min(1100px, 94vw); max-height: 88vh; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog#detail::backdrop { background: rgba(0,0,0,.45); }
+  .dlg-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: baseline; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  .dlg-head h3 { margin: 0; font-size: 15px; flex: 1; word-break: break-all; }
+  .dlg-head button { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+  .dlg-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
+  .dlg-body h4 { margin: 0 0 6px; font-size: 13px; }
+  .dlg-body .test-steps { font-size: 12.5px; gap: 8px; }
+  .dlg-body .test-steps .how, .dlg-body .test-steps .marks { font-size: 12px; }
+  .dlg-body .test-steps .at { font-size: 11.5px; }
+  .dlg-shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .dlg-shots a { display: grid; gap: 3px; font-size: 11.5px; color: var(--muted); text-decoration: none; }
+  .dlg-shots img { width: 100%; height: 170px; object-fit: cover; object-position: top; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+  .dlg-ctags { margin-bottom: 6px; }
+  .dlg-calls .row[hidden] { display: none; }
+  .dlg-calls { border: 1px solid var(--line); border-radius: 8px; max-height: 360px; overflow-y: auto; font-size: 12px; }
+  .dlg-calls .row { cursor: default; }
+  .dlg-calls .row .values { white-space: pre-wrap; word-break: break-all; }
+  .dlg-meta { color: var(--muted); font-size: 12px; margin: 0 0 10px; }
+  @media (max-width: 800px) { .dlg-body { grid-template-columns: 1fr; } }
+  .steps { grid-column: 2; margin: 3px 0 2px; padding: 0; list-style: none; font-weight: 400; display: grid; gap: 1px; }
+  .steps li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 4px; color: var(--muted); }
+  .steps li.ok { color: var(--text); } .steps li.no { color: var(--bad); }
+  .steps li.now { color: var(--accent); font-weight: 600; }
+  .stage { min-height: 0; overflow: auto; padding: 12px 16px; display: grid; gap: 12px; align-content: start; }
+  .frames { display: flex; gap: 12px; align-items: flex-start; }
+  /* 묶음(--profiles) — 세션 상태별 탭과 상태마다 한 줄씩의 화면 */
+  /* 흐름(--flow) — 로그인 요청 띠 · 실패 리포트 모달 */
+  .gate { padding: 10px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .gate.done { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); font-weight: 400; }
+  .gate.failed { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+  .gate .sub { font-weight: 400; }
+  /* QA 완료 여부 — 제목 옆 큰 표시 */
+  .status-pill { font-size: 13px; font-weight: 700; padding: 3px 12px; border-radius: 999px; border: 2px solid var(--accent); color: var(--accent); white-space: nowrap; }
+  .status-pill.done { border-color: var(--ok); color: var(--ok); background: color-mix(in srgb, var(--ok) 10%, transparent); }
+  .status-pill.fail { border-color: var(--bad); color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+  .status-pill.stopped { border-color: var(--warn); color: var(--warn); }
+  /* 리포트 안에서 펼치는 자세히 */
+  .rep-detail { grid-column: 1 / -1; border-top: 1px dashed var(--line); padding-top: 10px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .rep-detail h4 { margin: 0 0 6px; font-size: 13px; }
+  @media (max-width: 800px) { .rep-detail { grid-template-columns: 1fr; } }
+  .report-btn { font: inherit; font-size: 13px; font-weight: 600; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+  dialog#report { width: min(1100px, 94vw); max-height: 88vh; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  dialog#report::backdrop { background: rgba(0,0,0,.45); }
+  .rep-body { padding: 14px 16px 18px; display: grid; gap: 14px; }
+  .rep-summary { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rep-group h4 { margin: 0 0 6px; font-size: 13.5px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .rep-group .why { color: var(--muted); font-size: 12px; font-weight: 400; }
+  .rep-item { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 6px; }
+  .rep-item img { width: 96px; height: 72px; object-fit: cover; object-position: top; border-radius: 4px; border: 1px solid var(--line); background: #fff; }
+  .rep-item .what { font-weight: 600; word-break: break-all; }
+  .rep-item .reason { font-size: 12px; color: var(--bad); word-break: break-all; }
+  .rep-item .at { font-size: 11px; color: var(--accent); font-family: ui-monospace, Menlo, monospace; }
+  .rep-item button, .rep-actions button, .rep-actions a { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 6px; padding: 3px 10px; cursor: pointer; text-decoration: none; }
+  .rep-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .rep-actions .primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  @media (max-width: 700px) { .rep-item { grid-template-columns: 1fr; } }
+  /* 끝났거나 중단된 런을 보고 있을 때 — 지금 도는 런으로 가는 링크 */
+  .ended { padding: 6px 10px; border-radius: 8px; background: color-mix(in srgb, var(--warn) 16%, transparent); border: 1px solid var(--warn); font-size: 12.5px; }
+  .group-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .group-tabs button { font: inherit; font-size: 12.5px; text-align: left; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 8px; padding: 4px 10px; cursor: pointer; display: grid; gap: 3px; min-width: 170px; }
+  .group-tabs button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .group-tabs .mini { height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; }
+  .group-tabs .mini > span { display: block; height: 100%; background: var(--accent); }
+  .frame-row { display: grid; gap: 4px; padding: 6px; border-radius: 10px; border: 1px solid transparent; }
+  .frame-row.active { border-color: var(--accent); }
+  .frame-row > .row-label { font-size: 12px; font-weight: 600; }
+  .frame-row .frames { display: flex; gap: 10px; align-items: flex-start; }
+  .frame { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: grid; gap: 6px; min-width: 0; }
+  .frame.desktop { flex: 3 1 0; }
+  .frame.mobile { flex: 1 1 0; max-width: 300px; }
+  .frame[hidden] { display: none; }
+  .frame .label { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+  .frame .url { color: var(--muted); font-size: 11.5px; word-break: break-all; min-height: 1.4em; }
+  .frame .view { background: var(--frame); border-radius: 6px; overflow: hidden; aspect-ratio: 1280 / 800; display: grid; place-items: center; }
+  .frame.mobile .view { aspect-ratio: 390 / 844; }
+  .frame img { width: 100%; height: 100%; object-fit: contain; object-position: top; display: block; }
+  .frame .empty { color: var(--muted); font-size: 12px; padding: 12px; text-align: center; }
+  .live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); margin-right: 4px; animation: blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity: .25; } }
+  .calls h2 { margin: 0 0 6px; font-size: 13px; }
+  .calls { border-left: 1px solid var(--line); background: var(--panel); min-height: 0; display: flex; flex-direction: column; }
+  .calls-head { padding: 10px 12px 8px; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 4px; }
+  .filters button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+  .filters button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .filters .n { color: var(--muted); margin-left: 3px; }
+  .calls-tools { display: flex; gap: 6px; }
+  .calls-tools input { flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--text); }
+  .calls-tools button { font: inherit; font-size: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+  .log { flex: 1; min-height: 0; overflow-y: auto; font-size: 12px; }
+  .row { padding: 5px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 2px; cursor: pointer; }
+  .row:hover { background: var(--bg); }
+  .row .line1 { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: baseline; }
+  .row .time { color: var(--muted); font-family: ui-monospace, Menlo, monospace; font-size: 11px; }
+  .badge { font-size: 10.5px; border-radius: 4px; padding: 0 5px; border: 1px solid currentColor; white-space: nowrap; }
+  .badge.gql { color: var(--gql); } .badge.http { color: var(--http); } .badge.event { color: var(--event); } .badge.mock { color: var(--mock); } .badge.bad { color: var(--bad); }
+  .badge.where { color: var(--muted); }
+  .row .name { font-weight: 600; word-break: break-all; }
+  .row .values { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row.open .values { white-space: pre-wrap; word-break: break-all; }
+  .row.mark { cursor: default; background: var(--bg); color: var(--muted); font-size: 11.5px; padding: 3px 12px; }
+  .row .gql-errors { color: var(--bad); font-size: 11.5px; word-break: break-all; }
+  .row .status.bad { color: var(--bad); font-weight: 600; }
+  .empty-log { color: var(--muted); padding: 16px 12px; }
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(320px, 1fr); overflow: auto; }
+    .checklist { max-height: 260px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .stage { overflow: visible; }
+    .frames { flex-wrap: wrap; }
+    .frame.desktop { flex-basis: 100%; }
+    .calls { border-left: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1 id="title">QA 라이브</h1>
+    <span class="status-pill" id="status-pill">⏳ 불러오는 중</span>
+    <span class="sub" id="meta">불러오는 중이에요…</span>
+    <span class="sub" id="links"></span>
+    <button type="button" class="report-btn" id="open-report" hidden>📋 실패 리포트</button>
+  </div>
+  <div class="bar"><span id="bar"></span></div>
+  <div class="chips" id="chips"></div>
+  <div class="group-tabs" id="group-tabs" hidden></div>
+  <div class="ended" id="ended" hidden></div>
+  <div class="gate" id="gate" hidden></div>
+</header>
+<main>
+  <nav class="checklist" id="checklist" aria-label="테스트 체크리스트"><div class="empty-log">불러오는 중이에요…</div></nav>
+  <section class="stage" aria-label="실시간 화면">
+    <div class="frames">
+      <div class="frame desktop" data-slot="desktop"><div class="label"><b>🖥 데스크톱</b><span class="sub state"></span></div><div class="url"></div><div class="view"><div class="empty">아직 화면이 없어요</div></div></div>
+      <div class="frame mobile" data-slot="mobile"><div class="label"><b>📱 모바일</b><span class="sub state"></span></div><div class="url"></div><div class="view"><div class="empty">아직 화면이 없어요</div></div></div>
+    </div>
+  </section>
+  <section class="calls" aria-label="실시간 호출">
+    <div class="calls-head">
+      <h2>실시간 호출 — API · Mixpanel</h2>
+      <div class="filters" id="filters"></div>
+      <div class="calls-tools"><input type="search" id="search" placeholder="이름·값·경로 검색" aria-label="호출 검색"><button type="button" id="pause" aria-pressed="false">일시정지</button></div>
+    </div>
+    <div class="log" id="log"><div class="empty-log">호출을 기다리는 중이에요…</div></div>
+  </section>
+</main>
+<dialog id="report" aria-labelledby="report-title">
+  <div class="dlg-head"><h3 id="report-title">실패 리포트</h3><button type="button" id="report-close">닫기</button></div>
+  <div class="rep-body" id="report-body"></div>
+</dialog>
+<dialog id="detail" aria-labelledby="detail-title">
+  <div class="dlg-head"><h3 id="detail-title"></h3><button type="button" id="detail-calls">오른쪽 목록에서 보기</button><button type="button" id="detail-close">닫기</button></div>
+  <div class="dlg-body" id="detail-body"></div>
+</dialog>
+<script>
+  const params = new URLSearchParams(location.search);
+  let runId = params.get('id') || '';
+  // ?group=<묶음 id> — --profiles 로 함께 돈 런들(세션 상태별). 탭으로 고른 런이 체크리스트·호출·팝업의 대상
+  const groupId = params.get('group') || '';
+  const PROFILE_ORDER = ['logout', 'login', 'verified'];
+  const frameHtml = (slot, run) => `<div class="frame ${slot}" data-slot="${slot}"${run ? ` data-run="${esc(run)}"` : ''}><div class="label"><b>${slot === 'desktop' ? '🖥 데스크톱' : '📱 모바일'}</b><span class="sub state"></span></div><div class="url"></div><div class="view"><div class="empty">아직 화면이 없어요</div></div></div>`;
+  const esc = (value) => String(value ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
+  const STATUS = {
+    pass: ['✅', '통과', 'ok'], expected: ['↪️', '기대대로 이동', 'ok'], changed: ['🟡', '화면 변화', 'warn'], fail: ['❌', '실패', 'bad'],
+    redirected: ['↪️', '이동됨', 'warn'], login: ['🔒', '로그인 필요', 'warn'], ci: ['🪪', '본인인증 필요', 'warn'], sample: ['🧩', '샘플 필요', 'warn'],
+    new: ['🆕', '기준 없음', 'warn'], human: ['🙋', '사람 필요', 'warn'], skip: ['⛔', '건너뜀', ''], running: ['⏳', '검사 중', 'run'], queued: ['·', '대기', '']
+  };
+  const FILTERS = [['all', '전체'], ['gql', 'GraphQL'], ['http', 'REST'], ['event', 'Mixpanel'], ['mock', '흉내·막음'], ['bad', '오류']];
+  const state = { lines: [], since: 0, filter: 'all', pagePath: '', callTag: {}, paused: false, open: new Set(), done: false, frameAt: {} };
+  const time = (at) => new Date(at).toTimeString().slice(0, 8);
+  // pagePath — 체크리스트 [이 화면 호출 보기] 로 고른 화면. 그 화면에서 나간 호출만
+  const pathOnly = (value) => String(value || '').split('?')[0];
+  const matches = (line) => {
+    if (state.pagePath && pathOnly(line.page) !== state.pagePath) return false;
+    if (line.kind === 'mark') return state.filter === 'all';
+    if (state.filter === 'mock' && !line.tag) return false;
+    if (state.filter === 'bad' && !(typeof line.status === 'string' || line.status >= 400)) return false;
+    if (['gql', 'http', 'event'].includes(state.filter) && line.kind !== state.filter) return false;
+    const query = document.getElementById('search').value.trim().toLowerCase();
+    return !query || `${line.name} ${line.values || ''} ${line.page || ''} ${line.where || ''}`.toLowerCase().includes(query);
+  };
+  const isBad = (line) => typeof line.status === 'string' || line.status >= 400 || Boolean(line.errors);
+  const rowHtml = (line, index) => {
+    if (line.kind === 'mark') return `<div class="row mark">${time(line.at)} · ${esc(line.where)} ${esc(line.name)}</div>`;
+    const kindBadge = line.kind === 'gql'
+      ? `<span class="badge gql">${esc(line.op)}</span>`
+      : line.kind === 'event' ? '<span class="badge event">📊 Mixpanel</span>' : `<span class="badge http">${esc(line.method || 'HTTP')}</span>`;
+    const status = line.kind === 'event' ? '' : `<span class="status ${isBad(line) ? 'bad' : ''}">${esc(line.status)}${line.errors ? ' · errors' : ''}</span>`;
+    return `<div class="row${state.open.has(index) ? ' open' : ''}" data-index="${index}">
+      <div class="line1"><span class="time">${time(line.at)}</span><span class="badge where">${esc(line.where)}</span>${kindBadge}${line.tag ? `<span class="badge mock">${esc(line.tag)}</span>` : ''}<span class="name">${esc(line.name)}</span>${status}</div>
+      ${line.values && line.values !== '{}' ? `<div class="values">${esc(line.values)}</div>` : ''}
+      ${line.errors ? `<div class="gql-errors">⚠ GraphQL errors — ${esc(line.errors)}</div>` : ''}
+      ${line.page ? `<div class="sub">${esc(line.page)}</div>` : ''}</div>`;
+  };
+  const renderFilters = () => {
+    const count = (key) => state.lines.filter((line) => line.kind !== 'mark' && (key === 'all' || (key === 'mock' ? line.tag : key === 'bad' ? isBad(line) : line.kind === key))).length;
+    document.getElementById('filters').innerHTML = FILTERS.map(([key, label]) => `<button type="button" data-filter="${key}" aria-pressed="${state.filter === key}">${label}<span class="n">${count(key)}</span></button>`).join('')
+      + (state.pagePath ? `<button type="button" id="page-filter" aria-pressed="true" title="눌러서 해제">화면 ${esc(state.pagePath)} ✕</button>` : '');
+    const pageFilter = document.getElementById('page-filter');
+    if (pageFilter) pageFilter.onclick = () => { state.pagePath = ''; renderLog(); };
+    document.querySelectorAll('[data-filter]').forEach((button) => { button.onclick = () => { state.filter = button.dataset.filter; renderLog(); }; });
+  };
+  const renderLog = () => {
+    renderFilters();
+    const visible = [];
+    for (let index = state.lines.length - 1; index >= 0 && visible.length < 400; index -= 1) {
+      if (matches(state.lines[index])) visible.push(rowHtml(state.lines[index], index));
+    }
+    const log = document.getElementById('log');
+    log.innerHTML = visible.join('') || '<div class="empty-log">맞는 호출이 없어요</div>';
+    log.querySelectorAll('.row[data-index]').forEach((row) => {
+      row.onclick = () => { const index = Number(row.dataset.index); if (state.open.has(index)) state.open.delete(index); else state.open.add(index); renderLog(); };
+    });
+  };
+  document.getElementById('search').oninput = renderLog;
+  document.getElementById('pause').onclick = (event) => {
+    state.paused = !state.paused;
+    event.currentTarget.setAttribute('aria-pressed', String(state.paused));
+    event.currentTarget.textContent = state.paused ? '이어 보기' : '일시정지';
+    if (!state.paused) renderLog();
+  };
+
+  const loadLive = async () => {
+    try {
+      const response = await fetch(`/api/qa/live?id=${encodeURIComponent(runId)}&since=${state.since}`, { cache: 'no-store' });
+      const data = await response.json();
+      if (data.lines.length) {
+        state.lines.push(...data.lines);
+        if (state.lines.length > 5000) state.lines.splice(0, state.lines.length - 5000);
+        if (!state.paused) renderLog();
+      }
+      state.since = data.next;
+    } catch (error) { console.warn(error); /* 다음 차례에 다시 */ }
+  };
+
+  const loadFrames = async () => {
+    for (const frame of document.querySelectorAll('.frame')) {
+      const slot = frame.dataset.slot;
+      const frameRun = frame.dataset.run || runId;
+      try {
+        const response = await fetch(`/qa-runs/${encodeURIComponent(frameRun)}/live/${slot}.json`, { cache: 'no-store' });
+        if (!response.ok) continue;
+        const info = await response.json();
+        if (state.frameAt[`${frameRun}:${slot}`] === info.at && !(state.done && frame.querySelector('img')?.dataset.src?.startsWith('/api/qa/stream'))) continue;
+        state.frameAt[`${frameRun}:${slot}`] = info.at;
+        // 화면은 스트림(MJPEG) 하나를 한 번만 연결한다 — 여기서는 주소 표시만 바꾼다
+        const view = frame.querySelector('.view');
+        let image = view.querySelector('img');
+        // 끝난 런은 스트림 대신 마지막 사진 한 장 — 연결을 붙잡지 않는다(브라우저는 한 주소에 6개까지만)
+        const ended = frameRun === runId ? state.done : groupId ? false : state.done;
+        const wanted = ended ? `/qa-runs/${encodeURIComponent(frameRun)}/live/${slot}.jpg?t=${info.at}` : `/api/qa/stream?id=${encodeURIComponent(frameRun)}&slot=${slot}`;
+        if (!image) {
+          view.innerHTML = '<img alt="">';
+          image = view.querySelector('img');
+        }
+        if (image.dataset.src !== wanted) {
+          image.dataset.src = wanted;
+          image.src = wanted;
+        }
+        image.alt = `${slot} 화면 ${info.url}`;
+        try { frame.querySelector('.url').textContent = new URL(info.url).pathname + new URL(info.url).search; } catch (error) { frame.querySelector('.url').textContent = info.url; }
+        frame.querySelector('.state').innerHTML = state.done ? '' : '<span class="live-dot"></span>실시간';
+      } catch (error) { /* 아직 없음 */ }
+    }
+  };
+
+  // 체크리스트 — 화면 전부(뷰포트 진행 포함) + 흐름 씬(진행 중이면 단계 목록). 진행 중인 항목이 바뀌면 그 자리로 스크롤
+  const VIEWPORT_ICON = { desktop: '🖥', mobile: '📱' };
+  const checkRow = (status, what, note, extra = '', key = '') => {
+    const [icon, label, tone] = STATUS[status] || STATUS.queued;
+    const kind = status === 'running' ? 'current' : status === 'queued' ? 'queued' : `done ${tone}`;
+    return `<div class="check ${kind}"${key ? ` data-key="${esc(key)}" title="눌러서 검사 과정·스크린샷·호출 보기"` : ''}><span class="icon">${status === 'queued' ? '○' : icon}</span><span class="what">${esc(what)}</span>${note || status !== 'queued' ? `<span class="note">${note || label}</span>` : ''}${extra}</div>`;
+  };
+  // 끝난 화면을 누르면 — 문제 목록(뷰포트·종류·내용)과 스크린샷(작업·기준·차이)
+  const PROBLEM_KIND = { http: 'HTTP 오류', console: '콘솔 에러', pageerror: '페이지 에러', network: '네트워크 실패', timeout: '시간 초과', image: '깨진 이미지', font: '아이콘 깨짐', layout: '가로 넘침', text: '깨진 글자·값', css: 'CSS 깨짐', tracking: '필수 이벤트 누락', expect: '기대와 다름', screenshot: '스크린샷 실패', blocked: '막은 요청' };
+  // 검사 순서 — run.mjs visit() 가 화면마다 하는 일. 단계마다 그 단계에서 나온 문제 종류
+  const CHECK_STEPS = [
+    ['열기', '주소로 이동해 로드를 기다린다', ['timeout', 'network']],
+    ['도착 경로', '로그인·본인인증 가드에 맞게 머물거나 이동했는지', ['expect']],
+    ['콘솔·페이지 에러', '브라우저 콘솔 에러·잡히지 않은 예외(앱 소스 위치)', ['console', 'pageerror']],
+    ['API·리소스 응답', '이 서버로 보낸 요청이 4xx·5xx 인지', ['http']],
+    ['이미지', '안 뜬 이미지(img·CSS 배경·CDN·지연 로딩) · 찌그러짐·흐림·alt 는 확인 필요로', ['image']],
+    ['눈으로 보이는 깨짐', 'CSS 미적용·스타일 요청 실패 · 아이콘 □ · 가로 넘침 · 깨진 글자·값(� undefined NaN [object Object] &amp;) · 잘린 글자·가려진·화면 밖·이름 없는 버튼은 확인 필요로', ['font', 'layout', 'text', 'css']],
+    ['스크린샷 비교', '승인한 기준 사진과 바뀐 픽셀', ['screenshot']]
+  ];
+  const screenDetail = (screen) => {
+    const viewports = screen.viewports || [];
+    const steps = CHECK_STEPS.map(([name, how, kinds]) => {
+      const found = (screen.problems || []).filter((problem) => kinds.includes(problem.kind));
+      const marks = viewports.map((viewport) => {
+        const failed = found.some((problem) => problem.viewport === viewport.name);
+        const changed = name === '스크린샷 비교' && viewport.diff && viewport.diff.pixels >= 50;
+        const noBase = name === '스크린샷 비교' && !viewport.shots?.base;
+        return `${VIEWPORT_ICON[viewport.name] || viewport.name}${failed ? '✖' : changed ? '🟡' : noBase ? '–' : '✔'}`;
+      }).join(' ');
+      const reasons = found.map((problem) => `<li>[${esc(problem.viewport)}] ${esc(problem.text)}${problem.at ? `<br><span class="at">📍 ${esc(problem.at)}</span>` : ''}</li>`).join('');
+      const diffs = name === '스크린샷 비교' ? viewports.filter((viewport) => viewport.diff).map((viewport) => `<li class="base">[${esc(viewport.name)}] 기준과 ${viewport.diff.pixels}px 다름</li>`).join('') : '';
+      const arrived = name === '도착 경로' ? viewports.filter((viewport) => viewport.finalPath).map((viewport) => `<li class="base">[${esc(viewport.name)}] 도착 ${esc(viewport.finalPath)}</li>`).join('') : '';
+      // 확인 필요(warnings) — 실패로 세지 않지만 그 단계 아래에 노란색으로
+      const WARN_STEP = { 이미지: ['image-ratio', 'image-lowres'], '눈으로 보이는 깨짐': ['clipped', 'covered', 'offscreen', 'a11y'] };
+      const warns = viewports.flatMap((viewport) => (viewport.warnings || []).filter((warning) => (WARN_STEP[name] || []).includes(warning.kind)).map((warning) => `<li class="warn">⚠ [${esc(viewport.name)}] ${esc(warning.text)}</li>`)).join('');
+      const markIcon = found.length ? '✖' : warns ? '⚠' : '✔';
+      return `<li class="${found.length ? 'no' : warns ? 'warnstep' : 'ok'}"><b>${markIcon} ${name}</b> <span class="marks">${marks}</span><div class="how">${how}</div>${reasons || diffs || arrived || warns ? `<ul>${reasons}${arrived}${diffs}${warns}</ul>` : ''}</li>`;
+    }).join('');
+    return `<ol class="test-steps">${steps}${eventStep(screen)}</ol>`;
+  };
+  // 7단계 — 트래킹 이벤트(Mixpanel). 코드에 있는 이벤트(이름이 글자로 적힌 것)와 실제로 나간 것
+  const eventStep = (screen) => {
+    const check = screen.eventCheck;
+    if (!check) return '';
+    const fired = new Set(check.fired);
+    const code = (screen.codeEvents || []).filter((event) => event.name);
+    const firedRows = check.fired.map((name) => `<li>✔ <b>${esc(name)}</b></li>`).join('');
+    const waiting = code.filter((event) => !fired.has(event.name)).map((event) => `<li class="base">${event.kind === 'clicked' ? '👆' : '·'} ${esc(event.name)} <span class="at">${esc(event.at)}</span></li>`).join('');
+    const sections = check.sections.length ? `<li class="${check.sectionsMissing.length ? '' : 'base'}">스크롤 구역 ${check.sections.length}개 중 ${check.sections.length - check.sectionsMissing.length}개 나감${check.sectionsMissing.length ? ` — 안 나간 구역: ${esc(check.sectionsMissing.join(', '))}` : ''}</li>` : '';
+    // 필수(화면을 열면 반드시 나가는 화면 보기 이벤트) 누락은 실패, 그 밖(구역·보기 없음)은 확인 필요
+    const required = (screen.codeEvents || []).filter((event) => event.required);
+    const missing = (screen.problems || []).filter((problem) => problem.kind === 'tracking');
+    const requiredRows = required.map((event) => {
+      const lost = missing.filter((problem) => problem.text.endsWith(event.name));
+      return `<li class="${lost.length ? '' : 'base'}" style="${lost.length ? 'color:var(--bad)' : ''}">${lost.length ? '✖' : '✔'} 필수 <b>${esc(event.name)}</b>${lost.length ? ` — 안 나감 (${esc(lost.map((problem) => problem.viewport).join(', '))})` : ''} <span class="at">${esc(event.at)}</span></li>`;
+    }).join('');
+    const bad = missing.length || check.noPageView || check.sectionsMissing.length;
+    return `<li class="${missing.length ? 'no' : bad ? 'warnstep' : 'ok'}"><b>${missing.length ? '✖' : bad ? '⚠' : '✔'} 트래킹 이벤트(Mixpanel)</b> <span class="marks">나감 ${check.fired.length} · 코드 ${check.literal}개 중 ${check.literalFired}개 · 클릭 ${check.clicks}개는 누르면 나감${check.dynamic ? ` · 이름이 변수인 것 ${check.dynamic}개` : ''}</span>
+      <div class="how">화면을 열고 끝까지 스크롤한 동안 나간 이벤트 · ${check.noPageView ? '⚠ 화면 보기(_viewed) 이벤트가 하나도 안 나갔어요' : '화면 보기 이벤트 확인'}</div>
+      <ul>${requiredRows}${firedRows}${sections}${waiting ? `<li class="base"><details><summary>코드에 있지만 이번에 안 나간 것 ${code.length - check.literalFired}개 (👆 클릭·조건부)</summary><ul>${waiting}</ul></details></li>` : ''}</ul></li>`;
+  };
+  // 팝업 — 화면 하나 또는 씬 하나. 왼쪽 검사 과정, 오른쪽 스크린샷·그때 나간 호출. 열려 있는 동안 매 차례 다시 그린다
+  const shotGrid = (items, id = runId) => {
+    const base = `/qa-runs/${encodeURIComponent(id)}/`;
+    return items.length ? `<div class="dlg-shots">${items.map(([label, file]) => `<a href="${base}${esc(file)}" target="_blank" rel="noopener"><img loading="lazy" src="${base}${esc(file)}" alt="${esc(label)}">${esc(label)} ↗</a>`).join('')}</div>` : '<p class="dlg-meta">스크린샷 없음</p>';
+  };
+  // 호출 목록 — 위에 태그(GET·POST·query·mutation·Mixpanel …)를 골라 그 태그만 보기. 고른 태그는 항목별로 기억(다시 그려도 유지)
+  const callTagOf = (line) => (line.kind === 'event' ? 'Mixpanel' : line.kind === 'gql' ? line.op : line.method || 'HTTP');
+  const callRows = (lines, key = '') => {
+    if (!lines.length) return '<p class="dlg-meta">기록된 호출이 없어요(이 기능을 넣기 전 런이면 비어 있어요)</p>';
+    const tags = [...new Set(lines.map(callTagOf))];
+    const chips = ['전체', ...tags].map((tag) => `<button type="button" data-ctag="${esc(tag)}">${esc(tag)}<span class="n">${tag === '전체' ? lines.length : lines.filter((line) => callTagOf(line) === tag).length}</span></button>`).join('');
+    return `<div class="dlg-callbox" data-ckey="${esc(key)}"><div class="filters dlg-ctags">${chips}</div><div class="dlg-calls">${lines.map((line) => rowHtml(line, -1).replace('<div class="row', `<div data-rtag="${esc(callTagOf(line))}" class="row`)).join('')}</div></div>`;
+  };
+  const wireCallFilters = (root) => {
+    root.querySelectorAll('.dlg-callbox').forEach((box) => {
+      const apply = (tag) => {
+        state.callTag[box.dataset.ckey] = tag;
+        box.querySelectorAll('[data-ctag]').forEach((chip) => chip.setAttribute('aria-pressed', String(chip.dataset.ctag === tag)));
+        box.querySelectorAll('[data-rtag]').forEach((row) => { row.hidden = tag !== '전체' && row.dataset.rtag !== tag; });
+      };
+      box.querySelectorAll('[data-ctag]').forEach((chip) => { chip.onclick = () => apply(chip.dataset.ctag); });
+      const saved = state.callTag[box.dataset.ckey];
+      apply(saved && box.querySelector(`[data-ctag="${CSS.escape(saved)}"]`) ? saved : '전체');
+    });
+  };
+  const renderDetail = () => {
+    const dialog = document.getElementById('detail');
+    if (!dialog.open || !state.run || !state.detail) return;
+    const body = document.getElementById('detail-body');
+    let html = '';
+    const [type, key] = [state.detail.slice(0, state.detail.indexOf(':')), state.detail.slice(state.detail.indexOf(':') + 1)];
+    if (type === 'screen') {
+      const screen = (state.run.screens || []).find((item) => (item.key || item.url || item.route) === key);
+      if (!screen) return;
+      const [icon, label] = STATUS[screen.status] || STATUS.queued;
+      const path = (screen.url || screen.route || '').split('?')[0];
+      state.detailPath = path;
+      document.getElementById('detail-title').textContent = `${icon} ${screen.url || screen.route} · ${label}`;
+      const shots = (screen.viewports || []).flatMap((viewport) => [[`${viewport.name} 작업`, viewport.shots?.head], [`${viewport.name} 기준`, viewport.shots?.base], [`${viewport.name} 차이`, viewport.shots?.diff]]).filter(([, file]) => file);
+      const calls = state.lines.filter((line) => line.kind !== 'mark' && pathOnly(line.page) === path);
+      html = `<div><h4>어떻게 검사했나 — 단계별 결과</h4>
+          ${(screen.flows || []).length ? `<p class="dlg-meta" style="color:var(--ok)">🔗 흐름에서 확인 — 통과한 씬 ${esc(screen.flows.join(', '))} 이 이 화면을 지나갔어요</p>` : ''}
+          <p class="dlg-meta">${screen.auth ? '🔒 로그인 화면 · ' : ''}세션 ${esc(state.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect)}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>
+          ${['queued', 'running', 'skip'].includes(screen.status) ? `<p class="dlg-meta">${screen.status === 'skip' ? '이 화면은 열지 않았어요(부작용)' : '아직 검사가 끝나지 않았어요'}</p>` : screenDetail(screen)}</div>
+        <div><h4>스크린샷</h4>${shotGrid(shots)}<h4>이 화면에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `popup:${state.detail}`)}</div>`;
+    } else {
+      const scenario = (state.run.scenarios || []).find((item) => (item.key || item.file) === key);
+      if (!scenario) return;
+      const [icon, label] = STATUS[scenario.status] || STATUS.queued;
+      state.detailPath = '';
+      document.getElementById('detail-title').textContent = `${icon} 🎬 ${scenario.name} · ${VIEWPORT_ICON[scenario.viewport] || ''} ${scenario.viewport || ''} · ${label}`;
+      const where = scenario.key ? `씬 ${scenario.file.slice(0, 2)} · ${scenario.viewport}` : `씬 ${scenario.file.slice(0, 2)}`;
+      state.detailWhere = where;
+      const calls = state.lines.filter((line) => line.kind !== 'mark' && line.where === where);
+      const problems = (scenario.problems || []).map((problem) => `<li>${esc(problem.text)}</li>`).join('');
+      html = `<div><h4>어떻게 검사했나 — 단계</h4>
+          <p class="dlg-meta">세션 ${esc(scenario.profile)}${scenario.viewport ? ` · ${esc(scenario.viewport)}` : ''}${(scenario.tc || []).length ? ` · TC ${esc(scenario.tc.join(', '))}` : ''} · ${esc(scenario.file)}</p>
+          ${scenario.why ? `<p class="dlg-meta">${esc(scenario.why)}</p>` : ''}
+          ${scenarioSteps(scenario).replace('class="steps"', 'class="steps" style="font-size:12.5px;gap:4px"') || '<p class="dlg-meta">단계 없음</p>'}
+          ${problems ? `<h4 style="margin-top:12px">문제</h4><ul class="why-list" style="color:var(--bad)">${problems}</ul>` : ''}</div>
+        <div><h4>스크린샷</h4>${shotGrid((scenario.shots || []).map((shot) => [shot.name, shot.file]))}<h4>이 씬에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `popup:${state.detail}`)}</div>`;
+    }
+    // 매 차례 다시 그리면 안쪽 스크롤(호출 목록)이 맨 위로 튄다 — 내용이 바뀔 때만 그리고, 스크롤 위치는 그대로 둔다
+    if (html === state.detailHtml) return;
+    state.detailHtml = html;
+    const keepDialog = dialog.scrollTop;
+    const keepInner = [...body.querySelectorAll('.dlg-calls')].map((box) => box.scrollTop);
+    body.innerHTML = html;
+    wireCallFilters(body);
+    body.querySelectorAll('.dlg-calls').forEach((box, index) => { box.scrollTop = keepInner[index] ?? 0; });
+    dialog.scrollTop = keepDialog;
+  };
+  const openDetail = (key) => {
+    state.detail = key;
+    state.detailHtml = '';
+    // 다른 항목을 열면 스크롤은 맨 위부터
+    document.getElementById('detail-body').innerHTML = '';
+    const dialog = document.getElementById('detail');
+    if (!dialog.open) dialog.showModal();
+    renderDetail();
+  };
+  document.getElementById('detail-close').onclick = () => document.getElementById('detail').close();
+  document.getElementById('detail').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
+  document.getElementById('detail').addEventListener('close', () => { state.detail = ''; });
+  document.getElementById('detail-calls').onclick = () => {
+    state.filter = 'all';
+    state.pagePath = state.detailPath || '';
+    if (!state.detailPath && state.detail.startsWith('scenario:')) document.getElementById('search').value = state.detailWhere || '';
+    document.getElementById('detail').close();
+    renderLog();
+  };
+  const scenarioSteps = (scenario) => {
+    const plan = scenario.plan || [];
+    const done = scenario.steps || [];
+    if (!plan.length && !done.length) return '';
+    const total = Math.max(plan.length, done.length);
+    const items = [];
+    for (let index = 0; index < total; index += 1) {
+      const record = done[index];
+      const label = record?.label || plan[index] || '';
+      // 진행 중인 씬의 마지막 기록은 지금 하고 있는 단계
+      const isNow = scenario.status === 'running' && index === done.length - 1;
+      const tone = isNow ? 'now' : !record ? '' : record.ok ? 'ok' : 'no';
+      const mark = isNow ? '⏳' : !record ? '·' : record.ok ? '✔' : '✖';
+      items.push(`<li class="${tone}"><span>${mark}</span><span>${esc(label)}${record?.detail && !isNow ? ` <span class="sub">${esc(record.detail)}</span>` : ''}</span></li>`);
+    }
+    return `<ol class="steps">${items.join('')}</ol>`;
+  };
+  let lastCurrent = '';
+  const renderChecklist = (screens, scenarios) => {
+    const box = document.getElementById('checklist');
+    const screenDone = screens.filter((screen) => !['queued', 'running'].includes(screen.status)).length;
+    const screenRows = screens.map((screen) => {
+      const viewports = (screen.viewports || []).map((viewport) => `${VIEWPORT_ICON[viewport.name] || viewport.name}✔`).join(' ');
+      const firstProblem = (screen.problems || [])[0];
+      const note = screen.status === 'running' ? `검사 중 ${viewports}${viewports ? ' → ' : ''}${(screen.viewports || []).length ? '📱 ⏳' : '🖥 ⏳'}`
+        : screen.status === 'skip' ? `건너뜀${screen.note ? ` — ${esc(screen.note)}` : ''}`
+        : firstProblem ? `${(STATUS[screen.status] || STATUS.queued)[1]} — ${esc((PROBLEM_KIND[firstProblem.kind] || firstProblem.kind) + ': ' + firstProblem.text.slice(0, 90))}` : '';
+      const finished = !['queued', 'running', 'skip'].includes(screen.status);
+      const key = `screen:${screen.key || screen.url || screen.route}`;
+      // 흐름 연결 — 통과한 씬이 이 화면을 지나갔으면 표시(주소로 바로는 확인 못 했어도)
+      const warnCount = (screen.viewports || []).reduce((total, viewport) => total + (viewport.warnings || []).length, 0);
+      const qualityWarn = warnCount ? `<br>⚠ 확인 필요 ${warnCount}개` : '';
+      const eventWarn = screen.eventCheck && (screen.eventCheck.noPageView || screen.eventCheck.sectionsMissing.length) ? '<br>⚠ 트래킹 이벤트 확인 필요' : '';
+      const flowNote = (screen.flows || []).length ? `<br>🔗 흐름에서 확인 — 씬 ${esc(screen.flows.join(', '))}` : '';
+      return checkRow(screen.status, `${screen.auth ? '🔒 ' : ''}${screen.url || screen.route}`, `${note || (STATUS[screen.status] || STATUS.queued)[1]}${flowNote}${qualityWarn}${eventWarn}`, '', finished ? key : '');
+    }).join('');
+    const scenarioDone = scenarios.filter((item) => !['queued', 'running'].includes(item.status)).length;
+    const scenarioRows = scenarios.map((scenario) => {
+      const tc = (scenario.tc || []).length ? ` · ${scenario.tc.join(', ')}` : '';
+      const showSteps = scenario.status === 'running' || ['fail', 'human'].includes(scenario.status);
+      return checkRow(scenario.status, `🎬 ${scenario.name} ${VIEWPORT_ICON[scenario.viewport] || ''}`, `${scenario.status === 'running' ? '진행 중' : (STATUS[scenario.status] || STATUS.queued)[1]} · 세션 ${esc(scenario.profile)}${esc(tc)}`, showSteps ? scenarioSteps(scenario) : '', scenario.status === 'queued' ? '' : `scenario:${scenario.key || scenario.file}`);
+    }).join('');
+    const keepScroll = box.scrollTop;
+    box.innerHTML = `<h2>화면 ${screens.length}개 <span class="sub">${screenDone}/${screens.length} 완료</span></h2>${screenRows || '<div class="empty-log">화면 목록을 만드는 중이에요</div>'}`
+      + (scenarios.length ? `<h2>흐름 씬 ${scenarios.length}개 <span class="sub">${scenarioDone}/${scenarios.length} 완료</span></h2>${scenarioRows}` : '');
+    box.scrollTop = keepScroll;
+    box.querySelectorAll('.check[data-key]').forEach((row) => { row.onclick = () => openDetail(row.dataset.key); });
+    const current = box.querySelector('.check.current');
+    const currentKey = current ? current.textContent.slice(0, 80) : '';
+    if (current && currentKey !== lastCurrent) current.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    lastCurrent = currentKey;
+  };
+
+  // 보고 있는 런이 끝났거나 멈췄으면 띠를 띄우고, 지금 도는 런(묶음이면 묶음 화면)으로 가는 링크를 준다
+  const showEnded = async (run) => {
+    const banner = document.getElementById('ended');
+    const ended = run.status === 'done' || run.status === 'error';
+    if (!ended || (groupId && !state.groupDone)) { banner.hidden = true; return; }
+    let link = '';
+    try {
+      const data = await (await fetch('/api/qa/runs', { cache: 'no-store' })).json();
+      const live = data.runs.find((item) => ['preparing', 'running'].includes(item.status) && item.id !== run.id);
+      if (live) link = ` · <a href="/qa-live?${live.group ? `group=${encodeURIComponent(live.group)}` : `id=${encodeURIComponent(live.id)}`}">지금 도는 런 보기 →</a>`;
+    } catch (error) { /* 링크 없이 */ }
+    banner.hidden = false;
+    banner.innerHTML = `${run.status === 'error' ? `⚠️ 이 런은 중단됐어요 (${esc(run.error || '')})` : '✔ 이 런은 끝났어요'} — 화면은 마지막 모습이에요${link}`;
+    document.querySelectorAll('.frame .state').forEach((label) => { label.innerHTML = ''; });
+  };
+
+  const loadRun = async () => {
+    try {
+      const response = await fetch(`/api/qa/run?id=${encodeURIComponent(runId)}`, { cache: 'no-store' });
+      const run = await response.json();
+      if (!run.id) { document.getElementById('meta').textContent = run.error || '런을 찾지 못했어요'; return; }
+      state.done = run.status === 'done' || run.status === 'error';
+      state.run = run;
+      renderGate();
+      if (!groupId) setStatusPill(run.status === 'done' ? 'done' : run.status === 'error' ? 'stopped' : 'running', run);
+      if (!groupId && run.status === 'done') maybeOpenReport();
+      await showEnded(run);
+      document.title = `QA 라이브 · ${run.app}`;
+      document.getElementById('title').textContent = `${state.done ? '' : '⏳ '}QA 라이브 · ${run.kind === 'suite' ? '전체 검수 · ' : ''}${run.app}`;
+      document.getElementById('meta').textContent = `${run.id} · ${run.target === 'server' || run.target === 'dev' ? `☁️ 서버 ${run.serverUrl || ''}` : '🖥 로컬 서버'} · 세션 ${run.profile || '-'} · ${run.branch}@${run.head} · ${run.status === 'error' ? `오류 — ${run.error}` : run.phase || ''}`;
+      document.getElementById('links').innerHTML = `<a href="/#qa">현황판 QA 탭</a>${run.status === 'done' ? ` · <a href="/qa-runs/${encodeURIComponent(run.id)}/report.html" target="_blank" rel="noopener">리포트 ↗</a>` : ''}`;
+      const screens = run.screens || [];
+      const finished = screens.filter((screen) => !['queued', 'running'].includes(screen.status)).length;
+      const scenarios = run.scenarios || [];
+      const scenarioDone = scenarios.filter((item) => !['queued', 'running'].includes(item.status)).length;
+      const total = screens.length + scenarios.length;
+      document.getElementById('bar').style.width = `${total ? Math.round(((finished + scenarioDone) / total) * 100) : 0}%`;
+      const counts = {};
+      for (const item of [...screens, ...scenarios]) counts[item.status] = (counts[item.status] || 0) + 1;
+      document.getElementById('chips').innerHTML = `<span class="chip">화면 ${finished}/${screens.length}</span>${scenarios.length ? `<span class="chip">씬 ${scenarioDone}/${scenarios.length}</span>` : ''}`
+        + Object.keys(STATUS).filter((key) => counts[key] && key !== 'queued').map((key) => `<span class="chip">${STATUS[key][0]} ${STATUS[key][1]} ${counts[key]}</span>`).join('');
+      renderChecklist(screens, scenarios);
+      renderDetail();
+      // 칸 제목 — 지금 그 뷰포트에서 도는 것(화면 검사 중인 화면 또는 흐름 씬)
+      for (const frame of document.querySelectorAll('.frame')) {
+        const slot = frame.dataset.slot;
+        if (frame.dataset.run && frame.dataset.run !== runId) continue;
+        const scenario = scenarios.find((item) => item.status === 'running' && item.viewport === slot);
+        const title = slot === 'desktop' ? '🖥 데스크톱' : '📱 모바일';
+        frame.querySelector('.label b').textContent = scenario ? `${title} · 🎬 ${scenario.name}` : title;
+      }
+    } catch (error) { console.warn(error); /* 다음 차례에 다시 */ }
+  };
+
+  // QA 완료 여부 — 제목 옆. 묶음이면 단계·진행, 끝나면 ✅ QA 완료(실패 수) + 누르면 리포트
+  const setStatusPill = (kind, run) => {
+    const pill = document.getElementById('status-pill');
+    const fails = groupId
+      ? (state.groupRuns || []).reduce((total, item) => total + (item.summary?.fail ?? 0), 0)
+      : (run?.screens || []).filter((screen) => screen.status === 'fail').length;
+    if (kind === 'done') {
+      pill.className = `status-pill ${fails ? 'fail' : 'done'}`;
+      pill.textContent = `✅ QA 완료${fails ? ` · 실패 ${fails}` : ' · 실패 없음'} — 리포트 보기`;
+      pill.style.cursor = 'pointer';
+      pill.onclick = () => openReport();
+      document.getElementById('open-report').hidden = false;
+    } else if (kind === 'stopped') {
+      pill.className = 'status-pill stopped';
+      pill.textContent = '⚠️ 중단됨';
+      pill.onclick = null;
+    } else {
+      pill.className = 'status-pill';
+      const stages = state.group?.stages || [];
+      const current = stages.findIndex((stage) => ['running', 'waiting-login'].includes(stage.status));
+      const runningRun = (state.groupRuns || []).find((item) => ['preparing', 'running'].includes(item.status));
+      pill.textContent = groupId && stages.length
+        ? `⏳ QA 진행 중 · 단계 ${current + 1}/${stages.length}${current >= 0 ? ` (${stages[current].status === 'waiting-login' ? '로그인 대기' : stages[current].profile})` : ''}${runningRun ? ` · ${runningRun.finished}/${runningRun.screens}` : ''}`
+        : `⏳ QA 진행 중${run ? ` · ${(run.screens || []).filter((screen) => !['queued', 'running'].includes(screen.status)).length}/${(run.screens || []).length}` : ''}`;
+      pill.onclick = null;
+    }
+  };
+
+  // ── 실패 리포트(D20) — 끝나면 한 번 자동으로 뜬다. 실패를 원인별로 묶고 화면마다 스크린샷·이유·에러 위치·[자세히]
+  const CAUSES = [
+    ['app', '🐞 앱 의심', '코드 확인이 필요한 것 — 깨진 화면·에러·응답 오류'],
+    ['guard', '↪️ 이동이 기대와 다름', '로그인·본인인증 가드나 리다이렉트가 설정한 기대와 달라요'],
+    ['data', '🗂 계정 데이터 없음', '테스트 계정에 신청 건·환급 이력 등이 없어서 — 흐름 씬·응답 흉내로 다룰 것'],
+    ['env', '🧪 QA 환경', 'dev 서버 시간 초과·로컬 프로그램 없음 등 환경 탓일 수 있어요'],
+    ['scenario', '🎬 흐름 씬 실패', '씬 단계에서 멈춘 것']
+  ];
+  const causeOf = (screen, problem) => {
+    const text = `${problem.text} ${screen.note || ''}`;
+    if (/데이터 필요|신청 건|계정 상태|No data returned|Cannot return null|refundHistoryId|apply\/result/.test(text)) return 'data';
+    if (['timeout', 'network'].includes(problem.kind) || /Network Error|ERR_CONNECTION|Timeout \d+ms/.test(problem.text)) return 'env';
+    if (problem.kind === 'expect') return 'guard';
+    return 'app';
+  };
+  let reportShownFor = '';
+  const reportKey = () => groupId || runId;
+  const maybeOpenReport = () => {
+    document.getElementById('open-report').hidden = false;
+    if (reportShownFor === reportKey()) return;
+    reportShownFor = reportKey();
+    openReport();
+  };
+  const openReport = async () => {
+    const runs = [];
+    // 같은 상태를 다시 돌렸으면 마지막 런만 리포트에 넣는다
+    const latest = (state.groupRuns || []).filter((run) => !(state.groupRuns || []).some((other) => other.profile === run.profile && other.id > run.id));
+    for (const run of groupId ? latest : [{ id: runId }]) {
+      try { runs.push(await (await fetch(`/api/qa/run?id=${encodeURIComponent(run.id)}`, { cache: 'no-store' })).json()); } catch (error) { /* 빼고 */ }
+    }
+    const items = [];
+    let warnings = 0;
+    for (const run of runs) {
+      for (const screen of run.screens || []) {
+        warnings += (screen.viewports || []).reduce((total, viewport) => total + (viewport.warnings || []).length, 0);
+        if (screen.status !== 'fail') continue;
+        const problem = (screen.problems || [])[0] || { kind: 'expect', text: '실패' };
+        const viewport = (screen.viewports || []).find((item) => item.name === problem.viewport) || (screen.viewports || [])[0];
+        items.push({ cause: causeOf(screen, problem), run, screen, problem, more: (screen.problems || []).length - 1, shot: viewport?.shots?.head, key: `screen:${screen.key || screen.url || screen.route}` });
+      }
+      for (const scenario of run.scenarios || []) {
+        if (scenario.status !== 'fail') continue;
+        const step = (scenario.steps || []).find((item) => !item.ok);
+        items.push({ cause: 'scenario', run, screen: { url: `🎬 ${scenario.name} · ${scenario.viewport || ''}` }, problem: { text: step ? `${step.label} — ${step.detail}` : '실패' }, more: 0, shot: (scenario.shots || []).at(-1)?.file, key: `scenario:${scenario.key || scenario.file}` });
+      }
+    }
+    const body = document.getElementById('report-body');
+    const total = items.length;
+    const groups = CAUSES.map(([cause, title, why]) => {
+      const list = items.filter((item) => item.cause === cause);
+      if (!list.length) return '';
+      const rows = list.map((item, index) => `<div class="rep-item">
+          ${item.shot ? `<a href="/qa-runs/${encodeURIComponent(item.run.id)}/${esc(item.shot)}" target="_blank" rel="noopener"><img loading="lazy" src="/qa-runs/${encodeURIComponent(item.run.id)}/${esc(item.shot)}" alt=""></a>` : '<span></span>'}
+          <div><div class="what">[${esc(item.run.profile || '')}] ${esc(item.screen.url || item.screen.route)}${item.problem.viewport ? ` · ${esc(item.problem.viewport)}` : ''}</div>
+            <div class="reason">${esc(item.problem.text.slice(0, 220))}${item.more > 0 ? ` <span class="sub">외 ${item.more}개</span>` : ''}</div>
+            ${item.problem.at ? `<div class="at">📍 ${esc(item.problem.at)}</div>` : ''}</div>
+          <button type="button" data-rep="${esc(cause)}:${index}" aria-expanded="false">자세히 ▾</button>
+          <div class="rep-detail" hidden></div></div>`).join('');
+      const ask = cause === 'app' ? `<button type="button" class="primary" data-ask="app">담당 에이전트에게 조사 맡기기</button>` : '';
+      return `<section class="rep-group"><h4>${title} ${list.length}개 <span class="why">${why}</span> ${ask}</h4>${rows}</section>`;
+    }).join('');
+    const runsLine = runs.map((run) => `<a href="/qa-runs/${encodeURIComponent(run.id)}/report.html" target="_blank" rel="noopener">리포트 — 세션 ${esc(run.profile || '')} ↗</a>`).join('');
+    const skipped = (state.group?.stages || []).filter((stage) => stage.status === 'skipped').map((stage) => `<span class="chip">⏭ ${esc(stage.profile)} 건너뜀 — ${esc(stage.reason || '')}</span>`).join('');
+    body.innerHTML = `<div class="rep-summary">${runs.map((run) => `<span class="chip">세션 ${esc(run.profile || '')} · 실패 ${(run.screens || []).filter((screen) => screen.status === 'fail').length} · 씬 실패 ${(run.scenarios || []).filter((item) => item.status === 'fail').length}</span>`).join('')}${skipped}<span class="chip">⚠ 확인 필요 ${warnings}개(실패 아님 — 화면을 누르면 보여요)</span></div>
+      ${total ? groups : '<p class="dlg-meta">✅ 실패가 없어요</p>'}
+      <div class="rep-actions">${runsLine}</div>`;
+    document.getElementById('report-title').textContent = `📋 실패 리포트 — ${total}개${groupId ? ' (세션 흐름)' : ''}`;
+    // [자세히] — 리포트 안에서 펼친다(다른 곳으로 보내지 않는다): 검사 단계·스크린샷·그 화면에서 나간 호출
+    body.querySelectorAll('[data-rep]').forEach((button) => {
+      const [cause, index] = button.dataset.rep.split(':');
+      const item = items.filter((entry) => entry.cause === cause)[Number(index)];
+      button.onclick = async () => {
+        const panel = button.parentElement.querySelector('.rep-detail');
+        const open = panel.hidden;
+        panel.hidden = !open;
+        button.setAttribute('aria-expanded', String(open));
+        button.textContent = open ? '접기 ▴' : '자세히 ▾';
+        if (open && !panel.dataset.filled) {
+          panel.dataset.filled = '1';
+          panel.innerHTML = '<p class="dlg-meta">불러오는 중이에요…</p>';
+          panel.innerHTML = await reportDetail(item);
+          wireCallFilters(panel);
+        }
+      };
+    });
+    const askButton = body.querySelector('[data-ask]');
+    if (askButton) askButton.onclick = () => askAgent(items.filter((item) => item.cause === 'app'), runs);
+    const dialog = document.getElementById('report');
+    if (!dialog.open) dialog.showModal();
+  };
+  // 리포트 항목 하나의 자세히 — 팝업과 같은 내용을 그 런 기준으로
+  const liveCache = {};
+  const linesOf = async (id) => {
+    if (!liveCache[id]) {
+      try { liveCache[id] = (await (await fetch(`/api/qa/live?id=${encodeURIComponent(id)}&since=0`, { cache: 'no-store' })).json()).lines; } catch (error) { liveCache[id] = []; }
+    }
+    return liveCache[id];
+  };
+  const reportDetail = async (item) => {
+    const lines = await linesOf(item.run.id);
+    if (item.key.startsWith('scenario:')) {
+      const scenario = (item.run.scenarios || []).find((entry) => `scenario:${entry.key || entry.file}` === item.key);
+      if (!scenario) return '<p class="dlg-meta">씬 정보를 찾지 못했어요</p>';
+      const where = scenario.key ? `씬 ${scenario.file.slice(0, 2)} · ${scenario.viewport}` : `씬 ${scenario.file.slice(0, 2)}`;
+      const calls = lines.filter((line) => line.kind !== 'mark' && line.where === where);
+      return `<div><h4>어떻게 검사했나 — 단계</h4>${scenario.why ? `<p class="dlg-meta">${esc(scenario.why)}</p>` : ''}${scenarioSteps({ ...scenario, status: scenario.status })}</div>
+        <div><h4>스크린샷</h4>${shotGrid((scenario.shots || []).map((shot) => [shot.name, shot.file]), item.run.id)}<h4>이 씬에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `report:${item.run.id}:${item.key}`)}</div>`;
+    }
+    const screen = (item.run.screens || []).find((entry) => `screen:${entry.key || entry.url || entry.route}` === item.key);
+    if (!screen) return '<p class="dlg-meta">화면 정보를 찾지 못했어요</p>';
+    const path = (screen.url || screen.route || '').split('?')[0];
+    const calls = lines.filter((line) => line.kind !== 'mark' && pathOnly(line.page) === path);
+    const shots = (screen.viewports || []).flatMap((viewport) => [[`${viewport.name} 작업`, viewport.shots?.head], [`${viewport.name} 기준`, viewport.shots?.base], [`${viewport.name} 차이`, viewport.shots?.diff]]).filter(([, file]) => file);
+    return `<div><h4>어떻게 검사했나 — 단계별 결과</h4>
+        <p class="dlg-meta">세션 ${esc(item.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect)}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>${screenDetail(screen)}</div>
+      <div><h4>스크린샷</h4>${shotGrid(shots, item.run.id)}<h4>이 화면에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `report:${item.run.id}:${item.key}`)}</div>`;
+  };
+
+  // [담당 에이전트에게 조사 맡기기] — 헤르메스 pane 에 조사 요청을 보낸다(못 보내면 클립보드로)
+  const askAgent = async (items, runs) => {
+    const lines = items.map((item) => `- [${item.run.profile}] ${item.screen.url || item.screen.route}${item.problem.viewport ? ` (${item.problem.viewport})` : ''} — ${item.problem.text.slice(0, 160)}${item.problem.at ? ` @ ${item.problem.at}` : ''}`).join('\n');
+    const text = `QA 실패 리포트(${runs.map((run) => run.id).join(', ')})에서 "앱 의심" ${items.length}건이에요. 담당 에이전트에게 원인 조사(읽기 전용, 고치지 말고 원인·근거 파일:줄·추천)를 맡겨 주세요.\n${lines}`;
+    const pane = state.group?.pane || '';
+    if (pane && window.HERMES_BOARD_TOKEN) {
+      try {
+        const response = await fetch('/api/action', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Board-Token': window.HERMES_BOARD_TOKEN }, body: JSON.stringify({ pane, text }) });
+        if (response.ok) { alert('헤르메스에게 보냈어요 — 터미널에서 이어서 진행돼요'); return; }
+      } catch (error) { /* 아래 복사로 */ }
+    }
+    try { await navigator.clipboard.writeText(text); alert('보낼 곳을 못 찾아 요청 글을 복사했어요 — 헤르메스 터미널에 붙여 넣어 주세요'); } catch (error) { prompt('아래 글을 복사해 헤르메스에게 보내 주세요', text); }
+  };
+  document.getElementById('report-close').onclick = () => document.getElementById('report').close();
+  document.getElementById('report').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
+  document.getElementById('open-report').onclick = () => openReport();
+
+  // 묶음 — 런 목록에서 group 이 같은 것들. 상태별 탭(진행·실패 수)과 상태마다 한 줄씩의 화면 칸을 만든다
+  const switchRun = (id) => {
+    if (id === runId) return;
+    runId = id;
+    state.lines = [];
+    state.since = 0;
+    state.open.clear();
+    state.pagePath = '';
+    if (document.getElementById('detail').open) document.getElementById('detail').close();
+    document.querySelectorAll('.frame-row').forEach((row) => row.classList.toggle('active', row.dataset.run === runId));
+    renderLog();
+  };
+  // 흐름 묶음의 진행 상태(group.json) — 로그인 요청 띠·단계 탭·끝난 뒤 실패 리포트
+  const loadGroupFile = async () => {
+    try {
+      const response = await fetch(`/qa-runs/${encodeURIComponent(groupId)}/group.json`, { cache: 'no-store' });
+      state.group = response.ok ? await response.json() : null;
+    } catch (error) { state.group = null; }
+    renderGate();
+  };
+  // 로그인 요청 띠 — 흐름 묶음(group.gate) 또는 검사 중 로그인이 풀린 런(run.gate). 기다리는 쪽을 먼저 보여 준다
+  const renderGate = () => {
+    const gate = document.getElementById('gate');
+    const candidates = [state.run?.gate, state.group?.gate].filter(Boolean);
+    const info = candidates.find((item) => item.status === 'waiting') || candidates[0];
+    if (!info) { gate.hidden = true; return; }
+    gate.hidden = false;
+    gate.className = `gate ${info.status === 'waiting' ? '' : info.status}`;
+    // 검사 도중 풀린 경우(run.gate)는 검사가 멈춰 있다 · 흐름 시작 때(group.gate)는 비로그인 검수가 그동안 돈다
+    const midRun = info === state.run?.gate;
+    gate.innerHTML = info.status === 'waiting'
+      ? `🔑 로그인해 주세요 — ${esc(info.message)}<br><span class="sub">로그인 창은 "Google Chrome for Testing" 으로 떠 있어요. ${midRun ? '검사는 로그인할 때까지 멈춰 있어요' : '비로그인 검수는 그동안 계속 돌아요'}</span>`
+      : info.status === 'done' ? (midRun ? `✅ 다시 로그인했어요 — 멈춘 화면부터 이어서 검사해요` : `✅ ${esc(info.profile)} 로그인 완료 — 세션을 저장했어요. 비로그인 검수가 끝나면 이어서 진행해요`)
+      : midRun ? '⚠️ 로그인을 마치지 않아 남은 로그인 화면은 확인하지 못해요' : `⚠️ 로그인을 마치지 않아 ${esc(info.profile)} 검수는 건너뛰어요`;
+  };
+  const loadGroup = async () => {
+    try {
+      await loadGroupFile();
+      const data = await (await fetch('/api/qa/runs', { cache: 'no-store' })).json();
+      const runs = data.runs.filter((run) => run.group === groupId)
+        .sort((left, right) => PROFILE_ORDER.indexOf(left.profile) - PROFILE_ORDER.indexOf(right.profile));
+      if (!runs.length) { document.getElementById('meta').textContent = '묶음의 런을 기다리는 중이에요…'; return; }
+      if (!runId || !runs.some((run) => run.id === runId)) switchRun(runs[0].id);
+      const tabs = document.getElementById('group-tabs');
+      tabs.hidden = false;
+      tabs.innerHTML = runs.map((run) => {
+        const percent = run.screens ? Math.round((run.finished / run.screens) * 100) : 0;
+        const fails = run.summary?.fail ?? 0;
+        const live = ['preparing', 'running'].includes(run.status);
+        // 같은 상태를 다시 돌린 런이 뒤에 있으면 이건 "이전"
+        const older = runs.some((other) => other.profile === run.profile && other.id > run.id);
+        return `<button type="button" data-run="${esc(run.id)}" aria-pressed="${run.id === runId}"><span>${live ? '⏳' : run.status === 'error' ? '⚠️' : '✔'} 세션 <b>${esc(run.profile || '?')}</b>${older ? ' (이전·다시 돌림)' : ''} · ${run.finished}/${run.screens}${fails ? ` · ❌ ${fails}` : ''}</span><span class="mini"><span style="width:${percent}%"></span></span></button>`;
+      }).join('');
+      tabs.querySelectorAll('[data-run]').forEach((button) => { button.onclick = () => { switchRun(button.dataset.run); loadGroup(); }; });
+      const stage = document.querySelector('.stage');
+      if (state.group?.mode === 'flow') {
+        // 흐름 — 단계를 하나씩 돌리므로 데스크톱·모바일 한 쌍만. 새 단계가 돌기 시작하면 그 단계로 넘어간다(보던 단계가 끝났을 때)
+        const running = runs.find((run) => ['preparing', 'running'].includes(run.status));
+        const viewing = runs.find((run) => run.id === runId);
+        if (running && running.id !== runId && (!viewing || !['preparing', 'running'].includes(viewing.status)) && state.followRunning !== false) {
+          switchRun(running.id);
+          tabs.querySelectorAll('[data-run]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.run === runId)));
+        }
+        if (stage.dataset.group !== `flow:${runId}`) {
+          stage.dataset.group = `flow:${runId}`;
+          const run = runs.find((item) => item.id === runId);
+          stage.innerHTML = `<div class="frame-row active" data-run="${esc(runId)}"><div class="row-label">세션 ${esc(run?.profile || '')}</div><div class="frames">${frameHtml('desktop', runId)}${frameHtml('mobile', runId)}</div></div>`;
+          state.frameAt = {};
+        }
+        // 런이 막 시작했을 때는 세션 이름이 아직 없다 — 매번 다시 적는다
+        const label = stage.querySelector('.row-label');
+        const current = runs.find((item) => item.id === runId);
+        if (label && current?.profile) label.textContent = `세션 ${current.profile}`;
+      } else {
+        // 동시(--profiles) — 상태마다 한 줄씩. 런 구성이 바뀔 때만 다시 만든다(스트림 연결 유지)
+        const key = runs.map((run) => run.id).join(',');
+        if (stage.dataset.group !== key) {
+          stage.dataset.group = key;
+          stage.innerHTML = runs.map((run) => `<div class="frame-row${run.id === runId ? ' active' : ''}" data-run="${esc(run.id)}"><div class="row-label">세션 ${esc(run.profile || '?')}</div><div class="frames">${frameHtml('desktop', run.id)}${frameHtml('mobile', run.id)}</div></div>`).join('');
+          stage.querySelectorAll('.frame-row').forEach((row) => { row.onclick = () => { switchRun(row.dataset.run); loadGroup(); }; });
+        }
+      }
+      state.groupDone = state.group ? Boolean(state.group.finishedAt) : runs.every((run) => !['preparing', 'running'].includes(run.status));
+      state.groupRuns = runs;
+      // 아직 시작 안 한 단계(로그인 대기·건너뜀)도 탭에 보인다
+      for (const stage of (state.group?.stages || []).filter((item) => !runs.some((run) => run.profile === item.profile))) {
+        tabs.insertAdjacentHTML('beforeend', `<button type="button" disabled aria-pressed="false"><span>${stage.status === 'waiting-login' ? '🔑 로그인 대기' : stage.status === 'skipped' ? '⏭ 건너뜀' : '○ 대기'} · 세션 <b>${esc(stage.profile)}</b></span><span class="mini"><span style="width:0%"></span></span></button>`);
+      }
+      setStatusPill(state.groupDone ? 'done' : 'running');
+      if (state.groupDone) maybeOpenReport();
+    } catch (error) { console.warn(error); }
+  };
+
+  if (!runId && !groupId) {
+    document.getElementById('meta').textContent = '주소에 ?id=<런 id> 또는 ?group=<묶음 id> 가 필요해요 — node scripts/qa/run.mjs --live 가 열어 줘요';
+  } else {
+    const tick = async () => {
+      if (groupId) await loadGroup();
+      if (runId) await Promise.all([loadRun(), loadLive(), loadFrames()]);
+      setTimeout(tick, (groupId ? state.groupDone : state.done) ? 3000 : 500);
+    };
+    tick();
+  }
+</script>
+</body>
+</html>

@@ -11,6 +11,9 @@
  *   --files  변경 파일을 직접 준다(모노레포 루트 기준, 쉼표). 주면 git 을 보지 않는다
  *   --all    변경과 무관하게 화면 전부(전체 검수 — run.mjs --suite)
  *   --json   결과를 JSON 으로 (runner·현황판이 읽는다). 없으면 사람이 읽는 표
+ *   --events 화면마다 코드에 있는 트래킹 이벤트 목록(events) 을 덧붙인다 — 화면 파일에서 import 를 앞으로 따라가며
+ *            sendViewEvent·sendClickEvent·sendScrollEvent('이름') 과 ScrollEventWrapper sectionId 를 모은다.
+ *            순수 재수출 파일(barrel index.ts)은 건너뛴다(안 쓰는 컴포넌트까지 붙지 않게) — 그래서 근사치다
  */
 import { readFileSync, realpathSync, existsSync } from 'node:fs'
 import { join, dirname, relative } from 'node:path'
@@ -197,6 +200,71 @@ function usesAuthGuard(file) {
   }
 }
 
+// ── 5) 트래킹 이벤트 목록(--events) ───────────────────────
+const EVENT_SUFFIX = { sendViewEvent: '_viewed', sendClickEvent: '_clicked', sendScrollEvent: '_scrolled', sendRequestEvent: '_request' }
+const EVENT_CALL = /\b(sendViewEvent|sendClickEvent|sendScrollEvent|sendRequestEvent)\(\s*(?:(['"`])((?:(?!\2)[^\\]|\\.)*)\2|([\w.]+))/g
+const SECTION_USE = /<ScrollEventWrapper[^>]*?sectionId=\{?\s*['"`]([^'"`]+)['"`]/g
+// 화면을 열면 반드시 나가는 화면 보기 이벤트 — <PageViewEventLogger pageName={'more'}> → more_viewed (이름이 글자로 적힌 것만)
+const PAGE_VIEW_USE = /<PageViewEventLogger[^>]*?pageName=\{?\s*(['"`])([^'"`$]+)\1/g
+const sourceCache = new Map()
+const sourceOf = (file) => {
+  if (!sourceCache.has(file)) {
+    let text = ''
+    try {
+      text = readFileSync(join(repoRoot, file), 'utf8')
+    } catch {
+      text = ''
+    }
+    sourceCache.set(file, text)
+  }
+  return sourceCache.get(file)
+}
+// 줄마다 export … from 만 있는 파일 — 안 쓰는 것까지 끌고 오므로 따라가지 않는다
+const isBarrel = (file) => /\/index\.tsx?$/.test(file) && sourceOf(file).split('\n').every((line) => !line.trim() || /^(export\s.*\sfrom\s|export\s\*|\/\/|\/\*|\*)/.test(line.trim()))
+function eventsIn(file) {
+  const text = sourceOf(file)
+  const found = []
+  const lineAt = (index) => text.slice(0, index).split('\n').length
+  for (const match of text.matchAll(EVENT_CALL)) {
+    const [, call, , literal, variable] = match
+    const kind = EVENT_SUFFIX[call].slice(1)
+    if (literal !== undefined && !literal.includes('${')) found.push({ kind, name: `${literal}${EVENT_SUFFIX[call]}`, at: `${file}:${lineAt(match.index)}` })
+    else found.push({ kind, name: null, dynamic: (literal ?? variable).slice(0, 60), at: `${file}:${lineAt(match.index)}` })
+  }
+  for (const match of text.matchAll(SECTION_USE)) found.push({ kind: 'scroll', section: match[1], name: null, at: `${file}:${lineAt(match.index)}` })
+  for (const match of text.matchAll(PAGE_VIEW_USE)) found.push({ kind: 'viewed', name: `${match[2]}_viewed`, pageView: true, at: `${file}:${lineAt(match.index)}` })
+  return found
+}
+function eventInventory(modules, screenFiles) {
+  const dependencies = new Map(modules.map((module) => [module.source, module.dependencies.filter((dependency) => !dependency.couldNotResolve).map((dependency) => dependency.resolved)]))
+  const inventory = {}
+  for (const page of screenFiles) {
+    // 가까운 파일부터(BFS) — 화면 보기 이벤트는 화면 파일·바로 쓰는 컴포넌트(2단계 안)에 있을 때만 "필수"(더 깊으면 조건부일 수 있다)
+    const depth = new Map([[page, 0]])
+    const queue = [page]
+    const events = []
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const file = queue[cursor]
+      events.push(...eventsIn(file).map((event) => (event.pageView ? { ...event, required: depth.get(file) <= 2 } : event)))
+      for (const next of dependencies.get(file) ?? []) {
+        if (depth.has(next) || next.includes('node_modules/') && !next.includes('@repo/') || isBarrel(next)) continue
+        // 다른 화면 파일은 그 화면 몫이다
+        if (isScreen(next)) continue
+        depth.set(next, depth.get(file) + 1)
+        queue.push(next)
+      }
+    }
+    // 같은 이벤트가 여러 곳에 있으면 하나로(처음 위치)
+    const unique = new Map()
+    for (const event of events) {
+      const key = `${event.kind}:${event.name ?? event.section ?? event.dynamic}`
+      if (!unique.has(key)) unique.set(key, event)
+    }
+    inventory[routeOf(page)] = [...unique.values()]
+  }
+  return inventory
+}
+
 const changed = flag('all') ? [] : changedFiles()
 const modules = await buildGraph()
 const { global, screens } = traceScreens(modules, changed)
@@ -211,6 +279,7 @@ const result = {
   totalScreens: modules.map((module) => module.source).filter(isScreen).length,
   screens: screens.map((screen) => ({ ...screen, auth: usesAuthGuard(screen.file) }))
 }
+if (flag('events')) result.events = eventInventory(modules, screens.map((screen) => screen.file))
 
 if (flag('json')) {
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
