@@ -1,6 +1,6 @@
 ---
 title: 리뷰 뒤 결정 콘솔 후속 — 머리말 계획서 경로 절대화 · --decide 덮어쓰기 경고 · 리뷰 이력 보존
-status: open
+status: done
 repo: hermes
 agent:
 kind: script
