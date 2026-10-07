@@ -1,0 +1,20 @@
+{
+  "name": "홈 — 히어로가 지나가면 스티키 입력창·카테고리 칩",
+  "tc": ["SN-057"],
+  "profile": "logout",
+  "why": "홈 첫 화면엔 하단 스티키 입력창이 없고, 히어로(data-sena-main-sticky-anchor)가 화면 위로 지나가고 스크롤 8px 초과면 나타난다(StickyChat.tsx:64-90). 카테고리 칩 \"전체\" 와 분류 칩을 누르면 category-major 이벤트(ContentCategory.tsx:140-170). 러너에 스크롤 단계가 없어 End 키로 내리고 스크린샷으로 본다(스티키 입력창 보임 판정은 선택자 단계가 생기면)",
+  "steps": [
+    {"goto":"/"},
+    {"expectText":"무엇이든 편하게 물어보세요"},
+    {"expectEvent":"main_viewed"},
+    {"screenshot":"top"},
+    {"click":"전문가들이 꼼꼼히 검증하여","label":"본문 빈 곳 눌러 초점 옮기기"},
+    {"press":"End","label":"맨 아래로(End)"},
+    {"wait":1000},
+    {"screenshot":"scrolled-sticky"},
+    {"press":"Home","label":"맨 위로(Home)"},
+    {"wait":800},
+    {"click":{"text":"전체"},"label":"카테고리 \"전체\""},
+    {"expectEvent":"category-major_clicked","props":{"id":"전체"}}
+  ]
+}

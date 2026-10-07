@@ -1,0 +1,21 @@
+{
+  "name": "비로그인 임시 채팅 주소 → 로그인 필요 다이얼로그",
+  "tc": ["SN-007"],
+  "profile": "logout",
+  "why": "비로그인으로 /chat?secure-chat=true 를 열면 \"로그인이 필요해요\" + \"임시 채팅은 로그인 후 이용할 수 있어요.\" 다이얼로그(ChatContent.tsx:115-121, LoginRequiredDialog.tsx:22-40). 취소 → /chat · 로그인 → /signin?return_url=%2Fchat%3Fsecure-chat%3Dtrue(ChatContent.tsx:120). 질문은 보내지 않는다",
+  "steps": [
+    {"goto":"/chat?secure-chat=true"},
+    {"expectText":"로그인이 필요해요"},
+    {"expectText":"임시 채팅은 로그인 후 이용할 수 있어요."},
+    {"expectEvent":"login-prompt_modal_viewed"},
+    {"screenshot":"dialog"},
+    {"click":{"role":"button","name":"취소"}},
+    {"expectEvent":"login-prompt_modal_cancel_clicked"},
+    {"expectUrl":"/chat","label":"취소 → /chat"},
+    {"goto":"/chat?secure-chat=true"},
+    {"expectText":"로그인이 필요해요"},
+    {"click":{"role":"button","name":"로그인"},"label":"다이얼로그 [로그인]"},
+    {"expectEvent":"login-prompt_modal_login_clicked"},
+    {"expectUrl":"/signin?return_url=%2Fchat%3Fsecure-chat%3Dtrue","label":"로그인 → return_url 붙은 로그인 화면"}
+  ]
+}

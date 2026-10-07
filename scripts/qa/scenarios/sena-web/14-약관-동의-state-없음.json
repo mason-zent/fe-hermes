@@ -1,0 +1,17 @@
+{
+  "name": "약관 동의 — state·code 없이 [동의 완료] → 필수 정보 없음 안내(가입 안 됨)",
+  "tc": ["SN-035"],
+  "profile": "logout",
+  "why": "/signup/terms 를 state·code 없이 열면 미동의 땐 \"약관에 동의해주세요\"(disabled), \"약관에 모두 동의\" 후 \"동의 완료\" 를 눌러도 \"회원가입에 필요한 필수 정보가 없습니다.\" 다이얼로그만 뜨고 가입하지 않는다(SignTerms.tsx:90-143, use-sign-terms-actions.ts:116-125). ⚠ state 가 있거나 로그인·미가입 상태면 실제 가입이라 이 씬은 비로그인·쿼리 없음만",
+  "steps": [
+    {"goto":"/signup/terms"},
+    {"expectEvent":"sign-up-terms_viewed"},
+    {"expectText":"약관에 동의해주세요","label":"미동의 → 버튼 문구"},
+    {"click":"약관에 모두 동의"},
+    {"expectText":"동의 완료"},
+    {"screenshot":"agreed"},
+    {"click":{"role":"button","name":"동의 완료"}},
+    {"expectText":"회원가입에 필요한 필수 정보가 없습니다.","label":"state·code 없음 → 안내(가입 안 됨)"},
+    {"expectUrl":"/signup/terms","label":"그대로 머묾"}
+  ]
+}

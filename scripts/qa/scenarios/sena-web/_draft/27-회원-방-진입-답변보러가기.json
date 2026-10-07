@@ -1,0 +1,11 @@
+{
+  "name": "방 진입 스크롤·\"답변 보러가기\" (러너 한계로 초안)",
+  "tc": ["SN-055"],
+  "profile": "login",
+  "viewports": ["desktop"],
+  "why": "⚠ 초안 — \"답변 보러가기\" 칩은 숨을 때도 DOM 에 남고 opacity 0 이라(ViewAnswerButton.tsx:80-90) 러너의 \"보임\" 판정(Playwright visible)이 늘 참이다. 투명도·화면 안 위치를 보는 단계가 필요하다. 또 긴 답변이 있는 방 2개가 있어야 한다(실제 방을 만들면 지우는 단계까지)",
+  "steps": [
+    {"goto":"/chat"},
+    {"screenshot":"todo"}
+  ]
+}

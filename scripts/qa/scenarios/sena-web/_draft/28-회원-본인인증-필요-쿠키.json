@@ -1,0 +1,10 @@
+{
+  "name": "본인인증 필요 계정 → /ci-request (러너 한계로 초안)",
+  "tc": ["SN-009"],
+  "profile": "login",
+  "why": "⚠ 초안 — 쿠키 BZNAV_SIGN_REQUIRED_STEP.<ZENV>={\"ciAuthentication\":true} 를 넣어야 AuthGuard 가 /ci-request?return_url=%2Fmy 로 보낸다(AuthGuard.tsx:55-61). 러너에 쿠키 주입 단계가 없다",
+  "steps": [
+    {"goto":"/my"},
+    {"expectUrl":"/ci-request?return_url=%2Fmy"}
+  ]
+}

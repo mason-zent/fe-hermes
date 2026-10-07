@@ -1,0 +1,20 @@
+{
+  "name": "제휴사 모드(kbank) — 로그인·가입 없이 \"이용 안내\", 제휴사 질문 경로 (응답 흉내)",
+  "tc": ["SN-045"],
+  "profile": "logout",
+  "viewports": ["mobile"],
+  "why": "?working_platform=kbank 로 들어오면 쿠키에 제휴사가 저장되고 쿼리가 빠진다(platform/src/utils/middleware.ts:22-41). 헤더에 \"이용 안내\"(HeaderItems.tsx:154-163), 질문은 /api/partner/v2/chat/completions 로 가고 게스트 한도를 보지 않는다(use-chat-message.ts:461-462, use-submit-question.ts:33). 제휴사 질문도 흉내로 막는다",
+  "steps": [
+    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"응답 흉내 — 점검 꺼짐"},
+    {"mock":{"url":"**/api/partner/v2/chat/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-partner\"}<ENDLINE>\ndata: {\"answer\":\"QA 제휴사 답변입니다\",\"requestUuid\":\"qa-req-partner\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"응답 흉내 — 제휴사 질문"},
+    {"goto":"/?working_platform=kbank"},
+    {"expectText":"이용 안내","label":"헤더 \"이용 안내\""},
+    {"screenshot":"partner-home"},
+    {"fill":{"placeholder":"세나에게 질문해보세요","value":"QA 제휴사 질문"}},
+    {"click":{"role":"button","name":"전송하기"}},
+    {"expectUrl":"/chat"},
+    {"expectText":"QA 제휴사 답변입니다","label":"제휴사 경로로 답변"},
+    {"expectText":"세나의 답변","label":"답변 완료(세나의 답변)"},
+    {"screenshot":"partner-answer"}
+  ]
+}

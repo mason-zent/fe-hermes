@@ -1,0 +1,21 @@
+{
+  "name": "온보딩 설문 — 시작·직접 step 진입 → intro (제출 안 함, 흉내)",
+  "tc": ["SN-040"],
+  "profile": "login",
+  "viewports": ["desktop"],
+  "why": "설문 응답 GET 을 미완료(not_started)로 흉내 내 계정 상태와 무관하게 intro 를 본다. intro \"<이름>님께 딱 맞는\\n세나를 설정해 드릴게요\" → \"설정 시작하기\" → \"어떤 일을 하고 계신가요?\" · ?step=industry 직접 진입은 intro 로(user-type-survey/page.tsx:47-57). 제출 POST 도 흉내로 막고 \"설정 완료하기\" 는 누르지 않는다",
+  "steps": [
+    {"mock":{"url":"**/api/bznav/v1/surveys/onboarding/response","method":"GET","json":{"status":"not_started","completedAt":null,"answers":{}}},"label":"응답 흉내 — 설문 미완료"},
+    {"mock":{"url":"**/api/bznav/v1/surveys/onboarding/response","method":"POST","json":{}},"label":"응답 흉내 — 설문 제출(혹시 눌려도 서버로 안 감)"},
+    {"goto":"/user-type-survey"},
+    {"expectText":"세나를 설정해 드릴게요"},
+    {"expectEvent":"survey-intro_viewed"},
+    {"screenshot":"intro"},
+    {"click":{"role":"button","name":"설정 시작하기"}},
+    {"expectEvent":"survey-intro_start_clicked"},
+    {"expectText":"어떤 일을 하고 계신가요?"},
+    {"screenshot":"user-type"},
+    {"goto":"/user-type-survey?step=industry"},
+    {"expectText":"세나를 설정해 드릴게요","label":"중간 step 직접 진입 → intro"}
+  ]
+}

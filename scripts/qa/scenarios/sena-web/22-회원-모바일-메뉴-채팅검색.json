@@ -1,0 +1,27 @@
+{
+  "name": "모바일 메뉴 채팅 검색 — 1글자·공백·특수문자·앞뒤 공백·결과 없음·닫기",
+  "tc": ["SN-024","SN-049"],
+  "profile": "login",
+  "viewports": ["mobile"],
+  "why": "모바일 ☰(aria-label \"app-menu\") → 메뉴 드로어의 \"채팅 검색\" 입력(MenuDrawer.tsx:136)에서 이동 없이 결과를 보여 준다 · 없으면 \"'zzqq'과(와) 일치하는 검색 결과가 없어요.\" (SearchChatList.tsx:116-134 — 함께 뜨는 \"새 채팅\" 은 숨은 사이드바에도 같은 글자가 있어 스크린샷으로) · 검색은 앞뒤 공백 뺀 2글자부터(300ms 디바운스, use-chat-search-input.ts:13-24) · close-menu 로 닫는다(MenuDrawer.tsx:82-86). 데스크톱 /search-chat 의 같은 검사는 사이드바 읽기 전용 칸과 placeholder 가 같아 _draft/06 에 있다. 검색은 읽기 요청뿐",
+  "steps": [
+    {"goto":"/chat"},
+    {"click":{"role":"button","name":"app-menu"}},
+    {"expectEvent":"menu-drawer_modal_viewed"},
+    {"fill":{"role":"textbox","name":"채팅 검색","value":"Q"},"label":"1글자(숨은 사이드바 칸은 역할 선택에서 빠진다)"},
+    {"wait":800,"label":"디바운스"},
+    {"screenshot":"one-char","label":"1글자는 검색 안 함 — 목록 그대로(같은 글자가 숨은 사이드바에도 있어 글자 판정 불가 → 스크린샷)"},
+    {"fill":{"role":"textbox","name":"채팅 검색","value":"   "},"label":"공백만"},
+    {"wait":800},
+    {"screenshot":"blank","label":"공백만은 검색 안 함(스크린샷)"},
+    {"fill":{"role":"textbox","name":"채팅 검색","value":"%_'"},"label":"특수문자"},
+    {"expectText":"일치하는 검색 결과","label":"특수문자 — 오류 없이 결과 또는 없음"},
+    {"fill":{"role":"textbox","name":"채팅 검색","value":"  zzqq  "},"label":"앞뒤 공백"},
+    {"expectText":"'zzqq'과(와) 일치하는 검색 결과가 없어요.","label":"앞뒤 공백 빼고 검색 → 결과 없음"},
+    {"expectEvent":"search-chat_result_empty_viewed","props":{"query":"zzqq"}},
+    {"expectUrl":"/chat","label":"이동 없음"},
+    {"screenshot":"menu-search"},
+    {"click":{"role":"button","name":"close-menu"}},
+    {"expectEvent":"menu-drawer_topnav_close_clicked"}
+  ]
+}

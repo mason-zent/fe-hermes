@@ -1,0 +1,26 @@
+{
+  "name": "데스크톱 /search-chat — 1글자·결과 없음·검색 결과 → 방 (러너 한계로 초안)",
+  "tc": ["SN-023","SN-049"],
+  "profile": "login",
+  "viewports": ["desktop"],
+  "why": "⚠ 초안 — 2026-10-07 dev: 데스크톱 /search-chat 에서는 사이드바의 읽기 전용 \"채팅 검색\" 칸(Sidebar.tsx:290-299)과 본문 검색칸(search-chat/page.tsx:24)이 placeholder·역할·이름이 모두 같고 둘 다 보여, 러너 fill 이 앞의 읽기 전용 칸을 잡는다. CSS 선택자(input:not([readonly])) 또는 n번째 고르기 단계가 생기면 정식으로. 같은 검색 로직의 경계값은 모바일 메뉴 경로(씬 22)가 맡는다. 검색 결과 클릭은 결과 제목이 서버 요약 제목이라 고를 기준도 필요하다",
+  "steps": [
+    {"goto":"/chat"},
+    {"click":{"placeholder":"채팅 검색"},"label":"사이드바 검색칸 → /search-chat"},
+    {"expectUrl":"/search-chat"},
+    {"expectText":"최근 채팅 목록"},
+    {"fill":{"placeholder":"채팅 검색","value":"Q"}},
+    {"wait":800,"label":"디바운스"},
+    {"expectText":"최근 채팅 목록","label":"1글자는 검색 안 함"},
+    {"fill":{"placeholder":"채팅 검색","value":"  zzqq  "}},
+    {"expectText":"'zzqq'과(와) 일치하는 검색 결과가 없어요.","label":"앞뒤 공백 빼고 검색 → 없음"},
+    {"expectEvent":"search-chat_result_empty_viewed","props":{"query":"zzqq"}},
+    {"fill":{"placeholder":"채팅 검색","value":"%_'"}},
+    {"expectText":"일치하는 검색 결과","label":"특수문자 — 오류 없이 결과 또는 없음"},
+    {"fill":{"placeholder":"채팅 검색","value":"QA자동테스트"}},
+    {"expectText":"일치하는 검색 결과","label":"검색 결과 N개 또는 없음(서버 색인 시점에 따라)"},
+    {"screenshot":"search"},
+    {"click":"QA자동테스트 바꾼 이름","label":"사이드바 목록의 이 방으로 돌아감(검색 결과 제목은 서버 요약 제목이라 고를 수 없다)"},
+    {"expectUrl":"/chat/"}
+  ]
+}

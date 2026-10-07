@@ -1,0 +1,19 @@
+{
+  "name": "비로그인 데스크톱 사이드바 \"채팅 검색\" → 로그인 유도",
+  "tc": ["SN-008"],
+  "profile": "logout",
+  "viewports": ["desktop"],
+  "why": "폭 744 이상 비로그인 사이드바의 읽기 전용 \"채팅 검색\" 칸(Sidebar.tsx:298-299)을 누르면 이동하지 않고 \"로그인하면 저장된 채팅을 검색할 수 있어요.\" 다이얼로그(Sidebar.tsx:279-287). 다이얼로그 [로그인] → /signin?return_url=%2Fsearch-chat(Sidebar.tsx:287-289)",
+  "steps": [
+    {"goto":"/chat"},
+    {"click":{"placeholder":"채팅 검색"},"label":"사이드바 읽기 전용 검색칸"},
+    {"expectEvent":"menu_search-chat_clicked","props":{"menu-type":"sidebar"}},
+    {"expectText":"로그인하면 저장된 채팅을 검색할 수 있어요."},
+    {"expectEvent":"login-prompt_modal_viewed"},
+    {"expectUrl":"/chat","label":"이동하지 않음"},
+    {"screenshot":"dialog"},
+    {"click":{"role":"button","name":"로그인"},"label":"다이얼로그 [로그인](다이얼로그가 열리면 바깥은 aria-hidden 이라 다이얼로그 버튼만 잡힌다)"},
+    {"expectEvent":"login-prompt_modal_login_clicked"},
+    {"expectUrl":"/signin?return_url=%2Fsearch-chat","label":"로그인 → return_url=/search-chat"}
+  ]
+}

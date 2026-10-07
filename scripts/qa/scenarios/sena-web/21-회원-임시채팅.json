@@ -1,0 +1,19 @@
+{
+  "name": "임시 채팅 — 헤더 secure-chat → 안내 → 질문해도 주소·목록 그대로 (응답 흉내)",
+  "tc": ["SN-027"],
+  "profile": "login",
+  "why": "로그인 새 채팅 헤더의 aria-label \"secure-chat\"(툴팁 \"임시 채팅\", HeaderItems.tsx:167-176) → /chat?secure-chat=true · \"임시 채팅으로 전환했어요\"(ChatContent.tsx:252-271) · 질문은 /api/bznav/v2/chat/secret/completions(흉내) · 방이 생기지 않아 주소가 그대로(use-chat-message.ts:299)",
+  "steps": [
+    {"mock":{"url":"**/api/bznav/v2/chat/secret/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-secret\"}<ENDLINE>\ndata: {\"answer\":\"QA 임시 채팅 답변입니다\",\"requestUuid\":\"qa-req-secret\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"응답 흉내 — 임시 채팅 질문"},
+    {"goto":"/chat"},
+    {"click":{"role":"button","name":"secure-chat"}},
+    {"expectUrl":"/chat?secure-chat=true"},
+    {"expectText":"임시 채팅으로 전환했어요"},
+    {"screenshot":"secure"},
+    {"fill":{"placeholder":"세나에게 질문해보세요","value":"QA 임시 채팅 질문"}},
+    {"click":{"role":"button","name":"전송하기"}},
+    {"expectText":"QA 임시 채팅 답변입니다"},
+    {"expectText":"세나의 답변","label":"답변 완료(세나의 답변)"},
+    {"expectUrl":"/chat?secure-chat=true","label":"주소 그대로(방 없음)"}
+  ]
+}
