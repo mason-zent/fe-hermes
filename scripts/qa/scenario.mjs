@@ -29,6 +29,7 @@
  *                                                            GraphQL 연산 이름으로 고른다(본문 query 의 `mutation RefundApplyMutation`). method 는 POST 로 본다.
  *                                                            브라우저가 보내는 요청만 잡힌다 — getServerSideProps 등 서버에서 보내는 요청은 못 잡는다
  *   { "human": "휴대폰 본인인증을 마쳐 주세요", "untilUrl": "/auth/ci-authentication" }
+ *   { "human": "결과를 다 보셨으면 창을 닫아 주세요", "untilClose": true }   ← 마지막 단계로 — 사람이 창을 닫으면 통과로 끝
  *                                                            ③ 사람이 끼는 단계 — 보이는 창(--headed)이면 띠를 띄우고 그 경로가 될 때까지(10분) 기다린다.
  *                                                            창 없이 돌면 여기서 멈추고 '사람 필요' 로 끝낸다
  *   { "expectEvent": "more_body_my-info_clicked", "props": { "page": "more" } }
@@ -195,6 +196,13 @@ export async function runScenario(context, scenario, options) {
           record.ok = false
           record.detail = '창 없이 도는 중이라 멈춤 — --headed 로 돌리면 이 단계에서 기다린다'
           status = 'human'
+          break
+        }
+        if (step.untilClose) {
+          // 사람이 다 보고 창을 닫을 때까지(또는 대기 시간까지) — 닫으면 통과. 이 뒤 단계는 창이 없어 돌지 않는다
+          await options.showBanner(page, `✅ ${step.human}`, 'ok')
+          await page.waitForEvent('close', { timeout: HUMAN_TIMEOUT }).catch(() => {})
+          record.detail = page.isClosed() ? '사람이 창을 닫음 — 끝' : '대기 시간이 지나 끝'
           break
         }
         await options.showBanner(page, `🙋 ${step.human} — 끝나면 저절로 이어서 확인해요`, 'warn')

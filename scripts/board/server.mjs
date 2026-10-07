@@ -1123,13 +1123,18 @@ function qaTestCases() {
     }
     const scenarioDir = join(ROOT, 'scripts', 'qa', 'scenarios', app)
     const scenarios = existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((name) => name.endsWith('.json')).sort() : []
+    // TC 마다 그 TC 를 검사하는 흐름 씬(씬 파일의 "tc") — [선택한 TC만 검수] 가 이 씬들만 돌린다
+    const scenarioTcs = scenarios.map((name) => {
+      try { return [name, JSON.parse(readFileSync(join(scenarioDir, name), 'utf8')).tc ?? []] } catch { return [name, []] }
+    })
+    for (const item of cases) item.scenarioFiles = scenarioTcs.filter(([, tcs]) => tcs.includes(item.id)).map(([name]) => name)
     apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
   }
   return apps
 }
 // [전체 검수] — 최신 개발 브랜치(qa-base)로 화면 전부 + 흐름 씬. 한 번에 하나
 // target: local | server(주소 입력 — dev·stg·dev-1~3·PR 미리보기, 운영은 거부) (D21) · flow: 비로그인 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 요청) → 실패 리포트(D18~D20). 라이브 화면(--live)으로 연다
-function startQaSuite(app, profile, target = 'local', flow = false, server = '') {
+function startQaSuite(app, profile, target = 'local', flow = false, server = '', tcs = []) {
   const known = qaApps().find((entry) => entry.app === app)
   if (target === 'local' && known && !known.local) return { error: `${app} 은 로컬 서버로 돌릴 수 없어요 — 서버를 고르고 주소를 넣어 주세요` }
   const checked = target === 'server' ? checkServerUrl(server || known?.devUrl || '') : null
@@ -1141,7 +1146,17 @@ function startQaSuite(app, profile, target = 'local', flow = false, server = '')
   if (running) return { error: `다른 QA 가 돌고 있어요 — ${running.id} (${running.phase})` }
   mkdirSync(QA_RUNS_DIR, { recursive: true })
   writeFileSync(join(QA_RUNS_DIR, 'launch.log'), `${new Date().toISOString()} suite ${app} ${profile ?? ''}\n`, { flag: 'a' })
-  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow ? ['--flow'] : profile ? ['--profile', profile] : [])]
+  // [선택한 TC만 검수] — 고른 TC 를 검사하는 흐름 씬만(화면 검사 없이). 고른 목록은 .qa-runs/tc-picks/ 에 남긴다
+  const picked = [...new Set(tcs.map(String).filter((id) => /^[A-Z]+-\d+$/.test(id)))]
+  let pickArgs = []
+  if (picked.length) {
+    const picksDir = join(QA_RUNS_DIR, 'tc-picks')
+    mkdirSync(picksDir, { recursive: true })
+    const picksFile = join(picksDir, `${app}@board-${Date.now()}.json`)
+    writeFileSync(picksFile, `${JSON.stringify({ app, from: 'board', tcs: picked.map((id) => ({ id })) }, null, 2)}\n`)
+    pickArgs = ['--tc-picks', picksFile, '--scenarios-only']
+  }
+  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow && !picked.length ? ['--flow'] : profile ? ['--profile', profile] : []), ...pickArgs]
   qaChild = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: 'ignore' })
   qaChild.unref()
   return { ok: true, app, target, server: checked?.url ?? null, flow, profile: flow ? '(흐름)' : profile || '(기본)' }
@@ -1351,7 +1366,7 @@ createServer(async (request, response) => {
       return reply(202, { ok: true, job: job.id })
     }
     if (url.pathname === '/api/qa-suite') {
-      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''))
+      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''), Array.isArray(body.tcs) ? body.tcs : [])
       return reply(result.error ? 400 : 202, result)
     }
     if (url.pathname === '/api/qa-stop') {

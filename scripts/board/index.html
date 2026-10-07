@@ -246,6 +246,9 @@
   .tc-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .tc-table tr.tc-row { cursor: pointer; }
   .tc-table tr.tc-row:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tc-check-col, .tc-table td.tc-check { width: 28px; text-align: center; }
+  .tc-pick-bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 10px; background: color-mix(in srgb, var(--accent) 6%, var(--panel)); font-size: 12.5px; }
+  .tc-pick-bar .sub { color: var(--muted); }
   .tc-table .id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
   .tc-table .nowrap { white-space: nowrap; }
   .tc-table code { font-size: 11.5px; background: color-mix(in srgb, var(--line) 60%, transparent); padding: 0 3px; border-radius: 3px; word-break: break-all; }
@@ -316,7 +319,8 @@
         <button type="button" class="btn" id="tc-guide-open" title="TC 목록 보는 법 — 우선 P0~P2 · 분류 · 자동화 · 세션 · 뷰포트 뜻" aria-label="TC 목록 보는 법">📖</button>
       </div>
       <p class="tc-meta" id="tc-meta"></p>
-      <div class="tc-table-wrap"><table class="tc-table"><thead><tr><th>ID</th><th>분류</th><th>제목</th><th class="hide-sm">세션</th><th class="hide-sm">뷰포트</th><th>자동화</th><th>우선</th></tr></thead><tbody id="tc-body"><tr><td colspan="7" class="empty-history">불러오는 중이에요…</td></tr></tbody></table></div>
+      <div class="tc-pick-bar" id="tc-pick-bar" hidden></div>
+      <div class="tc-table-wrap"><table class="tc-table"><thead><tr><th class="tc-check-col" title="고른 TC 만 검수"><input type="checkbox" id="tc-check-all" aria-label="보이는 TC 모두 고르기"></th><th>ID</th><th>분류</th><th>제목</th><th class="hide-sm">세션</th><th class="hide-sm">뷰포트</th><th>자동화</th><th>우선</th></tr></thead><tbody id="tc-body"><tr><td colspan="8" class="empty-history">불러오는 중이에요…</td></tr></tbody></table></div>
     </div>
     <div id="qa-view-runs">
     <div class="qa-top">
@@ -1001,7 +1005,7 @@
   };
   // ── QA TC 목록 — docs/qa/tc/<앱>.md "B) TC" 표(/api/qa/tc). 자동화 칸에 "있음" 이 들어가면 자동화됨
   const TC_APP_NAME = { 'refund-web': '환급', 'care-web': '케어', 'brand-web': '브랜드', 'sena-web': '세나', 'plus-web': '플러스' };
-  const tcState = { apps: null, app: '', open: new Set() };
+  const tcState = { apps: null, app: '', open: new Set(), picked: new Set() };
   const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   const tcDone = (item) => /있음/.test(item.auto);
   const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
@@ -1028,16 +1032,52 @@
       : `docs/qa/tc/*.md · ${rows.length}개 보임 · 행을 누르면 단계·기대 결과`;
     document.getElementById('tc-body').innerHTML = rows.length ? rows.map((item) => {
       const key = `${item.app}:${item.id}`;
-      const detail = tcState.open.has(key) ? `<tr class="tc-detail"><td colspan="7"><dl>
+      const detail = tcState.open.has(key) ? `<tr class="tc-detail"><td colspan="8"><dl>
         <dt>사전 조건</dt><dd>${tcInline(item.pre)}</dd><dt>단계</dt><dd>${tcInline(item.steps)}</dd><dt>기대 결과</dt><dd>${tcInline(item.expect)}</dd>
         <dt>세션·뷰포트</dt><dd>${esc(item.session)} · ${esc(item.viewport)}</dd><dt>근거</dt><dd>${tcInline(item.ref)}</dd></dl></td></tr>` : '';
-      return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
+      return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="tc-check"><input type="checkbox" data-pick="${esc(key)}" ${tcState.picked.has(key) ? 'checked' : ''} aria-label="${esc(item.id)} 고르기" title="${(item.scenarioFiles || []).length ? `씬 ${esc(item.scenarioFiles.join(', '))}` : '이 TC 를 검사하는 흐름 씬이 아직 없어요'}"></td><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
         <td class="hide-sm nowrap">${esc(item.session)}</td><td class="hide-sm nowrap">${esc(item.viewport)}</td>
         <td><span class="tc-auto${tcDone(item) ? ' done' : ''}">${tcInline(item.auto || '–')}</span></td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
-    }).join('') : '<tr><td colspan="7" class="empty-history">맞는 TC 가 없어요</td></tr>';
+    }).join('') : '<tr><td colspan="8" class="empty-history">맞는 TC 가 없어요</td></tr>';
     document.querySelectorAll('[data-tc]').forEach((row) => {
-      row.onclick = () => { const key = row.dataset.tc; if (tcState.open.has(key)) tcState.open.delete(key); else tcState.open.add(key); renderTc(); };
+      row.onclick = (event) => { if (event.target.closest('.tc-check')) return; const key = row.dataset.tc; if (tcState.open.has(key)) tcState.open.delete(key); else tcState.open.add(key); renderTc(); };
     });
+    // 고르기 — 체크하면 선택 막대에 [선택한 TC만 검수]
+    document.querySelectorAll('[data-pick]').forEach((box) => {
+      box.onchange = () => { if (box.checked) tcState.picked.add(box.dataset.pick); else tcState.picked.delete(box.dataset.pick); renderPickBar(); };
+    });
+    const checkAll = document.getElementById('tc-check-all');
+    const visibleKeys = rows.map((item) => `${item.app}:${item.id}`);
+    checkAll.checked = visibleKeys.length > 0 && visibleKeys.every((key) => tcState.picked.has(key));
+    checkAll.onchange = () => { for (const key of visibleKeys) { if (checkAll.checked) tcState.picked.add(key); else tcState.picked.delete(key); } renderTc(); };
+    renderPickBar();
+  };
+  // 선택 막대 — 고른 TC 수 · 그걸 검사하는 흐름 씬 수 · [선택한 TC만 검수](대상·서버 주소는 [런] 의 전체 검수 칸 것을 쓴다)
+  const pickedCases = () => (tcState.apps || []).flatMap((entry) => entry.cases).filter((item) => tcState.picked.has(`${item.app}:${item.id}`));
+  const renderPickBar = () => {
+    const bar = document.getElementById('tc-pick-bar');
+    const picked = pickedCases();
+    bar.hidden = !picked.length;
+    if (!picked.length) { bar.innerHTML = ''; return; }
+    const apps = [...new Set(picked.map((item) => item.app))];
+    const scenes = [...new Set(picked.flatMap((item) => item.scenarioFiles || []))];
+    const noScene = picked.filter((item) => !(item.scenarioFiles || []).length);
+    const target = document.getElementById('qa-target').value;
+    const server = document.getElementById('qa-server').value.trim();
+    bar.innerHTML = `<b>선택 ${picked.length}개</b><span class="sub">${esc(apps.map((app) => TC_APP_NAME[app] || app).join('·'))} · 흐름 씬 ${scenes.length}개${scenes.length ? ` (${esc(scenes.map((name) => name.slice(0, 2)).join(', '))})` : ''}${noScene.length ? ` · 씬 없는 TC ${noScene.length}개는 건너뜀(${esc(noScene.slice(0, 5).map((item) => item.id).join(', '))}${noScene.length > 5 ? ' …' : ''})` : ''} · 대상 ${target === 'server' ? `☁️ ${esc(server || '서버 주소 없음')}` : '🖥 로컬 서버'}</span>
+      <button type="button" class="btn primary" id="tc-run-picked" ${apps.length !== 1 || !scenes.length ? 'disabled' : ''} title="${apps.length !== 1 ? '한 앱의 TC 만 골라 주세요' : !scenes.length ? '고른 TC 를 검사하는 흐름 씬이 없어요' : '고른 TC 의 흐름 씬만 돌려요(화면 검사 없이)'}">▶ 선택한 TC만 검수</button>
+      <button type="button" class="btn" id="tc-clear-picked">선택 해제</button>`;
+    document.getElementById('tc-clear-picked').onclick = () => { tcState.picked.clear(); renderTc(); };
+    document.getElementById('tc-run-picked').onclick = async () => {
+      const app = apps[0];
+      if (target === 'server' && !server) return toast('서버 주소를 [런] 의 전체 검수 칸에 넣어 주세요');
+      if (!confirm(`${app} — 고른 TC ${picked.length}개의 흐름 씬 ${scenes.length}개만 돌릴까요?\n${target === 'server' ? `☁️ 서버 ${server}` : '🖥 로컬 서버'} · 화면 검사 없이 씬만 · 라이브 화면이 새 탭으로 열려요`)) return;
+      try {
+        await api('/api/qa-suite', { app, profile: document.getElementById('qa-profile').value, target, flow: false, server, tcs: picked.map((item) => item.id) });
+        toast(`선택한 TC 검수를 시작했어요 — 씬 ${scenes.length}개`);
+        qaSelected = '';
+      } catch (error) { toast(`시작하지 못했어요: ${error.message}`); }
+    };
   };
   const loadTc = async () => {
     try {
@@ -1045,7 +1085,7 @@
       tcState.apps = (await response.json()).apps;
       renderTc();
     } catch (error) {
-      document.getElementById('tc-body').innerHTML = `<tr><td colspan="7" class="empty-history">불러오지 못했어요 — ${esc(error.message)}</td></tr>`;
+      document.getElementById('tc-body').innerHTML = `<tr><td colspan="8" class="empty-history">불러오지 못했어요 — ${esc(error.message)}</td></tr>`;
     }
   };
   ['tc-prio', 'tc-kind', 'tc-auto'].forEach((id) => { document.getElementById(id).onchange = renderTc; });

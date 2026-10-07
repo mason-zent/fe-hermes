@@ -592,7 +592,8 @@ const slowMs = watch ? 0 : Number(option('slow') || 700)
 const pause = (page, factor = 1) => (headed && slowMs > 0 ? page.waitForTimeout(slowMs * factor) : Promise.resolve())
 
 async function showBanner(page, text, tone = 'run') {
-  if (!headed) return
+  // 보이는 창일 때만 — 창 없이 도는 검수에서 사람 단계 씬만 따로 연 창(context.__qaHuman)도 포함
+  if (!headed && !page.context().__qaHuman) return
   await page
     .evaluate(
       ({ text, tone }) => {
@@ -1330,8 +1331,8 @@ function loadScenarios() {
     .map((name) => ({ file: name, ...JSON.parse(readFileSync(join(dir, name), 'utf8')) }))
     .filter((scenario) => !only || only.some((key) => scenario.file.includes(key)))
     .filter((scenario) => !stageOnly || (scenario.profile ?? 'logout') === profileName)
-    // 영향 QA 에서는 변경분 TC 에 걸린 씬만
-    .filter((scenario) => suite || !pickIds || (scenario.tc ?? []).some((id) => pickIds.has(id)))
+    // 고른 TC(--tc-picks — 영향 QA 의 변경분 TC · 현황판 [선택한 TC만 검수])가 있으면 그 TC 에 걸린 씬만
+    .filter((scenario) => !pickIds || (scenario.tc ?? []).some((id) => pickIds.has(id)))
 }
 // 씬이 돌 뷰포트 — 씬 파일 "viewports": ["desktop"] 처럼 적으면 그것만, 없으면 화면 검사와 같은 전부(데스크톱·모바일).
 // 사람 단계(human — 실제 본인인증 등)가 있는 씬은 적지 않았으면 첫 뷰포트 하나만 — 사람이 두 번 인증하지 않게(계정 상태도 한 번 바뀌면 끝)
@@ -1389,6 +1390,7 @@ async function runScenarioOn(browser, origin, scenario, entry) {
   const humanBrowser = humanWindow ? await chromium.launch({ headless: false }) : null
   if (humanWindow) say(`🙋 ${where} ${entry.name} — 사람 단계가 있어 보이는 창으로 열어요(창에서 직접 진행)`)
   const context = await (humanBrowser ?? browser).newContext({ viewport: { width: viewport.width, height: viewport.height }, storageState: sessionFile ?? undefined, isMobile: viewport.width < 600, locale: 'ko-KR' })
+  context.__qaHuman = humanWindow
   // 보이는 창이면 화면 검사 때 그 뷰포트 창 자리에
   context.__qaPlace = { left: windowLefts[viewport.name] ?? 0, top: 0, width: viewport.width, height: viewport.height }
   await captureTracking(context, { headed, onEvent: (name, props, page) => live.write({ where, kind: 'event', name, values: props, page: page ? new URL(page.url()).pathname : '' }) })
