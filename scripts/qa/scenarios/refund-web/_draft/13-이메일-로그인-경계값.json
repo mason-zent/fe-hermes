@@ -1,0 +1,16 @@
+{
+  "name": "이메일 로그인 — 이메일·비밀번호 경계값 오류",
+  "tc": ["RF-059"],
+  "profile": "logout",
+  "why": "이메일 로그인 폼은 칸을 떠날 때 검사한다(@repo/user-sign utils). 틀린 값이면 오류 문구가 보이고 [로그인] 은 비활성이다. 로그인 요청(REST /signin/v2)은 보내지 않는다 (추측: [이메일로 로그인] 이 같은 화면에서 폼을 펼친다고 봤다 — 다른 화면으로 가면 goto 를 그 주소로 바꾼다)",
+  "steps": [
+    { "goto": "/auth/sign-in" },
+    { "click": "이메일로 로그인" },
+    { "fill": {"placeholder": "이메일 주소", "value": "qa@example"} },
+    { "fill": {"placeholder": "비밀번호", "value": "12345"} },
+    { "expectText": "올바른 이메일 주소를 입력해주세요.", "label": "도메인 점 없음" },
+    { "fill": {"placeholder": "이메일 주소", "value": "qa@example.com"} },
+    { "expectText": "비밀번호는 6자 이상 입력해주세요.", "label": "5자" },
+    { "screenshot": "invalid" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "PC 인계 알림톡 진입(/joint-cert-handoff) → 법인 공동인증서 설치 화면",
+  "tc": ["RF-047"],
+  "profile": "verified",
+  "why": "알림톡 버튼 주소 /joint-cert-handoff 는 쿼리를 유지한 채 type=corps 를 붙여 공동인증서 설치 화면으로 보낸다(getServerSideProps redirect). hid 쿼리가 있으면 인계 진입·복원 이벤트가 나가야 한다. QA 브라우저에는 공동인증서 프로그램이 없어 설치 단계로 복원된다(restored_step=install)",
+  "steps": [
+    { "goto": "/joint-cert-handoff?hid=qa-handoff-0001" },
+    { "expectUrl": "/hometax-auth/joint-certificate/install", "label": "설치 화면으로 이동(type=corps)" },
+    { "expectEvent": "pc-handoff_landing_viewed", "props": { "handoff_id": "qa-handoff-0001" } },
+    { "expectEvent": "corps-commoncert_install_viewed" },
+    { "expectEvent": "pc-handoff_context_restored", "props": { "handoff_id": "qa-handoff-0001", "restored_step": "install" } },
+    { "screenshot": "install" }
+  ]
+}

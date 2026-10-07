@@ -1,0 +1,26 @@
+{
+  "name": "결제 카드 입력 — 카드번호·유효기간·비밀번호·생년월일 경계값",
+  "tc": ["RF-057"],
+  "profile": "verified",
+  "why": "카드 입력 화면은 칸을 떠날 때(blur) 검증한다. 틀린 값마다 정해진 오류 문구가 보이고 버튼이 '정보를 모두 입력해주세요' 로 남아야 한다. [입력 완료] 는 실제 카드 등록(create/updatePaymentCardMutation)이라 누르지 않는다. 유효기간 문구는 오늘 날짜 기준이다(0125 는 2026년 이후 항상 '지났어요')",
+  "steps": [
+    { "goto": "/tax/refund/payment-card/input" },
+    { "expectText": "카드 정보를 입력해주세요" },
+    { "expectEvent": "card-input_viewed" },
+    { "fill": { "placeholder": "0000-0000-0000-0000", "value": "123456789012" } },
+    { "fill": { "placeholder": "MM/YY", "value": "1326" } },
+    { "expectText": "올바른 카드번호를 입력해주세요.", "label": "12자리 → 13자리 미만" },
+    { "fill": { "placeholder": "••", "value": "1" } },
+    { "expectText": "올바른 유효기간을 입력해주세요.", "label": "13월" },
+    { "fill": { "placeholder": "6자리(YYMMDD)", "value": "901301" } },
+    { "expectText": "올바른 비밀번호를 입력해주세요.", "label": "1자리" },
+    { "click": "카드 정보를 입력해주세요", "label": "칸 밖을 눌러 blur" },
+    { "expectText": "올바른 생년월일을 입력해주세요.", "label": "13월" },
+    { "expectText": "정보를 모두 입력해주세요", "label": "버튼 문구(비활성)" },
+    { "screenshot": "invalid" },
+    { "fill": { "placeholder": "MM/YY", "value": "0125" } },
+    { "click": "카드 정보를 입력해주세요", "label": "칸 밖을 눌러 blur" },
+    { "expectText": "유효기간이 지났어요." },
+    { "screenshot": "expired" }
+  ]
+}

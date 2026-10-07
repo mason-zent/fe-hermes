@@ -1,0 +1,19 @@
+{
+  "name": "환급 신청 휴대폰 번호 — 경계값 오류와 [확인] 비활성",
+  "tc": ["RF-054"],
+  "profile": "verified",
+  "why": "신청 마지막 단계 휴대폰 칸은 하이픈 포함 13자(010-1234-5678)만 통과한다. 틀린 값이면 칸을 떠날 때 오류 문구가 보여야 한다. [확인] 은 실제 환급 신청(applyRefundMutation)이라 누르지 않는다 — 러너가 흉내 없는 mutation 을 막지만 씬에서도 누르지 않는다",
+  "steps": [
+    { "goto": "/tax/refund/phone-number?type=indis" },
+    { "expectText": "휴대폰번호를 확인해주세요" },
+    { "expectEvent": "indis-request_phonenumber_viewed" },
+    { "fill": {"placeholder": "000-0000-0000", "value": "0101234567"} },
+    { "click": "휴대폰번호를 확인해주세요", "label": "칸 밖을 눌러 blur" },
+    { "expectText": "올바른 휴대폰 번호를 입력해주세요." },
+    { "screenshot": "ten-digits" },
+    { "fill": {"placeholder": "000-0000-0000", "value": "01012345678"} },
+    { "click": "휴대폰번호를 확인해주세요", "label": "칸 밖을 눌러 blur" },
+    { "expectEvent": "indis-request_phonenumber_input-number_clicked", "label": "휴대폰 칸 누름 이벤트(onClick) — fill 이 클릭으로 잡히지 않으면 지운다" },
+    { "screenshot": "valid" }
+  ]
+}

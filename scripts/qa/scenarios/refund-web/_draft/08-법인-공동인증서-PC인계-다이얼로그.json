@@ -1,0 +1,22 @@
+{
+  "name": "법인 [공동인증서로 조회하기] → PC 인계 다이얼로그 → 카카오톡 링크 (응답 흉내)",
+  "tc": ["RF-046"],
+  "profile": "verified",
+  "why": "윈도우가 아닌 기기(QA 브라우저는 UA 가 윈도우가 아니다)에서 법인 공동인증서를 고르면 'PC 에서 이어서 하기' 다이얼로그가 떠야 한다. [카카오톡으로 링크 받기] 는 실제로 알림톡을 보내므로 sendCommonCertPcLinkMutation 을 흉내 낸다(REF-3856)",
+  "steps": [
+    { "mock": { "operation": "sendCommonCertPcLinkMutation", "json": { "data": { "sendCommonCertPcLink": { "result": true, "errors": null } } } } },
+    { "goto": "/hometax-auth/select-method?type=corps" },
+    { "expectUrl": "/hometax-auth/select-method", "label": "인증 방법 선택에 머묾" },
+    { "expectText": "어떤 방법으로 조회할까요?" },
+    { "expectEvent": "corps-selectauth_viewed" },
+    { "click": "공동인증서로 조회하기" },
+    { "expectEvent": "corps-selectauth_commoncert_clicked" },
+    { "expectText": "윈도우 PC에서 진행해주세요", "label": "PC 인계 다이얼로그" },
+    { "expectEvent": "corps-selectauth_pc-handoff-dialog_viewed", "props": { "entry_point": "corps" } },
+    { "screenshot": "handoff-dialog" },
+    { "click": "카카오톡으로 링크 받기" },
+    { "expectEvent": "corps-selectauth_pc-handoff-dialog_kakao-link_clicked", "props": { "entry_point": "corps", "click_seq": 1 } },
+    { "expectText": "카카오톡으로 링크를 보냈어요." },
+    { "screenshot": "sent-toast" }
+  ]
+}
