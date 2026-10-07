@@ -71,7 +71,11 @@ console.log(fromFile
 // 외부 페이지로 나간 순간이 아니라, 이 서버로 돌아와 로그인 화면이 아닐 때 끝난 것으로 본다
 // /redirect(간편인증이 code 를 들고 돌아오는 곳)는 아직 토큰을 받기 전이다. 그리고 로그인 토큰 쿠키(B_AT*)가 실제로 생겨야 끝난 것으로 본다
 // (2026-10-06 dev 서버 간편인증 — /redirect 에 닿자마자 저장해 토큰 없는 세션이 저장됐다)
-const isSignedInPage = (url) => url.origin === new URL(origin).origin && !url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/redirect')
+// 본인인증 전 세션(프로필 authScreens 가 본인인증 화면 — 예: refund login)은 로그인 뒤 본인인증 화면으로 끌려가는 게 정상이다 — 거기 도착해도 끝난 것으로 본다
+const sessionProfile = Object.values(routesConfig.profiles ?? {}).find((settings) => settings?.session === profileName)
+const ciEndsLogin = Boolean(routesConfig.ciPath && sessionProfile?.authScreens && String(sessionProfile.authScreens).replace(/^=/, '').startsWith(routesConfig.ciPath))
+const isSignedInPage = (url) => url.origin === new URL(origin).origin && !url.pathname.startsWith('/redirect')
+  && (!url.pathname.startsWith('/auth/') || (ciEndsLogin && url.pathname.startsWith(routesConfig.ciPath)))
 const hasToken = async () => (await context.cookies()).some((cookie) => cookie.name.startsWith('B_AT') && cookie.value)
 try {
   const deadline = Date.now() + 10 * 60 * 1000
