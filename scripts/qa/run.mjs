@@ -1032,7 +1032,8 @@ async function guardSession(contextList, headUrl) {
   return relogin
 }
 async function requestLogin(contextList, headUrl) {
-  run.gate = { profile: profileName, status: 'waiting', since: new Date().toISOString(), message: `로그인이 풀렸어요 — 열린 창에서 다시 로그인${profileName === 'verified' ? '(+ 휴대폰 본인인증)' : ''}해 주시면 멈춘 화면부터 이어서 검사해요(10분)` }
+  const started = run.screens.some((screen) => !['queued', 'running'].includes(screen.status))
+  run.gate = { profile: profileName, status: 'waiting', since: new Date().toISOString(), message: `${started ? '로그인이 풀렸어요' : `${profileName} 상태로 검수하려면 로그인해 주세요`} — 열린 창에서 ${started ? '다시 ' : ''}로그인${profileName === 'verified' ? '(+ 휴대폰 본인인증)' : ''}해 주시면 ${started ? '멈춘 화면부터 ' : ''}이어서 검사해요(10분)${profile.note ? ` · ${profile.note}` : ''}` }
   saveRun()
   say(`🔑 ${run.gate.message}`)
   const code = await new Promise((resolve) => {
@@ -1105,10 +1106,12 @@ async function main() {
     run.base = { ref: baseRef, sha: baseSha.slice(0, 9) }
   }
 
-  // 만료된 세션으로 돌면 로그인 화면만 찍고 실패로 남는다 — 서버를 띄우기 전에 멈춘다
+  // 만료된 세션 — 라이브 화면(현황판에서 시작)이면 멈추지 않고 첫 화면 검사 전에 로그인 창을 띄운다(guardSession).
+  // 라이브 화면 없이(명령줄) 돌면 로그인 화면만 찍고 실패로 남으니 서버를 띄우기 전에 멈춘다
   const sessionPath = profile.session ? sessionFileOf(HERMES, appName, profile.session, target, serverUrl) : null
   const expiredAt = sessionPath && existsSync(sessionPath) ? expiredSessionAt(sessionPath) : null
-  if (expiredAt) throw new Error(expiredMessage(profileName, profile.session, expiredAt))
+  if (expiredAt && !liveView) throw new Error(expiredMessage(profileName, profile.session, expiredAt))
+  if (expiredAt) say(`🔑 세션 ${profileName} 만료(${new Date(expiredAt).toLocaleString('ko-KR')}) — 화면 검사 전에 로그인 창을 띄운다`)
 
   // 작업 서버와 기준 서버를 함께 띄운다
   // dev 서버 대상이면 띄우지 않고 배포본 주소를 쓴다
