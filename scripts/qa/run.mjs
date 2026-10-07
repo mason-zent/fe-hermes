@@ -19,7 +19,7 @@
  *   --slow <ms>         --headed 의 속도(기본 700 — 클수록 느리다, 0 이면 멈춤 없이)
  *   --watch             창은 띄우되 빠르게(= --headed --slow 0) — 전체 검수를 지켜볼 때
  *   --target server --server <주소>  배포된 서버(dev·stg·dev-1~3·PR 미리보기)로 — 운영 주소는 거부. --server 만 줘도 된다
- *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → (세션 없으면 로그인 창 요청) → 로그인 상태 검수 → 실패 리포트 모달. --live 와 함께
+ *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 창) → 실패 리포트 모달. --live 와 함께
  *   --profiles a,b      세션 상태 여럿을 동시에(dev 서버 하나 공유)
  *   --tc-picks <파일>    변경분 TC(/qa-tc <앱> <브랜치> 가 만든 .qa-runs/tc-picks/<앱>@<브랜치>.json) — 영향 QA 에서 기본으로 그 브랜치 파일을 찾는다.
  *                       그 TC 에 걸린 흐름 씬을 화면 검사 뒤에 돌리고, 씬이 없는 TC 는 "사람이 확인" 으로 남긴다
@@ -105,13 +105,14 @@ function prepareSuiteTree() {
 // --profiles logout,login,verified — 세션 상태 여럿을 동시에. dev 서버는 하나(첫 상태의 런이 띄우고 --keep-servers),
 // 나머지 상태는 그 서버(--head-url)를 같이 쓴다. 이 프로세스가 heavy.sh 잠금을 쥐고 있으니 자식 런은 잠금 없이(HERMES_HEAVY_HELD) 돈다.
 // 런은 상태마다 따로(.qa-runs/<id>) 생기고 run.group 으로 묶인다 — 현황판 /qa-live?group=<묶음 id> 가 한 화면에 보여 준다
-// --flow — QA 세션 흐름(D18~D20): ① 비로그인(logout) 검수 → ② 로그인 상태(routes 의 flowTarget, 없으면 세션이 있는 마지막 프로필) 세션이
-// 살아 있으면 그대로(D18), 없거나 만료면 라이브 화면에 "로그인해 주세요" 를 띄우고 보이는 로그인 창을 연다(D19) → 사용자가 로그인(본인인증까지)하면
-// 저장 → ③ 그 세션으로 검수 → ④ 끝나면 라이브 화면이 실패 리포트 모달을 띄운다(D20). 진행 상태는 .qa-runs/<묶음>/group.json
+// --flow — QA 세션 흐름(D18~D20): ① 비로그인(logout) 검수 → ② 로그인 상태들을 routes profiles 순서대로 전부(예: login → verified, 2026-10-07 사용자 결정).
+// 단계마다 세션이 살아 있으면 그대로(D18), 없거나 만료면 라이브 화면에 "로그인해 주세요" 를 띄우고 보이는 로그인 창을 연다(D19) → 사용자가 로그인하면
+// 저장 → ③ 그 세션으로 검수(로그인을 안 하면 그 단계만 건너뜀) → ④ 끝나면 라이브 화면이 실패 리포트 모달을 띄운다(D20). 진행 상태는 .qa-runs/<묶음>/group.json
 if (flag('flow')) {
   const flowRoutes = JSON.parse(readFileSync(join(QA_DIR, 'routes', `${appName}.json`), 'utf8'))
   const flowProfiles = Object.entries(flowRoutes.profiles ?? {}).filter(([key]) => !key.startsWith('$'))
-  const flowTarget = flowRoutes.flowTarget ?? flowProfiles.filter(([, settings]) => settings.session).at(-1)?.[0]
+  // 로그인 상태 단계 — 세션이 있는 프로필 전부(routes 순서). flowTargets 로 고를 수 있다
+  const flowTargets = flowRoutes.flowTargets ?? flowProfiles.filter(([, settings]) => settings.session).map(([name]) => name)
   const tree = option('cwd') || (suite ? prepareSuiteTree() : '')
   const stamp = new Date()
   const two = (value) => String(value).padStart(2, '0')
@@ -128,7 +129,7 @@ if (flag('flow')) {
   const group = {
     id: groupId, app: appName, mode: 'flow', pane, startedAt: stamp.toISOString(), finishedAt: null,
     target,
-    stages: [{ profile: 'logout', status: 'queued' }, ...(flowTarget ? [{ profile: flowTarget, status: 'queued' }] : [])],
+    stages: [{ profile: 'logout', status: 'queued' }, ...flowTargets.map((profile) => ({ profile, status: 'queued' }))],
     gate: null
   }
   const saveGroup = () => writeFileSync(join(groupDir, 'group.json'), `${JSON.stringify(group, null, 2)}\n`)
@@ -170,7 +171,7 @@ if (flag('flow')) {
     const token = (JSON.parse(readFileSync(file, 'utf8')).cookies ?? []).find((cookie) => cookie.name.startsWith('B_AT') && cookie.expires > 0)
     return !token || token.expires * 1000 > Date.now() + 10 * 60 * 1000
   }
-  console.log(`🧭 QA 세션 흐름 — ${target === 'server' ? `서버 ${devUrl}` : '로컬 서버'} · 비로그인 → ${flowTarget ?? '(로그인 상태 없음)'} · 묶음 ${groupId}`)
+  console.log(`🧭 QA 세션 흐름 — ${target === 'server' ? `서버 ${devUrl}` : '로컬 서버'} · 비로그인 → ${flowTargets.join(' → ') || '(로그인 상태 없음)'} · 묶음 ${groupId}`)
   const codes = []
   // 로컬이면 첫 단계가 dev 서버를 띄우고 남긴다(--keep-servers), dev 서버면 그 주소를 바로 쓴다
   const logoutDone = launchStage(group.stages[0], target === 'server' ? ['--head-url', devUrl] : ['--keep-servers'])
@@ -189,16 +190,19 @@ if (flag('flow')) {
     ready = await fetch(devUrl, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)
     if (!ready) await new Promise((resolve) => setTimeout(resolve, 3000))
   }
-  // ② 로그인 — 세션이 없거나 만료면 비로그인 검수가 도는 동안 미리 로그인 창을 연다(D19). 사용자가 마치면 저장
-  let loginDone = Promise.resolve(0)
-  const targetStage = group.stages[1]
-  if (ready && targetStage && !sessionAlive(targetStage.profile)) {
-    const session = flowRoutes.profiles[targetStage.profile].session
-    group.gate = { profile: targetStage.profile, status: 'waiting', since: new Date().toISOString(), message: `${targetStage.profile} 상태로 검수하려면 로그인해 주세요 — 열린 창에서 ${target === 'server' ? '로그인(간편인증 가능)' : '이메일 로그인'}${targetStage.profile === 'verified' ? ' + 휴대폰 본인인증' : ''}을 마치면 이어서 진행해요(10분)` }
-    targetStage.status = 'waiting-login'
+  // ② 로그인 — 세션이 없거나 만료면 로그인 창을 연다(D19). 사용자가 마치면 저장. 첫 로그인 단계는 비로그인 검수가 도는 동안 미리 연다
+  const loginMessage = (profileName) => {
+    const note = flowRoutes.profiles[profileName]?.note ?? ''
+    const how = target === 'server' ? '로그인(간편인증 가능)' : '이메일 로그인'
+    return `${profileName} 상태로 검수하려면 로그인해 주세요 — 열린 창에서 ${how}${profileName === 'verified' ? ' + 휴대폰 본인인증' : ''}을 마치면 이어서 진행해요(10분)${note ? ` · ${note}` : ''}`
+  }
+  const requestStageLogin = (stage) => {
+    const session = flowRoutes.profiles[stage.profile].session
+    group.gate = { profile: stage.profile, status: 'waiting', since: new Date().toISOString(), message: loginMessage(stage.profile) }
+    stage.status = 'waiting-login'
     saveGroup()
     console.log(`🔑 ${group.gate.message}`)
-    loginDone = new Promise((resolve) => {
+    return new Promise((resolve) => {
       const login = spawn(process.execPath, [join(QA_DIR, 'login.mjs'), '--app', appName, '--url', devUrl, '--target', target, '--profile', session], { stdio: 'inherit' })
       login.on('exit', (code) => {
         group.gate.status = code === 0 ? 'done' : 'failed'
@@ -207,18 +211,20 @@ if (flag('flow')) {
       })
     })
   }
+  const loginStages = group.stages.slice(1)
+  const firstLogin = ready && loginStages[0] && !sessionAlive(loginStages[0].profile) ? requestStageLogin(loginStages[0]) : Promise.resolve(0)
   codes.push(await logoutDone)
-  const loginCode = await loginDone
-  // ③ 로그인 상태 검수 — 로그인을 못 했으면 건너뛴다
-  if (targetStage) {
-    if (!ready || loginCode !== 0 || !sessionAlive(targetStage.profile)) {
-      targetStage.status = 'skipped'
-      targetStage.reason = !ready ? 'dev 서버가 뜨지 않았다' : '로그인을 마치지 않았다'
+  // ③ 로그인 상태 검수 — 단계마다 차례대로. 로그인을 못 했으면 그 단계만 건너뛴다
+  for (const [index, stage] of loginStages.entries()) {
+    const loginCode = index === 0 ? await firstLogin : ready && !sessionAlive(stage.profile) ? await requestStageLogin(stage) : 0
+    if (!ready || loginCode !== 0 || !sessionAlive(stage.profile)) {
+      stage.status = 'skipped'
+      stage.reason = !ready ? 'dev 서버가 뜨지 않았다' : '로그인을 마치지 않았다'
       saveGroup()
-      console.log(`⏭  ${targetStage.profile} 검수 건너뜀 — ${targetStage.reason}`)
-    } else {
-      codes.push(await launchStage(targetStage, ['--head-url', devUrl]))
+      console.log(`⏭  ${stage.profile} 검수 건너뜀 — ${stage.reason}`)
+      continue
     }
+    codes.push(await launchStage(stage, ['--head-url', devUrl]))
   }
   // 로컬이면 첫 단계가 남긴 dev 서버(3291)를 끈다
   try {

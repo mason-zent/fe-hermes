@@ -1041,7 +1041,7 @@ function qaTestCases() {
   return apps
 }
 // [전체 검수] — 최신 개발 브랜치(qa-base)로 화면 전부 + 흐름 씬. 한 번에 하나
-// target: local | server(주소 입력 — dev·stg·dev-1~3·PR 미리보기, 운영은 거부) (D21) · flow: 비로그인 → 로그인 요청 → 로그인 상태 → 실패 리포트(D18~D20). 라이브 화면(--live)으로 연다
+// target: local | server(주소 입력 — dev·stg·dev-1~3·PR 미리보기, 운영은 거부) (D21) · flow: 비로그인 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 요청) → 실패 리포트(D18~D20). 라이브 화면(--live)으로 연다
 function startQaSuite(app, profile, target = 'local', flow = false, server = '') {
   const known = qaApps().find((entry) => entry.app === app)
   if (target === 'local' && known && !known.local) return { error: `${app} 은 로컬 서버로 돌릴 수 없어요 — 서버를 고르고 주소를 넣어 주세요` }
