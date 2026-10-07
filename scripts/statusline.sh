@@ -85,4 +85,8 @@ fi
 
 [ "$is_worktree" = 1 ] && out="${out}  ${MAGENTA}⧉worktree${R}"
 
+# 지금 이 세션이 쓰는 모델 — payload 의 model.display_name (예: Opus 5.5)
+model=$(printf '%s' "$payload" | sed -n 's/.*"display_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+[ -n "$model" ] && out="${out}  ${DIM}🧠${R} ${model}"
+
 printf '%b' "$out"
