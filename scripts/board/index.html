@@ -247,7 +247,9 @@
   .tc-table tr.tc-row { cursor: pointer; }
   .tc-table tr.tc-row:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
   .tc-check-col, .tc-table td.tc-check { width: 28px; text-align: center; }
-  .tc-pick-bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 10px; background: color-mix(in srgb, var(--accent) 6%, var(--panel)); font-size: 12.5px; }
+  /* 고르면 화면 아래에 떠 있다 — 긴 표 아래쪽 TC 를 골라도 보이게 */
+  .tc-pick-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 40; width: min(960px, calc(100vw - 32px)); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; padding: 10px 14px; border: 1px solid var(--accent); border-radius: 12px; background: var(--panel); box-shadow: 0 8px 28px rgba(0,0,0,.18); font-size: 12.5px; }
+  .tc-pick-bar[hidden] { display: none; }
   .tc-pick-bar .sub { color: var(--muted); }
   .tc-table .id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
   .tc-table .nowrap { white-space: nowrap; }
@@ -1053,7 +1055,7 @@
     renderPickBar();
   };
   // 선택 막대 — 고른 TC 수 · 그걸 검사하는 흐름 씬 수 · [선택한 TC만 검수](대상·서버 주소는 [런] 의 전체 검수 칸 것을 쓴다)
-  const pickedCases = () => (tcState.apps || []).flatMap((entry) => entry.cases).filter((item) => tcState.picked.has(`${item.app}:${item.id}`));
+  const pickedCases = () => (tcState.apps || []).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app }))).filter((item) => tcState.picked.has(`${item.app}:${item.id}`));
   const renderPickBar = () => {
     const bar = document.getElementById('tc-pick-bar');
     const picked = pickedCases();
