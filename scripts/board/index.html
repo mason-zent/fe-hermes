@@ -883,7 +883,7 @@
       const percent = run.screens ? Math.round((run.finished / run.screens) * 100) : 0;
       return `<button type="button" class="qa-run" data-qa="${esc(run.id)}" aria-current="${run.id === qaSelected}">
         <b>${qaLive(run) ? '⏳ ' : ''}${esc(qaWhen(run.startedAt))} · ${run.kind === 'suite' ? '전체 검수 · ' : ''}${esc(run.app)}</b>
-        <span class="sub">${esc(run.branch)} @${esc(run.head)}${run.profile ? ` · ${esc(run.profile)}` : ''}${run.plan ? ` · ${esc(run.plan.split('/').pop().replace(/\.md$/, ''))}` : ''}</span>
+        <span class="sub">${(run.urls?.head || run.serverUrl) ? `🌐 ${esc(String(run.urls?.head || run.serverUrl).replace(/^https?:\/\//, ''))} · ` : ''}${esc(run.branch)} @${esc(run.head)}${run.profile ? ` · ${esc(run.profile)}` : ''}${run.plan ? ` · ${esc(run.plan.split('/').pop().replace(/\.md$/, ''))}` : ''}</span>
         <span class="sub">${run.status === 'error' ? `오류 — ${esc(run.error || '')}` : qaLive(run) ? `${esc(run.phase || '')} · ${run.finished}/${run.screens}` : esc(qaSummaryChips(run.summary) || '영향 화면 없음')}</span>
         ${qaLive(run) ? `<span class="qa-bar"><span style="width:${percent}%"></span></span>` : ''}
       </button>`;
@@ -958,7 +958,7 @@
         ${detail}</div>`;
     }).join('');
     box.innerHTML = `<div class="qa-head"><h3>${qaLive(run) ? '⏳ ' : ''}${run.kind === 'suite' ? '전체 검수 · ' : ''}${esc(run.app)} · ${esc(run.branch)} @${esc(run.head)}</h3>
-        <span class="sub">${esc(qaWhen(run.startedAt))} · ${run.base ? `기준 ${esc(run.base.ref)}@${esc(run.base.sha)}` : '기준 비교 없음'} · 세션 ${esc(run.profile || '')}${run.plan ? ` · ${esc(run.plan)}` : ''}</span>
+        <span class="sub">${esc(qaWhen(run.startedAt))} · ${(run.urls?.head || run.serverUrl) ? `<a href="${esc(run.urls?.head || run.serverUrl)}" target="_blank" rel="noopener" style="font-weight:600">🌐 ${esc(String(run.urls?.head || run.serverUrl).replace(/^https?:\/\//, ''))}</a> · ` : ''}${run.base ? `기준 ${esc(run.base.ref)}@${esc(run.base.sha)}` : '기준 비교 없음'} · 세션 ${esc(run.profile || '')}${run.plan ? ` · ${esc(run.plan)}` : ''}</span>
         ${run.status === 'done' ? `<a class="sub" href="${base}report.html" target="_blank" rel="noopener">리포트 열기 ↗</a>` : ''}
         <a class="sub" href="/qa-live?${run.group ? `group=${encodeURIComponent(run.group)}` : `id=${encodeURIComponent(run.id)}`}" target="_blank" rel="noopener">${run.status === 'done' ? '📋 실패 리포트·라이브 화면 ↗' : '📺 라이브 화면 ↗'}</a></div>
       <div class="qa-chips"><span class="qa-chip">${esc(run.phase || '')}</span>${QA_ORDER.filter((key) => counts[key]).map((key) => `<span class="qa-chip">${QA_STATUS[key][0]} ${QA_STATUS[key][1]} ${counts[key]}</span>`).join('')}${run.totalScreens ? `<span class="qa-chip">영향 ${new Set((run.screens || []).map((screen) => screen.route)).size} / 전체 ${run.totalScreens}</span>` : ''}</div>

@@ -916,6 +916,7 @@ const QA_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.html': 'text/htm
 const qaStale = (run) => ['preparing', 'running'].includes(run.status) && Date.now() - statSync(join(QA_RUNS_DIR, run.id, 'run.json')).mtimeMs > 120_000
 const qaSummary = (run) => ({
   id: run.id, kind: run.kind ?? 'impact', app: run.app, plan: run.plan, branch: run.branch, head: run.head, base: run.base, profile: run.profile, group: run.group ?? null,
+  target: run.target ?? 'local', serverUrl: run.serverUrl ?? null, urls: run.urls ?? null,
   status: run.status, phase: run.phase, error: run.error, startedAt: run.startedAt, finishedAt: run.finishedAt, summary: run.summary,
   screens: run.screens?.length ?? 0, finished: (run.screens ?? []).filter((screen) => !['queued', 'running'].includes(screen.status)).length,
   ...(qaStale(run) ? { status: 'error', error: '응답 없음 — 중단된 런' } : {})

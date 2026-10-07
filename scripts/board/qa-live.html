@@ -93,6 +93,7 @@
   .steps li.now { color: var(--accent); font-weight: 600; }
   .stage { min-height: 0; overflow: auto; padding: 12px 16px; display: grid; gap: 12px; align-content: start; }
   .frames { display: flex; gap: 12px; align-items: flex-start; }
+  .tested-url { font-weight: 600; color: var(--accent, #2563eb); }
   .sessions { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 0; }
   .sessions .ok { color: var(--ok, #16a34a); } .sessions .bad { color: var(--bad, #dc2626); } .sessions .warn { color: var(--warn, #d97706); }
   /* 묶음(--profiles) — 세션 상태별 탭과 상태마다 한 줄씩의 화면 */
@@ -607,7 +608,9 @@
       await showEnded(run);
       document.title = `QA 라이브 · ${run.app}`;
       document.getElementById('title').textContent = `${state.done ? '' : '⏳ '}QA 라이브 · ${run.kind === 'suite' ? '전체 검수 · ' : ''}${run.app}`;
-      document.getElementById('meta').textContent = `${run.id} · ${run.target === 'server' || run.target === 'dev' ? `☁️ 서버 ${run.serverUrl || ''}` : '🖥 로컬 서버'} · 세션 ${run.profile || '-'} · ${run.branch}@${run.head} · ${run.status === 'error' ? `오류 — ${run.error}` : run.phase || ''}`;
+      // 테스트 중인 주소 — run.json urls.head(로컬은 localhost:<포트>, 서버는 그 주소)
+      const testedUrl = run.urls?.head || run.serverUrl || '';
+      document.getElementById('meta').innerHTML = `${esc(run.id)} · ${run.target === 'server' || run.target === 'dev' ? '☁️ 서버' : '🖥 로컬 서버'}${testedUrl ? ` <a class="tested-url" href="${esc(testedUrl)}" target="_blank" rel="noopener">🌐 ${esc(testedUrl.replace(/^https?:\/\//, ''))}</a>` : ''} · 세션 ${esc(run.profile || '-')} · ${esc(run.branch)}@${esc(run.head)} · ${esc(run.status === 'error' ? `오류 — ${run.error}` : run.phase || '')}`;
       showSessions(run);
       document.getElementById('links').innerHTML = `<a href="/#qa">현황판 QA 탭</a>${run.status === 'done' ? ` · <a href="/qa-runs/${encodeURIComponent(run.id)}/report.html" target="_blank" rel="noopener">리포트 ↗</a>` : ''}`;
       const screens = run.screens || [];
