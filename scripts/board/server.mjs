@@ -22,6 +22,7 @@
  *   - GET  /api/qa/runs      QA 시뮬레이션 런 목록(.qa-runs/) · /api/qa/run?id= 런 하나 · /qa-runs/<id>/<파일> 스크린샷·리포트
  *   - GET  /qa-live?id=      QA 자동화 도구 화면 — 실시간 화면(live/*.jpg)·API 호출·Mixpanel 이벤트(/api/qa/live?id=&since=) 한 페이지
  *   - GET  /api/qa/tc        QA TC 목록(docs/qa/tc/<앱>.md "B) TC" 표 · 앱별 흐름 씬 파일)
+ *   - GET  /api/qa/sessions?app=&target=&server=  고른 앱·대상의 로그인 세션 상태(있음·만료 시각만, 쿠키 값은 안 읽음)
  *   - GET  /api/qa/apps      전체 검수할 수 있는 앱·세션 프로필 · POST /api/qa-suite [전체 검수](요청할 때만) · POST /api/qa-approve [기준으로 승인]
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
@@ -40,7 +41,7 @@ import { execFile, execFileSync, spawn } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
 import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
-import { checkServerUrl } from '../qa/targets.mjs'
+import { checkServerUrl, sessionFileOf } from '../qa/targets.mjs'
 import { approveRun as approveQaRun } from '../qa/baseline.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
@@ -983,6 +984,30 @@ function qaApps() {
     return { app, profiles, devUrl: config.devUrl ?? null, local: config.local !== false, scenarios: existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((file) => file.endsWith('.json')).length : 0 }
   })
 }
+// QA 로그인 세션 상태 — 고른 앱·대상(로컬·서버 주소)의 세션 프로필마다 있는지·만료 시각. 쿠키 값은 읽지 않고 로그인 토큰(B_AT*)의 만료 시각만 본다
+function qaSessions(app, target, server) {
+  const file = join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)
+  if (!/^[\w-]+$/.test(app) || !existsSync(file)) return { error: '앱 설정이 없어요' }
+  let serverUrl = null
+  if (target === 'server') {
+    const checked = checkServerUrl(server || '')
+    if (checked.error) return { error: checked.error }
+    serverUrl = checked.url
+  }
+  const config = JSON.parse(readFileSync(file, 'utf8'))
+  const profiles = Object.entries(config.profiles ?? {}).filter(([key]) => !key.startsWith('$')).map(([name, settings]) => {
+    if (!settings.session) return { name, state: 'none' }
+    const path = sessionFileOf(ROOT, app, settings.session, target, serverUrl)
+    if (!existsSync(path)) return { name, state: 'missing' }
+    try {
+      const { cookies = [] } = JSON.parse(readFileSync(path, 'utf8'))
+      const token = cookies.find((cookie) => cookie.name.startsWith('B_AT') && cookie.expires > 0)
+      const expiresAt = token ? token.expires * 1000 : null
+      return { name, state: expiresAt && expiresAt < Date.now() ? 'expired' : 'valid', expiresAt, savedAt: statSync(path).mtimeMs }
+    } catch { return { name, state: 'missing' } }
+  })
+  return { app, target, profiles }
+}
 // QA TC 목록 — docs/qa/tc/<앱>.md 의 "B) TC" 표를 행 단위로. 문서가 정본이고 여기서는 읽기만 한다
 const QA_TC_APPS = ['refund-web', 'care-web', 'brand-web', 'sena-web', 'plus-web']
 const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, '|').trim())
@@ -1077,6 +1102,10 @@ createServer(async (request, response) => {
   if (url.pathname === '/api/qa/runs') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
     return response.end(JSON.stringify({ runs: listQaRuns().slice(0, 60).map(qaSummary), heavy: heavyLockState() }))
+  }
+  if (url.pathname === '/api/qa/sessions') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify(qaSessions(String(url.searchParams.get('app') ?? ''), url.searchParams.get('target') === 'server' ? 'server' : 'local', String(url.searchParams.get('server') ?? ''))))
   }
   if (url.pathname === '/api/qa/apps') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })

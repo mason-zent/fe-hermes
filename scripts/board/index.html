@@ -196,6 +196,8 @@
   .qa-steps { margin: 4px 0 0; padding-left: 18px; font-size: 11.5px; }
   .qa-steps .no { color: var(--bad); }
   .qa-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
+  .qa-session { font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+  .qa-session .ok { color: var(--ok); } .qa-session .bad { color: var(--bad); } .qa-session .warn { color: var(--warn); }
   .qa-runs { display: grid; gap: 6px; max-height: calc(100vh - 170px); overflow-y: auto; }
   .qa-run { text-align: left; font: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; color: var(--text); display: grid; gap: 2px; }
   .qa-run[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
@@ -325,6 +327,7 @@
       <select id="qa-profile" aria-label="세션 프로필"></select>
       <button type="button" class="btn" id="qa-suite">전체 검수 시작</button>
     </div>
+    <div class="qa-session" id="qa-session" aria-live="polite"></div>
     <div class="qa-wrap">
       <nav class="qa-runs" id="qa-runs" aria-label="QA 런"><div class="empty-history">불러오는 중이에요…</div></nav>
       <div class="qa-detail" id="qa-detail"><div class="empty-history">왼쪽에서 런을 고르세요. 계획서 카드의 [QA 실행] 으로 새로 돌릴 수 있어요</div></div>
@@ -762,6 +765,26 @@
     queued: ['·', '대기', ''], running: ['⏳', '실행 중', 'run'], new: ['🆕', '기준 없음', 'run'], human: ['🙋', '사람 필요', 'warn'], skip: ['⛔', '건너뜀(부작용)', ''],
   };
   const QA_ORDER = ['running', 'fail', 'changed', 'human', 'login', 'ci', 'redirected', 'sample', 'skip', 'new', 'expected', 'pass', 'queued'];
+  // 고른 앱·대상의 로그인 세션 상태 — 저장된 세션이 살아 있으면 로그인 창 없이 돈다
+  const showQaSessions = async () => {
+    const box = document.getElementById('qa-session');
+    const app = document.getElementById('qa-app').value;
+    const target = document.getElementById('qa-target').value;
+    const server = document.getElementById('qa-server').value.trim();
+    if (!app) { box.innerHTML = ''; return; }
+    if (target === 'server' && !server) { box.innerHTML = '🔐 로그인 세션 — 서버 주소를 넣으면 보여요'; return; }
+    let result;
+    try { result = await (await fetch(`/api/qa/sessions?app=${encodeURIComponent(app)}&target=${target}&server=${encodeURIComponent(server)}`)).json(); } catch (error) { box.innerHTML = ''; return; }
+    if (result.error) { box.innerHTML = `🔐 로그인 세션 — ${esc(result.error)}`; return; }
+    const when = (ms) => new Date(ms).toLocaleString('ko-KR', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const item = (profile) => {
+      if (profile.state === 'none') return `<span>${esc(profile.name)}: 로그인 필요 없음</span>`;
+      if (profile.state === 'missing') return `<span class="warn">${esc(profile.name)}: 세션 없음 — 시작하면 로그인 창이 떠요</span>`;
+      if (profile.state === 'expired') return `<span class="bad">${esc(profile.name)}: ⛔ 만료(${esc(when(profile.expiresAt))}) — 시작하면 로그인 창이 떠요</span>`;
+      return `<span class="ok">${esc(profile.name)}: ✅ 로그인됨${profile.expiresAt ? ` · ${esc(when(profile.expiresAt))}까지` : ''}</span>`;
+    };
+    box.innerHTML = `<b>🔐 로그인 세션</b>${result.profiles.map(item).join('')}`;
+  };
   // [전체 검수] — 앱·세션 프로필 고르기
   let qaApps = [];
   const loadQaApps = async () => {
@@ -796,7 +819,9 @@
       const saved = (entry?.profiles || []).find((item) => item.session && item.name !== 'logout');
       if (saved) document.getElementById('qa-profile').value = saved.name;
       document.getElementById('qa-profile').hidden = modeSelect.value === 'flow';
+      showQaSessions();
     };
+    document.getElementById('qa-server').oninput = () => { clearTimeout(window.qaSessionTimer); window.qaSessionTimer = setTimeout(showQaSessions, 500); };
     appSelect.onchange = () => {
       try { localStorage.setItem('board.qaApp', appSelect.value); } catch (error) { /* 기억 못 해도 고르기는 된다 */ }
       fillProfiles();
