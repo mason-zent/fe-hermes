@@ -1,0 +1,148 @@
+{
+  "name": "간편인증 입력 → 인증 요청 → [인증 완료] → 환급 조회 (응답 흉내)",
+  "tc": [
+    "RF-023"
+  ],
+  "profile": "verified",
+  "why": "개인 간편인증(네이버앱)을 입력하고 인증 요청 → 앱에서 승인했다고 치고 [인증 완료] → 환급 조회 화면으로 가야 한다. 홈택스 응답(인증 요청·인증 확인·환급 토큰)은 모두 흉내 — 실제 홈택스·휴대폰 승인 없이 화면 흐름만 본다",
+  "steps": [
+    {
+      "mock": {
+        "operation": "hometaxBlockSettingsQuery",
+        "json": {
+          "data": {
+            "hometaxBlockSettings": {
+              "bypassAuthEnabled": false,
+              "queueScreenEnabled": false,
+              "queueScreenStage": null,
+              "waitingCount": 0,
+              "corpQueueScreenEnabled": false,
+              "corpWaitingCount": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestTokenMutation",
+        "json": {
+          "data": {
+            "hometaxSimpleAuth": {
+              "result": true,
+              "reqTxId": "qa-req-tx",
+              "token": "qa-token",
+              "cxId": "qa-cx",
+              "errors": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthConfirmRequestTokenMutation",
+        "json": {
+          "data": {
+            "hometaxSimpleAuthConfirm": {
+              "result": true,
+              "token": "qa-auth-token",
+              "errors": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestRefundTokenMutation",
+        "json": {
+          "data": {
+            "requestRefundTokenMutation": {
+              "result": true,
+              "errors": null,
+              "refundToken": "qa-refund-token"
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestRefundTokenForLookupMutation",
+        "json": {
+          "data": {
+            "requestRefundTokenMutation": {
+              "result": true,
+              "errors": null,
+              "refundToken": "qa-refund-token",
+              "email": null,
+              "lastLoginType": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "goto": "/hometax-auth/simple-auth/input?from=home"
+    },
+    {
+      "expectText": "간편인증을 위해",
+      "label": "간편인증 입력 화면"
+    },
+    {
+      "click": "네이버앱",
+      "label": "본인인증 수단 네이버앱"
+    },
+    {
+      "fill": {
+        "placeholder": "홍길동",
+        "value": "홍길동"
+      }
+    },
+    {
+      "fill": {
+        "placeholder": "YYYY.MM.DD",
+        "value": "19900101"
+      }
+    },
+    {
+      "fill": {
+        "placeholder": "010-0000-0000",
+        "value": "01012345678"
+      }
+    },
+    {
+      "click": {
+        "role": "button",
+        "name": "다음"
+      },
+      "label": "인증 요청(흉내 — 실제 요청 안 감)"
+    },
+    {
+      "expectUrl": "/hometax-auth/simple-auth/confirm",
+      "label": "인증 확인 화면으로 이동"
+    },
+    {
+      "expectText": "인증 완료",
+      "label": "[인증 완료] 버튼"
+    },
+    {
+      "screenshot": "confirm"
+    },
+    {
+      "click": {
+        "role": "button",
+        "name": "인증 완료"
+      },
+      "label": "[인증 완료] — 승인했다고 흉내"
+    },
+    {
+      "expectUrl": "/tax/refund/lookup",
+      "label": "환급 조회 화면으로 이동"
+    },
+    {
+      "screenshot": "lookup"
+    }
+  ]
+}

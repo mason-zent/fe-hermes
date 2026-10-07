@@ -1,0 +1,125 @@
+{
+  "name": "간편인증 [인증 완료] — 앱에서 아직 승인 안 함 안내 (응답 흉내)",
+  "tc": [
+    "RF-048"
+  ],
+  "profile": "verified",
+  "why": "인증 요청 뒤 네이버앱에서 승인하지 않고 [인증 완료] 를 누르면 '네이버앱에서 인증을 완료해 주세요.' 안내가 뜨고 확인 화면에 머물러야 한다. 홈택스 인증 확인 응답을 '미완료(오류·토큰 없음)' 로 흉내",
+  "steps": [
+    {
+      "mock": {
+        "operation": "hometaxBlockSettingsQuery",
+        "json": {
+          "data": {
+            "hometaxBlockSettings": {
+              "bypassAuthEnabled": false,
+              "queueScreenEnabled": false,
+              "queueScreenStage": null,
+              "waitingCount": 0,
+              "corpQueueScreenEnabled": false,
+              "corpWaitingCount": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestTokenMutation",
+        "json": {
+          "data": {
+            "hometaxSimpleAuth": {
+              "result": true,
+              "reqTxId": "qa-req-tx",
+              "token": "qa-token",
+              "cxId": "qa-cx",
+              "errors": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthConfirmRequestTokenMutation",
+        "json": {
+          "data": {
+            "hometaxSimpleAuthConfirm": {
+              "result": false,
+              "token": null,
+              "errors": {
+                "code": "ERR_HOMETAX_SIMPLE_AUTH",
+                "message": "QA 흉내 — 간편인증 미완료"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "goto": "/hometax-auth/simple-auth/input?from=home"
+    },
+    {
+      "expectText": "간편인증을 위해",
+      "label": "간편인증 입력 화면"
+    },
+    {
+      "click": "네이버앱",
+      "label": "본인인증 수단 네이버앱"
+    },
+    {
+      "fill": {
+        "placeholder": "홍길동",
+        "value": "홍길동"
+      }
+    },
+    {
+      "fill": {
+        "placeholder": "YYYY.MM.DD",
+        "value": "19900101"
+      }
+    },
+    {
+      "fill": {
+        "placeholder": "010-0000-0000",
+        "value": "01012345678"
+      }
+    },
+    {
+      "click": {
+        "role": "button",
+        "name": "다음"
+      },
+      "label": "인증 요청(흉내 — 실제 요청 안 감)"
+    },
+    {
+      "expectUrl": "/hometax-auth/simple-auth/confirm",
+      "label": "인증 확인 화면으로 이동"
+    },
+    {
+      "expectText": "인증 완료",
+      "label": "[인증 완료] 버튼"
+    },
+    {
+      "screenshot": "confirm"
+    },
+    {
+      "click": {
+        "role": "button",
+        "name": "인증 완료"
+      },
+      "label": "[인증 완료] — 아직 승인 안 함"
+    },
+    {
+      "expectText": "인증을 완료해 주세요",
+      "label": "승인 안내 토스트"
+    },
+    {
+      "expectUrl": "/hometax-auth/simple-auth/confirm",
+      "label": "확인 화면에 머묾"
+    },
+    {
+      "screenshot": "not-approved"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "간편인증 입력 — 이름·생년월일·휴대폰 경계값과 서버 오류 안내 (응답 흉내)",
+  "tc": ["RF-050", "RF-051", "RF-052", "RF-024"],
+  "profile": "verified",
+  "why": "간편인증 입력 폼(yup simpleAuthFormSchema)이 틀린 값을 서버로 보내지 않고 칸마다 오류 문구를 보여야 한다. 고친 뒤 [다음] 에서 서버가 ERR_HOMETAX_SIMPLE_AUTH 를 주면 서버 메시지를 토스트로 보여 주고 머문다. 네이버앱은 폴링이 아닌 simpleAuthRequestTokenMutation 을 쓴다. 대기열 화면으로 가지 않게 hometaxBlockSettingsQuery 를 꺼진 값으로 흉내 낸다. 0~6시 영향은 없다",
+  "steps": [
+    { "mock": { "operation": "hometaxBlockSettingsQuery", "json": { "data": { "hometaxBlockSettings": { "bypassAuthEnabled": false, "queueScreenEnabled": false, "queueScreenStage": null, "waitingCount": 0, "corpQueueScreenEnabled": false, "corpWaitingCount": 0 } } } } },
+    { "mock": { "operation": "simpleAuthRequestTokenMutation", "json": { "data": { "hometaxSimpleAuth": { "result": false, "reqTxId": null, "token": null, "cxId": null, "errors": { "code": "ERR_HOMETAX_SIMPLE_AUTH", "message": "QA 흉내 — 간편인증 요청 오류" } } } } } },
+    { "goto": "/hometax-auth/simple-auth/input?from=home" },
+    { "expectText": "간편인증을 위해", "label": "간편인증 입력 화면" },
+    { "click": "네이버앱", "label": "본인인증 수단 네이버앱(폴링 아님)" },
+    { "fill": { "placeholder": "홍길동", "value": "홍" } },
+    { "fill": { "placeholder": "YYYY.MM.DD", "value": "1990010" } },
+    { "fill": { "placeholder": "010-0000-0000", "value": "010123456" } },
+    { "click": { "role": "button", "name": "다음" } },
+    { "expectText": "이름을 올바르게 입력해주세요." },
+    { "expectText": "8자리 숫자로 입력해주세요. 예) 19900101" },
+    { "expectText": "올바른 휴대폰번호를 입력해주세요." },
+    { "screenshot": "invalid" },
+    { "fill": { "placeholder": "홍길동", "value": "홍길동" } },
+    { "fill": { "placeholder": "YYYY.MM.DD", "value": "19900101" } },
+    { "fill": { "placeholder": "010-0000-0000", "value": "01012345678" } },
+    { "click": { "role": "button", "name": "다음" } },
+    { "expectText": "QA 흉내 — 간편인증 요청 오류", "label": "서버 메시지 토스트" },
+    { "expectUrl": "/hometax-auth/simple-auth/input", "label": "입력 화면에 머묾" },
+    { "screenshot": "server-error" }
+  ]
+}
