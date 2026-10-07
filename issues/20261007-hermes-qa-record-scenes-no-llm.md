@@ -18,7 +18,7 @@ Stagehand(browserbase/stagehand)로 바꾸면 자연어 단계·셀프 힐링을
 - [ ] **녹화로 씬 만들기** — `node scripts/qa/record.mjs --app <앱> --profile <세션>` 이 저장된 세션으로 보이는 창 + Playwright codegen(녹화)을 띄우고, 사람이 눌러 간 동작(goto·click·fill)을 `scripts/qa/scenarios/<앱>/_draft/NN-<이름>.json` 씬 단계로 바꿔 저장. 버튼은 문구·역할(getByRole/getByText)로, 입력은 placeholder 로. 응답 흉내·expect 단계는 담당 에이전트가 덧붙인다
 - [ ] **깨진 클릭 단계 안내** — 씬의 click·fill 이 대상을 못 찾으면 그 화면에 지금 있는 버튼·링크·입력 칸 문구 목록을 실패 원인에 붙인다(예: "'인증 완료' 없음 — 지금 있는 버튼: '완료', '다시 요청'")
 - [ ] 현황판 QA 탭에서 [녹화로 씬 만들기] 시작(선택)
-- [ ] **사람 단계 씬이 현황판 검수에서 바로 끝남** — 현황판·라이브로 시작한 검수는 창 없이(headless) 돌아 씬 05(실제 본인인증) 같은 `human` 단계가 기다리지 않고 '사람 필요' 로 끝난다(2026-10-07 17:22 확인). --live 면 human 단계가 있는 씬만 보이는 창으로 열어 기다리게. 같이: --headed 런에서 /home 이 /cert/main/menu 로 이동한 것 원인 확인
+- [x] **사람 단계 씬이 현황판 검수에서 바로 끝남**(2026-10-08 고침 — 라이브면 그 씬만 보이는 창)  — 현황판·라이브로 시작한 검수는 창 없이(headless) 돌아 씬 05(실제 본인인증) 같은 `human` 단계가 기다리지 않고 '사람 필요' 로 끝난다(2026-10-07 17:22 확인). --live 면 human 단계가 있는 씬만 보이는 창으로 열어 기다리게. 같이: --headed 런에서 /home 이 /cert/main/menu 로 이동한 것 원인 확인
 - [ ] 문서: docs/knowledge/common/verify.md "QA 시뮬레이션", docs/qa/tc/README.md "갱신하기"
 
 ## 참고
