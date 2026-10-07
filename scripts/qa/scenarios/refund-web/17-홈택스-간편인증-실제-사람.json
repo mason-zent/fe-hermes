@@ -1,0 +1,57 @@
+{
+  "name": "홈택스 간편인증 → 환급 수집 — 실제 (사람이 입력하고 휴대폰 앱에서 승인)",
+  "tc": [
+    "RF-025"
+  ],
+  "profile": "verified",
+  "viewports": [
+    "desktop"
+  ],
+  "why": "실제 홈택스 간편인증과 환급 수집(조회)이 끝까지 되는지 사람이 직접 확인한다. 간편인증 요청·확인·환급 토큰과 수집(searchRefundV2Mutation)만 서버로 보내고(allowMutations), 그 밖의 mutation(알림톡 예약 등)은 막는다. 결과 화면이 뜨면 30초 보여 주고 끝. 실제 개인정보(실명·생년월일·휴대폰)와 실제 홈택스 조회를 쓰므로 요청할 때만 --headed 로 돌린다",
+  "allowMutations": [
+    "simpleAuthRequestTokenMutation",
+    "simpleAuthPollingRequestTokenMutation",
+    "simpleAuthConfirmRequestTokenMutation",
+    "simpleAuthRequestRefundTokenMutation",
+    "simpleAuthRequestRefundTokenForLookupMutation",
+    "searchRefundV2Mutation"
+  ],
+  "steps": [
+    {
+      "goto": "/hometax-auth/simple-auth/input?from=home"
+    },
+    {
+      "expectText": "간편인증을 위해",
+      "label": "간편인증 입력 화면"
+    },
+    {
+      "human": "인증 수단을 고르고 이름·생년월일·휴대폰 번호를 입력한 뒤 [다음] → 휴대폰 앱에서 승인 → [인증 완료] 를 눌러 주세요",
+      "untilUrl": "/tax/refund/lookup"
+    },
+    {
+      "expectUrl": "/tax/refund/lookup",
+      "label": "환급 조회(수집) 화면 도착 — 실제 간편인증 성공"
+    },
+    {
+      "screenshot": "collecting"
+    },
+    {
+      "human": "홈택스에서 환급 내역을 수집하고 있어요 — 결과 화면이 뜰 때까지 기다려요(창은 그대로 두세요)",
+      "untilUrl": "/tax/refund/lookup/result"
+    },
+    {
+      "expectUrl": "/tax/refund/lookup/result",
+      "label": "수집 결과 화면 — 실제 수집 성공"
+    },
+    {
+      "screenshot": "result"
+    },
+    {
+      "wait": 30000,
+      "label": "결과 화면 30초 보여 주기"
+    },
+    {
+      "screenshot": "result-end"
+    }
+  ]
+}
