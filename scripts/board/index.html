@@ -244,6 +244,14 @@
   .tc-prio { font-weight: 700; } .tc-prio.P0 { color: var(--bad); } .tc-prio.P1 { color: var(--warn); } .tc-prio.P2 { color: var(--muted); }
   .tc-auto { display: inline-block; font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; white-space: nowrap; }
   .tc-auto.done { border-color: var(--ok); color: var(--ok); }
+  .tc-guide { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 12.5px; }
+  .tc-guide summary { cursor: pointer; padding: 7px 12px; font-weight: 600; }
+  .tc-guide .body { padding: 0 12px 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px 16px; }
+  .tc-guide h4 { margin: 6px 0 4px; font-size: 12.5px; }
+  .tc-guide dl { display: grid; grid-template-columns: max-content 1fr; gap: 3px 8px; margin: 0; }
+  .tc-guide dt { font-weight: 600; white-space: nowrap; }
+  .tc-guide dd { margin: 0; color: var(--muted); }
+  .tc-guide .note { grid-column: 1 / -1; color: var(--muted); margin: 0; }
   .tc-detail td { background: color-mix(in srgb, var(--line) 25%, transparent); }
   .tc-detail dl { display: grid; grid-template-columns: 80px 1fr; gap: 4px 10px; margin: 0; font-size: 12px; }
   .tc-detail dt { color: var(--muted); }
@@ -293,6 +301,40 @@
     </div>
     <div id="qa-view-tc" hidden>
       <div class="tc-apps" id="tc-apps"></div>
+      <details class="tc-guide" id="tc-guide">
+        <summary>📖 보는 법 — 우선(P0~P2) · 분류 · 자동화 · 세션 · 뷰포트</summary>
+        <div class="body">
+          <div><h4>우선 — 깨지면 얼마나 큰일인가</h4><dl>
+            <dt class="tc-prio P0">P0</dt><dd>핵심. 깨지면 서비스가 안 된다(가입·로그인·신청·결제·질문·계산 결과). 배포 전에 반드시 본다</dd>
+            <dt class="tc-prio P1">P1</dt><dd>주요 기능. 깨지면 불편하거나 일부가 막히지만 핵심 흐름은 산다(입력 검증·조회·주요 버튼·쿼리 보존)</dd>
+            <dt class="tc-prio P2">P2</dt><dd>부가·드문 경우. 연출·문구·특정 조건·경계 입력(배너 교체·파트너 진입·500자 입력)</dd>
+          </dl></div>
+          <div><h4>분류 — 무엇을 확인하나</h4><dl>
+            <dt>스모크</dt><dd>화면이 열리고 깨지지 않는지</dd>
+            <dt>가드</dt><dd>로그인·본인인증·쿼리 조건에 따라 맞는 곳으로 보내는지</dd>
+            <dt>흐름</dt><dd>누르고 입력하며 끝까지 따라가는지</dd>
+            <dt>계산</dt><dd>입력 → 기대 숫자가 맞는지(계산기)</dd>
+            <dt>에러</dt><dd>잘못된 입력·실패 응답에서 안내가 맞는지</dd>
+            <dt>반응형</dt><dd>모바일·데스크톱 폭에서 배치가 맞는지</dd>
+            <dt>SEO</dt><dd>메타·사이트맵·색인 설정</dd>
+          </dl></div>
+          <div><h4>자동화 — 어떻게 돌리나</h4><dl>
+            <dt>스모크</dt><dd>주소만 바로 열어 본다</dd>
+            <dt>씬</dt><dd>scripts/qa/scenarios 의 단계대로 누르고 입력한다</dd>
+            <dt>응답 흉내</dt><dd>API 응답을 가짜로 넣어 본다(GQL·REST) — 실제 신청·결제 없이</dd>
+            <dt>사람 단계</dt><dd>보이는 창에서 사람이 한 단계 진행(본인인증 등)</dd>
+            <dt>수동</dt><dd>서버 설정·계정 상태가 필요해 자동화 밖</dd>
+            <dt>(있음 NN)</dt><dd>씬 NN 으로 이미 자동화됨 — 필터 "자동화됨"</dd>
+          </dl></div>
+          <div><h4>세션 · 뷰포트</h4><dl>
+            <dt>logout</dt><dd>로그인 안 한 상태</dd>
+            <dt>login</dt><dd>로그인만(약관·본인인증 전)</dd>
+            <dt>verified</dt><dd>본인인증까지 끝난 상태</dd>
+            <dt>mobile · desktop</dt><dd>그 폭에서만 · <b>둘다</b> 는 두 폭 모두</dd>
+          </dl></div>
+          <p class="note">ID 는 앱 접두사 + 번호(RF 환급 · SN 세나 · CR 케어 · BR 브랜드 · PL 플러스). 행을 누르면 사전 조건·단계·기대 결과·근거(코드 위치)가 펼쳐진다. 정본: docs/qa/tc/README.md "용어"</p>
+        </div>
+      </details>
       <div class="tc-filter">
         <select id="tc-prio" aria-label="우선"><option value="">우선 전체</option><option>P0</option><option>P1</option><option>P2</option></select>
         <select id="tc-kind" aria-label="분류"><option value="">분류 전체</option></select>
