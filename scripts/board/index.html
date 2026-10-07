@@ -764,7 +764,11 @@
     const appSelect = document.getElementById('qa-app');
     const current = appSelect.value;
     appSelect.innerHTML = qaApps.map((entry) => `<option value="${esc(entry.app)}">${esc(entry.app)} (흐름 씬 ${entry.scenarios})</option>`).join('') || '<option value="">설정된 앱 없음</option>';
-    if (current) appSelect.value = current;
+    // 앱이 여럿이라 처음엔 마지막에 고른 앱(이 브라우저) — 없으면 refund-web
+    let rememberedApp = '';
+    try { rememberedApp = localStorage.getItem('board.qaApp') || ''; } catch (error) { rememberedApp = ''; }
+    appSelect.value = current || (qaApps.some((entry) => entry.app === rememberedApp) ? rememberedApp : 'refund-web');
+    if (!appSelect.value && qaApps.length) appSelect.value = qaApps[0].app;
     // 대상(로컬·dev 서버)·진행 방식(흐름·한 세션)에 따라 — 로컬로 못 돌리는 앱은 dev 서버만, 흐름이면 세션 고르기를 숨긴다
     const targetSelect = document.getElementById('qa-target');
     const modeSelect = document.getElementById('qa-mode');
@@ -788,7 +792,10 @@
       if (saved) document.getElementById('qa-profile').value = saved.name;
       document.getElementById('qa-profile').hidden = modeSelect.value === 'flow';
     };
-    appSelect.onchange = fillProfiles;
+    appSelect.onchange = () => {
+      try { localStorage.setItem('board.qaApp', appSelect.value); } catch (error) { /* 기억 못 해도 고르기는 된다 */ }
+      fillProfiles();
+    };
     targetSelect.onchange = fillProfiles;
     modeSelect.onchange = fillProfiles;
     fillProfiles();

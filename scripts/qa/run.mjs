@@ -21,6 +21,8 @@
  *   --target server --server <주소>  배포된 서버(dev·stg·dev-1~3·PR 미리보기)로 — 운영 주소는 거부. --server 만 줘도 된다
  *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → (세션 없으면 로그인 창 요청) → 로그인 상태 검수 → 실패 리포트 모달. --live 와 함께
  *   --profiles a,b      세션 상태 여럿을 동시에(dev 서버 하나 공유)
+ *   --tc-picks <파일>    변경분 TC(/qa-tc <앱> <브랜치> 가 만든 .qa-runs/tc-picks/<앱>@<브랜치>.json) — 영향 QA 에서 기본으로 그 브랜치 파일을 찾는다.
+ *                       그 TC 에 걸린 흐름 씬을 화면 검사 뒤에 돌리고, 씬이 없는 TC 는 "사람이 확인" 으로 남긴다
  *   --live              창 없이 돌고, 현황판 /qa-live?id=<런> 한 페이지에 화면(데스크톱·모바일·씬)·API 호출·Mixpanel 이벤트를 실시간으로 — 현황판이 떠 있으면 그 페이지를 연다
  *
  * 무거운 명령이라 scripts/heavy.sh 잠금을 잡고 돈다 — 다른 세션의 install·build·QA 가 돌면 끝날 때까지 기다린다(그동안 run.json 은 아직 없다).
@@ -28,7 +30,7 @@
  * 판정(D8): 통과 pass · 화면 변화 changed · 실패 fail(기준에 없던 에러) · 이동됨 redirected · 로그인 필요 login · 샘플 필요 sample
  */
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync, realpathSync, openSync, appendFileSync, readdirSync, copyFileSync } from 'node:fs'
-import { join, dirname, relative } from 'node:path'
+import { join, dirname, relative, resolve } from 'node:path'
 import { execFileSync, spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
@@ -174,17 +176,18 @@ if (flag('flow')) {
   const logoutDone = launchStage(group.stages[0], target === 'server' ? ['--head-url', devUrl] : ['--keep-servers'])
   let logoutEnded = false
   logoutDone.then(() => { logoutEnded = true })
-  const deadline = Date.now() + 10 * 60 * 1000
-  let ready = false
-  while (!ready && !logoutEnded && Date.now() < deadline) {
-    ready = await fetch(devUrl, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)
-    if (!ready) await new Promise((resolve) => setTimeout(resolve, 3000))
-  }
+  // 라이브 화면은 바로 연다 — 로컬 dev 서버가 뜨는 몇 분 동안도 준비 단계가 보이게
   if (flag('live')) {
     const board = `http://localhost:${process.env.HERMES_BOARD_PORT || 4700}`
     const up = await fetch(`${board}/api/qa/runs`).then((response) => response.ok).catch(() => false)
     if (up) spawn('open', [`${board}/qa-live?group=${groupId}`], { stdio: 'ignore', detached: true }).unref()
     console.log(`📺 실시간 화면 — ${board}/qa-live?group=${groupId}`)
+  }
+  const deadline = Date.now() + 10 * 60 * 1000
+  let ready = false
+  while (!ready && !logoutEnded && Date.now() < deadline) {
+    ready = await fetch(devUrl, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)
+    if (!ready) await new Promise((resolve) => setTimeout(resolve, 3000))
   }
   // ② 로그인 — 세션이 없거나 만료면 비로그인 검수가 도는 동안 미리 로그인 창을 연다(D19). 사용자가 마치면 저장
   let loginDone = Promise.resolve(0)
@@ -360,6 +363,18 @@ const run = {
   target,
   serverUrl
 }
+// 변경분 TC — 이 브랜치에서 확인할 TC 목록(/qa-tc 변경분 모드가 쓴다). 영향 QA 에서만, 파일이 없으면 예전처럼 화면만
+const tcPicksFile = option('tc-picks') ? resolve(option('tc-picks')) : suite ? null : join(HERMES, '.qa-runs', 'tc-picks', `${appName}@${run.branch.replace(/[^\w.-]+/g, '-')}.json`)
+const tcPicks = tcPicksFile && existsSync(tcPicksFile) ? JSON.parse(readFileSync(tcPicksFile, 'utf8')) : null
+const pickIds = tcPicks ? new Set((tcPicks.tcs ?? []).map((tc) => tc.id)) : null
+if (tcPicks) {
+  run.tcPicks = {
+    file: relative(HERMES, tcPicksFile),
+    head: tcPicks.head ?? null,
+    createdAt: tcPicks.createdAt ?? null,
+    tcs: (tcPicks.tcs ?? []).map((tc) => ({ id: tc.id, title: tc.title ?? '', why: tc.why ?? '', session: tc.session ?? '', status: 'manual', scenarios: [] }))
+  }
+}
 const saveRun = () => {
   const temporary = join(runDir, 'run.json.tmp')
   writeFileSync(temporary, `${JSON.stringify(run, null, 2)}\n`)
@@ -402,40 +417,31 @@ const expiredMessage = (profileName, session, expiredAt) =>
 
 // ── 1) 영향 화면 ─────────────────────────────────────────
 function loadImpact() {
-  const routesOption = option('routes')
-  if (routesOption) {
-    return {
-      changed: [],
-      global: [],
-      totalScreens: 0,
-      screens: routesOption.split(',').map((route) => {
-        const file = pageFileOf(route.trim())
-        return { route: route.trim(), file, distance: 0, changed: '(--routes)', via: [], auth: usesAuthGuard(file) }
-      })
-    }
-  }
   const impactArgs = [join(QA_DIR, 'impact.mjs'), '--cwd', repoRoot, '--app', appName, '--json']
+  const routesOption = option('routes')
   if (option('files')) impactArgs.push('--files', option('files'))
   if (option('base')) impactArgs.push('--base', option('base'))
-  if (suite) impactArgs.push('--all')
+  // --routes 도 화면 전부를 받아 그 라우트만 고른다 — Pages·App Router 어느 쪽이든 화면 파일·로그인 표시가 impact.mjs 와 같다
+  if (suite || routesOption) impactArgs.push('--all')
   // 화면마다 코드에 있는 트래킹 이벤트 목록 — 실제로 나간 이벤트와 맞춰 본다
   impactArgs.push('--events')
-  return JSON.parse(execFileSync(process.execPath, impactArgs, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+  const impact = JSON.parse(execFileSync(process.execPath, impactArgs, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+  if (!routesOption) return impact
+  const wanted = routesOption.split(',').map((route) => route.trim()).filter(Boolean)
+  const known = new Map(impact.screens.map((screen) => [screen.route, screen]))
+  return {
+    ...impact,
+    changed: [],
+    global: [],
+    totalScreens: 0,
+    screens: wanted.map((route) => ({ ...(known.get(route) ?? { route, file: null, auth: false, via: [] }), distance: 0, changed: '(--routes)' }))
+  }
 }
 
-// --routes 로 받은 라우트 → 화면 파일 (/help/faq → apps/<앱>/pages/help/faq/index.tsx 또는 faq.tsx)
+// 라우트 → Pages Router 화면 파일 (/help/faq → apps/<앱>/pages/help/faq/index.tsx 또는 faq.tsx) · App Router 앱이면 없다(null)
 function pageFileOf(route) {
   const base = join(appRel, 'pages', route === '/' ? 'index' : route)
   return [`${base}.tsx`, join(base, 'index.tsx'), `${base}.ts`, join(base, 'index.ts')].find((candidate) => existsSync(join(repoRoot, candidate))) ?? null
-}
-// 로그인 화면 판정 — impact.mjs 와 같은 기준(화면 파일이 AuthGuard 를 직접 쓰는지)
-function usesAuthGuard(file) {
-  if (!file) return false
-  try {
-    return /\bAuthGuard\b/.test(readFileSync(join(repoRoot, file), 'utf8'))
-  } catch {
-    return false
-  }
 }
 
 // 라우트(파일 기준) → 실제로 열 URL 들. 동적 라우트는 설정의 samples, 단계형은 entry(D6·D8)
@@ -514,13 +520,18 @@ async function startDevServer(root, port, label) {
   const logFile = join(runDir, `server-${label}.log`)
   writeFileSync(logFile, '')
   ensureDependencies(root, label, logFile)
+  // 앱마다 스크립트 이름이 다르다 — env 생성(gen:env)·Relay(gen:relay · care 는 relay) 는 있는 것만
+  const scripts = JSON.parse(readFileSync(join(appDir, 'package.json'), 'utf8')).scripts ?? {}
   // .env 는 워크트리 생성 때 복사된다(wt-copy-local.sh). 없을 때만 SSM 에서 만든다 — 내용은 출력하지 않는다
-  if (!existsSync(join(appDir, '.env'))) {
+  if (!existsSync(join(appDir, '.env')) && scripts['gen:env']) {
     setPhase(`${label}: env 생성 (gen:env)`)
     runStep('pnpm', ['gen:env'], appDir, logFile)
   }
-  setPhase(`${label}: Relay 생성 (gen:relay)`)
-  runStep('pnpm', ['gen:relay'], appDir, logFile)
+  const relayScript = ['gen:relay', 'relay'].find((name) => scripts[name])
+  if (relayScript) {
+    setPhase(`${label}: Relay 생성 (${relayScript})`)
+    runStep('pnpm', [relayScript], appDir, logFile)
+  }
   setPhase(`${label}: dev 서버 기동 :${port}`)
   const output = openSync(logFile, 'a')
   const child = spawn('pnpm', ['exec', 'next', 'dev', '-p', String(port), '--webpack'], { cwd: appDir, stdio: ['ignore', output, output], detached: true })
@@ -937,7 +948,10 @@ function compareShots(headFile, baseFile, diffFile) {
   }
 }
 
-const isSignPath = (path) => [routesConfig.signInPath, routesConfig.signOutPath].some((signPath) => path.startsWith(signPath))
+// 로그인 없는 앱(brand·plus)은 signInPath 가 없다
+const isSignPath = (path) => [routesConfig.signInPath, routesConfig.signOutPath].filter(Boolean).some((signPath) => path.startsWith(signPath))
+// 기대 이동 — '=/' 처럼 '=' 로 시작하면 그 경로와 정확히 같아야 하고, 아니면 앞부분이 같으면 된다
+const reachedExpected = (expected, finalPath) => (expected.startsWith('=') ? samePath(expected.slice(1), finalPath) : finalPath.startsWith(expected))
 const samePath = (requested, finalPath) => finalPath.split('?')[0].replace(/\/$/, '') === requested.split('?')[0].replace(/\/$/, '')
 // 에러가 난 곳 — 주소·webpack 접두어를 걷어 앱 소스 경로:줄 로(dev 서버는 원본 경로를 준다). 기준 비교 키에는 넣지 않는다
 const sourceAt = (where) =>
@@ -975,7 +989,7 @@ function judge(target, viewportResults) {
     const moved = !samePath(target.url, head.finalPath)
     if (expected && expected !== 'stay') {
       // 가드가 보내야 할 곳으로 갔는지가 검사 대상이다 — 기대와 다르면 실패
-      if (!head.finalPath.startsWith(expected)) {
+      if (!reachedExpected(expected, head.finalPath)) {
         result.newProblems.push({ kind: 'expect', text: `기대 이동 ${expected} — 실제 ${head.finalPath}` })
         return 'fail'
       }
@@ -986,7 +1000,7 @@ function judge(target, viewportResults) {
       return 'fail'
     }
     // 비로그인(authScreens 가 로그인 경로) 검수에서 로그인 화면으로 갔으면 가드가 제대로 막은 것 — 화면 파일에 AuthGuard 가 없어도(레이아웃·상위에서 막는 화면)
-    if (isSignPath(head.finalPath) && !isSignPath(target.url)) return profile.authScreens && isSignPath(profile.authScreens) ? 'expected' : 'login'
+    if (isSignPath(head.finalPath) && !isSignPath(target.url)) return profile.authScreens && isSignPath(profile.authScreens.replace(/^=/, '')) ? 'expected' : 'login'
     if (isCiPath(head.finalPath) && !isCiPath(target.url)) return 'ci'
     // 진입 경로(entry)로 연 단계형 화면은 다음 단계로 넘어가는 게 정상이다
     if (moved && !target.entry) return 'redirected'
@@ -1120,7 +1134,10 @@ async function main() {
 
   run.status = 'running'
   if (liveView) await openLivePage()
-  if (suite) listScenarios(loadScenarios())
+  if (run.tcPicks) {
+    say(`확인할 TC ${run.tcPicks.tcs.length}개 (${run.tcPicks.file}${run.tcPicks.head && run.tcPicks.head !== run.head ? ` · ⚠️ TC 는 @${run.tcPicks.head} 기준 — 지금 @${run.head}` : ''})`)
+  }
+  if (suite || pickIds) listScenarios(loadScenarios())
   setPhase('화면 검사 중')
   const browser = await chromium.launch(headed ? { headless: false, slowMo: Math.round(slowMs / 3) } : {})
   const contexts = {}
@@ -1228,7 +1245,7 @@ async function main() {
   }
   await Promise.all(Array.from({ length: headed || liveView ? 1 : routesConfig.concurrency ?? 3 }, worker))
   // 화면 검사 컨텍스트를 닫고 씬으로 — 같은 뷰포트 칸(라이브 화면)·창 자리를 씬이 이어 쓴다
-  if (suite) {
+  if (suite || pickIds) {
     for (const pair of Object.values(contexts)) {
       await pair.head.close()
       await pair.base?.close()
@@ -1251,6 +1268,8 @@ function loadScenarios() {
     .map((name) => ({ file: name, ...JSON.parse(readFileSync(join(dir, name), 'utf8')) }))
     .filter((scenario) => !only || only.some((key) => scenario.file.includes(key)))
     .filter((scenario) => !stageOnly || (scenario.profile ?? 'logout') === profileName)
+    // 영향 QA 에서는 변경분 TC 에 걸린 씬만
+    .filter((scenario) => suite || !pickIds || (scenario.tc ?? []).some((id) => pickIds.has(id)))
 }
 // 씬이 돌 뷰포트 — 씬 파일 "viewports": ["desktop"] 처럼 적으면 그것만, 없으면 화면 검사와 같은 전부(데스크톱·모바일)
 const scenarioViewports = (scenario) => {
@@ -1362,8 +1381,22 @@ function linkFlows() {
 const STATUS_ICONS = { pass: '✅', expected: '☑️', changed: '🟡', fail: '❌', redirected: '↪️', login: '🔒', ci: '🪪', sample: '📝', new: '🆕', human: '🙋', skip: '⛔' }
 const statusIcon = (status) => STATUS_ICONS[status] ?? '·'
 
+// 변경분 TC 마다 결과 — 걸린 씬이 없으면 사람이 확인(manual), 있으면 그 씬들의 결과(하나라도 실패면 실패)
+function settleTcPicks() {
+  if (!run.tcPicks) return
+  for (const tc of run.tcPicks.tcs) {
+    const entries = run.scenarios.filter((entry) => (entry.tc ?? []).includes(tc.id))
+    tc.scenarios = [...new Set(entries.map((entry) => entry.file))]
+    if (!entries.length) tc.status = 'manual'
+    else if (entries.some((entry) => entry.status === 'fail')) tc.status = 'fail'
+    else if (entries.every((entry) => entry.status === 'pass')) tc.status = 'pass'
+    else tc.status = entries.find((entry) => entry.status !== 'pass').status
+  }
+}
+
 function finish() {
   linkFlows()
+  settleTcPicks()
   const counts = {}
   for (const screen of run.screens) counts[screen.status] = (counts[screen.status] ?? 0) + 1
   run.summary = counts
@@ -1374,7 +1407,8 @@ function finish() {
   run.finishedAt = new Date().toISOString()
   setPhase('끝')
   const scenarioLine = run.scenarios.length ? ` · 흐름 씬 ${run.scenarios.length}개(통과 ${scenarioCounts.pass ?? 0} · 실패 ${scenarioCounts.fail ?? 0} · 사람 필요 ${scenarioCounts.human ?? 0} · 로그인 필요 ${scenarioCounts.login ?? 0})` : ''
-  const line = `${suite ? '전체 검수 ' : ''}[${run.profile}] ${suite ? `기준 없음 ${counts.new ?? 0} · ` : ''}통과 ${counts.pass ?? 0} · 기대대로 이동 ${counts.expected ?? 0} · 변화 ${counts.changed ?? 0} · 실패 ${counts.fail ?? 0} · 이동됨 ${counts.redirected ?? 0} · 로그인 필요 ${counts.login ?? 0} · 본인인증 필요 ${counts.ci ?? 0} · 샘플 필요 ${counts.sample ?? 0}${counts.skip ? ` · 건너뜀(부작용) ${counts.skip}` : ''}${scenarioLine}`
+  const tcLine = run.tcPicks ? ` · 확인할 TC ${run.tcPicks.tcs.length}개(씬 통과 ${run.tcPicks.tcs.filter((tc) => tc.status === 'pass').length} · 씬 실패 ${run.tcPicks.tcs.filter((tc) => tc.status === 'fail').length} · 사람이 확인 ${run.tcPicks.tcs.filter((tc) => tc.status === 'manual').length})` : ''
+  const line = `${suite ? '전체 검수 ' : ''}[${run.profile}] ${suite ? `기준 없음 ${counts.new ?? 0} · ` : ''}통과 ${counts.pass ?? 0} · 기대대로 이동 ${counts.expected ?? 0} · 변화 ${counts.changed ?? 0} · 실패 ${counts.fail ?? 0} · 이동됨 ${counts.redirected ?? 0} · 로그인 필요 ${counts.login ?? 0} · 본인인증 필요 ${counts.ci ?? 0} · 샘플 필요 ${counts.sample ?? 0}${counts.skip ? ` · 건너뜀(부작용) ${counts.skip}` : ''}${scenarioLine}${tcLine}`
   console.log(`\n📋 QA ${run.id}\n${line}\n결과: ${relative(HERMES, runDir)}/run.json`)
   if (run.plan) writeQaResult(line)
   return counts.fail || scenarioCounts.fail ? 1 : 0

@@ -1,0 +1,22 @@
+{
+  "name": "게스트 질문 → 답변 → 이어 질문 → 두 번째 답변",
+  "tc": ["SN-011", "SN-013"],
+  "profile": "logout",
+  "viewports": ["mobile"],
+  "why": "세나의 핵심 — 홈에서 질문하면 /chat 으로 가서 스트리밍 답변이 끝까지 나오고(세나의 답변), 같은 화면에서 이어 질문해도 두 번째 답변이 끝까지 나와야 한다. 실제 AI 답변을 받는다(게스트 일일 한도에서 2회 차감 — 그래서 모바일 하나만)",
+  "steps": [
+    { "goto": "/" },
+    { "fill": { "placeholder": "세나에게 질문해보세요", "value": "부가세 신고 기간이 언제인가요?" }, "label": "첫 질문 입력" },
+    { "click": { "role": "button", "name": "전송하기" } },
+    { "expectUrl": "/chat", "label": "/chat 으로 이동" },
+    { "expectText": "부가세 신고 기간이 언제인가요?", "label": "질문 말풍선" },
+    { "expectText": "세나의 답변", "timeout": 120000, "label": "첫 답변 완료(세나의 답변)" },
+    { "screenshot": "answer-1" },
+    { "fill": { "placeholder": "세나에게 질문해보세요", "value": "간이과세자 기준 금액도 알려주세요" }, "timeout": 30000, "label": "이어 질문 입력(입력창 다시 켜짐)" },
+    { "click": { "role": "button", "name": "전송하기" } },
+    { "expectText": "간이과세자 기준 금액도 알려주세요", "label": "두 번째 질문 말풍선" },
+    { "expectText": "세나의 답변", "nth": 2, "timeout": 120000, "label": "두 번째 답변 완료" },
+    { "expectUrl": "/chat", "label": "같은 /chat 에 머묾" },
+    { "screenshot": "answer-2" }
+  ]
+}

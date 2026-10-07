@@ -437,7 +437,7 @@
       const calls = state.lines.filter((line) => line.kind !== 'mark' && pathOnly(line.page) === path);
       html = `<div><h4>어떻게 검사했나 — 단계별 결과</h4>
           ${(screen.flows || []).length ? `<p class="dlg-meta" style="color:var(--ok)">🔗 흐름에서 확인 — 통과한 씬 ${esc(screen.flows.join(', '))} 이 이 화면을 지나갔어요</p>` : ''}
-          <p class="dlg-meta">${screen.auth ? '🔒 로그인 화면 · ' : ''}세션 ${esc(state.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect)}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>
+          <p class="dlg-meta">${screen.auth ? '🔒 로그인 화면 · ' : ''}세션 ${esc(state.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect.replace(/^=/, ''))}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>
           ${['queued', 'running', 'skip'].includes(screen.status) ? `<p class="dlg-meta">${screen.status === 'skip' ? '이 화면은 열지 않았어요(부작용)' : '아직 검사가 끝나지 않았어요'}</p>` : screenDetail(screen)}</div>
         <div><h4>스크린샷</h4>${shotGrid(shots)}<h4>이 화면에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `popup:${state.detail}`)}</div>`;
     } else {
@@ -503,6 +503,20 @@
     }
     return `<ol class="steps">${items.join('')}</ol>`;
   };
+  // 변경분 TC(/qa-tc 변경분 모드) — 걸린 씬의 결과로 상태를 낸다. 씬이 없으면 사람이 확인
+  const tcStatusOf = (tc, scenarios) => {
+    const entries = scenarios.filter((entry) => (entry.tc || []).includes(tc.id));
+    if (!entries.length) return 'human';
+    if (entries.some((entry) => entry.status === 'fail')) return 'fail';
+    if (entries.every((entry) => entry.status === 'pass')) return 'pass';
+    return entries.find((entry) => entry.status !== 'pass').status;
+  };
+  const tcPickRows = (picks, scenarios) => picks.tcs.map((tc) => {
+    const status = tcStatusOf(tc, scenarios);
+    const files = [...new Set(scenarios.filter((entry) => (entry.tc || []).includes(tc.id)).map((entry) => entry.file.slice(0, 2)))];
+    const how = files.length ? `씬 ${files.join(', ')}` : '사람이 확인';
+    return checkRow(status, `${tc.id} ${tc.title}`, `${status === 'human' ? '🙋 ' : ''}${esc(how)}${tc.session ? ` · 세션 ${esc(tc.session)}` : ''}${tc.why ? `<br>${esc(tc.why)}` : ''}`);
+  }).join('');
   let lastCurrent = '';
   const renderChecklist = (screens, scenarios) => {
     const box = document.getElementById('checklist');
@@ -530,7 +544,8 @@
     }).join('');
     const keepScroll = box.scrollTop;
     box.innerHTML = `<h2>화면 ${screens.length}개 <span class="sub">${screenDone}/${screens.length} 완료</span></h2>${screenRows || '<div class="empty-log">화면 목록을 만드는 중이에요</div>'}`
-      + (scenarios.length ? `<h2>흐름 씬 ${scenarios.length}개 <span class="sub">${scenarioDone}/${scenarios.length} 완료</span></h2>${scenarioRows}` : '');
+      + (scenarios.length ? `<h2>흐름 씬 ${scenarios.length}개 <span class="sub">${scenarioDone}/${scenarios.length} 완료</span></h2>${scenarioRows}` : '')
+      + (state.run?.tcPicks?.tcs?.length ? `<h2>이 변경에서 확인할 TC ${state.run.tcPicks.tcs.length}개 <span class="sub">${esc(state.run.tcPicks.file)}</span></h2>${tcPickRows(state.run.tcPicks, scenarios)}` : '');
     box.scrollTop = keepScroll;
     box.querySelectorAll('.check[data-key]').forEach((row) => { row.onclick = () => openDetail(row.dataset.key); });
     const current = box.querySelector('.check.current');
@@ -686,6 +701,7 @@
     const skipped = (state.group?.stages || []).filter((stage) => stage.status === 'skipped').map((stage) => `<span class="chip">⏭ ${esc(stage.profile)} 건너뜀 — ${esc(stage.reason || '')}</span>`).join('');
     body.innerHTML = `<div class="rep-summary">${runs.map((run) => `<span class="chip">세션 ${esc(run.profile || '')} · 실패 ${(run.screens || []).filter((screen) => screen.status === 'fail').length} · 씬 실패 ${(run.scenarios || []).filter((item) => item.status === 'fail').length}</span>`).join('')}${skipped}<span class="chip">⚠ 확인 필요 ${warnings}개(실패 아님 — 화면을 누르면 보여요)</span></div>
       ${total ? groups : '<p class="dlg-meta">✅ 실패가 없어요</p>'}
+      ${runs.filter((run) => run.tcPicks?.tcs?.length).map((run) => `<section class="rep-group"><h4>이 변경에서 확인할 TC ${run.tcPicks.tcs.length}개 <span class="why">씬이 있는 TC 는 이번 런에서 돌렸고, 🙋 는 사람이 확인해야 해요</span></h4><div>${tcPickRows(run.tcPicks, run.scenarios || [])}</div></section>`).join('')}
       <div class="rep-actions">${runsLine}</div>`;
     document.getElementById('report-title').textContent = `📋 실패 리포트 — ${total}개${groupId ? ' (세션 흐름)' : ''}`;
     // [자세히] — 리포트 안에서 펼친다(다른 곳으로 보내지 않는다): 검사 단계·스크린샷·그 화면에서 나간 호출
@@ -735,7 +751,7 @@
     const calls = lines.filter((line) => line.kind !== 'mark' && pathOnly(line.page) === path);
     const shots = (screen.viewports || []).flatMap((viewport) => [[`${viewport.name} 작업`, viewport.shots?.head], [`${viewport.name} 기준`, viewport.shots?.base], [`${viewport.name} 차이`, viewport.shots?.diff]]).filter(([, file]) => file);
     return `<div><h4>어떻게 검사했나 — 단계별 결과</h4>
-        <p class="dlg-meta">세션 ${esc(item.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect)}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>${screenDetail(screen)}</div>
+        <p class="dlg-meta">세션 ${esc(item.run.profile || '-')} · ${screen.expect ? `기대 ${screen.expect === 'stay' ? '이 화면에 머묾' : `→ ${esc(screen.expect.replace(/^=/, ''))}`}` : '기대 이동 없음'}${screen.note ? ` · ${esc(screen.note)}` : ''}</p>${screenDetail(screen)}</div>
       <div><h4>스크린샷</h4>${shotGrid(shots, item.run.id)}<h4>이 화면에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `report:${item.run.id}:${item.key}`)}</div>`;
   };
 

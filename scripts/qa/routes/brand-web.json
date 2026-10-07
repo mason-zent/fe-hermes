@@ -1,0 +1,41 @@
+{
+  "$comment": "QA 시뮬레이션 화면 설정 (D6). 동적 라우트는 samples 에 열 URL 을, 단계형 화면은 entry 에 앞 단계 URL 을 적는다(D8). 적지 않은 동적 라우트는 '샘플 필요' 로 표시만 한다. 키는 impact.mjs 의 route(App Router — 라우트 그룹 (x) 를 뺀 주소, [param] 그대로). expect 값이 '=' 로 시작하면 그 경로와 정확히 같아야 한다(앞부분 일치가 아니라)",
+  "app": "brand-web",
+  "devPort": 3000,
+  "devUrl": "https://dev.bznav.com",
+  "signInPath": null,
+  "signOutPath": null,
+  "ciPath": null,
+  "profiles": {
+    "$comment": "세션 상태별 기대 결과. session = .qa-auth/<앱>.<session>.json (login.mjs --profile). authScreens = 로그인 가드 화면이 가야 할 곳('=/'·경로 앞부분 · 'stay' 머무름 · null 기대 없음). 화면별로 다르면 routes[화면].expect[프로필]",
+    "logout": {
+      "session": null,
+      "authScreens": null,
+      "note": "로그인 없는 사이트 — 비로그인 하나"
+    }
+  },
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "timeoutMs": 45000,
+  "concurrency": 3,
+  "diffMinPixels": 50,
+  "ignoreConsole": [
+    "Download the React DevTools",
+    "\\[Fast Refresh\\]",
+    "\\[HMR\\]"
+  ],
+  "routes": {
+    "/terms/[...terms]": {"samples": ["/terms/service", "/terms/privacy"], "note": "약관 키는 DatoCMS(generateStaticParams) — 코드에 박힌 링크 둘"},
+    "/popup/terms/[...terms]": {"samples": ["/popup/terms/service", "/popup/terms/privacy"], "note": "앱 웹뷰용 약관(헤더·푸터 없음)"}
+  }
+}

@@ -15,6 +15,7 @@
  *   { "goto": "/menu" }                                      이 서버 경로로 이동
  *   { "expectUrl": "/auth/sign-" }                           현재(또는 15초 안에 바뀐) 경로가 이것으로 시작해야 한다
  *   { "expectText": "본인인증을 실패했어요" }                 이 글자가 화면에 보여야 한다(15초)
+ *   { "expectText": "세나의 답변", "nth": 2, "timeout": 120000 }  그 글자가 2번째로 보일 때까지(이어 질문의 두 번째 답변 등) · timeout 은 이 단계만 기다리는 시간(ms)
  *   { "click": "휴대폰 본인인증 하기" }                       이 글자를 가진 요소를 누른다
  *   { "click": { "text": "[필수]", "all": true } }           맞는 것 전부 ("optional": true 면 없을 때 건너뛴다)
  *   { "click": { "role": "button", "name": "확인" } }        역할·이름으로
@@ -22,6 +23,8 @@
  *   { "mock": { "url": "**\/ci/v2/prepare", "method": "POST", "status": 200, "json": {…} } }
  *                                                            ② 응답 흉내 — 이후 그 요청은 서버에 가지 않고 이 응답을 받는다.
  *                                                            json 안의 "{{origin}}" 은 이 서버 주소로 바뀐다
+ *   { "mock": { "url": "**\/chat/guest/completions", "method": "POST", "contentType": "text/event-stream", "body": "data: {…}\n\n" } }
+ *                                                            json 대신 body(글자 그대로) — SSE 스트림 답변 흉내 등. contentType 기본은 json 이면 application/json, body 면 text/plain
  *   { "mock": { "operation": "RefundApplyMutation", "json": { "data": {…} } } }
  *                                                            GraphQL 연산 이름으로 고른다(본문 query 의 `mutation RefundApplyMutation`). method 는 POST 로 본다.
  *                                                            브라우저가 보내는 요청만 잡힌다 — getServerSideProps 등 서버에서 보내는 요청은 못 잡는다
@@ -30,8 +33,12 @@
  *                                                            창 없이 돌면 여기서 멈추고 '사람 필요' 로 끝낸다
  *   { "expectEvent": "more_body_my-info_clicked", "props": { "page": "more" } }
  *                                                            트래킹(Mixpanel) 이벤트가 나갔는지(씬 시작부터 · 5초) — props 는 값이 같아야 한다
+ *   { "press": "Enter", "on": { "placeholder": "…" } }       키를 누른다(on 이 있으면 그 요소에서, 없으면 지금 초점) — "Shift+Enter" 처럼 조합도
+ *   { "offline": true }                                      네트워크 끊기(false 면 다시 연결)
  *   { "wait": 1000 }                                         기다림(ms)
  *   { "screenshot": "after" }                                스크린샷 한 장(shots/<씬>.<이름>.png)
+ *
+ * "timeout" 은 goto 를 뺀 모든 단계에 줄 수 있다(기본 15초) — AI 답변처럼 오래 걸리는 단계에만
  *
  * 안전장치: 씬에서 흉내로 지정하지 않은 GraphQL mutation 은 서버로 보내지 않고 오류 응답으로 막는다(문제 목록에 "막은 mutation" 으로 남는다).
  *          꼭 실제로 보내야 하면 씬에 "allowMutations": ["연산 이름"]
@@ -45,7 +52,7 @@ import { requestTags } from './live.mjs'
 const STEP_TIMEOUT = 15000
 const HUMAN_TIMEOUT = 10 * 60 * 1000
 
-const stepKind = (step) => ['goto', 'expectUrl', 'expectText', 'expectEvent', 'click', 'fill', 'mock', 'human', 'wait', 'screenshot'].find((kind) => kind in step)
+const stepKind = (step) => ['goto', 'expectUrl', 'expectText', 'expectEvent', 'click', 'fill', 'press', 'offline', 'mock', 'human', 'wait', 'screenshot'].find((kind) => kind in step)
 
 export const describe = (step) => {
   if (step.label) return step.label
@@ -53,6 +60,8 @@ export const describe = (step) => {
   const value = step[kind]
   if (kind === 'click') return `누름 "${typeof value === 'string' ? value : value.text ?? value.name}"${value.all ? ' (전부)' : ''}`
   if (kind === 'fill') return `입력 ${value.label ?? value.placeholder}`
+  if (kind === 'press') return `키 ${value}`
+  if (kind === 'offline') return value ? '네트워크 끊기' : '네트워크 다시 연결'
   if (kind === 'mock') return value.operation ? `응답 흉내 GraphQL ${value.operation} → ${value.status ?? 200}` : `응답 흉내 ${value.method ?? '*'} ${value.url} → ${value.status ?? 200}`
   if (kind === 'human') return `🙋 ${value}`
   if (kind === 'expectEvent') return `📊 이벤트 ${value}${step.props ? ` (${Object.entries(step.props).map(([key, inner]) => `${key}=${inner}`).join(', ')})` : ''}`
@@ -139,32 +148,39 @@ export async function runScenario(context, scenario, options) {
     steps.push(record)
     // 진행 알림 — 지금 몇 번째 단계인지(현황판·라이브 화면이 따라 그린다)
     options.onStep?.(steps)
+    const timeout = step.timeout ?? STEP_TIMEOUT
     try {
       if (kind === 'goto') {
         await page.goto(`${options.origin}${step.goto}`, { waitUntil: 'load', timeout: 45000 })
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
       } else if (kind === 'expectUrl') {
-        await page.waitForURL((url) => `${url.pathname}${url.search}`.startsWith(step.expectUrl), { timeout: STEP_TIMEOUT })
+        await page.waitForURL((url) => `${url.pathname}${url.search}`.startsWith(step.expectUrl), { timeout })
       } else if (kind === 'expectText') {
-        await page.getByText(step.expectText, { exact: false }).first().waitFor({ state: 'visible', timeout: STEP_TIMEOUT })
+        await page.getByText(step.expectText, { exact: false }).nth((step.nth ?? 1) - 1).waitFor({ state: 'visible', timeout })
       } else if (kind === 'click') {
         const locator = locatorOf(page, step.click)
         if (step.click.optional && !(await locator.count())) {
           record.detail = '없음 — 건너뜀'
         } else if (step.click.all) {
-          await locator.first().waitFor({ state: 'visible', timeout: STEP_TIMEOUT })
+          await locator.first().waitFor({ state: 'visible', timeout })
           const count = await locator.count()
-          for (let index = 0; index < count; index += 1) await locator.nth(index).click({ timeout: STEP_TIMEOUT })
+          for (let index = 0; index < count; index += 1) await locator.nth(index).click({ timeout })
           record.detail = `${count}개`
         } else {
-          await locator.first().click({ timeout: STEP_TIMEOUT })
+          await locator.first().click({ timeout })
         }
         await page.waitForLoadState('networkidle', { timeout: 8000 }).catch(() => {})
       } else if (kind === 'fill') {
-        await locatorOf(page, step.fill).first().fill(String(step.fill.value ?? ''), { timeout: STEP_TIMEOUT })
+        await locatorOf(page, step.fill).first().fill(String(step.fill.value ?? ''), { timeout })
+      } else if (kind === 'press') {
+        if (step.on) await locatorOf(page, step.on).first().press(step.press, { timeout })
+        else await page.keyboard.press(step.press)
+      } else if (kind === 'offline') {
+        await page.context().setOffline(Boolean(step.offline))
       } else if (kind === 'mock') {
         const mock = step.mock
-        const body = JSON.stringify(mock.json ?? {}).replaceAll('{{origin}}', options.origin)
+        const body = (typeof mock.body === 'string' ? mock.body : JSON.stringify(mock.json ?? {})).replaceAll('{{origin}}', options.origin)
+        const contentType = mock.contentType ?? (typeof mock.body === 'string' ? 'text/plain' : 'application/json')
         // GraphQL 은 주소가 하나라 본문 query 의 연산 이름(query|mutation <이름>)으로 고른다 — 브라우저에서 나가는 요청만 잡힌다(SSR 요청은 못 잡는다)
         const operationPattern = mock.operation ? new RegExp(`\\b(query|mutation|subscription)\\s+${mock.operation}\\b`) : null
         await page.route(mock.url ?? '**/*', (route) => {
@@ -172,7 +188,7 @@ export async function runScenario(context, scenario, options) {
           if ((mock.method ?? (operationPattern ? 'POST' : null)) && request.method() !== (mock.method ?? 'POST')) return route.fallback()
           if (operationPattern && !operationPattern.test(String(graphqlQueryOf(request)))) return route.fallback()
           requestTags.set(request, '흉내')
-          return route.fulfill({ status: mock.status ?? 200, contentType: 'application/json', body })
+          return route.fulfill({ status: mock.status ?? 200, contentType, body })
         })
       } else if (kind === 'human') {
         if (!options.headed) {

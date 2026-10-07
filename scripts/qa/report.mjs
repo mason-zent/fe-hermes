@@ -147,7 +147,7 @@ export function buildReport(runDir) {
       const via = screen.via?.length ? `<details><summary>영향 경로 (${screen.distance}단계)</summary><div class="why">${screen.via.map(escape).join('<br>→ ')}</div></details>` : ''
       return `<div class="card ${status.tone}">
   <h3>${status.icon} ${escape(screen.url ?? screen.route)}</h3>
-  <div class="tag">${status.label}${screen.auth ? ' · 🔒 로그인 화면' : ''}${screen.entry ? ' · 진입 경로로 열었음' : ''}${screen.expect ? ` · 기대 ${screen.expect === 'stay' ? '머무름' : `→ ${escape(screen.expect)}`}` : ''}${moved ? ` · → ${escape(moved.finalPath)}` : ''}${screen.baseProblems ? ` · 기준에도 있던 문제 ${screen.baseProblems}개` : ''}${screen.approved ? ' · ✔ 기준 승인됨' : ''}</div>
+  <div class="tag">${status.label}${screen.auth ? ' · 🔒 로그인 화면' : ''}${screen.entry ? ' · 진입 경로로 열었음' : ''}${screen.expect ? ` · 기대 ${screen.expect === 'stay' ? '머무름' : `→ ${escape(screen.expect.replace(/^=/, ''))}`}` : ''}${moved ? ` · → ${escape(moved.finalPath)}` : ''}${screen.baseProblems ? ` · 기준에도 있던 문제 ${screen.baseProblems}개` : ''}${screen.approved ? ' · ✔ 기준 승인됨' : ''}</div>
   <div class="why">${escape(screen.route)} ← ${escape(screen.changedFile)}</div>
   ${screen.note ? `<div class="why">📝 ${escape(screen.note)}</div>` : ''}
   ${screen.flows?.length ? `<div class="why">🔗 흐름에서 확인 — 씬 ${escape(screen.flows.join(', '))}</div>` : ''}

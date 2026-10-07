@@ -5,10 +5,10 @@
 
 | 앱 | 문서 | 라우터 | 화면 | TC | P0 | 지금 scripts/qa 로 되는 것 |
 |---|---|---|---|---|---|---|
-| refund-web | [refund-web.md](refund-web.md) | Pages | 106 | 45 (RF-) | 14 | 화면 설정 · 씬 5개(RF-005·006·011·012·013) · 영향 QA · 전체 검수 |
+| refund-web | [refund-web.md](refund-web.md) | Pages | 107 | 68 (RF-) | 14 | 화면 설정 · 씬 7개(RF-005·006·011·012·013·038·019) · 초안 6개(`_draft/08~13`) · 영향 QA · 전체 검수 |
 | care-web | [care-web.md](care-web.md) | App | 266 page | 45 (CR-) | 20 | 없음 — GraphQL 연산별 흉내·세션(소셜 전용)부터 |
 | brand-web | [brand-web.md](brand-web.md) | App | 4 (+리다이렉트·SEO) | 25 (BR-) | 5 | 없음 — 가장 쉬움(로그인 없음) |
-| sena-web | [sena-web.md](sena-web.md) | App | 20 | 45 (SN-) | 9 | 인수인계 스크립트(`.qa-runs/handoff-sena-web-20261002/`) — 편입 예정(D15) |
+| sena-web | [sena-web.md](sena-web.md) | App | 20 | 58 (SN-) | 9 | 인수인계 스크립트(`.qa-runs/handoff-sena-web-20261002/`) — 편입 예정(D15) · 초안 9개(`_draft/01~09`, 안 돌려 봄) · routes 없음 |
 | plus-web | [plus-web.md](plus-web.md) | App | 20 | 44 (PL-) | 15 | 없음 — 계산 TC 는 dp-logs 본문으로 정답 확인 |
 
 ## 각 문서의 짜임
@@ -33,7 +33,7 @@
 | 기능 | 필요한 앱 · TC | 지금 |
 |---|---|---|
 | **GraphQL 연산 이름으로 고르는 응답 흉내**(요청 본문 `query` 의 `mutation xxx`) | care(거의 전부) · refund(RF-016·019~040) | ✖ — mock 은 URL·method 만 |
-| **App Router 화면 목록**(`app/**/page.tsx`) | care · brand · sena · plus | ✖ — impact.mjs 는 Pages Router 만 |
+| **App Router 화면 목록**(`app/**/page.tsx`) | care · brand · sena · plus | ✅ 2026-10-07 — impact.mjs 가 `app/**/page.tsx`·라우트 그룹·layout 영향까지(앱별 routes 설정은 아직) |
 | 시계 조작(`page.clock`) | refund(0~6시·9시) · care(홈택스 시간·신고 기간) · plus(간이과세 7월·인증 5분) | ✖ |
 | 쿠키·localStorage 주입 단계 | care·refund·sena(CI 필요 쿠키) · plus(진단 결과) | ✖ |
 | 요청 본문 기대 확인(보낸 요청을 검사) | plus 계산 TC 정답(`dp-logs` `payload.result`) | ✖ |

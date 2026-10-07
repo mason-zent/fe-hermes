@@ -28,6 +28,8 @@
 **엄격 모드**(`HERMES_VERIFY_STRICT=1`, `scripts/commit.sh` 가 켠다 — 커밋 전 검증): 건너뜀(⏭)도 ❌ 실패로 친다. 허용은 사용자 확인 후 `commit.sh --allow-skip "<단계 이름>"`(= `HERMES_VERIFY_ALLOW_SKIP`)으로만. `HERMES_VERIFY_DIR` 가 그 레포의 워크트리가 아니면 메인 체크아웃으로 돌지 않고 exit 2 로 멈춘다.
 
 ## QA 시뮬레이션 (영향 화면 실제 브라우저 검사 — 파일럿: bznav refund-web)
+
+화면 목록(`impact.mjs`)은 Pages Router(`pages/**`)와 App Router(`app/**/page.tsx` — 라우트 그룹 `(x)` 는 주소에서 빼고, `layout`·`loading`·`error` 등이 바뀌면 그 폴더 아래 화면 전부, 로그인 표시는 화면과 감싸는 layout 의 `…AuthGuard`)를 둘 다 읽는다. 실제로 돌리려면 앱마다 `scripts/qa/routes/<앱>.json` 이 있어야 한다(현황판 [전체 검수] 앱 목록도 이 파일 기준).
 검증 스크립트(lint·타입·테스트)와 별개다. **화면을 URL 로 바로 여는 스모크**라 흐름(본인인증 끝까지 등)은 보지 않는다(2차 — 계획서 D10). 바꾼 파일에서 import 를 거꾸로 따라가 **영향받는 화면을 전부** 찾고, 작업 워크트리와 기준(`origin/<prBase>` merge-base) dev 서버를 함께 띄워 Playwright 로 화면마다 연다(데스크톱·모바일). 계획서 `plans/feature/20261002-QA-시뮬레이션-영향-화면.md`.
 
 ```bash
@@ -39,7 +41,7 @@ node scripts/qa/history.mjs [--open [런 id]] [--plan <계획서>]          # QA
 # 현황판(/board) [QA] 탭 — 같은 이력을 실시간으로. 계획서 카드 [QA 실행] 으로도 돌린다(한 번에 하나)
 ```
 
-TC 목록은 `docs/qa/tc/<앱>.md`(현황판 QA 탭 [TC 목록]이 읽는다). 쓰거나 다시 맞추는 것은 `/qa-tc <앱> [#<PR>]` — 그 앱 담당 에이전트가 코드를 읽어 갱신하고, 씬으로 옮길 TC 는 `scripts/qa/scenarios/<앱>/_draft/` 에 초안(검수 런은 읽지 않는다).
+TC 목록은 `docs/qa/tc/<앱>.md`(현황판 QA 탭 [TC 목록]이 읽는다). 쓰거나 다시 맞추는 것은 `/qa-tc <앱> [#<PR>]` — 그 앱 담당 에이전트가 코드를 읽어 갱신하고, 씬으로 옮길 TC 는 `scripts/qa/scenarios/<앱>/_draft/` 에 초안(검수 런은 읽지 않는다). 변경분 모드(`/qa-tc <앱> <브랜치>`)는 `.qa-runs/tc-picks/<앱>@<브랜치>.json` 을 남기고, 그 브랜치의 영향 QA 가 이를 읽어 TC 에 걸린 씬을 돌리고 나머지를 "사람이 확인" 으로 보여 준다(`--tc-picks <파일>` 로 직접 줄 수도 있다). 말로는 "이 브랜치 QA 돌려줘" — 헤르메스가 둘을 차례로 돌린다.
 
 **전체 검수**(요청할 때만 — 정기 자동 실행 없음): 코드 diff 에 안 보이는 깨짐(API 응답·CMS·공통 패키지·환경)을 서비스 전체로 본다. 영향 QA 와 달리 기준 서버 대신 **승인한 기준 사진**(`.qa-baselines/<앱>/<프로필>/`, git 무시)과 비교한다.
 ```bash

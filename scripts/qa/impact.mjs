@@ -6,7 +6,9 @@
  *   node scripts/qa/impact.mjs --cwd <레포 또는 워크트리> --app refund-web [--base <ref>] [--files a,b] [--json]
  *
  *   --cwd    모노레포 루트(또는 그 안 아무 곳). 워크트리면 워크트리 경로
- *   --app    hermes.config.json 의 bznav-web 앱 이름 (파일럿: refund-web)
+ *   --app    hermes.config.json 의 bznav-web 앱 이름 — Pages Router(refund-web)·App Router(sena·plus·brand·care) 둘 다
+ *            App Router 는 화면 = app/…/page.tsx, 라우트 그룹 (x) 는 주소에서 뺀다. layout·template·loading·error·not-found 는
+ *            import 로 이어지지 않으므로 "그 폴더 아래 화면 전부" 로 친다(루트 layout 이 바뀌면 화면 전부)
  *   --base   비교 기준 ref. 기본은 그 앱의 prBase(origin/<prBase>) — merge-base 부터의 변경 + 미커밋 + 추적 안 된 파일
  *   --files  변경 파일을 직접 준다(모노레포 루트 기준, 쉼표). 주면 git 을 보지 않는다
  *   --all    변경과 무관하게 화면 전부(전체 검수 — run.mjs --suite)
@@ -42,10 +44,13 @@ const git = (args, cwd) => execFileSync('git', args, { cwd, encoding: 'utf8', st
 const repoRoot = realpathSync(git(['rev-parse', '--show-toplevel'], cwdOption))
 const appDir = join('apps', appName)
 const appAbs = join(repoRoot, appDir)
-if (!existsSync(join(appAbs, 'pages'))) {
-  console.error(`⚠️  ${appDir}/pages 가 없다 — 파일럿은 Pages Router 앱(refund-web) 기준이다`)
+// 라우터 — app/ 이 있으면 App Router, 아니면 pages/(Pages Router)
+const router = existsSync(join(appAbs, 'app')) ? 'app' : existsSync(join(appAbs, 'pages')) ? 'pages' : null
+if (!router) {
+  console.error(`⚠️  ${appDir} 에 app/ 도 pages/ 도 없다`)
   process.exit(2)
 }
+const screenRoot = `${appDir}/${router}/`
 
 if (!existsSync(join(repoRoot, 'node_modules'))) {
   console.error(`⚠️  ${repoRoot} 에 node_modules 가 없다 — tsconfig 가 @repo/project-config 를 extends 해서 먼저 pnpm install 이 필요하다 (run.mjs 는 알아서 한다)`)
@@ -63,6 +68,8 @@ const GLOBAL_FILES = [
   `${appDir}/pages/_error.tsx`,
   `${appDir}/next.config.mjs`,
   `${appDir}/proxy.ts`,
+  `${appDir}/middleware.ts`,
+  `${appDir}/instrumentation.ts`,
   `${appDir}/tailwind.config.ts`,
   `${appDir}/postcss.config.mjs`,
   `${appDir}/package.json`,
@@ -86,21 +93,38 @@ function changedFiles() {
   return [...new Set(lists.join('\n').split('\n').filter(Boolean))]
 }
 
-// ── 2) 화면 목록 (Pages Router) ──────────────────────────
+// ── 2) 화면 목록 (Pages Router · App Router) ─────────────
 const SPECIAL_PAGES = new Set(['_app', '_document', '_error'])
+// App Router 에서 import 없이 Next 가 화면을 감싸는 파일 — 바뀌면 그 폴더 아래 화면 전부
+const SEGMENT_FILES = new Set(['layout', 'template', 'loading', 'error', 'not-found', 'default', 'global-error'])
+const CODE_FILE = /\.(tsx|ts|jsx|js)$/
+// 라우트 그룹 (x)·병렬 슬롯 @x 는 주소에 안 나온다
+const urlSegments = (inside) => inside.split('/').filter((segment) => segment && !/^\(.*\)$/.test(segment) && !segment.startsWith('@'))
 function routeOf(pageFile) {
+  const inside = pageFile.slice(screenRoot.length).replace(CODE_FILE, '')
+  if (router === 'app') {
+    // apps/sena-web/app/(authenticated)/chat/[id]/page.tsx → /chat/[id]
+    return `/${urlSegments(inside.replace(/(^|\/)page$/, '')).join('/')}`
+  }
   // apps/refund-web/pages/help/faq/index.tsx → /help/faq
-  const inside = pageFile.slice(`${appDir}/pages/`.length).replace(/\.(tsx|ts|jsx|js)$/, '')
   const route = `/${inside}`.replace(/\/index$/, '')
   return route || '/'
 }
 function isScreen(file) {
-  if (!file.startsWith(`${appDir}/pages/`) || !/\.(tsx|ts|jsx|js)$/.test(file)) return false
-  const inside = file.slice(`${appDir}/pages/`.length)
-  if (inside.startsWith('api/')) return false
+  if (!file.startsWith(screenRoot) || !CODE_FILE.test(file)) return false
+  const inside = file.slice(screenRoot.length)
   const baseName = inside.split('/').pop().replace(/\.\w+$/, '')
+  if (router === 'app') return baseName === 'page' && !inside.split('/').some((segment) => segment.startsWith('@') || segment.startsWith('(.'))
+  if (inside.startsWith('api/')) return false
   return !SPECIAL_PAGES.has(baseName)
 }
+// App Router 의 layout 등 — 그 파일이 있는 폴더(app/ 기준)
+function segmentDirOf(file) {
+  if (router !== 'app' || !file.startsWith(screenRoot) || !CODE_FILE.test(file)) return null
+  const baseName = file.split('/').pop().replace(/\.\w+$/, '')
+  return SEGMENT_FILES.has(baseName) ? dirname(file) : null
+}
+const isUnder = (file, dir) => file.startsWith(`${dir}/`)
 
 // ── 3) 의존 그래프 ───────────────────────────────────────
 async function buildGraph() {
@@ -109,7 +133,7 @@ async function buildGraph() {
   process.chdir(repoRoot)
   try {
     const result = await cruise(
-      [`${appDir}/pages`],
+      [`${appDir}/${router}`],
       {
         baseDir: repoRoot,
         tsPreCompilationDeps: true,
@@ -170,7 +194,10 @@ function traceScreens(modules, changed) {
   }
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const current = queue[cursor]
-    for (const importer of importers.get(current) ?? []) {
+    // layout 등은 import 하는 쪽이 없다 — 그 폴더 아래 화면들이 "쓰는" 것으로 친다
+    const segmentDir = segmentDirOf(current)
+    const wrapped = segmentDir ? allScreens.filter((file) => isUnder(file, segmentDir)) : []
+    for (const importer of [...(importers.get(current) ?? []), ...wrapped]) {
       if (distance.has(importer)) continue
       distance.set(importer, distance.get(current) + 1)
       parent.set(importer, current)
@@ -191,13 +218,24 @@ function traceScreens(modules, changed) {
   return { global: [], screens }
 }
 
-// 로그인 필요 화면 표시용 — 화면 파일이 AuthGuard 를 직접 쓰는지만 본다(실제 판정은 runner 가 이동 여부로)
+// 로그인 필요 화면 표시용 — 화면 파일(App Router 는 감싸는 layout 까지)이 …AuthGuard 를 쓰는지만 본다(실제 판정은 runner 가 이동 여부로)
+const AUTH_GUARD = /\b\w*AuthGuard\b/
 function usesAuthGuard(file) {
-  try {
-    return /\bAuthGuard\b/.test(readFileSync(join(repoRoot, file), 'utf8'))
-  } catch {
-    return false
+  const read = (path) => {
+    try {
+      return readFileSync(join(repoRoot, path), 'utf8')
+    } catch {
+      return ''
+    }
   }
+  if (AUTH_GUARD.test(read(file))) return true
+  if (router !== 'app') return false
+  for (let dir = dirname(file); dir.length >= screenRoot.length - 1; dir = dirname(dir)) {
+    for (const extension of ['tsx', 'ts', 'jsx', 'js']) {
+      if (AUTH_GUARD.test(read(`${dir}/layout.${extension}`))) return true
+    }
+  }
+  return false
 }
 
 // ── 5) 트래킹 이벤트 목록(--events) ───────────────────────

@@ -1,0 +1,52 @@
+{
+  "$comment": "QA 시뮬레이션 화면 설정 (D6). 동적 라우트는 samples 에 열 URL 을, 단계형 화면은 entry 에 앞 단계 URL 을 적는다(D8). 적지 않은 동적 라우트는 '샘플 필요' 로 표시만 한다. 키는 impact.mjs 의 route(App Router — 라우트 그룹 (x) 를 뺀 주소, [param] 그대로). expect 값이 '=' 로 시작하면 그 경로와 정확히 같아야 한다(앞부분 일치가 아니라)",
+  "app": "care-web",
+  "devPort": 3100,
+  "devUrl": "https://dev.care.bznav.com",
+  "local": false,
+  "localNote": "로컬 .env 를 못 받는다(Secrets Manager loc-care-web-bznav-web_secret AccessDenied) — 서버 대상으로 돌린다",
+  "signInPath": "/login",
+  "signOutPath": null,
+  "ciPath": "/ci-request",
+  "profiles": {
+    "$comment": "세션 상태별 기대 결과. session = .qa-auth/<앱>.<session>.json (login.mjs --profile). authScreens = 로그인 가드 화면이 가야 할 곳('=/'·경로 앞부분 · 'stay' 머무름 · null 기대 없음). 화면별로 다르면 routes[화면].expect[프로필]",
+    "logout": {
+      "session": null,
+      "authScreens": "/login",
+      "note": "로그아웃 — CareAuthGuard 화면은 /login 으로 보내야 정상"
+    },
+    "login": {
+      "session": "login",
+      "authScreens": "stay",
+      "note": "refund 와 같은 세션(B_AT.care.<zenv>) · 본인인증 완료 계정 — 그 화면에 머물러야 정상. 구독 상태에 따라 단계 화면은 다른 곳으로 갈 수 있다"
+    }
+  },
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "timeoutMs": 45000,
+  "concurrency": 3,
+  "diffMinPixels": 50,
+  "ignoreConsole": [
+    "Download the React DevTools",
+    "\\[Fast Refresh\\]",
+    "\\[HMR\\]"
+  ],
+  "routes": {
+    "/single-person-business": {"expect": {"logout": "=/", "login": "=/"}, "note": "미들웨어가 / 로 차단(withLandingRedirectMiddleware)"},
+    "/beauty-industry": {"expect": {"logout": "=/", "login": "=/"}, "note": "미들웨어가 / 로 차단(withLandingRedirectMiddleware)"},
+    "/food-industry": {"expect": {"logout": "=/", "login": "=/"}, "note": "미들웨어가 / 로 차단(withLandingRedirectMiddleware)"},
+    "/mail-order-industry": {"expect": {"logout": "=/", "login": "=/"}, "note": "미들웨어가 / 로 차단(withLandingRedirectMiddleware)"},
+    "/income-tax": {"expect": {"logout": "=/", "login": "=/"}, "note": "미들웨어가 / 로 차단(withLandingRedirectMiddleware)"},
+    "/login": {"expect": {"login": "/"}, "note": "로그인 상태면 signInSuccessUrl 로"}
+  }
+}

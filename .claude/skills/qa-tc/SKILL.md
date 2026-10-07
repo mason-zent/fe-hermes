@@ -24,7 +24,7 @@ argument-hint: "<앱> [전체 | <브랜치> | #<PR번호>] — 예: refund-web �
 
 ## 모드
 - **전체**(기본) — 앱 전체를 다시 훑어 기존 TC 문서와 맞춘다. 빠진 화면·TC 추가, 코드와 달라진 TC 수정, 없어진 화면의 TC 는 지우지 않고 `폐기 후보` 로 표시
-- **변경분**(`<브랜치>` 또는 `#<PR번호>`) — `git diff origin/<prBase>...<브랜치>`(PR 이면 `gh pr view <번호> --json headRefName` 으로 브랜치를 찾는다) 에서 그 앱 경로·영향 받는 `packages/**` 만 보고, **이 변경 때문에 새로 필요하거나 바뀌어야 할 TC** 만 다룬다. 결과 끝에 "이 PR 머지 전에 돌릴 TC" 목록(ID)을 붙인다
+- **변경분**(`<브랜치>` 또는 `#<PR번호>`) — `git diff origin/<prBase>...<브랜치>`(PR 이면 `gh pr view <번호> --json headRefName` 으로 브랜치를 찾는다) 에서 그 앱 경로·영향 받는 `packages/**` 만 보고, **이 변경 때문에 새로 필요하거나 바뀌어야 할 TC** 만 다룬다. 결과 끝에 "이 PR 머지 전에 돌릴 TC" 목록(ID)을 붙이고, 같은 목록을 **`.qa-runs/tc-picks/<앱>@<브랜치>.json`**(브랜치의 `/` 등은 `-` 로)에도 쓴다 — 영향 QA(`run.mjs`)가 이 파일을 읽어 그 TC 의 씬을 돌리고 나머지는 "사람이 확인" 으로 보여 준다
 
 ## 동작 (헤르메스)
 1. 인자를 앱·모드로 나눈다
@@ -44,6 +44,7 @@ argument-hint: "<앱> [전체 | <브랜치> | #<PR번호>] — 예: refund-web �
 > - `docs/qa/tc/<앱>.md`
 > - `docs/qa/tc/README.md` 의 앱 요약 표 그 앱 행(화면·TC·P0 숫자)만
 > - `scripts/qa/scenarios/<앱>/_draft/*.json` 새 파일 — 씬 초안. **`_draft/` 밖의 씬·`scripts/qa/routes/*.json` 은 고치지 않는다**(검수 런이 바로 읽는다). 고칠 게 보이면 보고에 적는다
+> - (변경분 모드) `.qa-runs/tc-picks/<앱>@<브랜치>.json` — 형식 `{ "app", "branch", "head": "<짧은 sha>", "base": "origin/<prBase>", "createdAt", "tcs": [{ "id": "RF-012", "title": "…", "why": "<이 변경과의 관계 한 줄>", "session": "logout|login|verified" }] }`. 새로 만든 TC 도 넣는다
 > - 레포(`repos/bznav-web`)는 **읽기만** 한다. 커밋·push 하지 않는다
 >
 > **절차**
@@ -58,6 +59,12 @@ argument-hint: "<앱> [전체 | <브랜치> | #<PR번호>] — 예: refund-web �
 > 6. "확인 못 한 것·추측", "scripts/qa 반영 상태" 절도 맞춘다
 >
 > **보고** — ① 기준 ref ② 추가·수정·폐기 후보 TC ID 표(한 줄 이유) ③ 만든 씬 초안 ④ 러너·routes 에 고칠 것 ⑤ (변경분 모드) 머지 전에 돌릴 TC. 끝나면 계획서 Status `ready_for_review`.
+
+## 브랜치 QA 와 함께 ("이 브랜치 QA 돌려줘")
+헤르메스가 순서대로 한다.
+1. `/qa-tc <앱> <브랜치>` 변경분 — pane 이 끝날 때까지 기다린다(tc-picks 파일이 생긴다)
+2. `node scripts/qa/run.mjs --cwd <워크트리> --app <앱> [--plan <계획서>] --live` — 영향 화면 검사 뒤 그 TC 에 걸린 정식 씬을 돌린다. 라이브 화면 체크리스트·리포트 모달에 **"이 변경에서 확인할 TC"** 가 씬 결과 / 🙋 사람이 확인 으로 나온다
+- tc-picks 를 만든 커밋과 지금 HEAD 가 다르면 런 로그에 ⚠️ 를 남긴다(그대로 진행). `_draft/` 씬은 돌지 않는다 — 그 TC 는 사람이 확인으로 남는다
 
 ## 씬 초안을 정식으로 올리기
 - `_draft/` 는 검수 런이 읽지 않는다(`run.mjs` 는 `scenarios/<앱>/*.json` 만)
