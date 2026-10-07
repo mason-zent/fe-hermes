@@ -49,6 +49,8 @@ excludes = [str(hermes / "CLAUDE.md"), str(hermes / "AGENTS.md"), str(hermes / "
 secret_hook = {"type": "command", "command": f"python3 {hermes / 'scripts/hooks/secret-guard.py'}"}
 guard = {"PreToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "command": f"python3 {hermes / 'scripts/hooks/commit-guard.py'}"}, secret_hook]}]}
 settings = {"claudeMdExcludes": excludes}
+# 하단 상태바 — 워크트리는 hermes 프로젝트 설정 밖이라 따로 넣는다(레포·브랜치·변경 수·모델, scripts/statusline.sh)
+settings["statusLine"] = {"type": "command", "command": f"/bin/sh {hermes / 'scripts/statusline.sh'}", "padding": 0}
 if agent != "reviewer":
     settings["hooks"] = guard
 else:
