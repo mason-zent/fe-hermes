@@ -197,6 +197,7 @@
   .qa-steps .no { color: var(--bad); }
   .qa-wrap { display: grid; grid-template-columns: 300px 1fr; gap: 14px; align-items: start; }
   .qa-session { font-size: 12.5px; color: var(--muted); margin: -4px 0 10px; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+  .qa-session .qa-logout { font: inherit; font-size: 11.5px; padding: 0 7px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--text); cursor: pointer; margin-left: 4px; }
   .qa-session .ok { color: var(--ok); } .qa-session .bad { color: var(--bad); } .qa-session .warn { color: var(--warn); }
   .qa-runs { display: grid; gap: 6px; max-height: calc(100vh - 170px); overflow-y: auto; }
   .qa-run { text-align: left; font: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; color: var(--text); display: grid; gap: 2px; }
@@ -783,7 +784,34 @@
       if (profile.state === 'expired') return `<span class="bad">${esc(profile.name)}: ⛔ 만료(${esc(when(profile.expiresAt))}) — 시작하면 로그인 창이 떠요</span>`;
       return `<span class="ok">${esc(profile.name)}: ✅ 로그인됨${profile.expiresAt ? ` · ${esc(when(profile.expiresAt))}까지` : ''}</span>`;
     };
-    box.innerHTML = `<b>🔐 로그인 세션</b>${result.profiles.map(item).join('')}`;
+    // 저장된 세션(로그인됨·만료)에는 [로그아웃] — 세션 파일을 .qa-auth/.trash 로 옮겨 다음 검수 차례에 로그인 창이 뜨게 한다
+    const logoutButton = (profile) => ['valid', 'expired'].includes(profile.state) ? ` <button type="button" class="qa-logout" data-logout="${esc(profile.name)}">로그아웃</button>` : '';
+    // 로그인이 있는 세션에는 [로그인]/[다시 로그인] — 로그인 창을 바로 띄워 세션을 새로 저장한다
+    const loginButton = (profile) => profile.state === 'none' ? '' : ` <button type="button" class="qa-logout" data-login="${esc(profile.name)}">${profile.state === 'missing' ? '로그인' : '다시 로그인'}</button>`;
+    box.innerHTML = `<b>🔐 로그인 세션</b>${result.profiles.map((profile) => `<span>${item(profile)}${loginButton(profile)}${logoutButton(profile)}</span>`).join('')}`;
+    box.querySelectorAll('[data-login]').forEach((button) => {
+      button.onclick = async () => {
+        const profileName = button.dataset.login;
+        try {
+          const started = await api('/api/qa-login', { app, target, server, profile: profileName });
+          toast(`${profileName} 로그인 창을 열었어요(${started.url}) — 로그인을 마치면 세션이 저장돼요(10분)`);
+          // 저장되면 줄이 바뀌도록 잠시 동안 다시 본다
+          let tries = 0;
+          const poll = setInterval(() => { tries += 1; showQaSessions(); if (tries >= 60) clearInterval(poll); }, 10000);
+        } catch (error) { toast(`로그인 창을 열지 못했어요: ${error.message}`); }
+      };
+    });
+    box.querySelectorAll('[data-logout]').forEach((button) => {
+      button.onclick = async () => {
+        const profileName = button.dataset.logout;
+        if (!confirm(`${app} · ${target === 'server' ? server : '로컬 서버'} 의 ${profileName} 세션을 로그아웃할까요?\n세션 파일을 .qa-auth/.trash 로 옮겨요(되살릴 수 있어요) — 다음 검수 때 그 차례에 로그인 창이 떠요`)) return;
+        try {
+          await api('/api/qa-logout', { app, target, server, profile: profileName });
+          toast(`${profileName} 세션을 로그아웃했어요 — .qa-auth/.trash 로 옮김`);
+          showQaSessions();
+        } catch (error) { toast(`로그아웃하지 못했어요: ${error.message}`); }
+      };
+    });
   };
   // [전체 검수] — 앱·세션 프로필 고르기
   let qaApps = [];

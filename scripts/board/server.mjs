@@ -22,7 +22,7 @@
  *   - GET  /api/qa/runs      QA 시뮬레이션 런 목록(.qa-runs/) · /api/qa/run?id= 런 하나 · /qa-runs/<id>/<파일> 스크린샷·리포트
  *   - GET  /qa-live?id=      QA 자동화 도구 화면 — 실시간 화면(live/*.jpg)·API 호출·Mixpanel 이벤트(/api/qa/live?id=&since=) 한 페이지
  *   - GET  /api/qa/tc        QA TC 목록(docs/qa/tc/<앱>.md "B) TC" 표 · 앱별 흐름 씬 파일)
- *   - GET  /api/qa/sessions?app=&target=&server=  고른 앱·대상의 로그인 세션 상태(있음·만료 시각만, 쿠키 값은 안 읽음)
+ *   - GET  /api/qa/sessions?app=&target=&server=  고른 앱·대상의 로그인 세션 상태(있음·만료 시각만, 쿠키 값은 안 읽음) · POST /api/qa-logout 세션 파일을 .qa-auth/.trash 로(다음 검수에 로그인 창) · POST /api/qa-login 로그인 창을 띄워 세션을 새로 저장
  *   - GET  /api/qa/apps      전체 검수할 수 있는 앱·세션 프로필 · POST /api/qa-suite [전체 검수](요청할 때만) · POST /api/qa-approve [기준으로 승인]
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
@@ -1009,6 +1009,52 @@ function qaSessions(app, target, server) {
   })
   return { app, target, profiles }
 }
+// QA 세션 로그아웃 — 그 세션 파일을 .qa-auth/.trash 로 옮긴다(지우지 않는다 — 되살릴 수 있다). 다음 검수 차례에 로그인 창이 뜬다. 돌고 있는 런이 있으면 막는다
+function logoutQaSession(app, target, server, profileName) {
+  const file = join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)
+  if (!/^[\w-]+$/.test(app) || !existsSync(file)) return { error: '앱 설정이 없어요' }
+  if (activeQaRun()) return { error: 'QA 가 돌고 있어요 — 끝난 뒤에 로그아웃해 주세요' }
+  let serverUrl = null
+  if (target === 'server') {
+    const checked = checkServerUrl(server || '')
+    if (checked.error) return { error: checked.error }
+    serverUrl = checked.url
+  }
+  const settings = JSON.parse(readFileSync(file, 'utf8')).profiles?.[profileName]
+  if (!settings?.session) return { error: '로그인이 없는 세션이에요' }
+  const path = sessionFileOf(ROOT, app, settings.session, target, serverUrl)
+  if (!existsSync(path)) return { error: '저장된 세션이 없어요' }
+  // macOS 휴지통(~/.Trash)은 권한에 막힐 수 있어 .qa-auth/.trash 에 둔다(git 무시 · 되살리려면 이름에서 시각을 빼고 되돌린다)
+  const trash = join(ROOT, '.qa-auth', '.trash')
+  mkdirSync(trash, { recursive: true, mode: 0o700 })
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)
+  renameSync(path, join(trash, `${basename(path, '.json')}.${stamp}.json`))
+  return { ok: true, file: basename(path) }
+}
+// QA 다시 로그인 — 그 세션의 로그인 창(scripts/qa/login.mjs)을 띄운다. 사용자가 로그인을 마치면 세션 파일이 새로 저장된다.
+// 서버 대상은 그 주소로, 로컬은 떠 있는 로컬 서버(3291 → 3200)로. 로그인 창은 한 번에 하나
+let qaLoginChild = null
+async function loginQaSession(app, target, server, profileName) {
+  const file = join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)
+  if (!/^[\w-]+$/.test(app) || !existsSync(file)) return { error: '앱 설정이 없어요' }
+  if (qaLoginChild && qaLoginChild.exitCode === null) return { error: '로그인 창이 이미 열려 있어요 — 그 창에서 마치거나 닫아 주세요' }
+  const settings = JSON.parse(readFileSync(file, 'utf8')).profiles?.[profileName]
+  if (!settings?.session) return { error: '로그인이 없는 세션이에요' }
+  let url
+  if (target === 'server') {
+    const checked = checkServerUrl(server || '')
+    if (checked.error) return { error: checked.error }
+    url = checked.url
+  } else {
+    for (const candidate of ['http://localhost:3291', 'http://localhost:3200']) {
+      if (await fetch(candidate, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)) { url = candidate; break }
+    }
+    if (!url) return { error: '로컬 서버가 꺼져 있어요 — 서버 대상으로 로그인하거나, 검수를 시작하면 차례에 로그인 창이 떠요' }
+  }
+  const args = [join(ROOT, 'scripts', 'qa', 'login.mjs'), '--app', app, '--profile', settings.session, ...(target === 'server' ? ['--server', url] : ['--url', url])]
+  qaLoginChild = spawn(process.execPath, args, { cwd: ROOT, stdio: 'ignore' })
+  return { ok: true, url }
+}
 // QA TC 목록 — docs/qa/tc/<앱>.md 의 "B) TC" 표를 행 단위로. 문서가 정본이고 여기서는 읽기만 한다
 const QA_TC_APPS = ['refund-web', 'care-web', 'brand-web', 'sena-web', 'plus-web']
 const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, '|').trim())
@@ -1236,7 +1282,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve', '/api/qa-logout', '/api/qa-login'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -1258,6 +1304,14 @@ createServer(async (request, response) => {
     if (url.pathname === '/api/qa-suite') {
       const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''))
       return reply(result.error ? 400 : 202, result)
+    }
+    if (url.pathname === '/api/qa-login') {
+      const result = await loginQaSession(String(body.app ?? ''), body.target === 'server' ? 'server' : 'local', String(body.server ?? ''), String(body.profile ?? ''))
+      return reply(result.error ? 400 : 202, result)
+    }
+    if (url.pathname === '/api/qa-logout') {
+      const result = logoutQaSession(String(body.app ?? ''), body.target === 'server' ? 'server' : 'local', String(body.server ?? ''), String(body.profile ?? ''))
+      return reply(result.error ? 400 : 200, result)
     }
     if (url.pathname === '/api/qa-approve') {
       const id = String(body.id ?? '')
