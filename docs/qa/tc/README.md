@@ -8,7 +8,7 @@
 | refund-web | [refund-web.md](refund-web.md) | Pages | 107 | 68 (RF-) | 14 | 화면 설정 · 씬 7개(RF-005·006·011·012·013·038·019) · 초안 6개(`_draft/08~13`) · 영향 QA · 전체 검수 |
 | care-web | [care-web.md](care-web.md) | App | 266 page | 45 (CR-) | 20 | 없음 — GraphQL 연산별 흉내·세션(소셜 전용)부터 |
 | brand-web | [brand-web.md](brand-web.md) | App | 4 (+리다이렉트·SEO) | 25 (BR-) | 5 | 없음 — 가장 쉬움(로그인 없음) |
-| sena-web | [sena-web.md](sena-web.md) | App | 20 | 58 (SN-) | 9 | 인수인계 스크립트(`.qa-runs/handoff-sena-web-20261002/`) — 편입 예정(D15) · 초안 9개(`_draft/01~09`, 안 돌려 봄) · routes 없음 |
+| sena-web | [sena-web.md](sena-web.md) | App | 20 | 58 (SN-) | 9 | 화면 설정 · 씬 22개(dev 서버 통과 · TC 35행 "(있음 NN)") · 초안 7개(`_draft/`) |
 | plus-web | [plus-web.md](plus-web.md) | App | 20 | 44 (PL-) | 15 | 없음 — 계산 TC 는 dp-logs 본문으로 정답 확인 |
 
 ## 각 문서의 짜임

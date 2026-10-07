@@ -1,0 +1,20 @@
+{
+  "name": "비로그인 회원 화면 직접 진입 → 홈",
+  "tc": ["SN-003"],
+  "profile": "logout",
+  "why": "로그인하지 않았으면 회원 화면((authenticated) AuthGuard)과 /search-chat(클라 가드)은 홈(/)으로 보내야 한다. 러너 expectUrl 은 '앞부분 일치' 라 '/' 로는 판정이 안 된다 — 홈 제목 글자로 확인한다(정확한 경로 비교 단계가 생기면 바꾼다)",
+  "steps": [
+    { "goto": "/my" },
+    { "expectText": "무엇이든 편하게 물어보세요", "label": "/my → 홈" },
+    { "goto": "/notification" },
+    { "expectText": "무엇이든 편하게 물어보세요", "label": "/notification → 홈" },
+    { "goto": "/withdraw" },
+    { "expectText": "무엇이든 편하게 물어보세요", "label": "/withdraw → 홈" },
+    { "goto": "/user-type-survey" },
+    { "expectText": "무엇이든 편하게 물어보세요", "label": "/user-type-survey → 홈" },
+    { "goto": "/search-chat" },
+    { "expectText": "무엇이든 편하게 물어보세요", "label": "/search-chat → 홈" },
+    { "expectEvent": "main_viewed" },
+    { "screenshot": "home" }
+  ]
+}
