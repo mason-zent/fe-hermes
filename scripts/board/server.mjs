@@ -250,17 +250,15 @@ const prInfo = async (repoName, number) => {
   return entry
 }
 
-// PR 이 개발 기본 브랜치(hermes.config.json prBase·branch — dev·main·prd) 나 운영 브랜치(prd-*)에 머지되면 계획서를 자동으로 완료로.
-// 다른 작업 브랜치 위에 쌓은 PR(base feature/…)은 아직 끝난 게 아니라 제외. 진행 중·리뷰 계획서만, Status 줄만 바꾼다(정식이면 html 사본도)
-const DONE_BASES = new Set(config.repos.flatMap((repo) => [repo.prBase, repo.branch]).filter(Boolean))
-const isDoneBase = (base) => DONE_BASES.has(base) || /^prd(-|$)/.test(base)
+// PR 이 어디로든 머지되면(GitHub state MERGED — 머지로 닫힘) 계획서를 자동으로 완료로. 머지 없이 닫힌 것(CLOSED — 취소·다른 PR 로 대체)은 옮기지 않는다.
+// 진행 중·리뷰 계획서만, Status 줄만 바꾼다(정식이면 html 사본도)
 const autoDonePlans = async (plans) => {
   const targets = plans.filter((plan) => !plan.archived && (plan.status === 'ready_for_review' || plan.status === 'in_progress') && /\/pull\/\d+/.test(plan.pr))
   await Promise.all(targets.map(async (plan) => {
     const links = [...plan.pr.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)]
     for (const [, repoName, number] of links) {
       const info = await prInfo(repoName, number)
-      if (info.state !== 'MERGED' || !isDoneBase(info.base)) continue
+      if (info.state !== 'MERGED') continue
       const merged = info.mergedAt ? new Date(info.mergedAt).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16) : ''
       const error = setPlanStatus(plan.id, 'done', `자동 — PR #${number} 이 ${info.base} 에 머지됨(${merged})`)
       if (error) { console.log(`⚠️ 자동 완료 실패 ${plan.id}: ${error}`); return }
