@@ -138,6 +138,7 @@ const readPlan = (path) => {
     next,
     workRef: plain(field(checkpoint, 'Work ref')),
     review: plain(field(checkpoint, 'Review')),
+    pr: plain(field(checkpoint, 'PR')),
     issue: plain(field(checkpoint, 'Issue')).match(/issues\/\S+\.md/)?.[0] ?? '',
     updated: plain(field(checkpoint, 'Updated')),
     progress: total ? { checked, total } : null,
@@ -233,6 +234,40 @@ const prState = async (repoName, pr) => {
   const state = out?.trim() || 'UNKNOWN'
   prCache.set(key, { state, at: Date.now() })
   return state
+}
+
+// 계획서 PR 줄의 GitHub PR 상태·base — 머지된 것은 바뀌지 않으니 계속 기억하고, 나머지는 5분마다 다시 본다
+const prInfoCache = new Map()
+const prInfo = async (repoName, number) => {
+  const key = `${repoName}#${number}`
+  const cached = prInfoCache.get(key)
+  if (cached && (cached.state === 'MERGED' || Date.now() - cached.at < 5 * 60_000)) return cached
+  const out = await run('gh', ['pr', 'view', String(number), '--repo', `zenterprise-inc/${repoName}`, '--json', 'state,baseRefName,mergedAt'], { timeout: 15_000 })
+  let info = { state: 'UNKNOWN', base: '', mergedAt: '' }
+  try { const json = JSON.parse(out ?? ''); info = { state: json.state, base: json.baseRefName, mergedAt: json.mergedAt ?? '' } } catch { /* gh 실패 — 다음에 다시 */ }
+  const entry = { ...info, at: Date.now() }
+  prInfoCache.set(key, entry)
+  return entry
+}
+
+// 운영 브랜치(prd·prd-*)에 PR 이 머지되면 계획서를 자동으로 완료로 — 진행 중·리뷰 계획서만, Status 줄만 바꾼다(정식이면 html 사본도)
+const PROD_BASE = /^prd(-|$)/
+const autoDonePlans = async (plans) => {
+  const targets = plans.filter((plan) => !plan.archived && (plan.status === 'ready_for_review' || plan.status === 'in_progress') && /\/pull\/\d+/.test(plan.pr))
+  await Promise.all(targets.map(async (plan) => {
+    const links = [...plan.pr.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)]
+    for (const [, repoName, number] of links) {
+      const info = await prInfo(repoName, number)
+      if (info.state !== 'MERGED' || !PROD_BASE.test(info.base)) continue
+      const merged = info.mergedAt ? new Date(info.mergedAt).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16) : ''
+      const error = setPlanStatus(plan.id, 'done', `자동 — PR #${number} 이 ${info.base} 에 머지됨(${merged})`)
+      if (error) { console.log(`⚠️ 자동 완료 실패 ${plan.id}: ${error}`); return }
+      console.log(`✅ 자동 완료 ${plan.id} — PR #${number} → ${info.base}`)
+      plan.status = 'done'
+      plan.column = 'done'
+      return
+    }
+  }))
 }
 
 const doneCheck = async (issue) => {
@@ -504,6 +539,7 @@ const collect = async () => {
     .map(readIssue)
     .filter(Boolean)
     .filter((issue) => issue.column !== 'done' || now - issue.mtime < DONE_KEEP_DAYS * 86_400_000)
+  await autoDonePlans(plans)
   const [{ available, panes }, worktrees] = await Promise.all([readPanes(), readWorktrees()])
   await Promise.all([...plans, ...issues].map(async (card) => { card.owner = await ownerOf(card.owner, join(ROOT, card.id)) }))
   const subagents = readSubagents()
@@ -593,8 +629,12 @@ const moveCard = (id, column) => {
     writeFileSync(path, text.replace(/^status:.*$/m, `status: ${status}`))
     return null
   }
+  return setPlanStatus(id, PLAN_STATUS_OF[column])
+}
+
+// 계획서 Status 를 바꾼다 — note 가 있으면 뒤 설명을 그걸로 바꾸고, 없으면 상태 값만 바꾸고 설명은 둔다
+const setPlanStatus = (id, status, note = '') => {
   const path = safePath(id, 'plans')
-  const status = PLAN_STATUS_OF[column]
   if (!path || !status) return '계획서를 찾지 못했거나 옮길 칸이 올바르지 않아요'
   if (path.includes('/archive/')) return '보관(archive)된 계획서는 옮길 수 없어요'
   const text = readFileSync(path, 'utf8')
@@ -603,8 +643,9 @@ const moveCard = (id, column) => {
   if (!oldStatus) return '계획서 Checkpoint 에 Status 줄이 없어요'
   // 상태 값만 바꾸고 뒤의 설명은 둔다
   const STATUS_TOKEN = /(planned|in_progress|blocked|ready_for_review|done)/
-  const newStatus = STATUS_TOKEN.test(oldStatus) ? oldStatus.replace(STATUS_TOKEN, status) : oldStatus.replace(/^- Status:\s*/, `- Status: ${status} — `)
-  const newUpdated = `- Updated: ${stamp()} / 현황판에서 이동`
+  const replaced = STATUS_TOKEN.test(oldStatus) ? oldStatus.replace(STATUS_TOKEN, status) : oldStatus.replace(/^- Status:\s*/, `- Status: ${status} — `)
+  const newStatus = note ? `- Status: ${status} — ${note}` : replaced
+  const newUpdated = `- Updated: ${stamp()} / ${note ? '현황판 자동(PR 머지)' : '현황판에서 이동'}`
   let next = text.replace(oldStatus, newStatus)
   if (oldUpdated) next = next.replace(oldUpdated, newUpdated)
   writeFileSync(path, next)

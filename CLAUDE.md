@@ -75,6 +75,7 @@
 
 ### 6단계: 정리
 - 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 이슈·계획서를 **`archive/<이름>/` 한 폴더**(`issue.md` · `plan.md` · `meta.json`)로 묶어 보관하고 **git 에 커밋**한다(진행 중 `plans/**` 는 로컬). 이슈 워크트리도 정리(미커밋·push 안 된 커밋이 있으면 남긴다). 지나간 일은 현황판 **[히스토리]** 탭에서 찾는다
+- **계획서 `PR:` 줄의 PR 이 운영 브랜치(`prd`·`prd-*`)에 머지되면 현황판이 그 계획서를 자동으로 완료(`Status: done — 자동 — PR #N 이 prd-… 에 머지됨`)로 옮긴다**(진행 중·리뷰 계획서만, 5분마다 확인). dev 등 다른 base 머지는 자동으로 옮기지 않는다
 - 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
 - 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
@@ -101,6 +102,7 @@
 | `/sync` | 담당 레포의 운영 기준 브랜치를 훑어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서는 `node scripts/build-derived.mjs`가 생성. 다이어그램 근거가 운영 코드와 어긋났는지 `node scripts/check-diagrams.mjs`로 점검 |
 | `/diagram` | 다이어그램 다시 그리기 — 운영 기준 코드로 구조·화면 맵·요청 흐름(비즈넵 웹·모바일 앱은 심층까지)을 그리고 검증·목록 갱신, 그리다 찾은 문제는 `issues/` 등록. `/diagram brand` 처럼 서비스를 주거나, 비우면 전체. `/diagram 점검` 은 다시 그리지 않고 근거만 점검 |
 | `/seo-feedback` | 슬랙 `seo-health-bznav` 의 SEO Health 봇 리포트(환급·세나·케어)를 직전 리포트와 비교해 **서비스당 이슈 하나**(`kind: seo`)를 만들거나 갱신(슬랙에는 보내지 않음). 매주 월 08:15 launchd 자동 실행(`scripts/seo-feedback.sh install` 한 맥에서만), 수동 실행분은 직접 부른다 |
+| `/qa-tc` | `/qa-tc <앱> [전체 \| <브랜치> \| #<PR>]` — 비즈넵 웹 앱의 QA TC 목록(`docs/qa/tc/<앱>.md`)을 **그 앱 담당 에이전트**가 레포 코드를 읽어 쓰거나 갱신(전체 또는 변경분만). 자동화할 TC 는 흐름 씬 초안(`scripts/qa/scenarios/<앱>/_draft/`)까지. 레포는 읽기만 |
 | `/guide` | 오른쪽 pane 에 가이드 메뉴(스킬 목록·실행 · 에이전트·라우팅 · git 현황 · 문서). `/guide <파일>` 은 그 파일을 뷰어로, `/guide 열기`는 플레이북 HTML, `/guide 그림`은 **다이어그램 목록**(작업 흐름 경량·정식 + 서비스 10개 × 구조·화면 맵·요청 흐름, 비즈넵 웹 5개와 모바일 앱은 심층 추가) 열기 |
 
 **커맨드가 없는 것은 말로 한다.** 전체 검수("환급 웹 전체 검수 돌려줘" → `node scripts/qa/run.mjs --suite --app <앱>`, 요청할 때만 · 현황판 QA 탭 [전체 검수 시작] 도 같다 · `docs/knowledge/common/verify.md` "QA 시뮬레이션") · 기능·버그(1단계) · 리뷰("리뷰해줘" → 5단계, `delegate.sh reviewer`) · 현황("현황 알려줘" → `docs/knowledge/common/git.md` "현황 점검") · 브랜치(3단계, 같은 파일 "작업 브랜치 만들기").
