@@ -42,6 +42,17 @@ function describe(request) {
   return { kind: 'http', method: request.method(), name: `${url.host}${url.pathname}`.slice(0, 160), values: body ? JSON.stringify(maskSecrets(body)).slice(0, 300) : '' }
 }
 
+// data 안을 훑어 errors{code,message} 와 result:false 를 모은다 — 개인정보 칸(이름·전화 등)은 보지 않는다
+function payloadErrors(node, path = '', found = []) {
+  if (!node || typeof node !== 'object' || found.length >= 5) return found
+  if (Array.isArray(node)) { node.forEach((item) => payloadErrors(item, path, found)); return found }
+  const error = node.errors
+  if (error && typeof error === 'object') {
+    for (const item of Array.isArray(error) ? error : [error]) if (item && (item.code || item.message)) found.push(`${path ? `${path}: ` : ''}${[item.code, item.message].filter(Boolean).join(' — ')}`)
+  } else if (node.result === false && !found.length) found.push(`${path ? `${path}: ` : ''}result false`)
+  for (const [key, value] of Object.entries(node)) if (key !== 'errors' && value && typeof value === 'object') payloadErrors(value, key, found)
+  return found
+}
 export function createLiveLog(runDir) {
   const file = join(runDir, 'live.jsonl')
   const write = (entry) => {
@@ -67,6 +78,8 @@ export function createLiveLog(runDir) {
       if (request.method() === 'POST' && /"query"\s*:\s*"\s*(query|mutation)/.test(request.postData() ?? '')) {
         const body = await response.json().catch(() => null)
         if (Array.isArray(body?.errors) && body.errors.length) errors = body.errors.map((error) => error.message ?? error.code ?? '').join(' | ').slice(0, 300)
+        // 결과 안의 업무 오류 — { result: false, errors: { code, message } } 처럼 200·data 안에 담긴 것(간편인증·환급 토큰 등). 코드·메시지만(값은 안 남긴다)
+        else if (body?.data) errors = payloadErrors(body.data).join(' | ').slice(0, 300)
       }
       record(request, response.status(), errors)
     })

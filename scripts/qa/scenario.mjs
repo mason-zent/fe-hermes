@@ -217,7 +217,29 @@ export async function runScenario(context, scenario, options) {
           break
         }
         await options.showBanner(page, `🙋 ${step.human} — 끝나면 저절로 이어서 확인해요`, 'warn')
-        await page.waitForURL((url) => `${url.pathname}${url.search}`.startsWith(step.untilUrl ?? '/'), { timeout: HUMAN_TIMEOUT })
+        // 기다리는 동안 앱이 오류 안내(팝업·토스트)를 띄우면 안내 띠로 알려 주고 기록한다 — 팝업을 닫고 다시 시도하면 그대로 이어진다
+        const deadline = Date.now() + HUMAN_TIMEOUT
+        const reached = () => `${new URL(page.url()).pathname}${new URL(page.url()).search}`.startsWith(step.untilUrl ?? '/')
+        let lastAlert = ''
+        while (!reached()) {
+          if (page.isClosed()) throw new Error('창이 닫혔다')
+          if (Date.now() > deadline) throw new Error(`${Math.round(HUMAN_TIMEOUT / 60000)}분 안에 끝나지 않았다`)
+          const alert = await page.evaluate(() => {
+            const pattern = /오류|실패|다시 진행|다시 시도|만료|올바르지/
+            const nodes = [...document.querySelectorAll('[role="dialog"], [role="alertdialog"], [role="alert"], [role="status"], [data-sonner-toast], [class*="toast" i], [class*="Toast"], [class*="dialog" i]')]
+            const text = nodes.map((node) => node.innerText?.trim()).filter(Boolean).find((value) => pattern.test(value)) ?? ''
+            return text.replace(/\s+/g, ' ').slice(0, 120)
+          }).catch(() => '')
+          if (alert && alert !== lastAlert) {
+            lastAlert = alert
+            problems.push({ kind: 'human-alert', text: `사람 단계 중 앱 오류 안내 — ${alert}` })
+            await options.showBanner(page, `⚠️ 앱에 오류 안내가 떴어요: "${alert}" — 팝업을 닫고 다시 시도해 주세요(라이브 화면 호출 목록에 오류 코드가 있어요). ${step.human}`, 'bad')
+          } else if (!alert && lastAlert) {
+            lastAlert = ''
+            await options.showBanner(page, `🙋 ${step.human} — 끝나면 저절로 이어서 확인해요`, 'warn')
+          }
+          await page.waitForTimeout(1000)
+        }
         await options.hideBanner(page)
       } else if (kind === 'expectEvent') {
         // 씬 시작부터 나간 Mixpanel 이벤트 중 이름(과 props 의 값)이 맞는 것이 5초 안에 있어야 한다
