@@ -225,7 +225,7 @@
   <div class="rep-body" id="report-body"></div>
 </dialog>
 <dialog id="detail" aria-labelledby="detail-title">
-  <div class="dlg-head"><h3 id="detail-title"></h3><button type="button" id="detail-calls">오른쪽 목록에서 보기</button><button type="button" id="detail-close">닫기</button></div>
+  <div class="dlg-head"><h3 id="detail-title"></h3><button type="button" id="detail-ask" hidden>🔎 이 건 조사 맡기기</button><button type="button" id="detail-calls">오른쪽 목록에서 보기</button><button type="button" id="detail-close">닫기</button></div>
   <div class="dlg-body" id="detail-body"></div>
 </dialog>
 <script>
@@ -508,6 +508,12 @@
           ${problems ? `<h4 style="margin-top:12px">문제</h4><ul class="why-list" style="color:var(--bad)">${problems}</ul>` : ''}</div>
         <div><h4>스크린샷</h4>${shotGrid((scenario.shots || []).map((shot) => [shot.name, shot.file]))}<h4>이 씬에서 나간 호출 ${calls.length}개</h4>${callRows(calls, `popup:${state.detail}`)}</div>`;
     }
+    // [이 건 조사 맡기기] — 통과·대기 말고(실패·변화·사람 필요 등) 보일 때만
+    {
+      const current = detailItem();
+      const status = current ? (state.detail.startsWith('screen:') ? current.screen.status : (state.run.scenarios || []).find((item) => (item.key || item.file) === state.detail.slice(state.detail.indexOf(':') + 1))?.status) : '';
+      document.getElementById('detail-ask').hidden = !current || ['pass', 'expected', 'queued', 'running', 'skip', 'new'].includes(status);
+    }
     // 매 차례 다시 그리면 안쪽 스크롤(호출 목록)이 맨 위로 튄다 — 내용이 바뀔 때만 그리고, 스크롤 위치는 그대로 둔다
     if (html === state.detailHtml) return;
     state.detailHtml = html;
@@ -528,6 +534,7 @@
     renderDetail();
   };
   document.getElementById('detail-close').onclick = () => document.getElementById('detail').close();
+  document.getElementById('detail-ask').onclick = () => { const item = detailItem(); if (item) askAgent([item], [state.run]); };
   document.getElementById('detail').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
   document.getElementById('detail').addEventListener('close', () => { state.detail = ''; });
   document.getElementById('detail-calls').onclick = () => {
@@ -750,7 +757,7 @@
           <div><div class="what">[${esc(item.run.profile || '')}] ${esc(item.screen.url || item.screen.route)}${item.problem.viewport ? ` · ${esc(item.problem.viewport)}` : ''}</div>
             ${item.reason ? `<div class="reason"><b>${esc(item.reason.title)}</b>${item.reason.count > item.reason.viewports.length ? ` ×${item.reason.count}` : ''}${item.more > 0 ? ` <span class="sub">외 원인 ${item.more}개</span>` : ''}</div>${item.reason.why ? `<div class="sub">왜: ${esc(item.reason.why)}</div>` : ''}${item.reason.hint ? `<div class="sub">볼 곳: ${esc(item.reason.hint)}</div>` : ''}` : `<div class="reason">${esc(item.problem.text.slice(0, 220))}${item.more > 0 ? ` <span class="sub">외 ${item.more}개</span>` : ''}</div>`}
             ${item.problem.at ? `<div class="at">📍 ${esc(item.problem.at)}</div>` : ''}</div>
-          <button type="button" data-rep="${esc(cause)}:${index}" aria-expanded="false">자세히 ▾</button>
+          <span class="rep-actions"><button type="button" data-ask-one="${esc(cause)}:${index}">🔎 조사 맡기기</button> <button type="button" data-rep="${esc(cause)}:${index}" aria-expanded="false">자세히 ▾</button></span>
           <div class="rep-detail" hidden></div></div>`).join('');
       const ask = cause === 'app' ? `<button type="button" class="primary" data-ask="app">담당 에이전트에게 조사 맡기기</button>` : '';
       return `<section class="rep-group"><h4>${title} ${list.length}개 <span class="why">${why}</span> ${ask}</h4>${rows}</section>`;
@@ -782,6 +789,11 @@
     });
     const askButton = body.querySelector('[data-ask]');
     if (askButton) askButton.onclick = () => askAgent(items.filter((item) => item.cause === 'app'), runs);
+    body.querySelectorAll('[data-ask-one]').forEach((button) => {
+      const [cause, index] = button.dataset.askOne.split(':');
+      const item = items.filter((entry) => entry.cause === cause)[Number(index)];
+      button.onclick = () => item && askAgent([item], [item.run]);
+    });
     const dialog = document.getElementById('report');
     if (!dialog.open) dialog.showModal();
   };
@@ -814,10 +826,36 @@
   };
 
   // [담당 에이전트에게 조사 맡기기] — 헤르메스 pane 에 조사 요청을 보낸다(못 보내면 클립보드로)
+  // 조사 요청 한 줄 — 화면은 묶은 원인(제목·횟수·왜·볼 곳)으로, 씬은 실패한 단계로
+  const itemLine = (item) => {
+    const where = `[${item.run.profile || ''}] ${item.screen.url || item.screen.route}${item.problem.viewport ? ` (${item.problem.viewport})` : ''}`;
+    if (item.reason) return `- ${where} — ${item.reason.title}${item.reason.count > item.reason.viewports.length ? ` ×${item.reason.count}` : ''}${item.reason.why ? ` · 왜: ${item.reason.why}` : ''}${item.reason.at ? ` @ ${item.reason.at}` : ''} · 원문: ${String(item.reason.sample).split('\n')[0].slice(0, 160)}`;
+    return `- ${where} — ${item.problem.text.slice(0, 200)}${item.problem.at ? ` @ ${item.problem.at}` : ''}`;
+  };
+  // 상세 팝업의 화면·씬 하나 → 조사 요청 항목
+  const detailItem = () => {
+    if (!state.run || !state.detail) return null;
+    const type = state.detail.slice(0, state.detail.indexOf(':'));
+    const key = state.detail.slice(state.detail.indexOf(':') + 1);
+    if (type === 'screen') {
+      const screen = (state.run.screens || []).find((item) => (item.key || item.url || item.route) === key);
+      if (!screen) return null;
+      const reason = (screen.reasons || [])[0];
+      const problem = reason ? { kind: reason.kind, text: reason.sample, viewport: reason.viewports.join('·'), at: reason.at } : (screen.problems || [])[0] || { text: screen.note || '실패' };
+      return { run: state.run, screen, problem, reason };
+    }
+    const scenario = (state.run.scenarios || []).find((item) => (item.key || item.file) === key);
+    if (!scenario) return null;
+    const step = (scenario.steps || []).find((item) => !item.ok);
+    return { run: state.run, screen: { url: `🎬 씬 ${scenario.file.slice(0, 2)} ${scenario.name} · ${scenario.viewport || ''}` }, problem: { text: step ? `${step.label} — ${step.detail || ''}` : '실패' } };
+  };
   const askAgent = async (items, runs) => {
-    const lines = items.map((item) => `- [${item.run.profile}] ${item.screen.url || item.screen.route}${item.problem.viewport ? ` (${item.problem.viewport})` : ''} — ${item.problem.text.slice(0, 160)}${item.problem.at ? ` @ ${item.problem.at}` : ''}`).join('\n');
-    const text = `QA 실패 리포트(${runs.map((run) => run.id).join(', ')})에서 "앱 의심" ${items.length}건이에요. 담당 에이전트에게 원인 조사(읽기 전용, 고치지 말고 원인·근거 파일:줄·추천)를 맡겨 주세요.\n${lines}`;
-    const pane = state.group?.pane || '';
+    const lines = items.map(itemLine).join('\n');
+    const text = items.length === 1
+      ? `QA 실패 1건 조사 요청(${runs.map((run) => run.id).join(', ')}) — 담당 에이전트에게 원인 조사(읽기 전용, 고치지 말고 원인·근거 파일:줄·추천)를 맡겨 주세요.\n${lines}`
+      : `QA 실패 리포트(${runs.map((run) => run.id).join(', ')})에서 "앱 의심" ${items.length}건이에요. 담당 에이전트에게 원인 조사(읽기 전용, 고치지 말고 원인·근거 파일:줄·추천)를 맡겨 주세요.\n${lines}`;
+    // 런을 띄운 헤르메스 pane(묶음) — 없거나 보낼 수 없는 pane 이면 서버가 떠 있는 헤르메스 pane 으로 보낸다
+    const pane = state.group?.pane || 'hermes';
     if (pane && window.HERMES_BOARD_TOKEN) {
       try {
         const response = await fetch('/api/action', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Board-Token': window.HERMES_BOARD_TOKEN }, body: JSON.stringify({ pane, text }) });

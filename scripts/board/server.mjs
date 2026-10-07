@@ -665,12 +665,13 @@ const setPlanStatus = (id, status, note = '') => {
 // ── 쓰기: 헤르메스에게 지시 ───────────────────────────────────────────────
 const sendToPane = async (paneId, text) => {
   const panes = snapshot?.panes ?? []
-  const target = panes.find((pane) => pane.id === paneId && pane.role !== 'other')
+  // 'hermes' 또는 보낼 수 없는 pane(현황판 pane 등)을 주면 떠 있는 헤르메스 pane 으로 — QA 라이브 [조사 맡기기] 가 쓴다
+  const target = panes.find((pane) => pane.id === paneId && pane.role !== 'other') ?? (paneId === 'hermes' || paneId.startsWith('hermes:') ? panes.find((pane) => pane.role === 'hermes') : null)
   if (!target) return '보낼 pane 을 찾지 못했어요 (헤르메스·에이전트 pane 에만 보낼 수 있어요)'
   const oneLine = text.replace(/\s*\n\s*/g, ' ').trim()
   if (!oneLine || oneLine.length > 2000) return '지시문이 비어 있거나 너무 길어요'
-  if ((await run('herdr', ['pane', 'send-text', paneId, oneLine])) === null) return 'herdr 로 입력을 보내지 못했어요'
-  await run('herdr', ['pane', 'send-keys', paneId, 'Enter'])
+  if ((await run('herdr', ['pane', 'send-text', target.id, oneLine])) === null) return 'herdr 로 입력을 보내지 못했어요'
+  await run('herdr', ['pane', 'send-keys', target.id, 'Enter'])
   return null
 }
 
