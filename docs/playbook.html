@@ -297,7 +297,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-10-01</span>
-      <span>agents 13 · skills 7</span>
+      <span>agents 13 · skills 8</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-09-29</span>
 <!-- END:generated:last-sync -->
@@ -463,7 +463,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
 
     <section id="skills">
       <h2>슬래시 커맨드</h2>
-      <p>6개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
+      <p>8개 커맨드가 <code>.claude/skills/</code>에 있습니다. 헤르메스가 정해진 흐름을 빠뜨리지 않고 타게 하는 단축키입니다. 자연어로 요청해도 같은 규칙이 적용되므로 필수는 아닙니다.</p>
       <div class="note">
         <strong>슬래시 커맨드는 헤르메스 세션에서만 씁니다.</strong> FE 에이전트 pane 에는 슬래시 커맨드가 아예 노출되지 않습니다(도구는 Read·Edit·Write·Bash 뿐). 라우팅·계획서·디스패치는 팀리드의 일이지 담당 엔지니어의 일이 아니기 때문입니다.
         <br><br>
@@ -549,6 +549,18 @@ refund 변경 리뷰해줘
           </dl>
 <pre><code>/seo-feedback            # 처리 안 된 리포트 전부
 /seo-feedback sena       # 세나만</code></pre>
+        </article>
+
+        <article class="cmd wide">
+          <div class="cmd-head"><kbd>/qa-tc <span class="arg">앱 · 브랜치/#PR (선택)</span></kbd><span class="tag plain">QA TC</span></div>
+          <p class="what">비즈넵 웹 앱의 <strong>QA TC 목록</strong>(<code>docs/qa/tc/&lt;앱&gt;.md</code>)을 <strong>그 앱 담당 에이전트</strong>가 레포 코드를 읽어 쓰거나 갱신합니다. 기존 ID 는 유지하고, 빠진 화면·TC 는 추가, 코드와 달라진 TC 는 그 줄만 고치고, 없어진 화면의 TC 는 지우지 않고 <code>폐기 후보</code> 로 표시합니다. 브랜치나 PR 을 주면 <strong>그 변경 때문에 바뀌어야 할 TC 만</strong> 다루고 "머지 전에 돌릴 TC" 목록을 붙입니다. 씬으로 옮길 수 있는 TC 는 흐름 씬 초안(<code>scripts/qa/scenarios/&lt;앱&gt;/_draft/</code>, 검수 런이 읽지 않음)까지 만듭니다. 레포는 읽기만 합니다.</p>
+          <div class="flow"><span>담당 에이전트 pane</span><span>코드 · 지식 읽기</span><span class="hi">TC 문서 · 씬 초안</span></div>
+          <dl>
+            <dt>언제</dt><dd>TC 를 처음 쓰거나 오래돼 다시 맞출 때, PR 마다 확인할 TC 를 뽑을 때</dd>
+            <dt>결과</dt><dd>현황판 QA 탭 [TC 목록]에 바로 반영. 커밋은 확인 후</dd>
+          </dl>
+<pre><code>/qa-tc refund-web           # 전체 다시 맞추기
+/qa-tc sena-web #1234       # 이 PR 때문에 바뀔 TC 만</code></pre>
         </article>
 
         <article class="cmd wide">
@@ -770,7 +782,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
 ├── .claude/
 │   ├── agents/                <span class="c">refund-fe · hub-fe · care-fe · op-fe · bznav-{refund,care,brand,sena,plus,packages}-fe · bznav-rn-app · packages-fe · reviewer</span>
 │   ├── rules/                 <span class="c">language · coding-standards · git-workflow · dispatch-protocol</span>
-│   ├── skills/                <span class="c">call · board · sync · diagram · guide · monitor</span>
+│   ├── skills/                <span class="c">call · board · sync · diagram · guide · monitor · seo-feedback · qa-tc</span>
 │   └── settings.json
 ├── .sync/
 │   └── snapshots/             <span class="c">레포별 기준 브랜치 지문 baseline (/sync 비교 기준)</span>

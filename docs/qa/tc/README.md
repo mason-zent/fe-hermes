@@ -58,6 +58,9 @@
 | sena-web | 물결표 이슈 실제 증상은 취소선이 아니라 `~` 가 사라짐(이슈 파일 문구 부정확) | SN-021 |
 | refund-web | 씬 02 기대 문구가 CRM 실험군이면 달라짐 | RF-006 |
 
+## 갱신하기
+- `/qa-tc <앱>` — 그 앱 담당 에이전트가 코드를 다시 읽어 이 문서를 맞춘다(전체) · `/qa-tc <앱> #<PR>` 은 그 변경 때문에 바뀔 TC 만. 씬 초안은 `scripts/qa/scenarios/<앱>/_draft/`
+
 ## 다음
 1. 러너 확장(위 표) — GraphQL 연산별 흉내 · App Router 화면 목록이 가장 많은 TC 를 연다
 2. D15 sena-web 편입 → D14 순서대로 brand(가장 쉬움)·plus·care

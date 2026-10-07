@@ -39,6 +39,8 @@ node scripts/qa/history.mjs [--open [런 id]] [--plan <계획서>]          # QA
 # 현황판(/board) [QA] 탭 — 같은 이력을 실시간으로. 계획서 카드 [QA 실행] 으로도 돌린다(한 번에 하나)
 ```
 
+TC 목록은 `docs/qa/tc/<앱>.md`(현황판 QA 탭 [TC 목록]이 읽는다). 쓰거나 다시 맞추는 것은 `/qa-tc <앱> [#<PR>]` — 그 앱 담당 에이전트가 코드를 읽어 갱신하고, 씬으로 옮길 TC 는 `scripts/qa/scenarios/<앱>/_draft/` 에 초안(검수 런은 읽지 않는다).
+
 **전체 검수**(요청할 때만 — 정기 자동 실행 없음): 코드 diff 에 안 보이는 깨짐(API 응답·CMS·공통 패키지·환경)을 서비스 전체로 본다. 영향 QA 와 달리 기준 서버 대신 **승인한 기준 사진**(`.qa-baselines/<앱>/<프로필>/`, git 무시)과 비교한다.
 ```bash
 node scripts/qa/run.mjs --suite --app refund-web [--profile login] [--headed]   # 최신 origin/<prBase>(qa-base) · 화면 전부 + 흐름 씬
