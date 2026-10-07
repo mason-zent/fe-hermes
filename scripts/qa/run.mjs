@@ -19,6 +19,7 @@
  *   --slow <ms>         --headed 의 속도(기본 700 — 클수록 느리다, 0 이면 멈춤 없이)
  *   --watch             창은 띄우되 빠르게(= --headed --slow 0) — 전체 검수를 지켜볼 때
  *   --target server --server <주소>  배포된 서버(dev·stg·dev-1~3·PR 미리보기)로 — 운영 주소는 거부. --server 만 줘도 된다
+ *   --scenarios-only    화면 검사 없이 흐름 씬만(--suite 와 함께) — 예: --suite --app refund-web --profile login --scenarios 05- --scenarios-only --live --headed
  *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 창) → 실패 리포트 모달. --live 와 함께
  *   --profiles a,b      세션 상태 여럿을 동시에(dev 서버 하나 공유)
  *   --tc-picks <파일>    변경분 TC(/qa-tc <앱> <브랜치> 가 만든 .qa-runs/tc-picks/<앱>@<브랜치>.json) — 영향 QA 에서 기본으로 그 브랜치 파일을 찾는다.
@@ -1093,10 +1094,13 @@ async function main() {
       })
     }
   }
+  // --scenarios-only — 화면 검사 없이 흐름 씬만(전체 검수·변경분 TC 와 함께). 씬 하나만 띄워 볼 때(예: 실제 본인인증 씬) 화면 검사 창이 먼저 뜨지 않게
+  const scenariosOnly = flag('scenarios-only') && (suite || Boolean(pickIds))
+  if (scenariosOnly) run.screens = []
   say(`영향 화면 ${impact.screens.length}개 → 열 화면 ${run.screens.filter((screen) => screen.url).length}개`)
   // 열 화면이 없어도 sitemap 에서 받을 화면이 있으면 서버를 띄운다
   const fromSitemap = run.screens.some((screen) => screen.status === 'sample' && routesConfig.routes?.[screen.route]?.samplesFrom === 'sitemap')
-  if (!run.screens.some((screen) => screen.url) && !fromSitemap) return finish()
+  if (!run.screens.some((screen) => screen.url) && !fromSitemap && !scenariosOnly) return finish()
 
   // 작업 트리가 곧 기준 워크트리면 같은 코드라 비교할 게 없고, 한 폴더에 dev 서버 둘은 Next 가 막는다
   const sameAsBase = repoRoot === join(HERMES, '.worktrees', 'bznav-web', 'qa-base')
@@ -1329,9 +1333,11 @@ function loadScenarios() {
     // 영향 QA 에서는 변경분 TC 에 걸린 씬만
     .filter((scenario) => suite || !pickIds || (scenario.tc ?? []).some((id) => pickIds.has(id)))
 }
-// 씬이 돌 뷰포트 — 씬 파일 "viewports": ["desktop"] 처럼 적으면 그것만, 없으면 화면 검사와 같은 전부(데스크톱·모바일)
+// 씬이 돌 뷰포트 — 씬 파일 "viewports": ["desktop"] 처럼 적으면 그것만, 없으면 화면 검사와 같은 전부(데스크톱·모바일).
+// 사람 단계(human — 실제 본인인증 등)가 있는 씬은 적지 않았으면 첫 뷰포트 하나만 — 사람이 두 번 인증하지 않게(계정 상태도 한 번 바뀌면 끝)
 const scenarioViewports = (scenario) => {
-  const names = scenario.viewports ?? routesConfig.viewports.map((viewport) => viewport.name)
+  const hasHuman = (scenario.steps ?? []).some((step) => step && typeof step === 'object' && 'human' in step)
+  const names = scenario.viewports ?? (hasHuman ? [routesConfig.viewports[0].name] : routesConfig.viewports.map((viewport) => viewport.name))
   return routesConfig.viewports.filter((viewport) => names.includes(viewport.name))
 }
 // 씬 목록을 미리 run.json 에 — 화면 검사 중에도 체크리스트에 씬과 단계가 보이게. 씬 × 뷰포트마다 한 항목, plan = 씬의 단계 목록
