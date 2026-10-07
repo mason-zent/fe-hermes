@@ -388,7 +388,15 @@
         const noBase = name === '스크린샷 비교' && !viewport.shots?.base;
         return `${VIEWPORT_ICON[viewport.name] || viewport.name}${failed ? '✖' : changed ? '🟡' : noBase ? '–' : '✔'}`;
       }).join(' ');
-      const reasons = found.map((problem) => `<li>[${esc(problem.viewport)}] ${esc(problem.text)}${problem.at ? `<br><span class="at">📍 ${esc(problem.at)}</span>` : ''}</li>`).join('');
+      // 같은 문구는 한 줄로 묶고 횟수 — 콘솔 오류가 수천 번 반복돼도 읽을 수 있게(첫 줄만, 서식 기호 정리)
+      const grouped = new Map();
+      for (const problem of found) {
+        const line = String(problem.text).replace(/%[osdifcO]/g, '').split('\n').map((part) => part.trim()).find(Boolean) || '';
+        const entry = grouped.get(line) || { line, count: 0, viewports: new Set(), at: problem.at };
+        entry.count += 1; entry.viewports.add(problem.viewport);
+        grouped.set(line, entry);
+      }
+      const reasons = [...grouped.values()].sort((left, right) => right.count - left.count).slice(0, 8).map((entry) => `<li>[${esc([...entry.viewports].join('·'))}] ${esc(entry.line.slice(0, 200))}${entry.count > entry.viewports.size ? ` <b>×${entry.count}</b>` : ''}${entry.at ? `<br><span class="at">📍 ${esc(entry.at)}</span>` : ''}</li>`).join('') + (grouped.size > 8 ? `<li class="base">외 ${grouped.size - 8}종</li>` : '');
       const diffs = name === '스크린샷 비교' ? viewports.filter((viewport) => viewport.diff).map((viewport) => `<li class="base">[${esc(viewport.name)}] 기준과 ${viewport.diff.pixels}px 다름</li>`).join('') : '';
       const arrived = name === '도착 경로' ? viewports.filter((viewport) => viewport.finalPath).map((viewport) => `<li class="base">[${esc(viewport.name)}] 도착 ${esc(viewport.finalPath)}</li>`).join('') : '';
       // 확인 필요(warnings) — 실패로 세지 않지만 그 단계 아래에 노란색으로
@@ -549,8 +557,10 @@
     const screenRows = screens.map((screen) => {
       const viewports = (screen.viewports || []).map((viewport) => `${VIEWPORT_ICON[viewport.name] || viewport.name}✔`).join(' ');
       const firstProblem = (screen.problems || [])[0];
+      const firstReason = (screen.reasons || [])[0];
       const note = screen.status === 'running' ? `검사 중 ${viewports}${viewports ? ' → ' : ''}${(screen.viewports || []).length ? '📱 ⏳' : '🖥 ⏳'}`
         : screen.status === 'skip' ? `건너뜀${screen.note ? ` — ${esc(screen.note)}` : ''}`
+        : firstReason ? `${(STATUS[screen.status] || STATUS.queued)[1]} — ${esc(firstReason.title.slice(0, 90))}${firstReason.count > firstReason.viewports.length ? ` ×${firstReason.count}` : ''}`
         : firstProblem ? `${(STATUS[screen.status] || STATUS.queued)[1]} — ${esc((PROBLEM_KIND[firstProblem.kind] || firstProblem.kind) + ': ' + firstProblem.text.slice(0, 90))}` : '';
       const finished = !['queued', 'running', 'skip'].includes(screen.status);
       const key = `screen:${screen.key || screen.url || screen.route}`;
@@ -675,7 +685,7 @@
   const causeOf = (screen, problem) => {
     const text = `${problem.text} ${screen.note || ''}`;
     if (/데이터 필요|신청 건|계정 상태|No data returned|Cannot return null|refundHistoryId|apply\/result/.test(text)) return 'data';
-    if (['timeout', 'network'].includes(problem.kind) || /Network Error|ERR_CONNECTION|Timeout \d+ms/.test(problem.text)) return 'env';
+    if (['timeout', 'network'].includes(problem.kind) || /Network Error|ERR_CONNECTION|Timeout \d+ms|blocked by CORS policy/.test(problem.text)) return 'env';
     if (problem.kind === 'expect') return 'guard';
     return 'app';
   };
@@ -700,9 +710,10 @@
       for (const screen of run.screens || []) {
         warnings += (screen.viewports || []).reduce((total, viewport) => total + (viewport.warnings || []).length, 0);
         if (screen.status !== 'fail') continue;
-        const problem = (screen.problems || [])[0] || { kind: 'expect', text: '실패' };
-        const viewport = (screen.viewports || []).find((item) => item.name === problem.viewport) || (screen.viewports || [])[0];
-        items.push({ cause: causeOf(screen, problem), run, screen, problem, more: (screen.problems || []).length - 1, shot: viewport?.shots?.head, key: `screen:${screen.key || screen.url || screen.route}` });
+        const reason = (screen.reasons || [])[0];
+        const problem = reason ? { kind: reason.kind, text: reason.sample, viewport: reason.viewports.join('·'), at: reason.at } : (screen.problems || [])[0] || { kind: 'expect', text: '실패' };
+        const viewport = (screen.viewports || []).find((item) => item.name === (reason?.viewports[0] ?? problem.viewport)) || (screen.viewports || [])[0];
+        items.push({ cause: causeOf(screen, problem), run, screen, problem, reason, more: reason ? screen.reasons.length - 1 : (screen.problems || []).length - 1, shot: viewport?.shots?.head, key: `screen:${screen.key || screen.url || screen.route}` });
       }
       for (const scenario of run.scenarios || []) {
         if (scenario.status !== 'fail') continue;
@@ -718,7 +729,7 @@
       const rows = list.map((item, index) => `<div class="rep-item">
           ${item.shot ? `<a href="/qa-runs/${encodeURIComponent(item.run.id)}/${esc(item.shot)}" target="_blank" rel="noopener"><img loading="lazy" src="/qa-runs/${encodeURIComponent(item.run.id)}/${esc(item.shot)}" alt=""></a>` : '<span></span>'}
           <div><div class="what">[${esc(item.run.profile || '')}] ${esc(item.screen.url || item.screen.route)}${item.problem.viewport ? ` · ${esc(item.problem.viewport)}` : ''}</div>
-            <div class="reason">${esc(item.problem.text.slice(0, 220))}${item.more > 0 ? ` <span class="sub">외 ${item.more}개</span>` : ''}</div>
+            ${item.reason ? `<div class="reason"><b>${esc(item.reason.title)}</b>${item.reason.count > item.reason.viewports.length ? ` ×${item.reason.count}` : ''}${item.more > 0 ? ` <span class="sub">외 원인 ${item.more}개</span>` : ''}</div>${item.reason.why ? `<div class="sub">왜: ${esc(item.reason.why)}</div>` : ''}${item.reason.hint ? `<div class="sub">볼 곳: ${esc(item.reason.hint)}</div>` : ''}` : `<div class="reason">${esc(item.problem.text.slice(0, 220))}${item.more > 0 ? ` <span class="sub">외 ${item.more}개</span>` : ''}</div>`}
             ${item.problem.at ? `<div class="at">📍 ${esc(item.problem.at)}</div>` : ''}</div>
           <button type="button" data-rep="${esc(cause)}:${index}" aria-expanded="false">자세히 ▾</button>
           <div class="rep-detail" hidden></div></div>`).join('');

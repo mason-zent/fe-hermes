@@ -964,7 +964,7 @@
         <div class="sub">${label}${screen.auth ? ' · 🔒 로그인 화면' : ''}${screen.expect ? ` · 기대 ${screen.expect === 'stay' ? '머무름' : `→ ${esc(screen.expect)}`}` : ''}${moved ? ` · → ${esc(moved.finalPath)}` : ''}${screen.baseProblems ? ` · 기준에도 있던 문제 ${screen.baseProblems}` : ''}</div>
         <div class="why" title="${esc((screen.via || []).join(' → '))}">${esc(screen.changedFile || '')}${screen.distance ? ` → ${screen.distance}단계` : ''}</div>
         ${screen.note ? `<div class="why">📝 ${esc(screen.note)}</div>` : ''}
-        ${(screen.problems || []).slice(0, 3).map((problem) => `<div class="problem">[${esc(problem.viewport)}] ${esc(problem.text)}</div>`).join('')}
+        ${(screen.reasons || []).slice(0, 3).map((reason) => `<div class="problem"><b>${esc(reason.title)}</b>${reason.count > reason.viewports.length ? ` ×${reason.count}` : ''}${reason.viewports.length ? ` <span class="sub">(${esc(reason.viewports.join('·'))})</span>` : ''}</div>${reason.why ? `<div class="why">${esc(reason.why)}</div>` : ''}`).join('')}${(screen.reasons || []).length > 3 ? `<div class="why">외 원인 ${screen.reasons.length - 3}개 — 라이브 화면 리포트에서</div>` : ''}
         ${shots ? `<div class="qa-shots">${shots}</div>` : ''}
         ${qaEvents((screen.viewports || []).map((viewport) => [viewport.name, viewport.events]))}
         ${run.kind === 'suite' && run.status === 'done' ? (screen.approved ? '<div class="sub">✔ 기준 승인됨</div>' : ['new', 'changed', 'fail', 'redirected'].includes(screen.status) ? `<div><button type="button" class="btn" data-approve="${esc(screen.key)}">이 화면 기준으로 승인</button></div>` : '') : ''}

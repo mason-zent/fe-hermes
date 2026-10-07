@@ -43,6 +43,7 @@ import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './ar
 import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
 import { checkServerUrl, sessionFileOf } from '../qa/targets.mjs'
 import { approveRun as approveQaRun } from '../qa/baseline.mjs'
+import { explainProblems } from '../qa/explain.mjs'
 import { createHash, randomBytes } from 'node:crypto'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -1242,7 +1243,15 @@ createServer(async (request, response) => {
     const file = join(QA_RUNS_DIR, id, 'run.json')
     const ok = QA_ID.test(id) && existsSync(file)
     response.writeHead(ok ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
-    return response.end(ok ? readFileSync(file) : JSON.stringify({ error: 'QA 런을 찾지 못했어요' }))
+    if (!ok) return response.end(JSON.stringify({ error: 'QA 런을 찾지 못했어요' }))
+    // 실패 문구를 사람이 읽는 원인으로 묶어 붙인다(scripts/qa/explain.mjs) — run.json 원문은 그대로
+    try {
+      const run = JSON.parse(readFileSync(file, 'utf8'))
+      for (const screen of run.screens ?? []) if (screen.problems?.length) screen.reasons = explainProblems(screen.problems)
+      return response.end(JSON.stringify(run))
+    } catch {
+      return response.end(readFileSync(file))
+    }
   }
   // QA 스크린샷·리포트 — .qa-runs/<런 id>/ 안의 png·html·json·log 만(경로 탈출 404)
   if (url.pathname.startsWith('/qa-runs/')) {
