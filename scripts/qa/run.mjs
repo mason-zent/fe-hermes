@@ -127,7 +127,7 @@ if (flag('flow')) {
     pane = ''
   }
   const group = {
-    id: groupId, app: appName, mode: 'flow', pane, startedAt: stamp.toISOString(), finishedAt: null,
+    id: groupId, app: appName, mode: 'flow', pane, pid: process.pid, startedAt: stamp.toISOString(), finishedAt: null,
     target,
     stages: [{ profile: 'logout', status: 'queued' }, ...flowTargets.map((profile) => ({ profile, status: 'queued' }))],
     gate: null
@@ -344,6 +344,8 @@ mkdirSync(join(runDir, 'shots'), { recursive: true })
 const live = createLiveLog(runDir)
 const run = {
   id: runId,
+  // 라이브 화면 [중단] 이 이 프로세스를 끈다(현황판 /api/qa-stop)
+  pid: process.pid,
   app: appName,
   kind: suite ? 'suite' : 'impact',
   plan: planPath ? relative(HERMES, join(process.cwd(), planPath)) : null,
@@ -1258,7 +1260,9 @@ async function main() {
   // 시작 전 세션 확인 — 로그인이 필요한 화면 하나를 열어 이 세션이 프로필대로 움직이는지 본다.
   // 예: login(본인인증 전) 인데 본인인증 화면으로 안 가면 본인인증까지 한 계정이다 → 다른 계정으로 로그인해 달라고 하고, 그래도 안 맞으면 멈춘다
   if (profile.session && profile.authScreens) {
-    const probe = queue.find((screen) => screen.auth && !screen.entry && !routesConfig.routes?.[screen.route]?.skip)
+    // 확인용 화면 — 본인인증·로그인 화면 자체나 이미 목적지인 화면은 빼고 고른다(거기 머문 걸 '잘 갔다' 로 보면 안 된다)
+    const probe = queue.find((screen) => screen.auth && !screen.entry && !routesConfig.routes?.[screen.route]?.skip
+      && !isCiPath(screen.url) && !isSignPath(screen.url) && !(profile.authScreens !== 'stay' && reachedExpected(profile.authScreens, screen.url)))
     const probeContext = contexts[routesConfig.viewports[0].name].head
     const landOn = async () => {
       const page = await probeContext.newPage()
@@ -1285,12 +1289,12 @@ async function main() {
       if (path && !fits(path)) {
         const want = profile.authScreens === 'stay' ? '로그인 화면에 그대로 머물러야' : `${profile.authScreens} 로 가야`
         const what = isCiPath(path) ? '본인인증을 안 한 계정' : samePath(probe.url, path) ? '본인인증까지 한 계정' : '다른 상태의 계정'
-        const message = `저장된 ${profileName} 세션이 맞지 않아요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요(${what}으로 보여요). 열린 창에서 ${profile.note || profileName} 계정으로 다시 로그인해 주세요(10분)`
+        const message = `저장된 ${profileName} 세션이 맞지 않아요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요(${what}으로 보여요). 열린 창에서 ${(profile.note || profileName).split(' — ')[0]}(으)로 다시 로그인해 주세요(10분)`
         say(`⚠️  ${message}`)
         const relogged = liveView ? await requestLogin(sessionContexts, headUrl, message) : false
         path = relogged ? await landOn().catch(() => null) : path
         if (!relogged || (path && !fits(path))) {
-          throw new Error(`세션 ${profileName} 이 프로필과 맞지 않아 멈췄어요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요. ${profile.note || profileName} 계정으로 로그인한 뒤 다시 돌려 주세요`)
+          throw new Error(`세션 ${profileName} 이 프로필과 맞지 않아 멈췄어요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요. ${(profile.note || profileName).split(' — ')[0]}(으)로 로그인한 뒤 다시 돌려 주세요`)
         }
         say('✅ 세션 확인 — 이제 프로필대로 움직인다')
       }

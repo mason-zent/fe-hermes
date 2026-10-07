@@ -1056,6 +1056,45 @@ async function loginQaSession(app, target, server, profileName) {
   qaLoginChild = spawn(process.execPath, args, { cwd: ROOT, stdio: 'ignore' })
   return { ok: true, url }
 }
+// QA 중단 — 라이브 화면 [⏹ 중단]. run.json·group.json 의 pid 를 끈다(node 프로세스인지 확인).
+// 흐름(묶음)이면 다음 단계로 넘어가지 않게 묶음 프로세스를 먼저 끄고, 도는 단계 런을 끈다(런은 SIGTERM 에서 서버를 끄고 '중단됨' 으로 남는다)
+function stopQaRun(id, groupId) {
+  const isNode = (pid) => {
+    if (!Number.isInteger(pid) || pid <= 1) return false
+    try { return /node$/.test(execFileSync('ps', ['-o', 'comm=', '-p', String(pid)], { encoding: 'utf8' }).trim()) } catch { return false }
+  }
+  const readJson = (path) => { try { return JSON.parse(readFileSync(path, 'utf8')) } catch { return null } }
+  const stopped = []
+  if (groupId) {
+    if (!QA_ID.test(groupId)) return { error: '묶음 id 가 올바르지 않아요' }
+    const groupFile = join(QA_RUNS_DIR, groupId, 'group.json')
+    const group = readJson(groupFile)
+    if (!group) return { error: '묶음을 찾지 못했어요' }
+    if (isNode(group.pid)) { process.kill(group.pid, 'SIGTERM'); stopped.push(group.pid) }
+    for (const stage of group.stages ?? []) if (['queued', 'running', 'waiting-login'].includes(stage.status)) { stage.status = 'skipped'; stage.reason = '라이브 화면에서 중단' }
+    group.finishedAt = new Date().toISOString()
+    writeFileSync(groupFile, `${JSON.stringify(group, null, 2)}\n`)
+    for (const run of listQaRuns().filter((entry) => entry.group === groupId && entry.status === 'running')) {
+      if (isNode(run.pid)) { process.kill(run.pid, 'SIGTERM'); stopped.push(run.pid) }
+    }
+    // 로컬 흐름은 첫 단계가 남긴 dev 서버(3291)를 묶음 프로세스가 끝에 끈다 — 묶음을 껐으니 여기서 끈다
+    if (group.target !== 'server') {
+      try {
+        const pid = execFileSync('lsof', ['-nP', '-t', '-iTCP:3291', '-sTCP:LISTEN'], { encoding: 'utf8' }).trim().split('\n')[0]
+        const processGroup = Number(execFileSync('ps', ['-o', 'pgid=', '-p', pid], { encoding: 'utf8' }).trim())
+        if (processGroup > 1) process.kill(-processGroup, 'SIGTERM')
+      } catch { /* 이미 꺼졌다 */ }
+    }
+  } else {
+    if (!QA_ID.test(id)) return { error: '런 id 가 올바르지 않아요' }
+    const run = readJson(join(QA_RUNS_DIR, id, 'run.json'))
+    if (!run) return { error: '런을 찾지 못했어요' }
+    if (!['preparing', 'running'].includes(run.status)) return { error: '이미 끝난 런이에요' }
+    if (isNode(run.pid)) { process.kill(run.pid, 'SIGTERM'); stopped.push(run.pid) }
+  }
+  if (!stopped.length) return { error: '끌 프로세스를 찾지 못했어요 — 이 기능 전에 시작한 런이면 터미널에서 끊어 주세요' }
+  return { ok: true, stopped: stopped.length }
+}
 // QA TC 목록 — docs/qa/tc/<앱>.md 의 "B) TC" 표를 행 단위로. 문서가 정본이고 여기서는 읽기만 한다
 const QA_TC_APPS = ['refund-web', 'care-web', 'brand-web', 'sena-web', 'plus-web']
 const tableCells = (line) => line.trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map((cell) => cell.replace(/\\\|/g, '|').trim())
@@ -1291,7 +1330,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve', '/api/qa-logout', '/api/qa-login'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve', '/api/qa-logout', '/api/qa-login', '/api/qa-stop'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -1313,6 +1352,10 @@ createServer(async (request, response) => {
     if (url.pathname === '/api/qa-suite') {
       const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''))
       return reply(result.error ? 400 : 202, result)
+    }
+    if (url.pathname === '/api/qa-stop') {
+      const result = stopQaRun(String(body.id ?? ''), body.group ? String(body.group) : '')
+      return reply(result.error ? 400 : 200, result)
     }
     if (url.pathname === '/api/qa-login') {
       const result = await loginQaSession(String(body.app ?? ''), body.target === 'server' ? 'server' : 'local', String(body.server ?? ''), String(body.profile ?? ''))
