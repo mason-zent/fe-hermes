@@ -995,16 +995,19 @@ function judge(target, viewportResults) {
     const moved = !samePath(target.url, head.finalPath)
     if (expected && expected !== 'stay') {
       // 가드가 보내야 할 곳으로 갔는지가 검사 대상이다 — 기대와 다르면 실패
+      // 뷰포트마다 다 본다 — 첫 뷰포트에서 끝내면 나머지 뷰포트가 검사 없이 ✔ 로 남는다
       if (!reachedExpected(expected, head.finalPath)) {
         result.newProblems.push({ kind: 'expect', text: `기대 이동 ${expected} — 실제 ${head.finalPath}` })
-        return 'fail'
+        status = 'fail'
       }
       continue
     }
     if (expected === 'stay' && moved) {
       result.newProblems.push({ kind: 'expect', text: `이 화면에 머물러야 한다 — 실제 ${head.finalPath}` })
-      return 'fail'
+      status = 'fail'
+      continue
     }
+    if (status === 'fail') continue
     // 비로그인(authScreens 가 로그인 경로) 검수에서 로그인 화면으로 갔으면 가드가 제대로 막은 것 — 화면 파일에 AuthGuard 가 없어도(레이아웃·상위에서 막는 화면)
     if (isSignPath(head.finalPath) && !isSignPath(target.url)) return profile.authScreens && isSignPath(profile.authScreens.replace(/^=/, '')) ? 'expected' : 'login'
     if (isCiPath(head.finalPath) && !isCiPath(target.url)) return 'ci'
@@ -1031,9 +1034,9 @@ async function guardSession(contextList, headUrl) {
   relogin ??= requestLogin(contextList, headUrl).finally(() => { relogin = null })
   return relogin
 }
-async function requestLogin(contextList, headUrl) {
+async function requestLogin(contextList, headUrl, customMessage = '') {
   const started = run.screens.some((screen) => !['queued', 'running'].includes(screen.status))
-  run.gate = { profile: profileName, status: 'waiting', since: new Date().toISOString(), message: `${started ? '로그인이 풀렸어요' : `${profileName} 상태로 검수하려면 로그인해 주세요`} — 열린 창에서 ${started ? '다시 ' : ''}로그인${profileName === 'verified' ? '(+ 휴대폰 본인인증)' : ''}해 주시면 ${started ? '멈춘 화면부터 ' : ''}이어서 검사해요(10분)${profile.note ? ` · ${profile.note}` : ''}` }
+  run.gate = { profile: profileName, status: 'waiting', since: new Date().toISOString(), message: customMessage || `${started ? '로그인이 풀렸어요' : `${profileName} 상태로 검수하려면 로그인해 주세요`} — 열린 창에서 ${started ? '다시 ' : ''}로그인${profileName === 'verified' ? '(+ 휴대폰 본인인증)' : ''}해 주시면 ${started ? '멈춘 화면부터 ' : ''}이어서 검사해요(10분)${profile.note ? ` · ${profile.note}` : ''}` }
   saveRun()
   say(`🔑 ${run.gate.message}`)
   const code = await new Promise((resolve) => {
@@ -1250,6 +1253,48 @@ async function main() {
       if (suite && screen.noBaseline && screen.status === 'pass') screen.status = 'new'
       screen.problems = viewportResults.flatMap((result) => result.newProblems.map((problem) => ({ ...problem, viewport: result.viewport })))
       say(`${statusIcon(screen.status)} ${screen.key}${screen.problems.length ? ` — ${screen.problems[0].text}` : ''}`)
+    }
+  }
+  // 시작 전 세션 확인 — 로그인이 필요한 화면 하나를 열어 이 세션이 프로필대로 움직이는지 본다.
+  // 예: login(본인인증 전) 인데 본인인증 화면으로 안 가면 본인인증까지 한 계정이다 → 다른 계정으로 로그인해 달라고 하고, 그래도 안 맞으면 멈춘다
+  if (profile.session && profile.authScreens) {
+    const probe = queue.find((screen) => screen.auth && !screen.entry && !routesConfig.routes?.[screen.route]?.skip)
+    const probeContext = contexts[routesConfig.viewports[0].name].head
+    const landOn = async () => {
+      const page = await probeContext.newPage()
+      try {
+        await page.goto(new URL(probe.url, headUrl).href, { waitUntil: 'domcontentloaded', timeout: 30000 })
+        let path = new URL(page.url()).pathname
+        // 가드는 화면을 그린 뒤 이동한다 — 몇 초 동안 바뀌는지 본다
+        for (let tick = 0; tick < 16; tick += 1) {
+          await page.waitForTimeout(500)
+          path = new URL(page.url()).pathname
+          if (!samePath(probe.url, path)) break
+        }
+        return path
+      } finally {
+        await page.close().catch(() => {})
+      }
+    }
+    const fits = (path) => profile.authScreens === 'stay'
+      ? samePath(probe.url, path) || (!isCiPath(path) && !isSignPath(path))
+      : reachedExpected(profile.authScreens, path)
+    if (probe && (await guardSession(sessionContexts, headUrl))) {
+      setPhase('세션 확인 중')
+      let path = await landOn().catch(() => null)
+      if (path && !fits(path)) {
+        const want = profile.authScreens === 'stay' ? '로그인 화면에 그대로 머물러야' : `${profile.authScreens} 로 가야`
+        const what = isCiPath(path) ? '본인인증을 안 한 계정' : samePath(probe.url, path) ? '본인인증까지 한 계정' : '다른 상태의 계정'
+        const message = `저장된 ${profileName} 세션이 맞지 않아요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요(${what}으로 보여요). 열린 창에서 ${profile.note || profileName} 계정으로 다시 로그인해 주세요(10분)`
+        say(`⚠️  ${message}`)
+        const relogged = liveView ? await requestLogin(sessionContexts, headUrl, message) : false
+        path = relogged ? await landOn().catch(() => null) : path
+        if (!relogged || (path && !fits(path))) {
+          throw new Error(`세션 ${profileName} 이 프로필과 맞지 않아 멈췄어요 — ${probe.url} 이 ${want} 하는데 ${path} 에 있어요. ${profile.note || profileName} 계정으로 로그인한 뒤 다시 돌려 주세요`)
+        }
+        say('✅ 세션 확인 — 이제 프로필대로 움직인다')
+      }
+      setPhase('화면 검사 중')
     }
   }
   await Promise.all(Array.from({ length: headed || liveView ? 1 : routesConfig.concurrency ?? 3 }, worker))
