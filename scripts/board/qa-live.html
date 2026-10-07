@@ -93,6 +93,8 @@
   .steps li.now { color: var(--accent); font-weight: 600; }
   .stage { min-height: 0; overflow: auto; padding: 12px 16px; display: grid; gap: 12px; align-content: start; }
   .frames { display: flex; gap: 12px; align-items: flex-start; }
+  .sessions { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 0; }
+  .sessions .ok { color: var(--ok, #16a34a); } .sessions .bad { color: var(--bad, #dc2626); } .sessions .warn { color: var(--warn, #d97706); }
   /* 묶음(--profiles) — 세션 상태별 탭과 상태마다 한 줄씩의 화면 */
   /* 흐름(--flow) — 로그인 요청 띠 · 실패 리포트 모달 */
   .gate { padding: 10px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 600; border: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
@@ -191,6 +193,7 @@
     <span class="sub" id="links"></span>
     <button type="button" class="report-btn" id="open-report" hidden>📋 실패 리포트</button>
   </div>
+  <div class="sessions" id="sessions" hidden></div>
   <div class="bar"><span id="bar"></span></div>
   <div class="chips" id="chips"></div>
   <div class="group-tabs" id="group-tabs" hidden></div>
@@ -225,6 +228,27 @@
 <script>
   const params = new URLSearchParams(location.search);
   let runId = params.get('id') || '';
+  // 이 런이 쓰는 앱·대상의 로그인 세션 상태 — 30초마다 다시 본다(쿠키 값은 안 읽고 만료 시각만, /api/qa/sessions)
+  let sessionsAt = 0;
+  const showSessions = async (run) => {
+    if (!run?.app || Date.now() - sessionsAt < 30000) return;
+    sessionsAt = Date.now();
+    const box = document.getElementById('sessions');
+    const target = run.target === 'server' || run.target === 'dev' ? 'server' : 'local';
+    let result;
+    try { result = await (await fetch(`/api/qa/sessions?app=${encodeURIComponent(run.app)}&target=${target}&server=${encodeURIComponent(run.serverUrl || '')}`, { cache: 'no-store' })).json(); } catch (error) { return; }
+    if (result.error || !result.profiles) { box.hidden = true; return; }
+    const when = (ms) => new Date(ms).toLocaleString('ko-KR', { hour12: false, month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const item = (profile) => {
+      const name = profile.name === run.profile ? `<b>${esc(profile.name)}</b>(지금)` : esc(profile.name);
+      if (profile.state === 'none') return `<span>${name}: 로그인 필요 없음</span>`;
+      if (profile.state === 'missing') return `<span class="warn">${name}: 세션 없음 — 차례가 오면 로그인 창</span>`;
+      if (profile.state === 'expired') return `<span class="bad">${name}: ⛔ 만료(${esc(when(profile.expiresAt))}) — 차례가 오면 로그인 창</span>`;
+      return `<span class="ok">${name}: ✅ 로그인됨${profile.expiresAt ? ` · ${esc(when(profile.expiresAt))}까지` : ''}</span>`;
+    };
+    box.innerHTML = `<span>🔐 로그인 세션</span>${result.profiles.map(item).join('')}`;
+    box.hidden = false;
+  };
   // ?group=<묶음 id> — --profiles 로 함께 돈 런들(세션 상태별). 탭으로 고른 런이 체크리스트·호출·팝업의 대상
   const groupId = params.get('group') || '';
   const PROFILE_ORDER = ['logout', 'login', 'verified'];
@@ -584,6 +608,7 @@
       document.title = `QA 라이브 · ${run.app}`;
       document.getElementById('title').textContent = `${state.done ? '' : '⏳ '}QA 라이브 · ${run.kind === 'suite' ? '전체 검수 · ' : ''}${run.app}`;
       document.getElementById('meta').textContent = `${run.id} · ${run.target === 'server' || run.target === 'dev' ? `☁️ 서버 ${run.serverUrl || ''}` : '🖥 로컬 서버'} · 세션 ${run.profile || '-'} · ${run.branch}@${run.head} · ${run.status === 'error' ? `오류 — ${run.error}` : run.phase || ''}`;
+      showSessions(run);
       document.getElementById('links').innerHTML = `<a href="/#qa">현황판 QA 탭</a>${run.status === 'done' ? ` · <a href="/qa-runs/${encodeURIComponent(run.id)}/report.html" target="_blank" rel="noopener">리포트 ↗</a>` : ''}`;
       const screens = run.screens || [];
       const finished = screens.filter((screen) => !['queued', 'running'].includes(screen.status)).length;
