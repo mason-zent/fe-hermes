@@ -279,7 +279,7 @@
     new: ['🆕', '기준 없음', 'warn'], human: ['🙋', '사람 필요', 'warn'], skip: ['⛔', '건너뜀', ''], running: ['⏳', '검사 중', 'run'], queued: ['·', '대기', '']
   };
   const FILTERS = [['all', '전체'], ['gql', 'GraphQL'], ['http', 'REST'], ['event', 'Mixpanel'], ['mock', '흉내·막음'], ['bad', '오류']];
-  const state = { lines: [], since: 0, filter: 'all', pagePath: '', callTag: {}, paused: false, open: new Set(), done: false, frameAt: {} };
+  const state = { lines: [], since: 0, filter: 'all', pagePath: '', callTag: {}, paused: false, open: new Set(), done: false, frameAt: {}, scenarioStatus: {} };
   const time = (at) => new Date(at).toTimeString().slice(0, 8);
   // pagePath — 체크리스트 [이 화면 호출 보기] 로 고른 화면. 그 화면에서 나간 호출만
   const pathOnly = (value) => String(value || '').split('?')[0];
@@ -648,6 +648,14 @@
       document.getElementById('meta').innerHTML = `${esc(run.id)} · ${run.target === 'server' || run.target === 'dev' ? '☁️ 서버' : '🖥 로컬 서버'}${testedUrl ? ` <a class="tested-url" href="${esc(testedUrl)}" target="_blank" rel="noopener">🌐 ${esc(testedUrl.replace(/^https?:\/\//, ''))}</a>` : ''} · 세션 ${esc(run.profile || '-')} · ${esc(run.branch)}@${esc(run.head)} · ${esc(run.status === 'error' ? `오류 — ${run.error}` : run.phase || '')}`;
       showSessions(run);
       syncStopButton();
+      // 사람 단계 씬(실제 본인인증·간편인증)이 끝나면 창은 닫히고 — 결과(단계·스크린샷)를 여기서 바로 연다
+      for (const scenario of run.scenarios || []) {
+        const key = `scenario:${scenario.key || scenario.file}`;
+        const human = (scenario.plan || scenario.steps || []).some((step) => String(step.label ?? step).startsWith('🙋'));
+        const before = state.scenarioStatus[key];
+        state.scenarioStatus[key] = scenario.status;
+        if (human && before && ['queued', 'running'].includes(before) && !['queued', 'running'].includes(scenario.status)) openDetail(key);
+      }
       document.getElementById('links').innerHTML = `<a href="/#qa">현황판 QA 탭</a>${run.status === 'done' ? ` · <a href="/qa-runs/${encodeURIComponent(run.id)}/report.html" target="_blank" rel="noopener">리포트 ↗</a>` : ''}`;
       const screens = run.screens || [];
       const finished = screens.filter((screen) => !['queued', 'running'].includes(screen.status)).length;

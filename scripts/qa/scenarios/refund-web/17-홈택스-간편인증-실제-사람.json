@@ -7,7 +7,7 @@
   "viewports": [
     "desktop"
   ],
-  "why": "실제 홈택스 간편인증과 환급 수집(조회)이 끝까지 되는지 사람이 직접 확인한다. 간편인증 요청·확인·환급 토큰과 수집(searchRefundV2Mutation)만 서버로 보내고(allowMutations), 그 밖의 mutation(알림톡 예약 등)은 막는다. 결과 화면이 뜨면 안내를 띄우고 사람이 창을 닫으면 끝. 실제 개인정보(실명·생년월일·휴대폰)와 실제 홈택스 조회를 쓰므로 요청할 때만 --headed 로 돌린다",
+  "why": "실제 홈택스 간편인증과 환급 수집(조회)이 끝까지 되는지 사람이 직접 확인한다. 간편인증 요청·확인·환급 토큰과 수집(searchRefundV2Mutation)만 서버로 보내고(allowMutations), 그 밖의 mutation(알림톡 예약 등)은 막는다. 결과 화면이 뜨면 스크린샷을 찍고 창을 닫는다 — 결과는 QA 라이브 화면에서 본다. 실제 개인정보(실명·생년월일·휴대폰)와 실제 홈택스 조회를 쓰므로 요청할 때만 --headed 로 돌린다",
   "allowMutations": [
     "simpleAuthRequestTokenMutation",
     "simpleAuthPollingRequestTokenMutation",
@@ -45,10 +45,6 @@
     },
     {
       "screenshot": "result"
-    },
-    {
-      "human": "수집 결과가 나왔어요 — 다 보셨으면 이 창을 닫아 주세요(닫으면 통과로 끝나요)",
-      "untilClose": true
     }
   ]
 }
