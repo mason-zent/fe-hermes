@@ -1383,7 +1383,12 @@ async function runScenarioOn(browser, origin, scenario, entry) {
     say(`🔒 ${where} ${entry.name}`)
     return
   }
-  const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, storageState: sessionFile ?? undefined, isMobile: viewport.width < 600, locale: 'ko-KR' })
+  // 사람 단계(실제 본인인증·간편인증)가 있는 씬 — 라이브 화면으로 보고 있으면(현황판에서 시작) 창 없이 도는 중이어도 이 씬만 보이는 창으로 열어 사람을 기다린다
+  const hasHuman = (scenario.steps ?? []).some((step) => step && typeof step === 'object' && 'human' in step)
+  const humanWindow = hasHuman && !headed && liveView
+  const humanBrowser = humanWindow ? await chromium.launch({ headless: false }) : null
+  if (humanWindow) say(`🙋 ${where} ${entry.name} — 사람 단계가 있어 보이는 창으로 열어요(창에서 직접 진행)`)
+  const context = await (humanBrowser ?? browser).newContext({ viewport: { width: viewport.width, height: viewport.height }, storageState: sessionFile ?? undefined, isMobile: viewport.width < 600, locale: 'ko-KR' })
   // 보이는 창이면 화면 검사 때 그 뷰포트 창 자리에
   context.__qaPlace = { left: windowLefts[viewport.name] ?? 0, top: 0, width: viewport.width, height: viewport.height }
   await captureTracking(context, { headed, onEvent: (name, props, page) => live.write({ where, kind: 'event', name, values: props, page: page ? new URL(page.url()).pathname : '' }) })
@@ -1392,7 +1397,7 @@ async function runScenarioOn(browser, origin, scenario, entry) {
   live.write({ where, kind: 'mark', name: `▶ 씬 시작 — ${scenario.name}` })
   const slug = `scenario-${scenario.file.replace(/\.json$/, '').replace(/[^\w가-힣-]+/g, '_')}.${viewport.name}`
   const result = await runScenario(context, scenario, {
-    origin, slug, runDir, headed, showBanner, hideBanner,
+    origin, slug, runDir, headed: headed || humanWindow, showBanner, hideBanner,
     onPage: liveView ? (page) => startScreencast(page, runDir, viewport.name) : null,
     onStep: (steps) => {
       entry.steps = steps.map((step) => ({ ...step }))
@@ -1400,6 +1405,7 @@ async function runScenarioOn(browser, origin, scenario, entry) {
     }
   })
   await context.close()
+  await humanBrowser?.close()
   Object.assign(entry, result)
   const stopped = result.steps.find((step) => !step.ok)
   say(`${statusIcon(result.status)} ${where} ${entry.name}${stopped ? ` — ${stopped.label}: ${stopped.detail}` : ''}`)
