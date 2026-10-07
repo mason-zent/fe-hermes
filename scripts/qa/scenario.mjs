@@ -29,7 +29,8 @@
  *                                                            GraphQL 연산 이름으로 고른다(본문 query 의 `mutation RefundApplyMutation`). method 는 POST 로 본다.
  *                                                            브라우저가 보내는 요청만 잡힌다 — getServerSideProps 등 서버에서 보내는 요청은 못 잡는다
  *   { "human": "휴대폰 본인인증을 마쳐 주세요", "untilUrl": "/auth/ci-authentication" }
- *   { "human": "결과를 다 보셨으면 창을 닫아 주세요", "untilClose": true }   ← 마지막 단계로 — 사람이 창을 닫으면 통과로 끝
+ *   { "human": "결과를 다 보셨으면 창을 닫아 주세요", "untilClose": true }
+ *   { "click": { "role": "button", "name": "다음" }, "when": { "filled": ["홍길동", "YYYY.MM.DD"] } }   ← 그 칸이 다 채워져 있을 때만(아니면 건너뜀)   ← 마지막 단계로 — 사람이 창을 닫으면 통과로 끝
  *                                                            ③ 사람이 끼는 단계 — 보이는 창(--headed)이면 띠를 띄우고 그 경로가 될 때까지(10분) 기다린다.
  *                                                            창 없이 돌면 여기서 멈추고 '사람 필요' 로 끝낸다
  *   { "expectEvent": "more_body_my-info_clicked", "props": { "page": "more" } }
@@ -150,6 +151,16 @@ export async function runScenario(context, scenario, options) {
     // 진행 알림 — 지금 몇 번째 단계인지(현황판·라이브 화면이 따라 그린다)
     options.onStep?.(steps)
     const timeout = step.timeout ?? STEP_TIMEOUT
+    // 조건 — "when": { "filled": ["홍길동", …] } 은 그 placeholder 칸이 모두 채워져 있을 때만 이 단계를 한다(미리 채워진 입력이면 대신 누르기)
+    if (step.when?.filled) {
+      await page.waitForTimeout(step.when.waitMs ?? 1500)
+      const values = await Promise.all(step.when.filled.map((placeholder) => page.getByPlaceholder(placeholder).first().inputValue({ timeout: 3000 }).catch(() => '')))
+      if (values.some((value) => !String(value).trim())) {
+        record.detail = '입력 칸이 비어 있어 건너뜀 — 사람이 직접 입력'
+        options.onStep?.(steps)
+        continue
+      }
+    }
     try {
       if (kind === 'goto') {
         await page.goto(`${options.origin}${step.goto}`, { waitUntil: 'load', timeout: 45000 })
