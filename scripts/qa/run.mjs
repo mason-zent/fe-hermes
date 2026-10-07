@@ -19,6 +19,7 @@
  *   --slow <ms>         --headed 의 속도(기본 700 — 클수록 느리다, 0 이면 멈춤 없이)
  *   --watch             창은 띄우되 빠르게(= --headed --slow 0) — 전체 검수를 지켜볼 때
  *   --target server --server <주소>  배포된 서버(dev·stg·dev-1~3·PR 미리보기)로 — 운영 주소는 거부. --server 만 줘도 된다
+ *   --mode auto|real    흐름 씬·여정의 "only" 단계를 고른다(기본 auto — 응답 흉내, real — 사람이 실제 본인인증·간편인증·수집)
  *   --scenarios-only    화면 검사 없이 흐름 씬만(--suite 와 함께) — 예: --suite --app refund-web --profile login --scenarios 05- --scenarios-only --live --headed
  *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 창) → 실패 리포트 모달. --live 와 함께
  *   --profiles a,b      세션 상태 여럿을 동시에(dev 서버 하나 공유)
@@ -1321,6 +1322,29 @@ async function main() {
 
 // ── 흐름 씬 (D10·D11) — 씬마다 자기 세션 프로필·뷰포트로 ───────────
 // 이번 런에서 돌릴 흐름 씬 파일들(--scenarios 로 거른다)
+// 여정 펼치기 — "include": "13-" 은 그 씬(이 앱 scenarios/·_draft/ 의 파일 이름 앞부분)의 단계를 그 자리에, "only" 는 --mode 가 맞을 때만.
+// 불러온 씬의 allowMutations 도 합친다. 여정 파일의 "tc" 가 없으면 불러온 씬들의 tc 를 모은다
+const QA_MODE = option('mode') === 'real' ? 'real' : 'auto'
+function expandScenario(dir, scenario, depth = 0) {
+  const steps = []
+  const allow = new Set(scenario.allowMutations ?? [])
+  const tcs = new Set(scenario.tc ?? [])
+  for (const step of scenario.steps ?? []) {
+    if (step.only && step.only !== QA_MODE) continue
+    if (!('include' in step)) { steps.push(step); continue }
+    if (depth > 3) throw new Error(`include 가 너무 깊다 — ${scenario.file}`)
+    const prefix = String(step.include)
+    const inDraft = prefix.startsWith('_draft/')
+    const base = inDraft ? join(dir, '_draft') : dir
+    const name = existsSync(base) ? readdirSync(base).filter((file) => file.endsWith('.json')).sort().find((file) => file.startsWith(inDraft ? prefix.slice(7) : prefix)) : null
+    if (!name) throw new Error(`include ${prefix} — 씬 파일을 못 찾았다 (${scenario.file})`)
+    const part = expandScenario(base, { file: name, ...JSON.parse(readFileSync(join(base, name), 'utf8')) }, depth + 1)
+    for (const inner of part.steps) steps.push(step.label && inner === part.steps[0] ? { ...inner } : inner)
+    for (const operation of part.allowMutations ?? []) allow.add(operation)
+    if (!scenario.tc) for (const id of part.tc ?? []) tcs.add(id)
+  }
+  return { ...scenario, steps, allowMutations: [...allow], tc: [...tcs], mode: QA_MODE }
+}
 function loadScenarios() {
   const dir = join(QA_DIR, 'scenarios', appName)
   const files = existsSync(dir) ? readdirSync(dir).filter((name) => name.endsWith('.json')).sort() : []
@@ -1328,7 +1352,7 @@ function loadScenarios() {
   // 흐름(--flow) 단계에서는 그 단계 세션의 씬만 — 씬은 자기 세션이 정해져 있어 단계마다 다 돌리면 같은 씬이 두 번 돈다
   const stageOnly = flag('stage-scenarios')
   return files
-    .map((name) => ({ file: name, ...JSON.parse(readFileSync(join(dir, name), 'utf8')) }))
+    .map((name) => expandScenario(dir, { file: name, ...JSON.parse(readFileSync(join(dir, name), 'utf8')) }))
     .filter((scenario) => !only || only.some((key) => scenario.file.includes(key)))
     .filter((scenario) => !stageOnly || (scenario.profile ?? 'logout') === profileName)
     // 고른 TC(--tc-picks — 영향 QA 의 변경분 TC · 현황판 [선택한 TC만 검수])가 있으면 그 TC 에 걸린 씬만
@@ -1400,6 +1424,13 @@ async function runScenarioOn(browser, origin, scenario, entry) {
   const slug = `scenario-${scenario.file.replace(/\.json$/, '').replace(/[^\w가-힣-]+/g, '_')}.${viewport.name}`
   const result = await runScenario(context, scenario, {
     origin, slug, runDir, headed: headed || humanWindow, showBanner, hideBanner,
+    // 여정 중간 { "session": "verified" } — 그 프로필의 저장된 세션 쿠키(만료면 null). 값은 기록하지 않는다
+    sessionCookies: (name) => {
+      const session = profiles[name]?.session
+      const file = session ? sessionFileOf(HERMES, appName, session, target, serverUrl) : null
+      if (!file || !existsSync(file) || expiredSessionAt(file)) return null
+      return JSON.parse(readFileSync(file, 'utf8')).cookies ?? []
+    },
     onPage: liveView ? (page) => startScreencast(page, runDir, viewport.name) : null,
     onStep: (steps) => {
       entry.steps = steps.map((step) => ({ ...step }))

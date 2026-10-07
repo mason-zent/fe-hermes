@@ -1,0 +1,208 @@
+{
+  "name": "여정 1 — 개인 고객: 처음 와서 둘러보고 로그인 → 환급조회 → 간편인증 → 수집 결과",
+  "profile": "logout",
+  "why": "한 사람이 서비스를 처음 만나 환급 수집 결과를 보기까지 끊기지 않고 이어지는지 본다. 자동(--mode auto, 기본)은 본인인증·간편인증·수집을 응답 흉내로, 실제(--mode real)는 간편인증·수집 구간을 사람이 직접 한다(실제 개인정보·실제 홈택스 수집). 로그인은 저장된 verified 세션으로 이어 간다(비밀번호는 씬에 적지 않음). 7~11구간(신청·설문·다시 방문·계정·로그아웃)은 다음 단계에서 붙인다",
+  "steps": [
+    {
+      "section": "1. 둘러보기 (비로그인)"
+    },
+    {
+      "goto": "/home/landing"
+    },
+    {
+      "screenshot": "1-landing"
+    },
+    {
+      "goto": "/home/reviews"
+    },
+    {
+      "screenshot": "1-reviews"
+    },
+    {
+      "goto": "/help/guide/tax-refund-check"
+    },
+    {
+      "screenshot": "1-guide"
+    },
+    {
+      "goto": "/menu"
+    },
+    {
+      "expectUrl": "/auth/sign-",
+      "label": "로그인이 필요한 메뉴 → 로그인 화면으로(가드)"
+    },
+    {
+      "section": "2. 로그인"
+    },
+    {
+      "include": "_draft/13-"
+    },
+    {
+      "session": "verified",
+      "label": "올바른 계정으로 로그인한 것으로 이어 감(저장된 verified 세션 — 비밀번호는 씬에 적지 않음)"
+    },
+    {
+      "goto": "/menu"
+    },
+    {
+      "expectUrl": "/menu",
+      "label": "로그인 뒤 메뉴에 머묾"
+    },
+    {
+      "screenshot": "2-menu"
+    },
+    {
+      "section": "3. 본인인증"
+    },
+    {
+      "expectUrl": "/menu",
+      "label": "본인인증까지 된 계정 — 본인인증 화면으로 끌려가지 않음(이 구간은 새 계정일 때만 — 다음 단계)"
+    },
+    {
+      "section": "4. 홈 → 환급조회"
+    },
+    {
+      "mock": {
+        "operation": "checkSearchStatusQuery",
+        "json": {
+          "data": {
+            "checkSearchStatus": {
+              "result": false,
+              "progress": null,
+              "errors": null,
+              "refundInfo": null,
+              "tritxRefundInfo": null
+            }
+          }
+        }
+      },
+      "label": "조회 상태 응답 흉내 — 진행 중 조회 없음"
+    },
+    {
+      "goto": "/home"
+    },
+    {
+      "expectUrl": "/home",
+      "label": "홈에 머묾"
+    },
+    {
+      "screenshot": "4-home"
+    },
+    {
+      "click": "환급조회",
+      "when": {
+        "text": "어떤 숨은 환급금을"
+      },
+      "label": "처음 온 계정(조회 이력 없음) — 개인 [환급조회]"
+    },
+    {
+      "expectEvent": "home_body_lookup-first_clicked",
+      "props": {
+        "business": "indis"
+      },
+      "when": {
+        "url": "/hometax-auth"
+      }
+    },
+    {
+      "goto": "/hometax-auth/simple-auth/input?from=home",
+      "when": {
+        "url": "/home"
+      },
+      "label": "이미 조회 이력이 있는 계정 — 간편인증 입력 화면으로 바로(다시 조회)"
+    },
+    {
+      "expectUrl": "/hometax-auth/simple-auth/input",
+      "label": "간편인증 입력 화면"
+    },
+    {
+      "section": "5. 간편인증"
+    },
+    {
+      "mock": {
+        "operation": "searchRefundV2Mutation",
+        "json": {
+          "data": {
+            "searchRefundV2": {
+              "result": true,
+              "errors": null
+            }
+          }
+        }
+      },
+      "only": "auto",
+      "label": "(6구간 준비) 수집 요청 응답 흉내 — 성공"
+    },
+    {
+      "mock": {
+        "operation": "checkSearchStatusQuery",
+        "json": {
+          "data": {
+            "checkSearchStatus": {
+              "result": true,
+              "progress": "100",
+              "errors": null,
+              "refundInfo": {
+                "refundId": "qa-journey-refund",
+                "refundStatus": "ApplyPossible",
+                "refundStage": "Unknown",
+                "refundAmount": 1234560,
+                "snmcSpcTxreAmt": 0,
+                "cenSnmcTxreAmt": 0,
+                "empIncrEtrpTxamtDdcAmt": 0,
+                "intgEmpTxamtDdcAmt": 0,
+                "sctyInfeeTxamtDdcAmt": 0,
+                "crfwDficRssmAmt": 0,
+                "reSearchRequestId": null,
+                "businessInfo": {
+                  "hometaxBizName": "QA 상호",
+                  "hometaxBizNo": "0000000000",
+                  "taxpayerName": "홍길동"
+                }
+              },
+              "tritxRefundInfo": null
+            }
+          }
+        }
+      },
+      "only": "auto",
+      "label": "(6구간 준비) 수집 상태 응답 흉내 — 100% · 환급 가능 1,234,560원"
+    },
+    {
+      "include": "16-",
+      "only": "auto"
+    },
+    {
+      "include": "15-",
+      "only": "auto"
+    },
+    {
+      "include": "14-",
+      "only": "auto"
+    },
+    {
+      "include": "17-",
+      "only": "real"
+    },
+    {
+      "section": "6. 수집 결과"
+    },
+    {
+      "expectUrl": "/tax/refund/lookup/result",
+      "label": "수집 결과 화면",
+      "timeout": 60000
+    },
+    {
+      "expectText": "1,234,560",
+      "label": "수집 결과 — 흉내 낸 환급 가능액 1,234,560원이 보임(연출 '마지막 확인 중' 뒤)",
+      "timeout": 30000,
+      "only": "auto"
+    },
+    {
+      "wait": 1500
+    },
+    {
+      "screenshot": "6-result"
+    }
+  ]
+}

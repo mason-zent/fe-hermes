@@ -37,6 +37,11 @@
  *                                                            트래킹(Mixpanel) 이벤트가 나갔는지(씬 시작부터 · 5초) — props 는 값이 같아야 한다
  *   { "press": "Enter", "on": { "placeholder": "…" } }       키를 누른다(on 이 있으면 그 요소에서, 없으면 지금 초점) — "Shift+Enter" 처럼 조합도
  *   { "offline": true }                                      네트워크 끊기(false 면 다시 연결)
+ *   { "section": "2. 로그인" }                                여정의 구간 표시(동작 없음) — 뒤 단계에 구간 이름이 붙는다
+ *   { "session": "verified" }                                 여정 중간에 그 세션(저장된 로그인)으로 이어 가기 — 쿠키를 넣고 다음 goto 부터
+ *   { "include": "13-" }                                       다른 씬(파일 이름 앞부분, _draft/ 도 가능)의 단계를 그 자리에 — run.mjs 가 읽을 때 펼친다
+ *   "only": "auto" | "real"   (어느 단계·include 에나)          --mode 가 그것일 때만(기본 auto — 응답 흉내, real — 사람이 실제 인증)
+ *   "when": { "url": "/auth/ci-request" }                      지금 경로가 이것으로 시작할 때만 · { "text": "…" } 그 글자가 보일 때만 · { "noText": "…" } 안 보일 때만
  *   { "wait": 1000 }                                         기다림(ms)
  *   { "screenshot": "after" }                                스크린샷 한 장(shots/<씬>.<이름>.png)
  *
@@ -54,12 +59,14 @@ import { requestTags } from './live.mjs'
 const STEP_TIMEOUT = 15000
 const HUMAN_TIMEOUT = 10 * 60 * 1000
 
-const stepKind = (step) => ['goto', 'expectUrl', 'expectText', 'expectEvent', 'click', 'fill', 'press', 'offline', 'mock', 'human', 'wait', 'screenshot'].find((kind) => kind in step)
+const stepKind = (step) => ['section', 'session', 'goto', 'expectUrl', 'expectText', 'expectEvent', 'click', 'fill', 'press', 'offline', 'mock', 'human', 'wait', 'screenshot'].find((kind) => kind in step)
 
 export const describe = (step) => {
-  if (step.label) return step.label
   const kind = stepKind(step)
   const value = step[kind]
+  if (kind === 'section') return `▶ 구간 ${value}`
+  if (step.label) return step.label
+  if (kind === 'session') return `🔑 세션 ${value} 로 이어 가기(저장된 로그인)`
   if (kind === 'click') return `누름 "${typeof value === 'string' ? value : value.text ?? value.name}"${value.all ? ' (전부)' : ''}`
   if (kind === 'fill') return `입력 ${value.label ?? value.placeholder}`
   if (kind === 'press') return `키 ${value}`
@@ -143,6 +150,7 @@ export async function runScenario(context, scenario, options) {
   // 뒤에 등록한 mock 이 먼저 잡고, 못 잡은 것만 여기로 온다. 씬에 "allowMutations": ["이름"] 이면 그것만 통과
   await guardMutations(page, (operation) => problems.push({ kind: 'blocked', text: `막은 mutation ${operation} — 흉내(mock operation)가 없어 서버에 보내지 않았다` }), scenario.allowMutations)
   let status = 'pass'
+  let currentSection = ''
 
   for (const step of scenario.steps ?? []) {
     const kind = stepKind(step)
@@ -151,6 +159,29 @@ export async function runScenario(context, scenario, options) {
     // 진행 알림 — 지금 몇 번째 단계인지(현황판·라이브 화면이 따라 그린다)
     options.onStep?.(steps)
     const timeout = step.timeout ?? STEP_TIMEOUT
+    // 조건 — "when": { "url": "/auth/ci-request" } 은 지금 화면 경로가 이것으로 시작할 때만(여정에서 본인인증 화면에 왔을 때만 본인인증 구간 등)
+    if (step.when?.url && !pathOf(page).startsWith(step.when.url)) {
+      record.detail = `지금 ${pathOf(page)} — 조건(${step.when.url}) 아님, 건너뜀`
+      options.onStep?.(steps)
+      continue
+    }
+    // 조건 — "when": { "text": "…" } 은 그 글자가 보일 때만, { "noText": "…" } 은 안 보일 때만(계정 상태에 따라 갈라지는 화면)
+    if (step.when?.text || step.when?.noText) {
+      const wanted = step.when.text ?? step.when.noText
+      const visible = await page.getByText(wanted, { exact: false }).first().waitFor({ state: 'visible', timeout: step.when.waitMs ?? 4000 }).then(() => true).catch(() => false)
+      if (visible !== Boolean(step.when.text)) {
+        record.detail = `"${wanted}" ${visible ? '보임' : '안 보임'} — 조건 아님, 건너뜀`
+        options.onStep?.(steps)
+        continue
+      }
+    }
+    if (kind === 'section') {
+      record.detail = ''
+      currentSection = step.section
+      options.onStep?.(steps)
+      continue
+    }
+    record.section = currentSection
     // 조건 — "when": { "filled": ["홍길동", …] } 은 그 placeholder 칸이 모두 채워져 있을 때만 이 단계를 한다(미리 채워진 입력이면 대신 누르기)
     if (step.when?.filled) {
       await page.waitForTimeout(step.when.waitMs ?? 1500)
@@ -162,7 +193,14 @@ export async function runScenario(context, scenario, options) {
       }
     }
     try {
-      if (kind === 'goto') {
+      if (kind === 'session') {
+        // 여정 중간에 로그인 상태로 — 저장된 세션(routes profiles 의 session)의 쿠키를 이 창에 넣는다. 다음 goto 부터 그 상태
+        const cookies = options.sessionCookies?.(step.session)
+        if (!cookies) throw new Error(`세션 ${step.session} 이 없거나 만료 — 현황판 QA 로그인 세션 줄에서 로그인`)
+        await page.context().clearCookies()
+        await page.context().addCookies(cookies)
+        record.detail = `쿠키 ${cookies.length}개(값은 안 남김)`
+      } else if (kind === 'goto') {
         await page.goto(`${options.origin}${step.goto}`, { waitUntil: 'load', timeout: 45000 })
         await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {})
       } else if (kind === 'expectUrl') {
