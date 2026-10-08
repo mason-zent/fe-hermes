@@ -1068,6 +1068,8 @@
       };
     });
   };
+  // 체크박스는 돌릴 흐름 씬이 있는 TC(✅)에만 — 화면 검사·수동 확인 TC 는 [선택한 TC만 검수] 로 돌릴 게 없다
+  const tcRunnable = (item) => (item.runFiles || item.scenarioFiles || []).length > 0;
   const tcStatusCell = (item) => {
     const status = tcStatus(item);
     const parts = (item.runFiles || item.scenarioFiles || []).filter((name) => !tcJourneys(item).includes(name));
@@ -1109,7 +1111,7 @@
       const detail = tcState.open.has(key) ? `<tr class="tc-detail"><td colspan="8"><dl>
         <dt>사전 조건</dt><dd>${tcInline(item.pre)}</dd><dt>단계</dt><dd>${tcInline(item.steps)}</dd><dt>기대 결과</dt><dd>${tcInline(item.expect)}</dd>
         <dt>세션·뷰포트</dt><dd>${esc(item.session)} · ${esc(item.viewport)}</dd><dt>근거</dt><dd>${tcInline(item.ref)}</dd></dl></td></tr>` : '';
-      return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="tc-check"><input type="checkbox" data-pick="${esc(key)}" ${tcState.picked.has(key) ? 'checked' : ''} aria-label="${esc(item.id)} 고르기" title="${(item.scenarioFiles || []).length ? `씬 ${esc(item.scenarioFiles.join(', '))}` : '이 TC 를 검사하는 흐름 씬이 아직 없어요'}"></td><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
+      return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="tc-check">${tcRunnable(item) ? `<input type="checkbox" data-pick="${esc(key)}" ${tcState.picked.has(key) ? 'checked' : ''} aria-label="${esc(item.id)} 고르기" title="돌릴 씬 ${esc((item.runFiles || item.scenarioFiles || []).join(', '))}">` : ''}</td><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
         <td class="hide-sm nowrap">${esc(item.session)}</td><td class="hide-sm nowrap">${esc(item.viewport)}</td>
         <td>${tcStatusCell(item)}</td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
     }).join('') : '<tr><td colspan="8" class="empty-history">맞는 TC 가 없어요</td></tr>';
@@ -1121,8 +1123,10 @@
       box.onchange = () => { if (box.checked) tcState.picked.add(box.dataset.pick); else tcState.picked.delete(box.dataset.pick); renderPickBar(); };
     });
     const checkAll = document.getElementById('tc-check-all');
-    const visibleKeys = rows.map((item) => `${item.app}:${item.id}`);
+    const visibleKeys = rows.filter(tcRunnable).map((item) => `${item.app}:${item.id}`);
     checkAll.checked = visibleKeys.length > 0 && visibleKeys.every((key) => tcState.picked.has(key));
+    checkAll.disabled = !visibleKeys.length;
+    checkAll.title = visibleKeys.length ? `보이는 TC 중 씬으로 검사하는 ${visibleKeys.length}개 모두 고르기` : '보이는 TC 중 씬으로 검사하는 TC 가 없어요';
     checkAll.onchange = () => { for (const key of visibleKeys) { if (checkAll.checked) tcState.picked.add(key); else tcState.picked.delete(key); } renderTc(); };
     renderPickBar();
     renderJourneys();
@@ -1137,15 +1141,11 @@
     const apps = [...new Set(picked.map((item) => item.app))];
     // 작은 씬이 있으면 그것만, 없으면 여정(runFiles — 서버가 고른다)
     const scenes = [...new Set(picked.flatMap((item) => item.runFiles || item.scenarioFiles || []))];
-    const noScene = picked.filter((item) => !(item.runFiles || item.scenarioFiles || []).length);
     const target = document.getElementById('qa-target').value;
     const server = document.getElementById('qa-server').value.trim();
     // 버튼이 꺼지는 이유 — 글자로 보이게
-    const smokeOnly = picked.filter((item) => tcStatus(item) === 'smoke').length;
-    const blocked = apps.length !== 1 ? `한 앱의 TC 만 골라 주세요 — 지금 ${apps.map((app) => TC_APP_NAME[app] || app).join('·')} 가 섞여 있어요`
-      : !scenes.length ? (smokeOnly ? '고른 TC 는 🖥 화면 검사 TC 라 흐름 씬이 없어요 — [런] 탭 전체 검수의 화면 검사가 확인해요' : '고른 TC 를 검사하는 흐름 씬이 없어요(✋ 수동 확인) — 사람이 직접 확인하거나 씬을 만들어야 해요')
-      : '';
-    bar.innerHTML = `<b>선택 ${picked.length}개</b><span class="sub">${esc(apps.map((app) => TC_APP_NAME[app] || app).join('·'))} · 흐름 씬 ${scenes.length}개${scenes.length ? ` (${esc(scenes.map((name) => name.slice(0, 2)).join(', '))})` : ''}${noScene.length ? ` · 씬 없는 TC ${noScene.length}개는 건너뜀(${esc(noScene.slice(0, 5).map((item) => item.id).join(', '))}${noScene.length > 5 ? ' …' : ''})` : ''} · 대상 ${target === 'server' ? `☁️ ${esc(server || '서버 주소 없음')}` : '🖥 로컬 서버'}</span>
+    const blocked = apps.length !== 1 ? `한 앱의 TC 만 골라 주세요 — 지금 ${apps.map((app) => TC_APP_NAME[app] || app).join('·')} 가 섞여 있어요` : '';
+    bar.innerHTML = `<b>선택 ${picked.length}개</b><span class="sub">${esc(apps.map((app) => TC_APP_NAME[app] || app).join('·'))} · 흐름 씬 ${scenes.length}개${scenes.length ? ` (${esc(scenes.map((name) => name.slice(0, 2)).join(', '))})` : ''} · 대상 ${target === 'server' ? `☁️ ${esc(server || '서버 주소 없음')}` : '🖥 로컬 서버'}</span>
       <button type="button" class="btn primary" id="tc-run-picked" ${blocked ? 'disabled' : ''} title="${blocked ? esc(blocked) : '고른 TC 의 흐름 씬만 돌려요(화면 검사 없이)'}">▶ 선택한 TC만 검수</button>${blocked ? `<span class="sub" style="color:var(--warn)">⚠ ${esc(blocked)}</span>` : ''}
       <button type="button" class="btn" id="tc-clear-picked">선택 해제</button>`;
     document.getElementById('tc-clear-picked').onclick = () => { tcState.picked.clear(); renderTc(); };
