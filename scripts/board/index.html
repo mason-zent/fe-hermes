@@ -1011,6 +1011,8 @@
   const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   const tcDone = (item) => /있음/.test(item.auto);
   const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
+  // 이 TC 를 지나가는 여정 씬(부품 씬을 include 하는 씬)
+  const tcJourneys = (item) => { const journeys = (tcState.apps || []).find((entry) => entry.app === item.app)?.journeys || []; return (item.scenarioFiles || []).filter((name) => journeys.includes(name)); };
   const renderTc = () => {
     const apps = tcState.apps || [];
     const all = apps.flatMap((entry) => entry.cases);
@@ -1039,7 +1041,7 @@
         <dt>세션·뷰포트</dt><dd>${esc(item.session)} · ${esc(item.viewport)}</dd><dt>근거</dt><dd>${tcInline(item.ref)}</dd></dl></td></tr>` : '';
       return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="tc-check"><input type="checkbox" data-pick="${esc(key)}" ${tcState.picked.has(key) ? 'checked' : ''} aria-label="${esc(item.id)} 고르기" title="${(item.scenarioFiles || []).length ? `씬 ${esc(item.scenarioFiles.join(', '))}` : '이 TC 를 검사하는 흐름 씬이 아직 없어요'}"></td><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
         <td class="hide-sm nowrap">${esc(item.session)}</td><td class="hide-sm nowrap">${esc(item.viewport)}</td>
-        <td><span class="tc-auto${tcDone(item) ? ' done' : ''}">${tcInline(item.auto || '–')}</span></td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
+        <td><span class="tc-auto${tcDone(item) ? ' done' : ''}">${tcInline(item.auto || '–')}</span>${tcJourneys(item).map((name) => ` <span class="tc-auto done" title="${esc(name)}">🧭 여정 ${esc(name.slice(0, 2))}</span>`).join('')}</td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
     }).join('') : '<tr><td colspan="8" class="empty-history">맞는 TC 가 없어요</td></tr>';
     document.querySelectorAll('[data-tc]').forEach((row) => {
       row.onclick = (event) => { if (event.target.closest('.tc-check')) return; const key = row.dataset.tc; if (tcState.open.has(key)) tcState.open.delete(key); else tcState.open.add(key); renderTc(); };
@@ -1062,8 +1064,9 @@
     bar.hidden = !picked.length;
     if (!picked.length) { bar.innerHTML = ''; return; }
     const apps = [...new Set(picked.map((item) => item.app))];
-    const scenes = [...new Set(picked.flatMap((item) => item.scenarioFiles || []))];
-    const noScene = picked.filter((item) => !(item.scenarioFiles || []).length);
+    // 작은 씬이 있으면 그것만, 없으면 여정(runFiles — 서버가 고른다)
+    const scenes = [...new Set(picked.flatMap((item) => item.runFiles || item.scenarioFiles || []))];
+    const noScene = picked.filter((item) => !(item.runFiles || item.scenarioFiles || []).length);
     const target = document.getElementById('qa-target').value;
     const server = document.getElementById('qa-server').value.trim();
     bar.innerHTML = `<b>선택 ${picked.length}개</b><span class="sub">${esc(apps.map((app) => TC_APP_NAME[app] || app).join('·'))} · 흐름 씬 ${scenes.length}개${scenes.length ? ` (${esc(scenes.map((name) => name.slice(0, 2)).join(', '))})` : ''}${noScene.length ? ` · 씬 없는 TC ${noScene.length}개는 건너뜀(${esc(noScene.slice(0, 5).map((item) => item.id).join(', '))}${noScene.length > 5 ? ' …' : ''})` : ''} · 대상 ${target === 'server' ? `☁️ ${esc(server || '서버 주소 없음')}` : '🖥 로컬 서버'}</span>

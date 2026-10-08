@@ -1124,11 +1124,32 @@ function qaTestCases() {
     const scenarioDir = join(ROOT, 'scripts', 'qa', 'scenarios', app)
     const scenarios = existsSync(scenarioDir) ? readdirSync(scenarioDir).filter((name) => name.endsWith('.json')).sort() : []
     // TC 마다 그 TC 를 검사하는 흐름 씬(씬 파일의 "tc") — [선택한 TC만 검수] 가 이 씬들만 돌린다
-    const scenarioTcs = scenarios.map((name) => {
-      try { return [name, JSON.parse(readFileSync(join(scenarioDir, name), 'utf8')).tc ?? []] } catch { return [name, []] }
-    })
-    for (const item of cases) item.scenarioFiles = scenarioTcs.filter(([, tcs]) => tcs.includes(item.id)).map(([name]) => name)
-    apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
+    // 여정(include 로 부품 씬을 불러오는 씬)은 tc 를 적지 않았으면 부품들의 tc 를 모은다 — run.mjs expandScenario 와 같은 규칙
+    const readScene = (dir, name) => { try { return JSON.parse(readFileSync(join(dir, name), 'utf8')) } catch { return null } }
+    const sceneTcs = (dir, name, depth = 0) => {
+      const scene = readScene(dir, name)
+      if (!scene) return []
+      if (scene.tc?.length || depth > 3) return scene.tc ?? []
+      const found = new Set()
+      for (const step of scene.steps ?? []) {
+        if (!step?.include) continue
+        const prefix = String(step.include)
+        const inDraft = prefix.startsWith('_draft/')
+        const base = inDraft ? join(dir, '_draft') : dir
+        const part = existsSync(base) ? readdirSync(base).filter((file) => file.endsWith('.json')).sort().find((file) => file.startsWith(inDraft ? prefix.slice(7) : prefix)) : null
+        if (part) for (const id of sceneTcs(base, part, depth + 1)) found.add(id)
+      }
+      return [...found]
+    }
+    const scenarioTcs = scenarios.map((name) => [name, sceneTcs(scenarioDir, name)])
+    // 여정 = 부품 씬을 include 하는 씬. TC 를 골라 검수할 때는 작은 씬이 있으면 그것만, 없을 때만 여정을 돌린다
+    const journeys = scenarios.filter((name) => (readScene(scenarioDir, name)?.steps ?? []).some((step) => step?.include))
+    for (const item of cases) {
+      item.scenarioFiles = scenarioTcs.filter(([, tcs]) => tcs.includes(item.id)).map(([name]) => name)
+      const parts = item.scenarioFiles.filter((name) => !journeys.includes(name))
+      item.runFiles = parts.length ? parts : item.scenarioFiles
+    }
+    apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, journeys, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
   }
   return apps
 }
@@ -1154,7 +1175,9 @@ function startQaSuite(app, profile, target = 'local', flow = false, server = '',
     mkdirSync(picksDir, { recursive: true })
     const picksFile = join(picksDir, `${app}@board-${Date.now()}.json`)
     writeFileSync(picksFile, `${JSON.stringify({ app, from: 'board', tcs: picked.map((id) => ({ id })) }, null, 2)}\n`)
-    pickArgs = ['--tc-picks', picksFile, '--scenarios-only']
+    const caseOf = new Map((qaTestCases().find((entry) => entry.app === app)?.cases ?? []).map((item) => [item.id, item]))
+    const files = [...new Set(picked.flatMap((id) => caseOf.get(id)?.runFiles ?? []))]
+    pickArgs = ['--tc-picks', picksFile, '--scenarios-only', ...(files.length ? ['--scenarios', files.map((name) => name.replace(/\.json$/, '')).join(',')] : [])]
   }
   const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow && !picked.length ? ['--flow'] : profile ? ['--profile', profile] : []), ...pickArgs]
   qaChild = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: 'ignore' })
