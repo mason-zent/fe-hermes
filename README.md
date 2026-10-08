@@ -27,7 +27,7 @@ claude                      # 켤 때 repos/<레포> 링크를 알아서 연결�
 - 그냥 말하기 — "refund·hub 에 공지 배너 똑같이 넣어줘", "환급 콘솔 페이지네이션 버그 원인 찾아줘" → 헤르메스가 라우팅 → 계획서 → 승인 → 디스패치 → 리뷰 → 보고
 - `/call 에이전트` — 담당 에이전트를 pane 으로 바로 띄운다. 브랜치 이름은 에이전트가 물어 워크트리를 만들고, 요청·"커밋해줘"·"리뷰해줘"·"PR 올려줘" 까지 그 pane 에서 끝낸다(빈 지시 경량 계획서)
 - 리뷰·현황·브랜치도 말로 — "refund 변경 리뷰해줘", "현황 알려줘" (헤르메스가 `docs/knowledge/common/git.md` 절차대로)
-- `/monitor` — 백그라운드 서브에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
+- `/monitor` — 백그라운드 서브에이전트·워크트리 pane 에이전트 로그를 pane 에 실시간 표시 (`/monitor 30` = 최근 30분)
 - `/board` — 현황판. 로컬 서버(`localhost:4700`)를 띄워 브라우저에서 실시간으로 본다 — 지금 동작 중인 에이전트, 계획서 칸반(계획·진행 중·리뷰·완료), `issues/` 의 이슈. 카드를 끌어 상태를 바꾸고 버튼으로 헤르메스에게 지시를 보낸다
 - `/sync` — 담당 레포의 운영 기준 브랜치를 읽어 지문을 만들고, 사실마다 정한 정본(knowledge·config·지문)만 갱신. 파생 문서(서비스 맵 스택 표·플레이북 기준 커밋 표)는 `node scripts/build-derived.mjs`가 생성. baseline은 `.sync/snapshots/`. 다이어그램 근거 점검은 `node scripts/check-diagrams.mjs`
 - `/diagram` — 다이어그램 다시 그리기. 서비스를 주면(`/diagram brand`) 그 서비스만, 비우면 전체. 운영 기준 코드로 그리고 검증·목록 갱신, 그리다 찾은 문제는 `issues/` 등록. `/diagram 점검` 은 근거만 점검
@@ -57,7 +57,7 @@ issues/                   sync·다이어그램·리뷰에서 찾은 이슈 — 
 scripts/setup.sh          팀원 최초 설정 (repos/ 링크 + 도구 점검)
 scripts/verify/<레포>.sh   표준 검증 스크립트 (에이전트·reviewer 공용, 표 요약 출력)
 scripts/delegate.sh       위임을 herdr pane 에서 보이게 실행 (claude --agent <이름>)
-scripts/agent-monitor.py  백그라운드 서브에이전트 로그 실시간 모니터 (렌더러)
+scripts/agent-monitor.py  서브에이전트·pane 에이전트 로그 실시간 모니터 (렌더러)
 scripts/monitor-pane.sh   모니터를 pane 에 띄움·재사용 (/monitor)
 scripts/board.sh          현황판 서버를 pane 에 띄우고 브라우저로 연다 (/board). 서버·화면은 scripts/board/
 scripts/archive-plans.sh  오래된 계획서 정리

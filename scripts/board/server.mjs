@@ -140,7 +140,8 @@ const readPlan = (path) => {
     next,
     workRef: plain(field(checkpoint, 'Work ref')),
     review: plain(field(checkpoint, 'Review')),
-    pr: plain(field(checkpoint, 'PR')),
+    // PR 줄은 여러 개일 수 있다(레포·앱마다 하나) — 전부 모은다
+    pr: [...checkpoint.matchAll(/^-\s*PR:\s*(.+)$/gm)].map((match) => plain(match[1])).join('\n'),
     issue: plain(field(checkpoint, 'Issue')).match(/issues\/\S+\.md/)?.[0] ?? '',
     updated: plain(field(checkpoint, 'Updated')),
     progress: total ? { checked, total } : null,
@@ -252,23 +253,28 @@ const prInfo = async (repoName, number) => {
   return entry
 }
 
-// PR 이 어디로든 머지되면(GitHub state MERGED — 머지로 닫힘) 계획서를 자동으로 완료로. 머지 없이 닫힌 것(CLOSED — 취소·다른 PR 로 대체)은 옮기지 않는다.
+// 계획서의 PR 이 전부 머지되면(GitHub state MERGED — 어느 base 든) 계획서를 자동으로 완료로. 하나라도 열려 있으면(OPEN·확인 실패) 그대로 둔다.
+// 머지 없이 닫힌 것(CLOSED — 취소·다른 PR 로 대체)은 판정에서 빼고, 머지된 PR 이 하나도 없으면 옮기지 않는다.
 // 진행 중·리뷰 계획서만, Status 줄만 바꾼다(정식이면 html 사본도)
 const autoDonePlans = async (plans) => {
   const targets = plans.filter((plan) => !plan.archived && (plan.status === 'ready_for_review' || plan.status === 'in_progress') && /\/pull\/\d+/.test(plan.pr))
   await Promise.all(targets.map(async (plan) => {
-    const links = [...plan.pr.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)]
-    for (const [, repoName, number] of links) {
-      const info = await prInfo(repoName, number)
-      if (info.state !== 'MERGED') continue
-      const merged = info.mergedAt ? new Date(info.mergedAt).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16) : ''
-      const error = setPlanStatus(plan.id, 'done', `자동 — PR #${number} 이 ${info.base} 에 머지됨(${merged})`)
-      if (error) { console.log(`⚠️ 자동 완료 실패 ${plan.id}: ${error}`); return }
-      console.log(`✅ 자동 완료 ${plan.id} — PR #${number} → ${info.base}`)
-      plan.status = 'done'
-      plan.column = 'done'
-      return
-    }
+    const links = [...new Set([...plan.pr.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)].map((match) => `${match[1]}#${match[2]}`))]
+    const infos = await Promise.all(links.map(async (link) => {
+      const [repoName, number] = link.split('#')
+      return { number, ...(await prInfo(repoName, number)) }
+    }))
+    const counted = infos.filter((info) => info.state !== 'CLOSED')
+    if (!counted.length || counted.some((info) => info.state !== 'MERGED')) return
+    // 마지막으로 머지된 PR 을 사유에 적는다
+    const last = counted.reduce((latest, info) => (info.mergedAt > latest.mergedAt ? info : latest))
+    const merged = last.mergedAt ? new Date(last.mergedAt).toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 16) : ''
+    const reason = counted.length > 1 ? `자동 — PR ${counted.length}개 모두 머지됨(마지막 #${last.number} → ${last.base}, ${merged})` : `자동 — PR #${last.number} 이 ${last.base} 에 머지됨(${merged})`
+    const error = setPlanStatus(plan.id, 'done', reason)
+    if (error) { console.log(`⚠️ 자동 완료 실패 ${plan.id}: ${error}`); return }
+    console.log(`✅ 자동 완료 ${plan.id} — ${reason}`)
+    plan.status = 'done'
+    plan.column = 'done'
   }))
 }
 
