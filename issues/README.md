@@ -11,6 +11,7 @@ sync·다이어그램 작업·리뷰 중에 찾았지만 **그 자리에서 고�
 - 끝난 이슈는 현황판 완료 칸의 [아카이브] 로 연결 계획서와 함께 `archive/<이름>/`(`issue.md` · `plan.md` · `meta.json`)에 묶여 보관되고 git 에 커밋된다. 지나간 이슈는 현황판 [히스토리] 탭에서 찾는다. 잘못 만든 이슈는 [삭제] — 휴지통 `.board-trash/` 로 옮겨져 되살릴 수 있다
 - **hermes 자체 이슈**(`repo: hermes` — 스크립트·현황판·문서·규칙)는 서비스 칸반이 아니라 현황판 헤더의 **[헤르메스] 탭**(할 일 · 진행 중 · 완료)에 뜬다. 담당 에이전트·워크트리·PR 이 없다 — [처리 시작]을 누르면 헤르메스가 경량 계획서로 직접 고치고, 사용자가 커밋하라고 하면 고친 코드만 hermes `main` 에 커밋·push 한 뒤 이슈 파일(로컬)에 `fix: <sha>` · `status: done` 을 적는다. `kind` 와 무관하게 완료 기준은 `fix:` 커밋이 `origin/main` 에 있는 것. `Agent: hermes` 이거나 `Work ref` 가 `hermes` 로 시작하는(hermes 체크아웃) 계획서도 같은 탭에 뜬다
 - 대화에서만 말하고 끝내지 않는다. 다음 세션에서도 보이게 여기 남긴다
+- **learn 이슈**(`<날짜>-<레포>-learn-<제목>.md`) — 에이전트가 작업을 끝낼 때 보고하는 "📚 배운 것"(`AGENTS.md` 6절)이다. `repo: hermes`(현황판 [헤르메스] 탭 — 고칠 곳이 hermes knowledge 다. 서비스는 파일명 `<레포>`·`target` 으로 안다) · `kind: knowledge` · `source:` 작업 계획서 · `target:` 고칠 knowledge 파일#절. [처리 시작]하면 헤르메스가 `target` 절만 고치고 사용자가 말하면 hermes `main` 에 커밋·push → `fix:` 에 sha. 쓸모없으면 [아카이브]
 
 ```markdown
 ---
@@ -24,6 +25,7 @@ source: sync 2026-09-28 # 어디서 찾았나
 plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
 pr:                     # code: PR 번호 (담당 레포)
 fix:                    # knowledge·diagram·repo: hermes: 수정 커밋 sha (여러 개면 쉼표)
+target:                 # learn 이슈: 고칠 knowledge 파일#절 (예 docs/knowledge/bznav-web/refund-web/gotchas.md#날짜)
 reason:                 # wontfix: 하지 않는 이유
 ---
 
