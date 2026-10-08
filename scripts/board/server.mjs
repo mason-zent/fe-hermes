@@ -1132,6 +1132,7 @@ function qaTestCases() {
       if (scene.tc?.length || depth > 3) return scene.tc ?? []
       const found = new Set()
       for (const step of scene.steps ?? []) {
+        for (const id of step?.section ? step.tc ?? [] : []) found.add(id)
         if (!step?.include) continue
         const prefix = String(step.include)
         const inDraft = prefix.startsWith('_draft/')
@@ -1149,13 +1150,37 @@ function qaTestCases() {
       const parts = item.scenarioFiles.filter((name) => !journeys.includes(name))
       item.runFiles = parts.length ? parts : item.scenarioFiles
     }
-    apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, journeys, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
+    // 여정 카드 — 구간마다 하는 일(부품 씬·TC·모드)
+    const findPart = (prefix) => {
+      const inDraft = prefix.startsWith('_draft/')
+      const base = inDraft ? join(scenarioDir, '_draft') : scenarioDir
+      const name = existsSync(base) ? readdirSync(base).filter((file) => file.endsWith('.json')).sort().find((file) => file.startsWith(inDraft ? prefix.slice(7) : prefix)) : null
+      return name ? { base, name, scene: readScene(base, name) } : null
+    }
+    const journeyCards = journeys.map((file) => {
+      const scene = readScene(scenarioDir, file) ?? {}
+      const sections = []
+      let current = null
+      for (const step of scene.steps ?? []) {
+        if (step?.section) { current = { title: step.section, desc: step.desc ?? '', parts: [], steps: 0, tcs: new Set(step.tc ?? []), modes: new Set() }; sections.push(current); continue }
+        if (!current) { current = { title: '(시작)', parts: [], steps: 0, tcs: new Set(), modes: new Set() }; sections.push(current) }
+        if (step?.only) current.modes.add(step.only)
+        if (step?.include) {
+          const part = findPart(String(step.include))
+          current.parts.push({ file: part?.name ?? String(step.include), name: part?.scene?.name ?? '(없음)', only: step.only ?? '' })
+          for (const id of part ? sceneTcs(part.base, part.name) : []) current.tcs.add(id)
+          current.steps += part?.scene?.steps?.length ?? 0
+        } else current.steps += 1
+      }
+      return { file, name: scene.name ?? file, why: scene.why ?? '', sections: sections.map((section) => ({ ...section, tcs: [...section.tcs], modes: [...section.modes] })) }
+    })
+    apps.push({ app, doc: `docs/qa/tc/${app}.md`, cases, scenarios, journeys, journeyCards, routes: existsSync(join(ROOT, 'scripts', 'qa', 'routes', `${app}.json`)) })
   }
   return apps
 }
 // [전체 검수] — 최신 개발 브랜치(qa-base)로 화면 전부 + 흐름 씬. 한 번에 하나
 // target: local | server(주소 입력 — dev·stg·dev-1~3·PR 미리보기, 운영은 거부) (D21) · flow: 비로그인 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 요청) → 실패 리포트(D18~D20). 라이브 화면(--live)으로 연다
-function startQaSuite(app, profile, target = 'local', flow = false, server = '', tcs = []) {
+function startQaSuite(app, profile, target = 'local', flow = false, server = '', tcs = [], journey = null) {
   const known = qaApps().find((entry) => entry.app === app)
   if (target === 'local' && known && !known.local) return { error: `${app} 은 로컬 서버로 돌릴 수 없어요 — 서버를 고르고 주소를 넣어 주세요` }
   const checked = target === 'server' ? checkServerUrl(server || known?.devUrl || '') : null
@@ -1179,7 +1204,11 @@ function startQaSuite(app, profile, target = 'local', flow = false, server = '',
     const files = [...new Set(picked.flatMap((id) => caseOf.get(id)?.runFiles ?? []))]
     pickArgs = ['--tc-picks', picksFile, '--scenarios-only', ...(files.length ? ['--scenarios', files.map((name) => name.replace(/\.json$/, '')).join(',')] : [])]
   }
-  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow && !picked.length ? ['--flow'] : profile ? ['--profile', profile] : []), ...pickArgs]
+  // 여정 카드 [▶ 자동]·[▶ 실제] — 그 여정 씬만(화면 검사 없이), 모드
+  const journeyArgs = journey?.file && /^[\w가-힣.-]+\.json$/.test(journey.file)
+    ? ['--scenarios-only', '--scenarios', journey.file.replace(/\.json$/, ''), '--mode', journey.mode === 'real' ? 'real' : 'auto']
+    : []
+  const args = [join(ROOT, 'scripts', 'qa', 'run.mjs'), '--suite', '--app', app, '--live', ...(checked ? ['--server', checked.url] : []), ...(flow && !picked.length && !journeyArgs.length ? ['--flow'] : profile ? ['--profile', profile] : []), ...pickArgs, ...journeyArgs]
   qaChild = spawn(process.execPath, args, { cwd: ROOT, detached: true, stdio: 'ignore' })
   qaChild.unref()
   return { ok: true, app, target, server: checked?.url ?? null, flow, profile: flow ? '(흐름)' : profile || '(기본)' }
@@ -1389,7 +1418,7 @@ createServer(async (request, response) => {
       return reply(202, { ok: true, job: job.id })
     }
     if (url.pathname === '/api/qa-suite') {
-      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''), Array.isArray(body.tcs) ? body.tcs : [])
+      const result = startQaSuite(String(body.app ?? ''), String(body.profile ?? ''), body.target === 'server' ? 'server' : 'local', Boolean(body.flow), String(body.server ?? ''), Array.isArray(body.tcs) ? body.tcs : [], body.journey ?? null)
       return reply(result.error ? 400 : 202, result)
     }
     if (url.pathname === '/api/qa-stop') {

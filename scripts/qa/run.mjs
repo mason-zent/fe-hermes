@@ -1331,6 +1331,7 @@ function expandScenario(dir, scenario, depth = 0) {
   const tcs = new Set(scenario.tc ?? [])
   for (const step of scenario.steps ?? []) {
     if (step.only && step.only !== QA_MODE) continue
+    if (step.section && !scenario.tc) for (const id of step.tc ?? []) tcs.add(id)
     if (!('include' in step)) { steps.push(step); continue }
     if (depth > 3) throw new Error(`include 가 너무 깊다 — ${scenario.file}`)
     const prefix = String(step.include)
