@@ -1391,6 +1391,28 @@ async function runScenarios(browser, origin) {
   }
 }
 
+// 씬 세션 로그인 — 프로필마다 한 번(같은 약속을 같이 기다린다). 라이브 화면 띠(run.gate)·로그인 창(login.mjs)
+const sceneLogins = new Map()
+function loginForScene(profileName, origin) {
+  const settings = profiles[profileName]
+  if (!settings?.session) return Promise.resolve(false)
+  if (sceneLogins.has(profileName)) return sceneLogins.get(profileName)
+  const promise = new Promise((resolve) => {
+    const note = (settings.note ?? '').split(' — ')[0]
+    run.gate = { profile: profileName, status: 'waiting', since: new Date().toISOString(), message: `흐름 씬이 ${profileName} 세션으로 돌아요 — 열린 창에서 ${target === 'server' ? '로그인(간편로그인 가능)' : '이메일 로그인'}${note ? `(${note})` : ''}해 주시면 이어서 진행해요(10분)` }
+    saveRun()
+    say(`🔑 ${run.gate.message}`)
+    const login = spawn(process.execPath, [join(QA_DIR, 'login.mjs'), '--app', appName, '--url', origin, '--target', target, '--profile', settings.session], { stdio: 'inherit' })
+    login.on('exit', (code) => {
+      run.gate.status = code === 0 ? 'done' : 'failed'
+      saveRun()
+      resolve(code === 0)
+    })
+  })
+  sceneLogins.set(profileName, promise)
+  return promise
+}
+
 async function runScenarioOn(browser, origin, scenario, entry) {
   const viewport = routesConfig.viewports.find((item) => item.name === entry.viewport)
   const where = `씬 ${scenario.file.slice(0, 2)} · ${viewport.name}`
@@ -1398,6 +1420,13 @@ async function runScenarioOn(browser, origin, scenario, entry) {
   saveRun()
   const scenarioProfile = profiles[entry.profile] ?? { session: null }
   const sessionFile = scenarioProfile.session ? sessionFileOf(HERMES, appName, scenarioProfile.session, target, serverUrl) : null
+  // 씬 세션이 없거나 만료 — 라이브로 보고 있으면(현황판에서 시작) 로그인 창을 띄워 받고 이어 간다. 뷰포트 둘이 동시에 와도 창은 하나
+  if (sessionFile && liveView && (!existsSync(sessionFile) || expiredSessionAt(sessionFile))) {
+    entry.status = 'running'
+    entry.steps = [{ label: `🔑 세션 ${entry.profile} ${existsSync(sessionFile) ? '만료' : '없음'} — 로그인 창에서 로그인해 주세요`, ok: true, detail: '' }]
+    saveRun()
+    await loginForScene(entry.profile, origin)
+  }
   if (sessionFile && !existsSync(sessionFile)) {
     Object.assign(entry, { status: 'login', steps: [{ label: `세션 ${entry.profile} 없음 — node scripts/qa/login.mjs --profile ${scenarioProfile.session}`, ok: false, detail: '' }] })
     say(`🔒 ${where} ${entry.name}`)
@@ -1426,10 +1455,13 @@ async function runScenarioOn(browser, origin, scenario, entry) {
   const result = await runScenario(context, scenario, {
     origin, slug, runDir, headed: headed || humanWindow, showBanner, hideBanner,
     // 여정 중간 { "session": "verified" } — 그 프로필의 저장된 세션 쿠키(만료면 null). 값은 기록하지 않는다
-    sessionCookies: (name) => {
+    sessionCookies: async (name) => {
       const session = profiles[name]?.session
       const file = session ? sessionFileOf(HERMES, appName, session, target, serverUrl) : null
-      if (!file || !existsSync(file) || expiredSessionAt(file)) return null
+      if (!file) return null
+      // 없거나 만료면 라이브로 보고 있을 때 로그인 창을 띄워 받는다
+      if ((!existsSync(file) || expiredSessionAt(file)) && liveView) await loginForScene(name, origin)
+      if (!existsSync(file) || expiredSessionAt(file)) return null
       return JSON.parse(readFileSync(file, 'utf8')).cookies ?? []
     },
     onPage: liveView ? (page) => startScreencast(page, runDir, viewport.name) : null,

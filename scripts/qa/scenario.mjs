@@ -195,7 +195,7 @@ export async function runScenario(context, scenario, options) {
     try {
       if (kind === 'session') {
         // 여정 중간에 로그인 상태로 — 저장된 세션(routes profiles 의 session)의 쿠키를 이 창에 넣는다. 다음 goto 부터 그 상태
-        const cookies = options.sessionCookies?.(step.session)
+        const cookies = await options.sessionCookies?.(step.session)
         if (!cookies) throw new Error(`세션 ${step.session} 이 없거나 만료 — 현황판 QA 로그인 세션 줄에서 로그인`)
         await page.context().clearCookies()
         await page.context().addCookies(cookies)
