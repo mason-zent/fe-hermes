@@ -330,6 +330,7 @@
       <button type="button" role="tab" data-qaview="runs" aria-selected="true">런</button>
       <button type="button" role="tab" data-qaview="tc" aria-selected="false">TC 목록</button>
     </div>
+    <div class="qa-session" id="qa-session" aria-live="polite"></div>
     <div id="qa-view-tc" hidden>
       <div class="tc-apps" id="tc-apps"></div>
       <div class="tc-status" id="tc-status" role="group" aria-label="자동 검사 상태"></div>
@@ -354,7 +355,6 @@
       <select id="qa-profile" aria-label="세션 프로필"></select>
       <button type="button" class="btn" id="qa-suite">전체 검수 시작</button>
     </div>
-    <div class="qa-session" id="qa-session" aria-live="polite"></div>
     <div class="qa-wrap">
       <nav class="qa-runs" id="qa-runs" aria-label="QA 런"><div class="empty-history">불러오는 중이에요…</div></nav>
       <div class="qa-detail" id="qa-detail"><div class="empty-history">왼쪽에서 런을 고르세요. 계획서 카드의 [QA 실행] 으로 새로 돌릴 수 있어요</div></div>
@@ -814,13 +814,13 @@
     const logoutButton = (profile) => ['valid', 'expired'].includes(profile.state) ? ` <button type="button" class="qa-logout" data-logout="${esc(profile.name)}">로그아웃</button>` : '';
     // 로그인이 있는 세션에는 [로그인]/[다시 로그인] — 로그인 창을 바로 띄워 세션을 새로 저장한다
     const loginButton = (profile) => profile.state === 'none' ? '' : ` <button type="button" class="qa-logout" data-login="${esc(profile.name)}">${profile.state === 'missing' ? '로그인' : '다시 로그인'}</button>`;
-    box.innerHTML = `<b>🔐 로그인 세션</b>${result.profiles.map((profile) => `<span>${item(profile)}${loginButton(profile)}${logoutButton(profile)}</span>`).join('')}`;
+    box.innerHTML = `<b>🔐 로그인 세션</b><span class="sub">${esc(app)} · ${target === 'server' ? `☁️ ${esc(server)}` : '🖥 로컬'}</span>${result.profiles.map((profile) => `<span>${item(profile)}${loginButton(profile)}${logoutButton(profile)}</span>`).join('')}`;
     box.querySelectorAll('[data-login]').forEach((button) => {
       button.onclick = async () => {
         const profileName = button.dataset.login;
         try {
           const started = await api('/api/qa-login', { app, target, server, profile: profileName });
-          toast(`${profileName} 로그인 창을 열었어요(${started.url}) — 로그인을 마치면 세션이 저장돼요(10분)`);
+          toast(started.startLocal ? `로컬 서버를 띄우는 중이에요(1~3분) — 뜨면 ${profileName} 로그인 창이 열려요` : `${profileName} 로그인 창을 열었어요(${started.url}) — 로그인을 마치면 세션이 저장돼요(10분)`);
           // 저장되면 줄이 바뀌도록 잠시 동안 다시 본다
           let tries = 0;
           const poll = setInterval(() => { tries += 1; showQaSessions(); if (tries >= 60) clearInterval(poll); }, 10000);
@@ -1085,7 +1085,13 @@
     const all = apps.flatMap((entry) => entry.cases);
     document.getElementById('tc-apps').innerHTML = [['', '전체', all]].concat(apps.map((entry) => [entry.app, TC_APP_NAME[entry.app] || entry.app, entry.cases]))
       .map(([key, label, cases]) => `<button type="button" data-tcapp="${esc(key)}" aria-pressed="${tcState.app === key}">${esc(label)}<span class="n">${cases.length} · ✅ ${cases.filter((item) => tcStatus(item) === 'scene').length} · 🖥 ${cases.filter((item) => tcStatus(item) === 'smoke').length}</span></button>`).join('');
-    document.querySelectorAll('[data-tcapp]').forEach((button) => { button.onclick = () => { tcState.app = button.dataset.tcapp; renderTc(); }; });
+    document.querySelectorAll('[data-tcapp]').forEach((button) => { button.onclick = () => {
+      tcState.app = button.dataset.tcapp;
+      // 위 🔐 로그인 세션 줄도 그 앱으로(전체 검수 칸의 앱 선택과 같이 맞춘다)
+      const appSelect = document.getElementById('qa-app');
+      if (tcState.app && [...appSelect.options].some((option) => option.value === tcState.app) && appSelect.value !== tcState.app) { appSelect.value = tcState.app; appSelect.onchange?.(); }
+      renderTc();
+    }; });
     const kindSelect = document.getElementById('tc-kind');
     const kinds = [...new Set(tcCases().map((item) => item.kind).filter(Boolean))];
     const keepKind = kindSelect.value;

@@ -1051,11 +1051,15 @@ async function loginQaSession(app, target, server, profileName) {
     for (const candidate of ['http://localhost:3291', 'http://localhost:3200']) {
       if (await fetch(candidate, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)) { url = candidate; break }
     }
-    if (!url) return { error: '로컬 서버가 꺼져 있어요 — 서버 대상으로 로그인하거나, 검수를 시작하면 차례에 로그인 창이 떠요' }
   }
-  const args = [join(ROOT, 'scripts', 'qa', 'login.mjs'), '--app', app, '--profile', settings.session, ...(target === 'server' ? ['--server', url] : ['--url', url])]
-  qaLoginChild = spawn(process.execPath, args, { cwd: ROOT, stdio: 'ignore' })
-  return { ok: true, url }
+  // 로컬 서버가 꺼져 있으면 login.mjs 가 qa-base 로 잠깐 띄운다(--start-local) — 무거운 명령이라 heavy.sh 로(검수가 돌면 차례를 기다린다)
+  const startLocal = target !== 'server' && !url
+  if (startLocal) url = 'http://localhost:3291'
+  const args = [join(ROOT, 'scripts', 'qa', 'login.mjs'), '--app', app, '--profile', settings.session, ...(target === 'server' ? ['--server', url] : ['--url', url]), ...(startLocal ? ['--start-local'] : [])]
+  qaLoginChild = startLocal
+    ? spawn(join(ROOT, 'scripts', 'heavy.sh'), [process.execPath, ...args], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, HERMES_AGENT: 'qa-login' } })
+    : spawn(process.execPath, args, { cwd: ROOT, stdio: 'ignore' })
+  return { ok: true, url, startLocal }
 }
 // QA 중단 — 라이브 화면 [⏹ 중단]. run.json·group.json 의 pid 를 끈다(node 프로세스인지 확인).
 // 흐름(묶음)이면 다음 단계로 넘어가지 않게 묶음 프로세스를 먼저 끄고, 도는 단계 런을 끈다(런은 SIGTERM 에서 서버를 끄고 '중단됨' 으로 남는다)

@@ -15,7 +15,8 @@
  *
  * 비밀번호는 어디에도 저장하지 않는다. 세션 파일은 git 무시·권한 600 이고, 내용(쿠키 값)은 출력하지 않는다.
  */
-import { readFileSync, mkdirSync, chmodSync, existsSync } from 'node:fs'
+import { readFileSync, mkdirSync, chmodSync, existsSync, openSync } from 'node:fs'
+import { spawn } from 'node:child_process'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
@@ -50,10 +51,38 @@ if (fromFile && !existsSync(fromFile)) {
   process.exit(2)
 }
 
-try {
-  await fetch(origin, { redirect: 'manual' })
-} catch {
-  console.error(`⚠️  ${origin} 에 서버가 없다 — run.mjs --keep-servers 로 남기거나 dev 서버를 띄운 뒤 --url 로 준다`)
+// --start-local — 로컬 서버가 꺼져 있으면 최신 개발 브랜치 워크트리(qa-base)에서 next dev 를 잠깐 띄우고, 로그인이 끝나면 끈다
+// (현황판 🔐 [로그인] 이 heavy.sh 로 감싸 부른다 — 검수가 돌고 있으면 차례를 기다린다)
+let localServer = null
+const serverUp = () => fetch(origin, { redirect: 'manual' }).then((response) => response.status < 500).catch(() => false)
+if (!(await serverUp()) && argv.includes('--start-local') && target === 'local') {
+  const appDir = join(HERMES, '.worktrees', 'bznav-web', 'qa-base', 'apps', appName)
+  if (!existsSync(appDir)) {
+    console.error('⚠️  qa-base 워크트리가 없다 — 전체 검수를 한 번 돌리면 생긴다')
+    process.exit(2)
+  }
+  const port = new URL(origin).port || '3291'
+  console.log(`⏳ 로컬 서버 기동 :${port} (qa-base) — 1~3분`)
+  const log = openSync(join(HERMES, '.qa-runs', 'login-server.log'), 'w')
+  localServer = spawn('pnpm', ['exec', 'next', 'dev', '-p', port, '--webpack'], { cwd: appDir, stdio: ['ignore', log, log], detached: true })
+  const deadline = Date.now() + 4 * 60 * 1000
+  while (!(await serverUp())) {
+    if (Date.now() > deadline || localServer.exitCode !== null) {
+      console.error('⚠️  로컬 서버가 뜨지 않았다 — .qa-runs/login-server.log')
+      try { process.kill(-localServer.pid, 'SIGTERM') } catch { /* 이미 꺼짐 */ }
+      process.exit(2)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+  }
+  // 첫 화면 컴파일을 한 번 깨워 둔다
+  await fetch(`${origin}${routesConfig.signInPath ?? '/'}`).catch(() => {})
+  console.log(`✅ 로컬 서버 준비 ${origin}`)
+}
+const stopLocalServer = () => { if (localServer) try { process.kill(-localServer.pid, 'SIGTERM') } catch { /* 이미 꺼짐 */ } }
+process.on('exit', stopLocalServer)
+
+if (!(await serverUp())) {
+  console.error(`⚠️  ${origin} 에 서버가 없다 — run.mjs --keep-servers 로 남기거나 dev 서버를 띄운 뒤 --url 로 준다(로컬이면 --start-local)`)
   process.exit(2)
 }
 
