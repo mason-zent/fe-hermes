@@ -1,6 +1,6 @@
 # bznav-web apps/care-web 구조 맵
 
-기준 `origin/prd-care` `bdc96ff26` (2026-09-29 점검 · 지문과 같음). 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
+기준 `origin/prd-care` `4eae065aa` (2026-10-08 점검 · 지문과 같음 — 이 범위는 구조 변화 없음, `premium/{layout,metadata}.ts` 추가뿐). 경로는 `apps/care-web/` 기준. 레포 공통은 `../common.md`. **2026-09 NEWCARE-633/634 리팩터링 반영**(`constant/`→`constants/`, 도메인 파일을 라우트 폴더로, `libs/hooks`·`libs/store`→루트 `hooks/`·`store/`).
 
 ## 앱 성격
 - App Router(버전은 지문·catalog), `output: 'standalone'`, dev 3100 `--turbo`. **모든 라우트가 동적 렌더**: `app/layout.tsx`의 `await getServerWorkingPlatform()`(sena와 같은 관례, 랜딩 SEO용 서버 HTML)

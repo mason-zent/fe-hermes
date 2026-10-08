@@ -1,5 +1,5 @@
 # bznav-web packages/* 구조 맵
-기준 `origin/dev` `1c4e7eb58` (2026-09-29 점검 · 지문과 같음). 레포 공통 `../common.md`. **`@repo/channel-talk`는 2026-09-08 제거됨**(소비 앱으로 내재화) — 옛 문서 참조 금지.
+기준 `origin/dev` `dc6d98d29` (2026-10-08 점검 · 지문과 같음). 레포 공통 `../common.md`. **`@repo/channel-talk`는 2026-09-08 제거됨**(소비 앱으로 내재화) — 옛 문서 참조 금지.
 
 | 패키지 | name | main | exports | 내부 deps | 특징 |
 |---|---|---|---|---|---|

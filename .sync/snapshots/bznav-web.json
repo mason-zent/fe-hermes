@@ -9,9 +9,9 @@
     "bznav-packages-fe"
   ],
   "branch": "origin/dev",
-  "sha": "1c4e7eb5850f",
-  "shaDate": "2026-09-29",
-  "subject": "Add PR preview cleanup workflow",
+  "sha": "dc6d98d298a7",
+  "shaDate": "2026-10-07",
+  "subject": "feat(sena): SENA-762 이용자 조사용 온보딩 설문 플로우 제거 (#2004)",
   "package": {
     "name": "bznav-web",
     "version": null,
@@ -107,7 +107,7 @@
     "care-web": {
       "agent": "bznav-care-fe",
       "branch": "origin/prd-care",
-      "sha": "bdc96ff26bd4",
+      "sha": "4eae065aade6",
       "name": "care-web",
       "dev": "pnpm relay && next dev -p 3100 --turbo",
       "port": 3100,
@@ -198,7 +198,7 @@
     "plus-web": {
       "agent": "bznav-plus-fe",
       "branch": "origin/prd-plus",
-      "sha": "edc6fe300932",
+      "sha": "8d108102b3c8",
       "name": "plus-web",
       "dev": "next dev -p 3400 --turbo",
       "port": 3400,
@@ -243,7 +243,7 @@
     "refund-web": {
       "agent": "bznav-refund-fe",
       "branch": "origin/prd-refund",
-      "sha": "cf69fdb0f97d",
+      "sha": "75ad3aefeb54",
       "name": "refund-web",
       "dev": "pnpm gen:env && pnpm gen:relay && next dev -p 3200 --webpack",
       "port": 3200,
@@ -298,6 +298,7 @@
         "help",
         "home",
         "hometax-auth",
+        "joint-cert-handoff",
         "landing",
         "menu",
         "service-down",
@@ -311,7 +312,7 @@
     "sena-web": {
       "agent": "bznav-sena-fe",
       "branch": "origin/prd-sena",
-      "sha": "714b34495f96",
+      "sha": "9b60d1243108",
       "name": "sena-web",
       "dev": "pnpm gen:env && next dev -p 3300 --turbo",
       "port": 3300,

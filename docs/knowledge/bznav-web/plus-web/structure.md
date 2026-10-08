@@ -1,5 +1,5 @@
 # bznav-web apps/plus-web 구조 맵
-기준 `origin/prd-plus` `edc6fe300`. 경로 `apps/plus-web/` 기준. 레포 공통 `../common.md`.
+기준 `origin/prd-plus` `8d108102b` (2026-10-08 sync). 경로 `apps/plus-web/` 기준. 레포 공통 `../common.md`.
 
 ## app/
 | 경로 | 역할 |
@@ -18,4 +18,4 @@
 
 ## 스크립트·설정
 - `dev`: `next dev -p 3400 --turbo` — **`gen:env` 미포함**(5앱 중 `gen:env` 가 있는데 `dev` 에 없는 유일한 앱. care-web 은 스크립트 자체가 없다). `gen:env`: `--env=dev --app=plus-web`, `SM_APPS`에 걸려 **Secrets Manager**. `postbuild`: next-sitemap(**`exclude: ['/*']` + `INDEXABLE_PATHS` 11개 화이트리스트 수동**, `DISALLOW_PATHS`)
-- `next.config.mjs`(가장 짧음): assetPrefix `${CDN}/bznav-plus-web`, **redirect `/` → `/calc`** 하나. `proxy.ts`: `matcher` 명시, 플랫폼 쿠키만
+- `next.config.mjs`(가장 짧음): `basePath = env BASE_PATH || ''`(PR 미리보기 서버용, `b0adcb620`) · assetPrefix = basePath 가 있으면 그것, 없으면 loc `''` / 그 외 `${CDN}/bznav-plus-web`, **redirect `/` → `/calc`** 하나. `proxy.ts`: `matcher` 명시, 플랫폼 쿠키만

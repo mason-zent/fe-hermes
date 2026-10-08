@@ -6,7 +6,7 @@
 - **`ui-deprecated`(`@zenterprise-inc/ui`) 신규 금지**지만 care 38·refund 27파일 잔존 + 두 앱 tailwind preset. 제거는 preset까지. 패키지명≠디렉터리명이라 grep 주의
 - **devDependencies로만 선언하고 런타임 사용**: brand/plus/sena의 `@repo/ui`, `@repo/common-utils`(care·refund만 올바름). 현재는 workspace 링크로 동작. 이 앱들 작업 시 별도 제안으로 보고
 - **Chromatic 토큰 소스 하드코딩**: `packages/ui/package.json` `chromatic --project-token=chpt_…`. CI secret이 무시될 소지(추측). 루트/CI 영역 → 보고 후 정리
-- **`useWindowSize` 두 곳, 반환 shape 다름**: `@repo/ui`(`{windowWidth, windowHeight, isOverMobile, isOverTablet}` + 300ms 디바운스) vs `@repo/platform`(`{width, height}`). import 출처 바꾸면 조용히 깨짐
+- **`useWindowSize` 는 `@repo/ui` 에만**(`{windowWidth, windowHeight, isOverMobile, isOverTablet}` + 300ms 디바운스). `@repo/platform` 쪽(`{width, height}`)은 `85d42ab8e`(#1990, origin/dev)에서 제거됐다 — 옛 코드·브랜치에서 platform 것을 import 하면 깨진다. 같은 커밋에서 `@repo/ui` 의 `DeprecatedAccordion*` 도 빠져 care-web 으로 이관됨(운영 `prd-care` 는 아직 이전 상태 — 2026-10-08 확인)
 - `isSingleMode` 유틸 2곳 중복. `BoxButton.displayName = 'BaseButton'` 오타. `Icon` vs `getImageSrc` serviceName 기본값 불일치. `src/components/index.ts` 중복 `export *`(alert 3회 등) — 정리는 범위 밖
 - `tracking-service`·`user-session`에 `"private": true` 없음(실수 publish 여지). `user-session`에만 `.stylelintrc.mjs` 없음
 - `types` 필드·빌드 산출물 없음 → **패키지 타입 에러는 앱 build/tsc에서 터진다**(패키지 lint로는 안 잡힘)

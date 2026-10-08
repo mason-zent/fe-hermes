@@ -1,6 +1,6 @@
 # bznav-web apps/refund-web 구조 맵
 
-기준 `origin/prd-refund` `cf69fdb0f` (2026-09-29 점검 · 지문과 같음). 앱·라이브러리 버전은 지문(`.sync/snapshots/bznav-web.json`)·catalog 가 정본. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
+기준 `origin/prd-refund` `75ad3aefe` (2026-10-08 점검 · 지문과 같음). 앱·라이브러리 버전은 지문(`.sync/snapshots/bznav-web.json`)·catalog 가 정본. 경로는 `apps/refund-web/` 기준. 레포 공통은 `../common.md`.
 
 ## 앱 메타 / 스크립트
 - `"type": "module"`. `exports: { ".": "./index.ts" }`는 **존재하지 않는 파일** 참조(죽은 필드)
@@ -16,6 +16,7 @@
 | tax(본류) | `tax/refund/lookup/{request,queue,result,reenactment}` · `apply/{complete,result,reenactment}` · `{bank-account,phone-number,payment-card(/input)}` · `cancel/{prevention,reason}` · `test` | 조회 → 신청 → 취소 |
 | trp / trr | `trp/{index,cancel,success}`(결제 링크 `?token=`) · `trr/index.tsx`(알림톡 코드 → 쿠키) | |
 | hometax-auth | `select-method`, `id-auth`, `simple-auth/{input,confirm,confirm-auto}`, `joint-certificate/{install,select}` | 홈택스 인증 3방식 |
+| joint-cert-handoff | `joint-cert-handoff/index.tsx` — 화면 없음, gSSP 가 쿼리를 유지한 채 `type=corps` 를 붙여 `hometax-auth/joint-certificate/install` 로 redirect | 법인 공동인증서 PC 인계 알림톡 진입(알림톡 버튼 URL 고정 경로, REF-3856) |
 | follow-up | `request`, `result/{success,wait,impossible}`, `personal-deduction/{index,collect}` | 사후관리 |
 | help | `help/index`(허브), `guide/[slug]`, `faq`, `deposit-method` | SEO 콘텐츠. getStaticProps 는 index·guide·faq, JSON-LD 는 index·guide 만. `deposit-method` 는 AuthGuard CSR |
 | simple | `simple/[corpType]/apply/{index,success}`, `simple/timeout` | 알림톡 간편 신청 |

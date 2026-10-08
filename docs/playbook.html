@@ -322,6 +322,7 @@
     <section id="start">
       <h2>시작하기</h2>
       <p>fe-hermes 폴더에서 Claude Code를 열면 그 세션이 곧 헤르메스가 됩니다. <strong>따로 설정할 것은 없습니다.</strong> 켤 때마다 담당 레포 연결(<code>repos/&lt;레포&gt;</code> 링크)을 확인하고, 빠진 게 있으면 fe-hermes 상위 폴더에서 찾아 알아서 연결합니다. 거기에도 없는 레포가 있을 때만 헤르메스가 위치를 묻습니다.</p>
+      <p>처음 받는 팀원은 <strong><code>ONBOARDING.md</code></strong>(준비물 · 설치 · 첫 사용 · 막힐 때)부터 읽습니다 — 같은 내용의 화면은 <code>docs/onboarding.html</code>.</p>
 <pre><code>git clone https://github.com/mason-zent/fe-hermes.git
 cd fe-hermes
 claude          # 🔗 레포 7개를 자동으로 연결했습니다 …
@@ -516,7 +517,7 @@ refund 변경 리뷰해줘
 
         <article class="cmd">
           <div class="cmd-head"><kbd>/board <span class="arg">stop · url (선택)</span></kbd><span class="tag plain">현황판</span></div>
-          <p class="what">헤르메스 현황판입니다. 로컬 서버(<code>localhost:4700</code>)를 <code>📋 현황판</code> pane 에 띄우고 브라우저를 엽니다. 3초마다 모아 바뀐 것만 화면에 밀어 주므로 새로고침하지 않아도 됩니다. 위쪽은 <strong>지금 동작 중인 에이전트</strong>(herdr pane 의 작업 중·대기, 백그라운드 서브에이전트), 아래는 <strong>칸반</strong>(이슈 · 계획 · 진행 중 · 리뷰 · 완료)입니다. 헤더의 <strong>[헤르메스]</strong> 탭(할 일 · 진행 중 · 완료)에는 hermes 자체 이슈(<code>repo: hermes</code>)와 <code>Agent: hermes</code> 계획서가 따로 모입니다 — 담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝납니다. 카드는 계획서 Checkpoint 의 <code>Status</code> 와 <code>issues/*.md</code> 의 <code>status</code> 를 따라 움직입니다. <strong>카드를 끌어다 놓으면 그 파일의 상태가 바뀌고</strong>(계획서는 md·html 둘 다), <strong>액션 버튼</strong>(처리 시작 · 이어서 진행 · 리뷰 요청 …)을 누르면 지시문을 보여준 뒤 헤르메스 pane 에 입력합니다. 헤더의 <strong>[히스토리]</strong> 탭은 보관한 일(<code>archive/</code>)을 월별로 보여 줍니다 — 제목·요약·레포·커밋 검색, 한 건을 누르면 이슈·요청·진행·결과·검증·커밋이 한 화면에.</p>
+          <p class="what">헤르메스 현황판입니다. 로컬 서버(<code>localhost:4700</code>)를 <code>📋 현황판</code> pane 에 띄우고 브라우저를 엽니다. 3초마다 모아 바뀐 것만 화면에 밀어 주므로 새로고침하지 않아도 됩니다. 위쪽은 <strong>지금 동작 중인 에이전트</strong>(herdr pane 의 작업 중·대기, 백그라운드 서브에이전트), 아래는 <strong>칸반</strong>(이슈 · 계획 · 진행 중 · 리뷰 · 완료)입니다. 헤더의 <strong>[헤르메스]</strong> 탭(할 일 · 진행 중 · 완료)에는 hermes 자체 이슈(<code>repo: hermes</code>)와 <code>Agent: hermes</code> 계획서가 따로 모입니다 — 담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝납니다. 카드는 계획서 Checkpoint 의 <code>Status</code> 와 <code>issues/*.md</code> 의 <code>status</code> 를 따라 움직입니다. <strong>카드를 끌어다 놓으면 그 파일의 상태가 바뀌고</strong>(계획서는 md·html 둘 다), <strong>액션 버튼</strong>(처리 시작 · 이어서 진행 · 리뷰 요청 …)을 누르면 지시문을 보여준 뒤 헤르메스 pane 에 입력합니다. 헤더의 <strong>[히스토리]</strong> 탭은 보관한 일(<code>archive/</code>)을 월별로 보여 줍니다 — 제목·요약·레포·커밋 검색, 한 건을 누르면 이슈·요청·진행·결과·검증·커밋이 한 화면에. <strong>[QA]</strong> 탭은 비즈넵 웹 QA 시뮬레이션 — 런 목록·영향 화면 카드(작업·기준·차이 스크린샷)와 <strong>[TC 목록]</strong>, 로그인 세션 줄의 <strong>[로그인]</strong> 으로 테스트 계정 세션을 저장합니다. <strong>[메모리]</strong> 탭은 헤르메스가 대화에서 남긴 작업 규칙(Claude Code 메모리, <code>~/.claude/projects/…/memory</code>)을 읽기 전용으로 보여 줍니다 — 한 줄을 누르면 본문. 계획서 <code>PR:</code> 줄의 PR 이 <strong>모두</strong> 머지되면(어느 base 든 · 머지 없이 닫힌 PR 은 셈에서 뺌) 카드가 <strong>자동으로 완료</strong>로 옮겨집니다(5분마다 확인).</p>
           <div class="flow"><span>herdr pane · 서브에이전트 로그</span><span>plans Checkpoint · issues/</span><span class="hi">브라우저 실시간</span></div>
           <dl>
             <dt>언제</dt><dd>여러 작업·에이전트가 동시에 돌 때, sync 에서 나온 이슈가 무엇이 남았는지 볼 때</dd>
@@ -623,12 +624,12 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <thead><tr><th>레포</th><th>에이전트</th><th>기준 커밋</th><th>날짜</th><th>커밋 제목</th></tr></thead>
           <tbody>
 <!-- BEGIN:generated:baseline-rows  (scripts/build-derived.mjs 가 지문에서 생성 — 직접 고치지 마세요) -->
-            <tr><td>client-brics-refund</td><td class="name">refund-fe</td><td class="name">1eb6e63</td><td>2026-09-14</td><td>Merge pull request #45 from zenterprise-inc/release/v.26.0</td></tr>
+            <tr><td>client-brics-refund</td><td class="name">refund-fe</td><td class="name">e37421a</td><td>2026-10-01</td><td>Merge pull request #48 from zenterprise-inc/release/v.26.1</td></tr>
             <tr><td>client-brics-hub</td><td class="name">hub-fe</td><td class="name">fb5c7e3</td><td>2026-09-03</td><td>Merge pull request #5 from zenterprise-inc/dev</td></tr>
             <tr><td>client-brics-care</td><td class="name">care-fe</td><td class="name">8ed10df</td><td>2026-08-20</td><td>Merge pull request #24 from zenterprise-inc/release/v26.08</td></tr>
-            <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">앱별 prd-*</td><td>2026-09-29</td><td>packages 는 dev 1c4e7eb</td></tr>
+            <tr><td>bznav-web</td><td class="name">bznav-*-fe (6)</td><td class="name">앱별 prd-*</td><td>2026-10-07</td><td>packages 는 dev dc6d98d</td></tr>
             <tr><td>web-op</td><td class="name">op-fe</td><td class="name">4ac5be7</td><td>2026-09-16</td><td>Merge pull request #198 from zenterprise-inc/feature/REF-3</td></tr>
-            <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">bfa6be4</td><td>2026-09-16</td><td>Merge pull request #101 from zenterprise-inc/changeset-rel</td></tr>
+            <tr><td>zent-packages (main)</td><td class="name">packages-fe</td><td class="name">56f2a63</td><td>2026-10-07</td><td>Merge pull request #113 from zenterprise-inc/changeset-rel</td></tr>
             <tr><td>bznav-rn-app</td><td class="name">bznav-rn-app</td><td class="name">a161710</td><td>2026-09-23</td><td>Merge pull request #90 from zenterprise-inc/feature/v5.1.2</td></tr>
 <!-- END:generated:baseline-rows -->
           </tbody>
@@ -723,6 +724,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <div class="who">헤르메스</div>
           <ul>
             <li>끝난 카드는 현황판 완료 칸의 <strong>[아카이브]</strong> — 이슈와 계획서를 <code>archive/&lt;이름&gt;/</code> 한 폴더로 묶어 보관하고 git 에 커밋합니다. 이슈 워크트리도 정리합니다(미커밋·push 안 된 커밋이 있으면 남김). 지나간 일은 현황판 <strong>[히스토리]</strong> 탭에서 검색합니다.</li>
+            <li>계획서 <code>PR:</code> 줄의 PR 이 <strong>모두</strong> 머지되면(어느 base 든 — GitHub <code>MERGED</code>) 현황판이 그 계획서를 <strong>자동으로 완료</strong>로 옮깁니다(진행 중·리뷰 계획서만, 5분마다 확인). 머지 없이 닫힌 PR(<code>CLOSED</code>)은 셈에서 빼고, 그것만 있으면 옮기지 않습니다.</li>
             <li>이슈는 완료 기준이 채워지면 <code>완료 가능</code> 배지가 붙고 헤르메스가 완료로 옮깁니다. 안전망: <code>scripts/archive-plans.sh</code>(30일 이상 + 최근 git log 미언급).</li>
           </ul>
         </div>
