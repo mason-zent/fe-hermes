@@ -246,6 +246,15 @@
   .tc-table td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
   .tc-table tr.tc-row { cursor: pointer; }
   .tc-table tr.tc-row:hover td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .tc-status { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 8px; }
+  .tc-status button { font: inherit; font-size: 12.5px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 4px 12px; cursor: pointer; }
+  .tc-status button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .tc-status .n { font-weight: 700; margin-left: 4px; }
+  .tc-status .hint { color: var(--muted); font-size: 11.5px; align-self: center; }
+  .tc-auto.smoke { border-color: var(--accent); color: var(--accent); }
+  .tc-auto.todo { color: var(--muted); }
+  .tc-plan { color: var(--muted); font-size: 11px; }
+  details.tc-journey-box > summary { cursor: pointer; font-size: 12.5px; margin: 0 0 8px; }
   .tc-journeys { display: grid; gap: 10px; margin: 0 0 12px; }
   .tc-journey { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; background: var(--panel); padding: 10px 12px; font-size: 12.5px; }
   .tc-journey .head { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
@@ -323,17 +332,17 @@
     </div>
     <div id="qa-view-tc" hidden>
       <div class="tc-apps" id="tc-apps"></div>
+      <div class="tc-status" id="tc-status" role="group" aria-label="자동 검사 상태"></div>
       <div class="tc-filter">
         <select id="tc-prio" aria-label="우선"><option value="">우선 전체</option><option>P0</option><option>P1</option><option>P2</option></select>
         <select id="tc-kind" aria-label="분류"><option value="">분류 전체</option></select>
-        <select id="tc-auto" aria-label="자동화"><option value="">자동화 전체</option><option value="done">자동화됨(씬·여정 있음)</option><option value="todo">아직(씬 없음)</option></select>
         <input type="search" id="tc-search" placeholder="ID·제목·경로·문구 검색" aria-label="TC 검색">
         <button type="button" class="btn" id="tc-guide-open" title="TC 목록 보는 법 — 우선 P0~P2 · 분류 · 자동화 · 세션 · 뷰포트 뜻" aria-label="TC 목록 보는 법">📖</button>
       </div>
       <div class="tc-journeys" id="tc-journeys"></div>
       <p class="tc-meta" id="tc-meta"></p>
       <div class="tc-pick-bar" id="tc-pick-bar" hidden></div>
-      <div class="tc-table-wrap"><table class="tc-table"><thead><tr><th class="tc-check-col" title="고른 TC 만 검수"><input type="checkbox" id="tc-check-all" aria-label="보이는 TC 모두 고르기"></th><th>ID</th><th>분류</th><th>제목</th><th class="hide-sm">세션</th><th class="hide-sm">뷰포트</th><th>자동화</th><th>우선</th></tr></thead><tbody id="tc-body"><tr><td colspan="8" class="empty-history">불러오는 중이에요…</td></tr></tbody></table></div>
+      <div class="tc-table-wrap"><table class="tc-table"><thead><tr><th class="tc-check-col" title="고른 TC 만 검수"><input type="checkbox" id="tc-check-all" aria-label="보이는 TC 모두 고르기"></th><th>ID</th><th>분류</th><th>제목</th><th class="hide-sm">세션</th><th class="hide-sm">뷰포트</th><th>자동 검사</th><th>우선</th></tr></thead><tbody id="tc-body"><tr><td colspan="8" class="empty-history">불러오는 중이에요…</td></tr></tbody></table></div>
     </div>
     <div id="qa-view-runs">
     <div class="qa-top">
@@ -1022,6 +1031,10 @@
   const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   // 자동화됨 = 이 TC 를 검사하는 흐름 씬(작은 씬·여정)이 실제로 있다 — 문서 자동화 칸의 '(있음 NN)' 표기도 같이 본다
   const tcDone = (item) => (item.scenarioFiles || []).length > 0 || /있음/.test(item.auto || '');
+  // 자동 검사 상태 — scene: 흐름 씬·여정이 검사 · smoke: 전체 검수의 화면 검사(모든 화면을 열어 깨짐·가드·오류)가 검사 · todo: 아직(사람이 보거나 씬을 만들 것)
+  const tcStatus = (item) => tcDone(item) ? 'scene' : /^스모크/.test(item.auto || '') ? 'smoke' : 'todo';
+  const TC_STATUS = { scene: ['✅', '씬으로 검사', '흐름 씬·여정이 누르고 입력하며 자동으로 확인'], smoke: ['🖥', '화면 검사', '전체 검수에서 화면을 열어 깨짐·가드·오류를 자동으로 확인(누르지는 않음)'], todo: ['✋', '아직', '자동 검사 없음 — 사람이 보거나 씬을 만들 후보'] };
+  tcState.status = tcState.status || '';
   const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
   // 이 TC 를 지나가는 여정 씬(부품 씬을 include 하는 씬)
   const tcJourneys = (item) => { const journeys = (tcState.apps || []).find((entry) => entry.app === item.app)?.journeys || []; return (item.scenarioFiles || []).filter((name) => journeys.includes(name)); };
@@ -1030,14 +1043,16 @@
     const box = document.getElementById('tc-journeys');
     const entries = (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app);
     const cards = entries.flatMap((entry) => (entry.journeyCards || []).map((card) => ({ ...card, app: entry.app })));
-    box.innerHTML = cards.map((card) => `<div class="tc-journey"><div class="head"><b>🧭 ${esc(card.name)}</b><span class="sub">${esc(TC_APP_NAME[card.app] || card.app)} · ${esc(card.file)}</span>
+    const open = tcState.journeysOpen ?? false;
+    box.innerHTML = cards.length ? `<details class="tc-journey-box"${open ? ' open' : ''}><summary>🧭 여정 ${cards.length}개 — 사용자 흐름을 따라 이어서 검사(구간·실행)</summary>${cards.map((card) => `<div class="tc-journey"><div class="head"><b>🧭 ${esc(card.name)}</b><span class="sub">${esc(TC_APP_NAME[card.app] || card.app)} · ${esc(card.file)}</span>
         <button type="button" class="btn" data-journey="${esc(card.app)}|${esc(card.file)}|auto" title="본인인증·간편인증·수집을 응답 흉내로 — 사람 없이">▶ 자동</button>
         <button type="button" class="btn" data-journey="${esc(card.app)}|${esc(card.file)}|real" title="간편인증·수집 구간을 사람이 직접(실제 개인정보·실제 홈택스 수집) — 크롬 창이 따로 떠요">▶ 실제</button></div>
       ${card.why ? `<div class="why">${esc(card.why)}</div>` : ''}
       <ol>${card.sections.map((section) => `<li><div class="title">${esc(section.title)}${section.modes.map((mode) => `<span class="mode">${mode === 'real' ? '실제' : '자동'} 갈래</span>`).join('')}</div>
         ${section.desc ? `<div>${esc(section.desc)}</div>` : ''}
         <div class="sub">${section.parts.length ? `부품: ${section.parts.map((part) => `${esc(part.file.slice(0, 2))}${part.only ? `(${part.only === 'real' ? '실제' : '자동'})` : ''}`).join(' · ')} · ` : ''}단계 ${section.steps}개</div>
-        ${section.tcs.length ? `<div class="sub">TC ${esc(section.tcs.join(', '))}</div>` : ''}</li>`).join('')}</ol></div>`).join('');
+        ${section.tcs.length ? `<div class="sub">TC ${esc(section.tcs.join(', '))}</div>` : ''}</li>`).join('')}</ol></div>`).join('')}</details>` : '';
+    box.querySelector('details')?.addEventListener('toggle', (event) => { tcState.journeysOpen = event.target.open; });
     box.querySelectorAll('[data-journey]').forEach((button) => {
       button.onclick = async () => {
         const [app, file, mode] = button.dataset.journey.split('|');
@@ -1053,11 +1068,21 @@
       };
     });
   };
+  const tcStatusCell = (item) => {
+    const status = tcStatus(item);
+    const parts = (item.runFiles || item.scenarioFiles || []).filter((name) => !tcJourneys(item).includes(name));
+    const journeys = tcJourneys(item).map((name) => ` <span class="tc-auto done" title="${esc(name)}">🧭 여정 ${esc(name.slice(0, 2))}</span>`).join('');
+    if (status === 'scene') return parts.length || !tcJourneys(item).length
+      ? `<span class="tc-auto done" title="${esc((item.scenarioFiles || []).join(', '))}">✅ ${parts.length ? `씬 ${esc(parts.map((name) => name.slice(0, 2)).join('·'))}` : '씬'}</span>${journeys}`
+      : `<span class="tc-auto done" title="${esc(tcJourneys(item).join(', '))}">✅ 🧭 여정 ${esc(tcJourneys(item).map((name) => name.slice(0, 2)).join('·'))}</span>`;
+    if (status === 'smoke') return `<span class="tc-auto smoke" title="전체 검수의 화면 검사가 이 화면들을 열어 확인해요">🖥 화면 검사</span>${journeys}`;
+    return `<span class="tc-auto todo">✋ 아직</span>${item.auto ? ` <span class="tc-plan" title="TC 문서 자동화 칸 — 자동화할 방법(계획)">계획: ${tcInline(item.auto)}</span>` : ''}`;
+  };
   const renderTc = () => {
     const apps = tcState.apps || [];
     const all = apps.flatMap((entry) => entry.cases);
     document.getElementById('tc-apps').innerHTML = [['', '전체', all]].concat(apps.map((entry) => [entry.app, TC_APP_NAME[entry.app] || entry.app, entry.cases]))
-      .map(([key, label, cases]) => `<button type="button" data-tcapp="${esc(key)}" aria-pressed="${tcState.app === key}">${esc(label)}<span class="n">${cases.length} · P0 ${cases.filter((item) => item.prio === 'P0').length} · 자동 ${cases.filter(tcDone).length}</span></button>`).join('');
+      .map(([key, label, cases]) => `<button type="button" data-tcapp="${esc(key)}" aria-pressed="${tcState.app === key}">${esc(label)}<span class="n">${cases.length} · ✅ ${cases.filter((item) => tcStatus(item) === 'scene').length} · 🖥 ${cases.filter((item) => tcStatus(item) === 'smoke').length}</span></button>`).join('');
     document.querySelectorAll('[data-tcapp]').forEach((button) => { button.onclick = () => { tcState.app = button.dataset.tcapp; renderTc(); }; });
     const kindSelect = document.getElementById('tc-kind');
     const kinds = [...new Set(tcCases().map((item) => item.kind).filter(Boolean))];
@@ -1065,14 +1090,19 @@
     kindSelect.innerHTML = '<option value="">분류 전체</option>' + kinds.map((kind) => `<option>${esc(kind)}</option>`).join('');
     kindSelect.value = kinds.includes(keepKind) ? keepKind : '';
     const prio = document.getElementById('tc-prio').value;
-    const auto = document.getElementById('tc-auto').value;
+    // 상태 버튼 — 숫자는 우선·분류·검색을 뺀 이 앱 전체 기준
+    const base = tcCases();
+    document.getElementById('tc-status').innerHTML = [['', '전체', '모든 TC']].concat(Object.entries(TC_STATUS).map(([key, [icon, label, why]]) => [key, `${icon} ${label}`, why]))
+      .map(([key, label, why]) => `<button type="button" data-tcstatus="${key}" aria-pressed="${tcState.status === key}" title="${esc(why)}">${esc(label)}<span class="n">${key ? base.filter((item) => tcStatus(item) === key).length : base.length}</span></button>`).join('')
+      + '<span class="hint">✅ 씬·여정이 자동으로 누르며 확인 · 🖥 전체 검수가 화면만 열어 확인 · ✋ 아직 자동 검사 없음</span>';
+    document.querySelectorAll('[data-tcstatus]').forEach((button) => { button.onclick = () => { tcState.status = button.dataset.tcstatus; renderTc(); }; });
     const query = document.getElementById('tc-search').value.trim().toLowerCase();
     const rows = tcCases().filter((item) => (!prio || item.prio === prio) && (!kindSelect.value || item.kind === kindSelect.value)
-      && (!auto || (auto === 'done') === tcDone(item))
+      && (!tcState.status || tcStatus(item) === tcState.status)
       && (!query || Object.values(item).join(' ').toLowerCase().includes(query)));
     const entry = apps.find((app) => app.app === tcState.app);
     document.getElementById('tc-meta').innerHTML = entry
-      ? `${esc(entry.doc)} · 흐름 씬 ${entry.scenarios.length}개${entry.scenarios.length ? ` (${entry.scenarios.map((name) => esc(name.replace(/\.json$/, ''))).join(', ')})` : ''} · 화면 설정 ${entry.routes ? '있음' : '없음'} · ${rows.length}개 보임`
+      ? `${esc(entry.doc)} · <span title="${esc(entry.scenarios.map((name) => name.replace(/\.json$/, '')).join('\n'))}">흐름 씬 ${entry.scenarios.length}개</span> · ${rows.length}개 보임 · 행을 누르면 단계·기대 결과`
       : `docs/qa/tc/*.md · ${rows.length}개 보임 · 행을 누르면 단계·기대 결과`;
     document.getElementById('tc-body').innerHTML = rows.length ? rows.map((item) => {
       const key = `${item.app}:${item.id}`;
@@ -1081,7 +1111,7 @@
         <dt>세션·뷰포트</dt><dd>${esc(item.session)} · ${esc(item.viewport)}</dd><dt>근거</dt><dd>${tcInline(item.ref)}</dd></dl></td></tr>` : '';
       return `<tr class="tc-row" data-tc="${esc(key)}" aria-expanded="${tcState.open.has(key)}"><td class="tc-check"><input type="checkbox" data-pick="${esc(key)}" ${tcState.picked.has(key) ? 'checked' : ''} aria-label="${esc(item.id)} 고르기" title="${(item.scenarioFiles || []).length ? `씬 ${esc(item.scenarioFiles.join(', '))}` : '이 TC 를 검사하는 흐름 씬이 아직 없어요'}"></td><td class="id">${esc(item.id)}</td><td class="nowrap">${esc(item.kind)}</td><td>${tcInline(item.title)}</td>
         <td class="hide-sm nowrap">${esc(item.session)}</td><td class="hide-sm nowrap">${esc(item.viewport)}</td>
-        <td><span class="tc-auto${tcDone(item) ? ' done' : ''}">${tcInline(item.auto || '–')}</span>${tcJourneys(item).map((name) => ` <span class="tc-auto done" title="${esc(name)}">🧭 여정 ${esc(name.slice(0, 2))}</span>`).join('')}</td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
+        <td>${tcStatusCell(item)}</td><td class="tc-prio ${esc(item.prio)}">${esc(item.prio)}</td></tr>${detail}`;
     }).join('') : '<tr><td colspan="8" class="empty-history">맞는 TC 가 없어요</td></tr>';
     document.querySelectorAll('[data-tc]').forEach((row) => {
       row.onclick = (event) => { if (event.target.closest('.tc-check')) return; const key = row.dataset.tc; if (tcState.open.has(key)) tcState.open.delete(key); else tcState.open.add(key); renderTc(); };
@@ -1134,7 +1164,7 @@
       document.getElementById('tc-body').innerHTML = `<tr><td colspan="8" class="empty-history">불러오지 못했어요 — ${esc(error.message)}</td></tr>`;
     }
   };
-  ['tc-prio', 'tc-kind', 'tc-auto'].forEach((id) => { document.getElementById(id).onchange = renderTc; });
+  ['tc-prio', 'tc-kind'].forEach((id) => { document.getElementById(id).onchange = renderTc; });
   document.getElementById('tc-search').oninput = renderTc;
   document.getElementById('tc-guide-open').onclick = () => document.getElementById('tc-guide').showModal();
   document.getElementById('tc-guide-close').onclick = () => document.getElementById('tc-guide').close();
