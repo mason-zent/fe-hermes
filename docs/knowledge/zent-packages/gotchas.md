@@ -15,8 +15,13 @@
 - **brics ↔ bznav 코드 스타일 상이**: 루트 `.prettierrc`는 semi false/120인데 bznav 소스는 세미콜론+긴 줄. bznav 전용 prettier 설정 없음 → 루트 prettier로 bznav를 포맷하면 대량 diff. **포맷터를 무심코 돌리지 말 것**
 - **bznav-fe-ui `src/components/index.ts` 에 중복 `export *` 가 있다**(alert·badge·checkbox 등) — 추가 전 존재 확인
 - **`bznav-fe-ui` 에는 `build` 스크립트가 없다** → `pnpm build --filter=…bznav-fe-ui...` 와 표준 스크립트가 ui 자체를 타입체크하지 않는다. `exec tsc --noEmit` 을 따로(`rules.md` 검증)
-- **표준 스크립트 `changeset 존재` 단계는 미커밋 `.changeset/*.md` 만 본다**(`git status`). changeset 을 앞 커밋에 넣으면 다음 커밋의 엄격 검증이 ❌ — CI 는 브랜치 diff 로 보므로 실제로는 문제없다(`common/verify.md`)
+- 표준 스크립트 `changeset 존재` 단계는 미커밋 `.changeset/*.md` 만 본다(`git status`). CI(`changeset-check.yml`)는 브랜치 diff 를 보지만 `--diff-filter=A` 라 **새로 추가된** changeset 만 센다. 대상 브랜치에 이미 들어간 changeset 을 고치기만 하면 실패하니, 후속 PR 은 새 changeset 파일을 만든다. <!-- learn:20261009-zent-packages-learn-gotchas-changeset -->
 - **`.npmrc`에 토큰 금지**(pnpm 11+가 `${GITHUB_TOKEN}` 확장 거부) → `~/.npmrc`에 `//npm.pkg.github.com/:_authToken=<PAT>`
 - **orval mutator는 소비 앱 로컬 re-export 경유**(`lib/orval-fetcher.ts`) — 생성코드에 node_modules 경로가 박히는 것 방지
 - **`datadog-trace`는 zent-auth의 dependency이기도 함** → 앱이 다른 버전을 선언하면 중첩 사본 + `transpilePackages` 미커버로 빌드 깨짐. 버전 일치 유지
 - ⚠️ 주석: `useSessionTimeout.ts`(visibilitychange 금지), `devkit/src/link.mjs`(checkout 안 하는 이유, 상대경로), `devkit/src/next.mjs`(공통 상위 얕으면 스킵, Turbopack alias 상대경로), `bznav/ui/LottiePlayer.tsx`(두 방식 동시 사용 불가). TODO: `EditableTable/TypeRenderTableCell.tsx:108`, `frontend/README.md:134`(일반 배포 태그 격리 미적용)
+
+## 학습
+
+학습 루프로 들어온 줄 — 현황판 [학습] 탭에서 수정·삭제한다. 쉬운 설명은 `docs/knowledge/learned/`
+- bznav-fe 패키지 package.json exports 에 새 서브패스를 열면 `frontend/bznav/project-config/lint/eslint.config.js` 의 no-restricted-imports regex 허용 목록에도 추가한다 — 허용 경로를 이름으로 나열해서, 빠뜨리면 그 정식 경로 import 가 소비 앱(web-op 등) lint 에러가 된다. <!-- learn:20261008-zent-packages-learn-gotchas-07eec6 -->

@@ -20,3 +20,8 @@
 - **토스 계열(`toss`·`tossincome`) 분기는 `isTossPlatform`/`TOSS_APP_LIST`**(REF-3652, prd-refund `06c3fbf` 이후) — `'toss'` 문자열 비교로 새로 분기하면 토스인컴이 빠진다. 헤더·뒤로가기·CI 인증은 레이아웃이 처리한다(`patterns.md` P11-1). `pages/auth/sign-out` 은 서버 쿠키로 플랫폼을 props 로 내려 만료 안내 문구 깜빡임을 막는다 — CSR 판정으로 바꾸지 말 것
 - 한국어 설명 주석이 촘촘하다(`lib/content-page/*`, `use-partner-main-image.ts`, `use-lookup-result-lab.ts`, `seo-policy.mjs`) — 수정 전 필독
 - **agent.md 낡음**: "SCSS·Tailwind 혼용 유지"라지만 실제 SCSS 19 vs Tailwind 218. 어드민 콘텐츠 페이지·SEO 정책·파트너 UTM·`proxy.ts` 미들웨어가 문서에 없음. `.ai/basic-rule.md` 위반 기존 코드(any, 한글 키)는 정리하지 말 것
+
+## 학습
+
+학습 루프로 들어온 줄 — 현황판 [학습] 탭에서 수정·삭제한다. 쉬운 설명은 `docs/knowledge/learned/`
+- BZNAVSans의 font-display는 fallback으로 유지하고 optional로 바꾸지 않는다 — 이 글꼴에는 아이콘 글리프도 들어 있어서, 첫 방문 때 글꼴이 늦게 오면 아이콘이 □로 보이고 폰트가 나오지 않는다. 선언은 packages/ui/src/styles/globals.css에 있어 5개 앱이 같이 쓰고, refund-web에서는 _document.tsx의 preload로만 조정한다. <!-- learn:20261008-bznav-web-refund-web-learn-gotchas-de8f32 -->
