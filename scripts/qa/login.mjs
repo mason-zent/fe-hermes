@@ -129,4 +129,7 @@ try {
   process.exitCode = 1
 } finally {
   await browser.close()
+  // 띄운 로컬 서버를 끄고 끝낸다 — 자식 서버가 남아 있으면 이 프로세스가 끝나지 않아 heavy.sh 잠금을 계속 쥔다
+  stopLocalServer()
+  process.exit(process.exitCode ?? 0)
 }
