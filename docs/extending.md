@@ -65,4 +65,4 @@ argument-hint: "<인자 예시>"
 - **에이전트 목록**도 `.claude/agents/*.md`에서 `name`·`description`·`- 레포:`를 읽어 만들고, 그 아래에 `AGENTS.md`의 "어느 레포인지 고르기" 라우팅 기준을 붙인다
 - 문서 항목은 **마크다운 뷰어**로 열린다. `glow`가 설치돼 있으면 glow, 없으면 내장 렌더러 `scripts/mdview.py`(의존성 없음, 제목·목록·표·코드·굵게 서식). 특정 파일을 직접 보려면 `/guide <파일>`을 쓴다
 - 스크립트 단독: `scripts/guide-pane.sh [파일]`. `.md`를 주면 뷰어로, 그 외는 less로 띄운다. herdr 안이면 `herdr pane split`, tmux면 `split-window`, 둘 다 아니면 새 Ghostty 창으로 대체된다
-- 공유용 플레이북: https://claude.ai/artifact/NDbDm5eitYXjdA6E4mehxx#extend
+- 플레이북: `docs/playbook.html` "확장하기" 절(`/guide 열기`)
