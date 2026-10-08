@@ -30,9 +30,9 @@
   .live:hover .tip, .live:focus-visible .tip { display: flex; }
   .live .tip:empty, .live .tip span:empty { display: none; }
   /* 제목 앞 점이 연결 상태 — 정상일 땐 글자 없이 점만, 끊김·다른 탭일 때만 옆에 안내 */
-  header h1.live { font-size: 16px; color: var(--text); gap: 8px; line-height: 1; }
-  /* 한글 글꼴은 글자가 줄 가운데보다 살짝 위에 그려져 점을 그만큼 올린다 */
-  header h1.live .dot { transform: translateY(-1px); }
+  /* 한글 글꼴은 글자가 줄 가운데보다 살짝 위에 그려진다 — 제목을 내려 탭 상자 가운데에 맞추고, 점은 그만큼 다시 올린다 */
+  header h1.live { font-size: 16px; color: var(--text); gap: 8px; line-height: 1; transform: translateY(1.5px); }
+  header h1.live .dot { transform: translateY(-2px); }
   .live-note { font-size: 12px; color: var(--muted); }
   .live-note:empty { display: none; }
   .usage { margin-left: auto; display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; font-size: 12px; }
@@ -140,7 +140,8 @@
   .toast.show { opacity: 1; }
   /* 탭 — 현황 / 히스토리 */
   .tabs { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
-  .tabs button { font: inherit; font-size: 12.5px; padding: 3px 12px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
+  /* 위 4px · 아래 2px — 한글이 위로 쏠려 보이는 것을 맞춘다 */
+  .tabs button { font: inherit; font-size: 12.5px; padding: 4px 12px 2px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; }
   .tabs button[aria-selected="true"] { background: var(--panel); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
   .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   /* 히스토리 */
@@ -166,6 +167,14 @@
   .h-title { font-weight: 600; font-size: 13.5px; }
   .h-sum { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  /* 히스토리·메모리 행 — 날짜·작업자·종류 배지는 행 세로 가운데, 메모리 배지는 오른쪽 끝 칸. 칸이 행 높이만큼 늘어나지 않게 align-self 로 */
+  .h-row > .h-tags { justify-content: flex-end; align-self: center; }
+  .h-row > .h-date, .h-row > .h-owner { align-self: center; padding-top: 0; }
+  /* 메모리 종류 — 테두리만으로는 다 비슷해 보여 색·아이콘으로 나눈다 */
+  .pill.mem-user { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .pill.mem-feedback { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); background: color-mix(in srgb, var(--col-plan) 8%, transparent); }
+  .pill.mem-project { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+  .pill.mem-reference { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); background: color-mix(in srgb, var(--warn) 8%, transparent); }
   .pill.kind-issue { color: var(--col-issue); border-color: color-mix(in srgb, var(--col-issue) 40%, transparent); }
   .formal-mark { margin-right: 4px; font-size: 13px; cursor: default; }
   .pill.kind-plan { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
@@ -299,6 +308,7 @@
     <button type="button" role="tab" id="tab-hermes" data-tab="hermes" aria-selected="false">헤르메스</button>
     <button type="button" role="tab" id="tab-qa" data-tab="qa" aria-selected="false">QA</button>
     <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
+    <button type="button" role="tab" id="tab-memory" data-tab="memory" aria-selected="false">메모리</button>
   </nav>
   <span class="live-note" id="live-text">연결 중…</span>
   <div class="usage" id="usage" hidden></div>
@@ -380,6 +390,13 @@
     </div>
   </section>
 </main>
+<main id="view-memory" hidden>
+  <section>
+    <h2>메모리 — 헤르메스가 대화에서 남긴 작업 규칙 (<span id="memory-dir">~/.claude/projects/…/memory</span>, 읽기 전용)
+      <button type="button" class="btn" id="memory-guide-open" title="메모리 보는 법 — 사용자 · 피드백 · 프로젝트 · 참고 뜻" aria-label="메모리 보는 법">📖</button></h2>
+    <div id="memory" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
+  </section>
+</main>
 <dialog id="ask">
   <h3 id="ask-title">헤르메스에게 보내기</h3>
   <div class="line" id="ask-to" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
@@ -427,6 +444,24 @@
     <p class="note">ID 는 앱 접두사 + 번호(RF 환급 · SN 세나 · CR 케어 · BR 브랜드 · PL 플러스). 행을 누르면 사전 조건·단계·기대 결과·근거(코드 위치)가 펼쳐진다. 정본: docs/qa/tc/README.md "용어"</p>
   </div>
   <div class="row"><button class="btn" id="tc-guide-close">닫기</button></div>
+</dialog>
+<dialog id="memory-guide" class="tc-guide" aria-labelledby="memory-guide-title">
+  <h3 id="memory-guide-title">📖 메모리 보는 법</h3>
+  <div class="body">
+    <div><h4>종류 — 무엇을 기억해 두었나</h4><dl>
+      <dt><span class="pill mem-user">👤 사용자</span></dt><dd>사용자에 대한 것 — 역할, 잘 아는 분야, 쓰는 도구, 선호하는 방식</dd>
+      <dt><span class="pill mem-feedback">💬 피드백</span></dt><dd>사용자가 일하는 방식을 바로잡거나 "이렇게 해" 하고 확인해 준 것. 이유와 적용 방법을 같이 적는다</dd>
+      <dt><span class="pill mem-project">📁 프로젝트</span></dt><dd>코드·git 기록에 남지 않는 목표·제약·기한</dd>
+      <dt><span class="pill mem-reference">🔗 참고</span></dt><dd>외부 자료 위치 — URL, 대시보드, 티켓</dd>
+    </dl></div>
+    <div><h4>어디에 있나</h4><dl>
+      <dt>위치</dt><dd>레포 밖 내 홈 폴더(제목 옆 경로). git 에 올라가지 않아 나만 본다</dd>
+      <dt>다른 사람</dt><dd>레포를 클론해 쓰면 그 사람의 메모리가 따로 쌓인다</dd>
+      <dt>목차</dt><dd>MEMORY.md — 새 대화마다 헤르메스가 읽는다. 목록 순서·제목은 목차를 따른다</dd>
+    </dl></div>
+    <p class="note">진행 중인 작업·브랜치·구현 결정은 메모리에 남기지 않는다 — 계획서·knowledge 가 맡는다(AGENTS.md 2.5). 행을 누르면 본문이 열린다</p>
+  </div>
+  <div class="row"><button class="btn" id="memory-guide-close">닫기</button></div>
 </dialog>
 <dialog id="detail">
   <h3 id="detail-title"></h3>
@@ -1179,6 +1214,8 @@
   document.getElementById('tc-search').oninput = renderTc;
   document.getElementById('tc-guide-open').onclick = () => document.getElementById('tc-guide').showModal();
   document.getElementById('tc-guide-close').onclick = () => document.getElementById('tc-guide').close();
+  document.getElementById('memory-guide-open').onclick = () => document.getElementById('memory-guide').showModal();
+  document.getElementById('memory-guide-close').onclick = () => document.getElementById('memory-guide').close();
   const showQaView = (view) => {
     document.getElementById('qa-view-runs').hidden = view !== 'runs';
     document.getElementById('qa-view-tc').hidden = view !== 'tc';
@@ -1189,13 +1226,47 @@
   document.querySelectorAll('[data-qaview]').forEach((button) => { button.onclick = () => showQaView(button.dataset.qaview); });
   try { if (localStorage.getItem('board.qaView') === 'tc') showQaView('tc'); } catch (error) { /* 무시 */ }
 
-  const TABS = ['now', 'hermes', 'qa', 'history'];
+  // ── 메모리 탭 — 헤르메스 auto memory 목록. 누를 때만 읽고, 줄을 누르면 본문
+  const MEMORY_TYPE = { user: '👤 사용자', feedback: '💬 피드백', project: '📁 프로젝트', reference: '🔗 참고' };
+  const memoryPill = (type) => `<span class="pill mem-${esc(type || 'none')}">${esc(MEMORY_TYPE[type] || type || '?')}</span>`;
+  let memoryItems = [];
+  const openMemory = (file) => {
+    const item = memoryItems.find((entry) => entry.file === file);
+    if (!item) return;
+    document.getElementById('detail-title').textContent = item.title;
+    document.getElementById('detail-meta').textContent = `${MEMORY_TYPE[item.type] || item.type || '?'} · 수정 ${item.updated} · ${item.file}`;
+    document.getElementById('detail-body').innerHTML = `<p style="color:var(--muted)">${inline(item.description)}</p>${markdown(item.body)}`;
+    document.getElementById('detail').showModal();
+  };
+  const loadMemory = async () => {
+    const box = document.getElementById('memory');
+    try {
+      const response = await fetch('/api/memory');
+      const data = await response.json();
+      memoryItems = data.items || [];
+      if (data.dir) document.getElementById('memory-dir').textContent = data.dir;
+    } catch (error) {
+      box.innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
+      return;
+    }
+    if (!memoryItems.length) { box.innerHTML = '<div class="empty-history">저장된 메모리가 없어요</div>'; return; }
+    box.innerHTML = memoryItems.map((item) => `
+      <button type="button" class="h-row" data-file="${esc(item.file)}">
+        <span class="h-date">${esc(item.updated)}</span>
+        <span class="h-main"><span class="h-title">${esc(item.title)}</span><span class="h-sum">${esc(item.description)}</span></span>
+        <span class="h-tags">${memoryPill(item.type)}</span>
+      </button>`).join('');
+    box.querySelectorAll('.h-row').forEach((row) => { row.onclick = () => openMemory(row.dataset.file); });
+  };
+
+  const TABS = ['now', 'hermes', 'qa', 'history', 'memory'];
   const showTab = (tab) => {
     for (const name of TABS) {
       document.getElementById(`view-${name}`).hidden = name !== tab;
       document.getElementById(`tab-${name}`).setAttribute('aria-selected', String(name === tab));
     }
     if (tab === 'history') loadHistory();
+    if (tab === 'memory') loadMemory();
     if (tab === 'qa') loadQa(); else stopQa();
     try { history.replaceState(null, '', tab === 'now' ? location.pathname : `#${tab}`); } catch (error) { /* 무시 */ }
   };

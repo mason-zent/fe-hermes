@@ -26,6 +26,7 @@
  *   - GET  /api/qa/apps      전체 검수할 수 있는 앱·세션 프로필 · POST /api/qa-suite [전체 검수](요청할 때만) · POST /api/qa-approve [기준으로 승인]
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
+ *   - GET  /api/memory       헤르메스 메모리(~/.claude/projects/<워크스페이스>/memory) 목록·본문 — 읽기 전용
  *   - POST /api/hermes-new 이슈 [처리 시작] → 헤르메스: 새 헤르메스 pane(🧭 헤르메스 · <이슈>)을 열어 그 안에서 처리한다 — 떠 있는 헤르메스 대화에 섞지 않는다
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
  *     정식 계획서 결정 콘솔(/plans/*.html)의 [이대로 진행] 도 이걸로 PLAN.hermesPane 에 보낸다
@@ -352,6 +353,43 @@ const readPanes = async () => {
 }
 
 const projectDir = join(homedir(), '.claude/projects', ROOT.replace(/[/.]/g, '-'))
+
+// 메모리 — 헤르메스 auto memory(<projectDir>/memory/*.md). 읽기 전용. 제목은 목차(MEMORY.md) 링크 글자, 순서도 목차를 따른다
+const memoryDir = join(projectDir, 'memory')
+const listMemory = () => {
+  if (!existsSync(memoryDir)) return []
+  const index = existsSync(join(memoryDir, 'MEMORY.md')) ? readFileSync(join(memoryDir, 'MEMORY.md'), 'utf8') : ''
+  const titles = new Map([...index.matchAll(/\[([^\]]+)\]\(([^)]+\.md)\)/g)].map((match) => [match[2], match[1]]))
+  const order = [...titles.keys()]
+  // YAML 따옴표 값 — 큰따옴표 안의 \" · \\ 이스케이프도 푼다("\"herdr\"" 가 그대로 보이던 것)
+  const unquote = (value) => {
+    const trimmed = value.trim()
+    if (/^"[\s\S]*"$/.test(trimmed)) return trimmed.slice(1, -1).replace(/\\(["\\])/g, '$1')
+    return trimmed.replace(/^'([\s\S]*)'$/, '$1')
+  }
+  return readdirSync(memoryDir)
+    .filter((file) => file.endsWith('.md') && file !== 'MEMORY.md')
+    .map((file) => {
+      const text = readFileSync(join(memoryDir, file), 'utf8')
+      const front = text.match(/^---\n([\s\S]*?)\n---\n?/)
+      const field = (key) => {
+        const match = front?.[1].match(new RegExp(`^\\s*${key}:\\s*(.*)$`, 'm'))
+        return match ? unquote(match[1]) : ''
+      }
+      return {
+        file,
+        title: titles.get(file) || field('name') || file,
+        type: field('type'),
+        description: field('description'),
+        updated: new Date(statSync(join(memoryDir, file)).mtimeMs).toISOString().slice(0, 10),
+        body: front ? text.slice(front[0].length).trim() : text.trim(),
+      }
+    })
+    .sort((left, right) => {
+      const rank = (item) => (order.includes(item.file) ? order.indexOf(item.file) : order.length)
+      return rank(left) - rank(right) || left.file.localeCompare(right.file)
+    })
+}
 const readSubagents = () => {
   const now = Date.now()
   return listFiles(projectDir, (path) => /\/subagents\/agent-[^/]+\.jsonl$/.test(path))
@@ -1397,6 +1435,10 @@ createServer(async (request, response) => {
     const item = readHistoryItem(String(url.searchParams.get('dir') ?? ''))
     response.writeHead(item ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' })
     return response.end(JSON.stringify(item ?? { error: '보관된 일을 찾지 못했어요' }))
+  }
+  if (url.pathname === '/api/memory') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify({ dir: memoryDir.replace(homedir(), '~'), items: listMemory() }))
   }
   if (url.pathname === '/api/viewers') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
