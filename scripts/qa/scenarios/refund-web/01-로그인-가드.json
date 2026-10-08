@@ -1,10 +1,20 @@
 {
   "name": "로그인 가드 — 로그아웃이면 메뉴에서 로그인으로",
+  "tc": [
+    "RF-005"
+  ],
   "profile": "logout",
   "why": "로그인이 필요한 화면(AuthGuard)을 로그아웃 상태로 열면 로그인 화면으로 보내야 한다",
   "steps": [
-    { "goto": "/menu" },
-    { "expectUrl": "/auth/sign-", "label": "로그인 화면으로 이동" },
-    { "screenshot": "sign-in" }
+    {
+      "goto": "/menu"
+    },
+    {
+      "expectUrl": "/auth/sign-",
+      "label": "로그인 화면으로 이동"
+    },
+    {
+      "screenshot": "sign-in"
+    }
   ]
 }

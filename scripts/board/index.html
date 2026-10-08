@@ -326,7 +326,7 @@
       <div class="tc-filter">
         <select id="tc-prio" aria-label="우선"><option value="">우선 전체</option><option>P0</option><option>P1</option><option>P2</option></select>
         <select id="tc-kind" aria-label="분류"><option value="">분류 전체</option></select>
-        <select id="tc-auto" aria-label="자동화"><option value="">자동화 전체</option><option value="done">자동화됨(씬 있음)</option><option value="todo">아직</option></select>
+        <select id="tc-auto" aria-label="자동화"><option value="">자동화 전체</option><option value="done">자동화됨(씬·여정 있음)</option><option value="todo">아직(씬 없음)</option></select>
         <input type="search" id="tc-search" placeholder="ID·제목·경로·문구 검색" aria-label="TC 검색">
         <button type="button" class="btn" id="tc-guide-open" title="TC 목록 보는 법 — 우선 P0~P2 · 분류 · 자동화 · 세션 · 뷰포트 뜻" aria-label="TC 목록 보는 법">📖</button>
       </div>
@@ -1020,7 +1020,8 @@
   const TC_APP_NAME = { 'refund-web': '환급', 'care-web': '케어', 'brand-web': '브랜드', 'sena-web': '세나', 'plus-web': '플러스' };
   const tcState = { apps: null, app: '', open: new Set(), picked: new Set() };
   const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
-  const tcDone = (item) => /있음/.test(item.auto);
+  // 자동화됨 = 이 TC 를 검사하는 흐름 씬(작은 씬·여정)이 실제로 있다 — 문서 자동화 칸의 '(있음 NN)' 표기도 같이 본다
+  const tcDone = (item) => (item.scenarioFiles || []).length > 0 || /있음/.test(item.auto || '');
   const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
   // 이 TC 를 지나가는 여정 씬(부품 씬을 include 하는 씬)
   const tcJourneys = (item) => { const journeys = (tcState.apps || []).find((entry) => entry.app === item.app)?.journeys || []; return (item.scenarioFiles || []).filter((name) => journeys.includes(name)); };

@@ -1,14 +1,47 @@
 {
   "name": "본인인증 요청 → 인증사 → 성공 복귀 (응답 흉내)",
+  "tc": [
+    "RF-011"
+  ],
   "profile": "login",
   "why": "인증 준비 API(ci/v2/prepare)가 인증사 주소를 주면 그곳으로 가고, 인증사가 성공으로 돌려보내면 본인인증 결과 화면이 처리한다. 인증사 대신 바로 성공 복귀 주소를 돌려준다",
   "steps": [
-    { "mock": { "url": "**/ci/v2/prepare", "method": "POST", "status": 200, "json": { "result": true, "authInfo": { "auth_url": "{{origin}}/auth/ci-authentication?state=success&request_type=collection" } } } },
-    { "goto": "/auth/ci-request" },
-    { "click": { "text": "[필수]", "all": true, "optional": true }, "label": "필수 약관 동의" },
-    { "click": "휴대폰 본인인증 하기" },
-    { "expectUrl": "/auth/ci-authentication", "label": "인증사(흉내) → 결과 화면으로" },
-    { "wait": 2000 },
-    { "screenshot": "after-success" }
+    {
+      "mock": {
+        "url": "**/ci/v2/prepare",
+        "method": "POST",
+        "status": 200,
+        "json": {
+          "result": true,
+          "authInfo": {
+            "auth_url": "{{origin}}/auth/ci-authentication?state=success&request_type=collection"
+          }
+        }
+      }
+    },
+    {
+      "goto": "/auth/ci-request"
+    },
+    {
+      "click": {
+        "text": "[필수]",
+        "all": true,
+        "optional": true
+      },
+      "label": "필수 약관 동의"
+    },
+    {
+      "click": "휴대폰 본인인증 하기"
+    },
+    {
+      "expectUrl": "/auth/ci-authentication",
+      "label": "인증사(흉내) → 결과 화면으로"
+    },
+    {
+      "wait": 2000
+    },
+    {
+      "screenshot": "after-success"
+    }
   ]
 }
