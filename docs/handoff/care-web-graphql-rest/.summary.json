@@ -1,0 +1,3079 @@
+{
+  "operations": 188,
+  "queries": 100,
+  "mutations": 88,
+  "apis": 184,
+  "bundles": [],
+  "shared": [
+    {
+      "field": "getPartTimeDetail",
+      "ops": [
+        "getPartTimeDetailQuery",
+        "getPaySlipResultQuery",
+        "getSavedDailyBreakdownsQuery"
+      ]
+    },
+    {
+      "field": "vatMaterialMain",
+      "ops": [
+        "vatMaterialMainConnectCountCheckQuery",
+        "vatMaterialMainSubmitCountCheckQuery",
+        "vatMaterialMainQuery"
+      ]
+    }
+  ],
+  "unused": [],
+  "uploads": [
+    "bkpAddXpsPrfParsingMultiple",
+    "incomeTaxCardFileUpload",
+    "incomeFileUpload",
+    "uploadPayrollFile",
+    "cardFileUpload",
+    "insertTaxInvcInfo",
+    "taxInvcParsingMultiple",
+    "insertRentInfo",
+    "rentParsing",
+    "fileUpload",
+    "uploadYearEndTaxFile"
+  ],
+  "noArgs": [
+    "cmsRequiredOrgs",
+    "hasPaymentOverdue",
+    "myRegularPaymentMethods",
+    "paymentOverdueStats",
+    "promotionNotice",
+    "fourInsureDelegationOrgs",
+    "findMarketingTerms",
+    "getCardCompanies",
+    "prevMilitaryPeriod",
+    "checkAllMaterialApplied",
+    "incomeTaxDeclareEstimatedTax",
+    "checkFamilyRegistryCert",
+    "checkIncomeFirstEnter",
+    "checkIncomeIntroStatus",
+    "createPaymentLink",
+    "deleteAllDependent",
+    "dependentList",
+    "donationFileList",
+    "donationInfo",
+    "expensesLocalTaxDetail",
+    "expensesMySelectList",
+    "incomeCardFeeOrgs",
+    "incomeEtcSupportingMaterial",
+    "incomeMaterialEtcFiles",
+    "incomeMaterialMain",
+    "incomeTaxDeclareStageConfirm",
+    "incomeTaxOrgsCardSummary",
+    "personalExemptionInfo",
+    "smeTaxExemptionDetail",
+    "incomeTaxDeclareList",
+    "incomeTaxStlAgree",
+    "incomeTaxDeclareResult",
+    "incometaxOrgsRegularPaymentMethod",
+    "vatDeclareStatus",
+    "myBankAccount",
+    "vatDeclareResultList",
+    "getRfndAccs",
+    "issueTmpCrdtlsCer",
+    "me"
+  ],
+  "domains": [
+    {
+      "id": "01-common",
+      "title": "공통·내 정보",
+      "count": 10,
+      "files": 38,
+      "uploads": 0
+    },
+    {
+      "id": "02-hometax",
+      "title": "홈택스 연동·수임 동의·4대보험",
+      "count": 11,
+      "files": 64,
+      "uploads": 0
+    },
+    {
+      "id": "03-pricing",
+      "title": "이용료 조회·가입",
+      "count": 5,
+      "files": 12,
+      "uploads": 0
+    },
+    {
+      "id": "04-billing",
+      "title": "결제",
+      "count": 12,
+      "files": 46,
+      "uploads": 0
+    },
+    {
+      "id": "05-vat-material",
+      "title": "부가세 자료제출",
+      "count": 33,
+      "files": 121,
+      "uploads": 6
+    },
+    {
+      "id": "06-vat-connect",
+      "title": "부가세 판매처(배달앱·온라인몰) 연동",
+      "count": 6,
+      "files": 22,
+      "uploads": 0
+    },
+    {
+      "id": "07-vat-declare",
+      "title": "부가세 예상세액·신고 결과",
+      "count": 9,
+      "files": 33,
+      "uploads": 0
+    },
+    {
+      "id": "08-income-material",
+      "title": "종소세 자료제출",
+      "count": 39,
+      "files": 114,
+      "uploads": 2
+    },
+    {
+      "id": "09-income-declare",
+      "title": "종소세 진행·예상세액·신고 결과",
+      "count": 13,
+      "files": 40,
+      "uploads": 0
+    },
+    {
+      "id": "10-payroll",
+      "title": "급여",
+      "count": 11,
+      "files": 39,
+      "uploads": 1
+    },
+    {
+      "id": "11-part-time",
+      "title": "알바 급여 계산",
+      "count": 10,
+      "files": 31,
+      "uploads": 0
+    },
+    {
+      "id": "12-year-end-tax",
+      "title": "연말정산",
+      "count": 7,
+      "files": 22,
+      "uploads": 1
+    },
+    {
+      "id": "13-expense-card",
+      "title": "추가경비 증빙·사업용 카드",
+      "count": 13,
+      "files": 42,
+      "uploads": 1
+    },
+    {
+      "id": "14-startup-check",
+      "title": "창업 점검(세액공제·감면 진단)",
+      "count": 5,
+      "files": 16,
+      "uploads": 0
+    }
+  ],
+  "tracker": [
+    {
+      "id": "01-01",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "me",
+      "kind": "조회",
+      "label": "내 정보·구독 상태 조회 (스키마 설명 없음)",
+      "branches": [
+        "Me",
+        "TemporaryError"
+      ],
+      "members": [
+        "Me",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-02",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "orgList",
+      "kind": "조회",
+      "label": "내 사업장 목록(장부 상태로 거름) (스키마 설명 없음)",
+      "branches": [],
+      "members": [
+        "OrgListResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-03",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "Ledger",
+      "kind": "조회",
+      "label": "장부",
+      "branches": [
+        "LedgerResults"
+      ],
+      "members": [
+        "LedgerResults",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-04",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "getRfndAccs",
+      "kind": "조회",
+      "label": "등록된 환급 계좌 조회 (스키마 설명 없음)",
+      "branches": [],
+      "members": [
+        "GetRfndAccsResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-05",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "registerRfndAcc",
+      "kind": "변경",
+      "label": "환급 계좌 등록 (스키마 설명 없음)",
+      "branches": [
+        "RegisterRfndAccSucceed"
+      ],
+      "members": [
+        "RegisterRfndAccSucceed",
+        "AccountNumberNotValidOutput",
+        "AccountInquiryRequestFailedOutput",
+        "DepositorNotMatchedOutput",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-06",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "findMarketingTerms",
+      "kind": "조회",
+      "label": "마케팅 수신 동의 조회 (스키마 설명 없음)",
+      "branches": [
+        "FindMarketingTermsSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "FindMarketingTermsSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-07",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "approveMarketingTerms",
+      "kind": "변경",
+      "label": "마케팅 수신 동의 (스키마 설명 없음)",
+      "branches": [
+        "MarketingTermsSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "MarketingTermsSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-08",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "withdrawMarketingTerms",
+      "kind": "변경",
+      "label": "마케팅 수신 동의 철회 (스키마 설명 없음)",
+      "branches": [
+        "MarketingTermsSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "MarketingTermsSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-09",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "addSubAccount",
+      "kind": "변경",
+      "label": "부계정 등록",
+      "branches": [
+        "TemporaryError"
+      ],
+      "members": [
+        "AddSubAccountSucceed",
+        "AlreadySubAccount",
+        "CareUserForbiddenSubAccount",
+        "ExpiredSubAccountLink",
+        "SubAccountLimitExceeded",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "01-10",
+      "domainId": "01-common",
+      "domain": "공통·내 정보",
+      "field": "mktEvent",
+      "kind": "조회",
+      "label": "마케팅 이벤트(빌더 랜딩 /events) 조회 (스키마 설명 없음)",
+      "branches": [
+        "MktEventResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "MktEventResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "02-01",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "hometaxSimpleLogin",
+      "kind": "변경",
+      "label": "홈택스 간편인증 step1",
+      "branches": [
+        "ForeignerProhibited",
+        "HometaxSimpleLoginSucceed"
+      ],
+      "members": [
+        "HometaxSimpleLoginSucceed",
+        "TemporaryError",
+        "ForeignerProhibited"
+      ]
+    },
+    {
+      "id": "02-02",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "hometaxSimpleLoginConfirm",
+      "kind": "변경",
+      "label": "홈택스 간편인증 step2",
+      "branches": [
+        "HometaxSimpleLoginConfirmSucceed"
+      ],
+      "members": [
+        "HometaxSimpleLoginConfirmSucceed",
+        "TemporaryError",
+        "HometaxSimpleAuthNoConfirm",
+        "HometaxSimpleAuthTimeout",
+        "HometaxExpiredSession"
+      ]
+    },
+    {
+      "id": "02-03",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "hometaxIdConnect",
+      "kind": "변경",
+      "label": "홈택스 아이디 연동",
+      "branches": [
+        "HometaxBlockId",
+        "HometaxIdConnectSucceed",
+        "HometaxPasswordError"
+      ],
+      "members": [
+        "HometaxIdConnectSucceed",
+        "TemporaryError",
+        "HometaxPasswordError",
+        "HometaxBlockId"
+      ]
+    },
+    {
+      "id": "02-04",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "hometaxChangePassword",
+      "kind": "변경",
+      "label": "홈택스 비밀번호 변경",
+      "branches": [
+        "HometaxChangePasswordSucceed"
+      ],
+      "members": [
+        "HometaxChangePasswordSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "02-05",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "issueTmpCrdtlsCer",
+      "kind": "변경",
+      "label": "파일 외부 다운로드용 임시 인증 발급 (스키마 설명 없음 — 추측)",
+      "branches": [
+        "IssueTmpCrdtlsCerSucceedOutput"
+      ],
+      "members": [
+        "IssueTmpCrdtlsCerSucceedOutput",
+        "TemporaryError",
+        "TmpCrdtlsCerUnauthorizedOutput"
+      ]
+    },
+    {
+      "id": "02-06",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "redeemTmpCrdtlsCer",
+      "kind": "변경",
+      "label": "임시 인증으로 외부 파일 다운로드 권한 교환 (스키마 설명 없음 — 추측)",
+      "branches": [
+        "TemporaryError",
+        "TmpCrdtlsCerAlreadyRedeemedOutput",
+        "TmpCrdtlsCerExpirationNotValidOutput",
+        "TmpCrdtlsCerExpiredOutput",
+        "TmpCrdtlsCerNotFoundOutput"
+      ],
+      "members": [
+        "RedeemTmpCrdtlsCerSucceedOutput",
+        "TemporaryError",
+        "TmpCrdtlsCerNotFoundOutput",
+        "TmpCrdtlsCerExpiredOutput",
+        "TmpCrdtlsCerExpirationNotValidOutput",
+        "TmpCrdtlsCerAlreadyRedeemedOutput"
+      ]
+    },
+    {
+      "id": "02-07",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "hometaxOrgs",
+      "kind": "조회",
+      "label": "홈택스 사업체 조회 (수임동의요청)",
+      "branches": [
+        "HometaxExpiredSession",
+        "HometaxOrgAlreadyCare",
+        "HometaxOrgNotFound",
+        "HometaxOrgOnlyPermanentlyClosed",
+        "HometaxOrgs",
+        "HometaxTimeout",
+        "JoinedOtherEmail",
+        "NoCareTarget",
+        "NotEqualRpnTin",
+        "TaxFreeBmanError",
+        "TemporaryError"
+      ],
+      "members": [
+        "HometaxOrgs",
+        "TemporaryError",
+        "HometaxOrgNotFound",
+        "HometaxOrgAlreadyCare",
+        "HometaxExpiredSession",
+        "HometaxTimeout",
+        "HometaxOrgOnlyPermanentlyClosed",
+        "NotEqualRpnTin",
+        "JoinedOtherEmail",
+        "NoCareTarget",
+        "TaxFreeBmanError"
+      ]
+    },
+    {
+      "id": "02-08",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "taxAgencyAgree",
+      "kind": "변경",
+      "label": "홈택스 수임동의",
+      "branches": [
+        "CarePlusHistoryNotAllowedForDelegation",
+        "ExsitOtherAgency",
+        "HometaxExpiredSession",
+        "IncorrectRegno",
+        "TaxAgencyAgreeSucceed"
+      ],
+      "members": [
+        "TaxAgencyAgreeSucceed",
+        "TemporaryError",
+        "HometaxExpiredSession",
+        "IncorrectRegno",
+        "ExsitOtherAgency",
+        "CarePlusHistoryNotAllowedForDelegation"
+      ]
+    },
+    {
+      "id": "02-09",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "survey",
+      "kind": "변경",
+      "label": "설문지 작성",
+      "branches": [
+        "SurveySucceed"
+      ],
+      "members": [
+        "SurveySucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "02-10",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "fourInsureDelegationOrgs",
+      "kind": "조회",
+      "label": "4대보험 위임 대상 사업장 조회 (스키마 설명 없음)",
+      "branches": [
+        "AlreadyFourInsureDelegation",
+        "NoFourInsureDelegation"
+      ],
+      "members": [
+        "FourInsureDelegationRequiringOrgs",
+        "TemporaryError",
+        "NoFourInsureDelegation",
+        "AlreadyFourInsureDelegation"
+      ]
+    },
+    {
+      "id": "02-11",
+      "domainId": "02-hometax",
+      "domain": "홈택스 연동·수임 동의·4대보험",
+      "field": "fourInsureDelegationAgreement",
+      "kind": "변경",
+      "label": "4대보험 위임 동의 (스키마 설명 없음)",
+      "branches": [
+        "FourInsureDelegationAgreementSucceed"
+      ],
+      "members": [
+        "FourInsureDelegationAgreementSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "03-01",
+      "domainId": "03-pricing",
+      "domain": "이용료 조회·가입",
+      "field": "hometaxOrgsV2",
+      "kind": "조회",
+      "label": "홈택스 사업체 조회 (이용료조회)",
+      "branches": [
+        "CalcFeeAndHometaxOrgs",
+        "CarePlusHistoryNotAllowedForPricing",
+        "CarePlusNotAllowedForPricing",
+        "HometaxExpiredSession",
+        "HometaxOrgAlreadyCare",
+        "HometaxOrgNotFound",
+        "HometaxOrgOnlyPermanentlyClosed",
+        "HometaxOrgs",
+        "HometaxTimeout",
+        "JoinedOtherEmail",
+        "NoCareTarget",
+        "NotEqualRpnTin",
+        "TaxFreeBmanError"
+      ],
+      "members": [
+        "HometaxOrgs",
+        "TemporaryError",
+        "HometaxOrgNotFound",
+        "HometaxOrgAlreadyCare",
+        "HometaxExpiredSession",
+        "HometaxTimeout",
+        "HometaxOrgOnlyPermanentlyClosed",
+        "NotEqualRpnTin",
+        "JoinedOtherEmail",
+        "NoCareTarget",
+        "CalcFeeAndHometaxOrgs",
+        "TaxFreeBmanError",
+        "CarePlusNotAllowedForPricing",
+        "CarePlusHistoryNotAllowedForPricing"
+      ]
+    },
+    {
+      "id": "03-02",
+      "domainId": "03-pricing",
+      "domain": "이용료 조회·가입",
+      "field": "leadCalcResultV2",
+      "kind": "조회",
+      "label": "리드 견적 결과 호출",
+      "branches": [
+        "LeadCalcResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "LeadCalcResult",
+        "NoSupportIndustry",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "03-03",
+      "domainId": "03-pricing",
+      "domain": "이용료 조회·가입",
+      "field": "sendHookForPricingStart",
+      "kind": "조회",
+      "label": "자동 견적 기장 시작 훅",
+      "branches": [],
+      "members": [
+        "SendHookForPricingStartSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "03-04",
+      "domainId": "03-pricing",
+      "domain": "이용료 조회·가입",
+      "field": "saveLeadEmployeeInfo",
+      "kind": "변경",
+      "label": "리드 근로자 정보 저장",
+      "branches": [
+        "SaveLeadEmployeeInfoSucceed"
+      ],
+      "members": [
+        "SaveLeadEmployeeInfoSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "03-05",
+      "domainId": "03-pricing",
+      "domain": "이용료 조회·가입",
+      "field": "promotionNotice",
+      "kind": "조회",
+      "label": "프로모션 안내사항",
+      "branches": [],
+      "members": [
+        "PromotionNotice",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-01",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "orgsRegularPaymentMethod",
+      "kind": "조회",
+      "label": "사업체별 결제 수단",
+      "branches": [
+        "TemporaryError"
+      ],
+      "members": [
+        "OrgsRegularPaymentMethod",
+        "TemporaryError",
+        "NotFoundOrgs"
+      ]
+    },
+    {
+      "id": "04-02",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "incometaxOrgsRegularPaymentMethod",
+      "kind": "조회",
+      "label": "종소세용 사업체별 결제 수단",
+      "branches": [],
+      "members": [
+        "OrgsRegularPaymentMethod",
+        "TemporaryError",
+        "NotFoundOrgs"
+      ]
+    },
+    {
+      "id": "04-03",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "myRegularPaymentMethods",
+      "kind": "조회",
+      "label": "등록된 결제 수단",
+      "branches": [
+        "MyRegularPaymentMethod"
+      ],
+      "members": [
+        "MyRegularPaymentMethod",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-04",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "cmsRequiredOrgs",
+      "kind": "조회",
+      "label": "출금동의 필요 사업체",
+      "branches": [],
+      "members": [
+        "CmsRequiredOrgs",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-05",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "hasPaymentOverdue",
+      "kind": "조회",
+      "label": "rpnTin 기준 미납 row 존재 여부 확인",
+      "branches": [],
+      "members": [
+        "HasPaymentOverdue",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-06",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "paymentOverdueStats",
+      "kind": "조회",
+      "label": "사업체별 미납 건수 및 총액 통계",
+      "branches": [],
+      "members": [
+        "PaymentOverdueStatsList",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-07",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "checkBankAccount",
+      "kind": "조회",
+      "label": "예금주 조회",
+      "branches": [
+        "CheckBankAccountSucceed",
+        "IncorrectBankAccountNumber",
+        "IncorrectBankAccountOwner"
+      ],
+      "members": [
+        "CheckBankAccountSucceed",
+        "TemporaryError",
+        "IncorrectBankAccountOwner",
+        "IncorrectBankAccountNumber"
+      ]
+    },
+    {
+      "id": "04-08",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "initMyBankPayment",
+      "kind": "조회",
+      "label": "헥토 내통장 결제 등록창 호출",
+      "branches": [],
+      "members": [
+        "InitMyBankPaymentSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-09",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "createRegularPayment",
+      "kind": "변경",
+      "label": "신규 정기결제수단 등록",
+      "branches": [
+        "CreateRegularPaymentSucceed",
+        "PgError"
+      ],
+      "members": [
+        "CreateRegularPaymentSucceed",
+        "TemporaryError",
+        "PgError"
+      ]
+    },
+    {
+      "id": "04-10",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "refCreateRegularPayment",
+      "kind": "변경",
+      "label": "기존 정기결제수단 참조 등록",
+      "branches": [
+        "RefCreateRegularPaymentSucceed"
+      ],
+      "members": [
+        "RefCreateRegularPaymentSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-11",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "prePayment",
+      "kind": "변경",
+      "label": "선결제",
+      "branches": [
+        "PrePaymentFailed",
+        "TemporaryError"
+      ],
+      "members": [
+        "PrePaymentSucceed",
+        "PrePaymentFailed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "04-12",
+      "domainId": "04-billing",
+      "domain": "결제",
+      "field": "createPaymentLink",
+      "kind": "변경",
+      "label": "결제링크 생성",
+      "branches": [
+        "AdjustmentFeeZero",
+        "AlreadyPaid",
+        "CreateLinkSucceed"
+      ],
+      "members": [
+        "CreateLinkSucceed",
+        "CreateLinkFailed",
+        "AdjustmentFeeZero",
+        "AlreadyPaid",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "05-01",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatMaterialMain",
+      "kind": "조회",
+      "label": "부가세 자료제출 메인",
+      "branches": [
+        "VatMaterialMain"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialMain",
+        "NoTargetVatDeclare"
+      ]
+    },
+    {
+      "id": "05-02",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatRecommendMaterial",
+      "kind": "조회",
+      "label": "부가세 권장자료 안낸 목록",
+      "branches": [
+        "VatRecommendMaterial"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatRecommendMaterial"
+      ]
+    },
+    {
+      "id": "05-03",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "passMaterialStatus",
+      "kind": "조회",
+      "label": "자료제출 없이 신고하기 여부",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "PassMaterialStatus",
+        "NotFoundVatDeclare"
+      ]
+    },
+    {
+      "id": "05-04",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "savePassMaterialStatus",
+      "kind": "변경",
+      "label": "자료제출 없이 신고하기 상태 업데이트",
+      "branches": [
+        "UpdatePassMaterialStatusSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "UpdatePassMaterialStatusSucceed",
+        "NotFoundVatDeclare"
+      ]
+    },
+    {
+      "id": "05-05",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "saveFirstEnter",
+      "kind": "변경",
+      "label": "첫 진입여부 업데이트",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "UpdateFirstEnterSucceed",
+        "NotFoundVatDeclare"
+      ]
+    },
+    {
+      "id": "05-06",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "orgMaterialDetail",
+      "kind": "조회",
+      "label": "사업체 제출자료 내역",
+      "branches": [
+        "MaterialCarDetail"
+      ],
+      "members": [
+        "TemporaryError",
+        "MaterialFileDetail",
+        "MaterialCarDetail",
+        "MaterialTextDetail",
+        "NoSubmittedMaterial"
+      ]
+    },
+    {
+      "id": "05-07",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "materialFileDownload",
+      "kind": "조회",
+      "label": "내 제출자료 다운로드",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "MaterialFileDownload"
+      ]
+    },
+    {
+      "id": "05-08",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "orgCashSalesInfo",
+      "kind": "조회",
+      "label": "현금 신고 정보",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "CashSalesInfo"
+      ]
+    },
+    {
+      "id": "05-09",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "salesMallList",
+      "kind": "조회",
+      "label": "온라인 / 배달앱 매출 조회",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "SalesMallList"
+      ]
+    },
+    {
+      "id": "05-10",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatMaterialReusing",
+      "kind": "조회",
+      "label": "직전 신고 자료 가져오기",
+      "branches": [
+        "NoData",
+        "PreviousVatMaterialCar"
+      ],
+      "members": [
+        "TemporaryError",
+        "PreviousVatMaterialCar",
+        "NoData"
+      ]
+    },
+    {
+      "id": "05-11",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatCardList",
+      "kind": "조회",
+      "label": "사업자의 카드 리스트 조회",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "VatCardList"
+      ]
+    },
+    {
+      "id": "05-12",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatCardDetail",
+      "kind": "조회",
+      "label": "부가세 개인카드 단건 상세 (스키마 설명 '사업자의 카드 리스트 조회' 는 복사 실수로 보임)",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "VatCardDetail"
+      ]
+    },
+    {
+      "id": "05-13",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatCardDetailByMaterialId",
+      "kind": "조회",
+      "label": "부가세 제출자료 ID 별 개인카드 상세 (스키마 설명 '사업자의 카드 리스트 조회' 는 복사 실수로 보임)",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "VatCardDetailByMaterial"
+      ]
+    },
+    {
+      "id": "05-14",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "updatePersonalCardNo",
+      "kind": "변경",
+      "label": "카드번호 업데이트",
+      "branches": [
+        "PersonalCardUpdateSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "PersonalCardUpdateSucceed"
+      ]
+    },
+    {
+      "id": "05-15",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "deletePersonalCardNo",
+      "kind": "변경",
+      "label": "부가세 개인카드 번호 삭제 (스키마 설명 '카드번호 업데이트' 는 복사 실수로 보임)",
+      "branches": [
+        "PersonalCardDeleteSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "PersonalCardDeleteSucceed"
+      ]
+    },
+    {
+      "id": "05-16",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "cardFileUpload",
+      "kind": "변경",
+      "label": "개인카드 업로드 및 파싱",
+      "branches": [
+        "NeedFilePassword",
+        "OnlyUploadSucceed",
+        "PersonalCardSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "NeedFilePassword",
+        "AlreadyUploadedFile",
+        "PersonalCardParsingFailed",
+        "PasswordNotCorrect",
+        "NotResultInPeriod",
+        "NotExistVatItem",
+        "PersonalCardSucceed",
+        "OnlyUploadSucceed"
+      ]
+    },
+    {
+      "id": "05-17",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "rentInfoList",
+      "kind": "조회",
+      "label": "등록된 임대차 계약서 목록",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "RentInfoList"
+      ]
+    },
+    {
+      "id": "05-18",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "beforeRentInfoList",
+      "kind": "조회",
+      "label": "이전 등록된 임대차 계약서 목록",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "BeforeRentList"
+      ]
+    },
+    {
+      "id": "05-19",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "rentParsing",
+      "kind": "변경",
+      "label": "임대차계약서 파싱",
+      "branches": [
+        "RentParsingSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "RentParsingSucceed"
+      ]
+    },
+    {
+      "id": "05-20",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "insertRentInfo",
+      "kind": "변경",
+      "label": "임대차 계약서 관련 사항 저장",
+      "branches": [
+        "RentInfoInsertSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "RentInfoInsertSucceed"
+      ]
+    },
+    {
+      "id": "05-21",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "updateRentInfo",
+      "kind": "변경",
+      "label": "임대차 계약서 수정",
+      "branches": [
+        "UpdateRentInfoSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "UpdateRentInfoSucceed"
+      ]
+    },
+    {
+      "id": "05-22",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "deleteRentInfo",
+      "kind": "변경",
+      "label": "임대차 계약서 삭제",
+      "branches": [
+        "DeleteRentInfoSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "DeleteRentInfoSucceed"
+      ]
+    },
+    {
+      "id": "05-23",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "taxInvcInfoList",
+      "kind": "조회",
+      "label": "등록된 세금계산서 목록",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "TaxInvcInfoList"
+      ]
+    },
+    {
+      "id": "05-24",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "taxInvcParsingMultiple",
+      "kind": "변경",
+      "label": "수기 증빙 계산서 다중 파싱 (최대 10개)",
+      "branches": [
+        "TaxInvcParsingMultipleSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "TaxInvcParsingMultipleSucceed"
+      ]
+    },
+    {
+      "id": "05-25",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "insertTaxInvcInfo",
+      "kind": "변경",
+      "label": "세금계산서 정보 저장",
+      "branches": [
+        "TaxInvcInfoInsertSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncorrectCareUserBsno",
+        "TaxInvcInfoInsertSucceed"
+      ]
+    },
+    {
+      "id": "05-26",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "updateTaxInvcInfo",
+      "kind": "변경",
+      "label": "세금계산서 정보 수정",
+      "branches": [
+        "UpdateTaxInvcInfoSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "UpdateTaxInvcInfoSucceed"
+      ]
+    },
+    {
+      "id": "05-27",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "deleteTaxInvcInfo",
+      "kind": "변경",
+      "label": "세금계산서 정보 삭제",
+      "branches": [
+        "DeleteTaxInvcInfoSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "DeleteTaxInvcInfoSucceed"
+      ]
+    },
+    {
+      "id": "05-28",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "checkBsnoValid",
+      "kind": "조회",
+      "label": "사업자번호 유효성 검증",
+      "branches": [
+        "BsnoInvalid",
+        "BsnoValid",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "BsnoValid",
+        "BsnoInvalid"
+      ]
+    },
+    {
+      "id": "05-29",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "fileUpload",
+      "kind": "변경",
+      "label": "파일업로드",
+      "branches": [
+        "FileUploadSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "FileUploadSucceed"
+      ]
+    },
+    {
+      "id": "05-30",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "saveTextMaterial",
+      "kind": "변경",
+      "label": "자료 입력",
+      "branches": [
+        "SaveTextMaterialSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "SaveTextMaterialSucceed",
+        "DuplicateMaterial"
+      ]
+    },
+    {
+      "id": "05-31",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "deleteSubmittedMaterial",
+      "kind": "변경",
+      "label": "제출자료 삭제",
+      "branches": [
+        "DeleteSubmittedMaterialSucceed",
+        "VatMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatMaterialAlreadyAppliedError",
+        "DeleteSubmittedMaterialSucceed"
+      ]
+    },
+    {
+      "id": "05-32",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatMaterialComplete",
+      "kind": "변경",
+      "label": "부가세신고 자료제출 완료",
+      "branches": [
+        "VatDeclareMaterialCompleteSucceed"
+      ],
+      "members": [
+        "VatDeclareMaterialCompleteSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "05-33",
+      "domainId": "05-vat-material",
+      "domain": "부가세 자료제출",
+      "field": "vatMaterialCancel",
+      "kind": "변경",
+      "label": "부가세신고 자료제출완료 취소",
+      "branches": [],
+      "members": [
+        "VatDeclareMaterialCancelSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-01",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "deliveryAccountStatus",
+      "kind": "조회",
+      "label": "배달앱 계정 연동 현황",
+      "branches": [],
+      "members": [
+        "DeliveryAccountStatus",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-02",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "onlineMallAccountStatus",
+      "kind": "조회",
+      "label": "온라인몰 계정 연동 현황",
+      "branches": [],
+      "members": [
+        "DeliveryAccountStatus",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-03",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "linkDeliveryAccount",
+      "kind": "변경",
+      "label": "온라인 배달앱 계정연동",
+      "branches": [
+        "DeliveryAccountError",
+        "DeliveryBizNoError",
+        "LinkDeliveryAccountSucceed",
+        "NeedAgreementError"
+      ],
+      "members": [
+        "LinkDeliveryAccountSucceed",
+        "DeliveryAccountError",
+        "DeliveryBizNoError",
+        "NeedAgreementError",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-04",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "linkOnlineMallAccount",
+      "kind": "변경",
+      "label": "온라인몰 계정연동",
+      "branches": [],
+      "members": [
+        "LinkDeliveryAccountSucceed",
+        "DeliveryAccountError",
+        "DeliveryBizNoError",
+        "NeedAgreementError",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-05",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "inputAuthNumber",
+      "kind": "변경",
+      "label": "온라인몰 스크래핑 유저 입력 처리",
+      "branches": [],
+      "members": [
+        "OnlineScrapingReceiverSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "06-06",
+      "domainId": "06-vat-connect",
+      "domain": "부가세 판매처(배달앱·온라인몰) 연동",
+      "field": "deleteLinkStatus",
+      "kind": "변경",
+      "label": "온라인몰 계정연동 전 연동 상태 정보 삭제",
+      "branches": [
+        "DeleteLinkStatusSucceed",
+        "OnlineMallPendingError"
+      ],
+      "members": [
+        "DeleteLinkStatusSucceed",
+        "TemporaryError",
+        "OnlineMallPendingError"
+      ]
+    },
+    {
+      "id": "07-01",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareStatus",
+      "kind": "조회",
+      "label": "부가세 신고 단계 확인",
+      "branches": [
+        "NoTargetVatDeclare",
+        "VatDeclareStatus"
+      ],
+      "members": [
+        "TemporaryError",
+        "VatDeclareStatus",
+        "NoTargetVatDeclare"
+      ]
+    },
+    {
+      "id": "07-02",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "allVatMaterialAppliedCheck",
+      "kind": "조회",
+      "label": "부가세 제출자료 모두 반영 여부 (스키마 설명 '이전 등록된 임대차 존재여부' 는 복사 실수로 보임)",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "AllVatMaterialApplied"
+      ]
+    },
+    {
+      "id": "07-03",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareEstimatedTax",
+      "kind": "조회",
+      "label": "부가세 예상세액",
+      "branches": [
+        "VatEstimatedTaxIsNone"
+      ],
+      "members": [
+        "VatDeclareEstimatedTax",
+        "TemporaryError",
+        "VatEstimatedTaxIsNone"
+      ]
+    },
+    {
+      "id": "07-04",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "getDeductionSummary",
+      "kind": "조회",
+      "label": "부가세 공제/불공제 요약",
+      "branches": [
+        "DeductionSummary",
+        "TemporaryError"
+      ],
+      "members": [
+        "DeductionSummary",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "07-05",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "myBankAccount",
+      "kind": "조회",
+      "label": "이전신고 입력 된 환급 계좌 조회",
+      "branches": [],
+      "members": [
+        "MyBankAccount",
+        "NoMyBankAccount",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "07-06",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareEstimatedTaxConfirm",
+      "kind": "변경",
+      "label": "부가세신고 예상세액 확인완료",
+      "branches": [
+        "VatDeclareEstimatedTaxConfirmSucceed"
+      ],
+      "members": [
+        "VatDeclareEstimatedTaxConfirmSucceed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "07-07",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareResult",
+      "kind": "조회",
+      "label": "부가세 신고 결과",
+      "branches": [],
+      "members": [
+        "VatDeclareResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "07-08",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareResultList",
+      "kind": "조회",
+      "label": "부가세 신고 완료 내역",
+      "branches": [
+        "VatDeclareResultList"
+      ],
+      "members": [
+        "VatDeclareResultList",
+        "NoVatDeclareResultList",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "07-09",
+      "domainId": "07-vat-declare",
+      "domain": "부가세 예상세액·신고 결과",
+      "field": "vatDeclareResultById",
+      "kind": "조회",
+      "label": "부가세 신고 결과(신고 ID로 조회)",
+      "branches": [
+        "TemporaryError",
+        "VatDeclareResult"
+      ],
+      "members": [
+        "VatDeclareResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-01",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeMaterialMain",
+      "kind": "조회",
+      "label": "종소세 자료제출 메인",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "IncomeMaterialMain",
+        "NoTargetIncomeTaxDeclare"
+      ]
+    },
+    {
+      "id": "08-02",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "personalExemptionInfo",
+      "kind": "조회",
+      "label": "본인공제 정보",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "PersonalExemptionInfo"
+      ]
+    },
+    {
+      "id": "08-03",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "submitPersonalExemptionSurvey",
+      "kind": "변경",
+      "label": "본인공제 설문 제출",
+      "branches": [
+        "IncomeMaterialAlreadyAppliedError",
+        "SubmitPersonalExemptionSurveySucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "SubmitPersonalExemptionSurveySucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-04",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "dependentList",
+      "kind": "조회",
+      "label": "부양가족 목록",
+      "branches": [
+        "DependentIsNone"
+      ],
+      "members": [
+        "TemporaryError",
+        "DependentIsNone",
+        "DependentList"
+      ]
+    },
+    {
+      "id": "08-05",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "createDependent",
+      "kind": "변경",
+      "label": "부양가족 생성",
+      "branches": [
+        "CreateDependentSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "CreateDependentSucceed"
+      ]
+    },
+    {
+      "id": "08-06",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "updateDependent",
+      "kind": "변경",
+      "label": "부양가족 정보 개별 업데이트",
+      "branches": [
+        "UpdateDependentSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "UpdateDependentSucceed"
+      ]
+    },
+    {
+      "id": "08-07",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "deleteDependent",
+      "kind": "변경",
+      "label": "부양가족 개별 삭제",
+      "branches": [
+        "DeleteDependentSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "DeleteDependentSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-08",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "deleteAllDependent",
+      "kind": "변경",
+      "label": "부양가족 전체 삭제 (스키마 설명 '부양가족 개별 삭제' 는 복사 실수로 보임)",
+      "branches": [
+        "DeleteAllDependentSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "DeleteAllDependentSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-09",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "updateBulkDisabilityYn",
+      "kind": "변경",
+      "label": "부양가족 장애여부 일괄 업데이트",
+      "branches": [
+        "BulkUpdateYnSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "BulkUpdateYnSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-10",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "checkFamilyRegistryCert",
+      "kind": "조회",
+      "label": "가족관계 증명서 이미 수집 여부",
+      "branches": [],
+      "members": [
+        "CheckFamilyRegistryCertResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-11",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "familyRegistryCertLogin",
+      "kind": "변경",
+      "label": "가족관계 증명서 로그인 요청",
+      "branches": [
+        "FamilyRegistryCertLoginFailed",
+        "FamilyRegistryCertLoginSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "FamilyRegistryCertLoginSucceed",
+        "FamilyRegistryCertLoginFailed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-12",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "familyRegistryCertSign",
+      "kind": "변경",
+      "label": "가족관계 증명서 로그인 확인 및 발급요청",
+      "branches": [
+        "FamilyRegistryCertSignFailed",
+        "FamilyRegistryCertSignSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "FamilyRegistryCertSignSucceed",
+        "FamilyRegistryCertSignFailed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-13",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "smeTaxExemptionDetail",
+      "kind": "조회",
+      "label": "종소세 중소기업 세액감면 상세",
+      "branches": [
+        "SmeTaxExemptionDetail"
+      ],
+      "members": [
+        "TemporaryError",
+        "SmeTaxExemptionDetail"
+      ]
+    },
+    {
+      "id": "08-14",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "prevMilitaryPeriod",
+      "kind": "조회",
+      "label": "이전 신고 군 복무 기간",
+      "branches": [
+        "PrevMilitaryPeriod"
+      ],
+      "members": [
+        "NoPrevMilitaryPeriod",
+        "PrevMilitaryPeriod",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-15",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "submitIncomeMaterial",
+      "kind": "변경",
+      "label": "종소세 자료제출 (수기)",
+      "branches": [
+        "IncomeMaterialAlreadyAppliedError",
+        "SubmitIncomeMaterialSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "SubmitIncomeMaterialSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-16",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "donationInfo",
+      "kind": "조회",
+      "label": "종소세 자료제출 내역",
+      "branches": [],
+      "members": [
+        "DonationInfo",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-17",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "donationFileList",
+      "kind": "조회",
+      "label": "종소세 기타자료 제출 내역",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "DonationMaterialFiles",
+        "NoSubmittedDonationMaterial"
+      ]
+    },
+    {
+      "id": "08-18",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeMaterialEtcFiles",
+      "kind": "조회",
+      "label": "종소세 기타자료 제출 내역",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "IncomeMaterialFiles",
+        "NoSubmittedIncomeMaterial"
+      ]
+    },
+    {
+      "id": "08-19",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeEtcSupportingMaterial",
+      "kind": "조회",
+      "label": "종소세 기타 증빙 제출 내역",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "IncomeEtcSupportingMaterials"
+      ]
+    },
+    {
+      "id": "08-20",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "expensesMySelectList",
+      "kind": "조회",
+      "label": "종소세 경비자료 선택 리스트",
+      "branches": [
+        "IncomeExpensesMySelectList"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeExpensesMySelectList"
+      ]
+    },
+    {
+      "id": "08-21",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "updateBulkSelectedYn",
+      "kind": "변경",
+      "label": "부양가족 선택여부 일괄 업데이트",
+      "branches": [
+        "BulkUpdateYnSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "BulkUpdateYnSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-22",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "expensesLocalTaxDetail",
+      "kind": "조회",
+      "label": "종소세 지방세 납부 상세",
+      "branches": [
+        "ExpensesLocalTaxDetail"
+      ],
+      "members": [
+        "TemporaryError",
+        "ExpensesLocalTaxDetail"
+      ]
+    },
+    {
+      "id": "08-23",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "localTaxCertLogin",
+      "kind": "변경",
+      "label": "종소세-지방세납부 간편인증",
+      "branches": [
+        "LocalTaxCertLoginFailed",
+        "LocalTaxCertLoginSucceed",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "LocalTaxCertLoginSucceed",
+        "LocalTaxCertLoginFailed"
+      ]
+    },
+    {
+      "id": "08-24",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "scrapingLocalTax",
+      "kind": "변경",
+      "label": "종소세-지방세납부 스크래핑",
+      "branches": [
+        "IncomeMaterialAlreadyAppliedError",
+        "ScrapingLocalTaxCheckCert",
+        "ScrapingLocalTaxExpiredSession",
+        "ScrapingLocalTaxFailed",
+        "ScrapingLocalTaxHasNoRecords",
+        "ScrapingLocalTaxRoadAddress",
+        "ScrapingLocalTaxSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "ScrapingLocalTaxSucceed",
+        "ScrapingLocalTaxFailed",
+        "ScrapingLocalTaxExpiredSession",
+        "ScrapingLocalTaxCheckCert",
+        "ScrapingLocalTaxRoadAddress",
+        "IncomeMaterialAlreadyAppliedError",
+        "ScrapingLocalTaxHasNoRecords"
+      ]
+    },
+    {
+      "id": "08-25",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeCardFeeOrgs",
+      "kind": "조회",
+      "label": "종소세 카드수수료 경비처리 대상 사업체 리스트",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "IncomeCardFeeOrgs"
+      ]
+    },
+    {
+      "id": "08-26",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "scrapingCardFee",
+      "kind": "변경",
+      "label": "종소세-카드수수료 스크래핑",
+      "branches": [
+        "ScrapingCardFeeSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "ScrapingCardFeeSucceed",
+        "CrefiaLoginPasswordError",
+        "CrefiaLoginIdError",
+        "CrefiaLoginError",
+        "CrefiaNotFoundOrgError",
+        "CrefiaBirthOrBizNoError",
+        "CrefiaAccountError",
+        "CrefiaLoginBlockError",
+        "NotFoundOrgError"
+      ]
+    },
+    {
+      "id": "08-27",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxOrgsCardSummary",
+      "kind": "조회",
+      "label": "종소세 신고 대상 사업체별 개인카드(추가/홈택스) 요약",
+      "branches": [
+        "IncomeTaxOrgCardSummary"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeTaxOrgCardSummary"
+      ]
+    },
+    {
+      "id": "08-28",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxCardList",
+      "kind": "조회",
+      "label": "종소세 개인카드(신고용) 리스트 조회",
+      "branches": [
+        "IncomeCardList"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeCardList"
+      ]
+    },
+    {
+      "id": "08-29",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxCardDetail",
+      "kind": "조회",
+      "label": "종소세 개인카드(신고용) 단건 조회",
+      "branches": [
+        "IncomeCardDetail"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeCardDetail"
+      ]
+    },
+    {
+      "id": "08-30",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxCardDetailByMaterial",
+      "kind": "조회",
+      "label": "종소세 제출자료 ID별 개인카드 상세 조회",
+      "branches": [
+        "IncomeCardDetailByMaterial"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeCardDetailByMaterial"
+      ]
+    },
+    {
+      "id": "08-31",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "updateIncomeTaxPersonalCardNo",
+      "kind": "변경",
+      "label": "종소세 개인카드 번호 등록 또는 수정",
+      "branches": [
+        "IncomeMaterialAlreadyAppliedError",
+        "IncomePersonalCardUpdateSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomePersonalCardUpdateSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-32",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "deleteIncomeTaxPersonalCardNo",
+      "kind": "변경",
+      "label": "종소세 개인카드 삭제",
+      "branches": [
+        "IncomeMaterialAlreadyAppliedError",
+        "IncomePersonalCardDeleteSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomePersonalCardDeleteSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-33",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxCardFileUpload",
+      "kind": "변경",
+      "label": "종소세 개인카드(신고용) 파일 업로드 및 파싱",
+      "branches": [
+        "IncomePersonalCardOnlyUploadSucceed",
+        "IncomePersonalCardSucceed",
+        "NeedFilePassword",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "NeedFilePassword",
+        "AlreadyUploadedFile",
+        "PasswordNotCorrect",
+        "NotResultInPeriod",
+        "NotExistCardItem",
+        "IncomePersonalCardSucceed",
+        "IncomePersonalCardOnlyUploadSucceed"
+      ]
+    },
+    {
+      "id": "08-34",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeTaxAdditionalExpenseBookDetail",
+      "kind": "조회",
+      "label": "장부 매입 중 경조사·개인카드·기타증빙 — 종류별 합계와 내역",
+      "branches": [
+        "IncomeTaxAdditionalExpenseBookDetail"
+      ],
+      "members": [
+        "IncomeTaxAdditionalExpenseBookDetail",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-35",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "incomeFileUpload",
+      "kind": "변경",
+      "label": "종소세 파일업로드",
+      "branches": [
+        "IncomeFileUploadSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "IncomeFileUploadSucceed"
+      ]
+    },
+    {
+      "id": "08-36",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "deleteSubmittedIncomeMaterial",
+      "kind": "변경",
+      "label": "종소세 제출자료 삭제",
+      "branches": [
+        "DeleteSubmittedIncomeMaterialSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ],
+      "members": [
+        "TemporaryError",
+        "DeleteSubmittedIncomeMaterialSucceed",
+        "IncomeMaterialAlreadyAppliedError"
+      ]
+    },
+    {
+      "id": "08-37",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "yearendAuthRequest",
+      "kind": "변경",
+      "label": "연말정산 홈택스 인증 요청",
+      "branches": [
+        "YearendAuthRequestResult",
+        "YearendFailed"
+      ],
+      "members": [
+        "YearendAuthRequestResult",
+        "YearendFailed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-38",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "yearendAuthResult",
+      "kind": "변경",
+      "label": "연말정산 홈택스 인증 결과",
+      "branches": [
+        "YearendAuthSucceed",
+        "YearendFailed"
+      ],
+      "members": [
+        "YearendAuthSucceed",
+        "YearendFailed",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "08-39",
+      "domainId": "08-income-material",
+      "domain": "종소세 자료제출",
+      "field": "yearendDownlaod",
+      "kind": "변경",
+      "label": "연말정산 다운로드",
+      "branches": [
+        "YearendDownloadComplete",
+        "YearendFailed",
+        "YearendRpnTinMismatch"
+      ],
+      "members": [
+        "YearendDownloadComplete",
+        "YearendFailed",
+        "YearendRpnTinMismatch",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-01",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "checkIncomeIntroStatus",
+      "kind": "조회",
+      "label": "종소세 신고 단계 확인",
+      "branches": [
+        "IncomeTaxDeclareCancelled",
+        "NoTargetIncomeTaxDeclare"
+      ],
+      "members": [
+        "IncomeTaxDeclareStage",
+        "NoTargetIncomeTaxDeclare",
+        "IncomeTaxDeclareCancelled",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-02",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "checkIncomeFirstEnter",
+      "kind": "조회",
+      "label": "첫 종소세 진입여부 확인",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "IncomeFirstEnter"
+      ]
+    },
+    {
+      "id": "09-03",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "updateIncomeFirstEnter",
+      "kind": "변경",
+      "label": "종소세 첫 진입여부 업데이트",
+      "branches": [
+        "UpdateFirstEnterSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "UpdateFirstEnterSucceed",
+        "NotFoundVatDeclare"
+      ]
+    },
+    {
+      "id": "09-04",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxStlAgree",
+      "kind": "변경",
+      "label": "종소세 결제 동의",
+      "branches": [
+        "IncomeTaxStlAgreeSucceed"
+      ],
+      "members": [
+        "IncomeTaxStlAgreeSucceed",
+        "NoTargetIncomeTaxDeclare",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-05",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "checkAllMaterialApplied",
+      "kind": "조회",
+      "label": "종소세 모든 자료 반영 여부",
+      "branches": [
+        "AllMaterialApplied"
+      ],
+      "members": [
+        "TemporaryError",
+        "AllMaterialApplied"
+      ]
+    },
+    {
+      "id": "09-06",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxDeclareEstimatedTax",
+      "kind": "조회",
+      "label": "종소세 예상세액 조회",
+      "branches": [],
+      "members": [
+        "IncomeTaxDeclareEstimatedTax",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-07",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "checkBankAccountForDeclare",
+      "kind": "조회",
+      "label": "신고용 환급 예금주 조회",
+      "branches": [
+        "CheckBankAccountSucceed",
+        "IncorrectBankAccountNumber",
+        "IncorrectBankAccountOwner"
+      ],
+      "members": [
+        "CheckBankAccountSucceed",
+        "TemporaryError",
+        "IncorrectBankAccountOwner",
+        "IncorrectBankAccountNumber"
+      ]
+    },
+    {
+      "id": "09-08",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "declareRefundAccount",
+      "kind": "변경",
+      "label": "환급계좌 입력",
+      "branches": [
+        "DeclareRefundAccountSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "DeclareRefundAccountSucceed"
+      ]
+    },
+    {
+      "id": "09-09",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "refundClaimList",
+      "kind": "변경",
+      "label": "경정청구(환급) 내역 홈택스 수집 — 중소기업 감면 화면 (스키마 설명 '연말정산 다운로드' 는 복사 실수로 보임)",
+      "branches": [
+        "GetRefundClaimListComplete",
+        "GetRefundClaimListRpnTinMismatch",
+        "HometaxFailed"
+      ],
+      "members": [
+        "GetRefundClaimListComplete",
+        "HometaxFailed",
+        "GetRefundClaimListRpnTinMismatch",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-10",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxDeclareStageConfirm",
+      "kind": "변경",
+      "label": "종소세신고 유저 단계 확정",
+      "branches": [
+        "IncomeTaxDeclareStageConfirmSucceed",
+        "RequiredRefundAccountInput"
+      ],
+      "members": [
+        "IncomeTaxDeclareStageConfirmSucceed",
+        "TemporaryError",
+        "ExistNotAppliedMaterial",
+        "RequiredRefundAccountInput"
+      ]
+    },
+    {
+      "id": "09-11",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxDeclareResult",
+      "kind": "조회",
+      "label": "종소세 신고 결과",
+      "branches": [],
+      "members": [
+        "IncomeTaxDeclareResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-12",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxDeclareList",
+      "kind": "조회",
+      "label": "종소세 신고 목록 (resultTax 보유분)",
+      "branches": [
+        "IncomeTaxDeclareList",
+        "NoIncomeTaxDeclareList",
+        "TemporaryError"
+      ],
+      "members": [
+        "IncomeTaxDeclareList",
+        "NoIncomeTaxDeclareList",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "09-13",
+      "domainId": "09-income-declare",
+      "domain": "종소세 진행·예상세액·신고 결과",
+      "field": "incomeTaxDeclareResultById",
+      "kind": "조회",
+      "label": "declareId로 종소세 신고 결과 조회",
+      "branches": [
+        "IncomeTaxDeclareDetail",
+        "NoIncomeTaxDeclareDetail",
+        "TemporaryError"
+      ],
+      "members": [
+        "IncomeTaxDeclareDetail",
+        "NoIncomeTaxDeclareDetail",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "10-01",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "listWorker",
+      "kind": "조회",
+      "label": "직원목록 조회",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-02",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "listPayroll",
+      "kind": "조회",
+      "label": "급여 제출 내역 조회",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-03",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "listPayrollMonthly",
+      "kind": "조회",
+      "label": "월별 급역 내역 상태",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-04",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "getSalaryDay",
+      "kind": "조회",
+      "label": "월급날 조회",
+      "branches": [
+        "GetSalaryDayResult"
+      ],
+      "members": [
+        "GetSalaryDayResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "10-05",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "updateSalaryDay",
+      "kind": "변경",
+      "label": "급여일 설정",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-06",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "getOrgsWithoutSubmission",
+      "kind": "조회",
+      "label": "급여 미제출 사업장 조회(급여 없음 신고 화면) (스키마 설명 없음)",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-07",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "updatePayroll",
+      "kind": "변경",
+      "label": "급여 내역 수정",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-08",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "updateNoPayroll",
+      "kind": "변경",
+      "label": "이번 달 급여 없음 처리 (스키마 설명 없음)",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-09",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "uploadPayrollFile",
+      "kind": "변경",
+      "label": "급여파일 업로드",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "10-10",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "getWithholdingOrgs",
+      "kind": "조회",
+      "label": "원천세 신고 결과 사업장 목록 (스키마 설명 없음)",
+      "branches": [],
+      "members": [
+        "WithholdingOrgsResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "10-11",
+      "domainId": "10-payroll",
+      "domain": "급여",
+      "field": "getWithholdingResultDetail",
+      "kind": "조회",
+      "label": "원천세 신고 결과 상세 (스키마 설명 없음)",
+      "branches": [
+        "WithholdingResultCompletedPayroll",
+        "WithholdingResultCompletedWithholdingRegistration"
+      ],
+      "members": [
+        "WithholdingResultNoPayroll",
+        "WithholdingResultPreparingPayroll",
+        "WithholdingResultCompletedPayroll",
+        "WithholdingResultCompletedWithholdingRegistration",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-01",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "orgListByNormalUser",
+      "kind": "조회",
+      "label": "알바 급여 계산용 내 사업장 목록 (스키마 설명 없음)",
+      "branches": [],
+      "members": [
+        "OrgListResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-02",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "getPartTimers",
+      "kind": "조회",
+      "label": "사업장 근로자(알바) 목록 — bizno 가 빈 문자열이면 userId 기준",
+      "branches": [
+        "GetWorkersByBiznoResult"
+      ],
+      "members": [
+        "GetWorkersByBiznoResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-03",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "getWorkersWithPayResult",
+      "kind": "조회",
+      "label": "해당 연월에 급여 계산 내역이 있는 근로자 목록",
+      "branches": [
+        "GetWorkersWithPayResult"
+      ],
+      "members": [
+        "GetWorkersWithPayResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-04",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "getPartTimeWorkerDetail",
+      "kind": "조회",
+      "label": "근로자 상세(기본 정보·시급·수당·근무시간 설정)",
+      "branches": [
+        "GetPartTimeWorkerDetailResult"
+      ],
+      "members": [
+        "GetPartTimeWorkerDetailResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-05",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "updatePartTimeWorkerBasicInfo",
+      "kind": "변경",
+      "label": "알바 근로자 기본정보(이름·전화번호·주민번호) 저장",
+      "branches": [
+        "UpdatePartTimeWorkerInfoResult"
+      ],
+      "members": [
+        "UpdatePartTimeWorkerInfoResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-06",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "updatePartTimeAdditionalInfo",
+      "kind": "변경",
+      "label": "알바 근로자 시급·수당·근무시간 설정 저장",
+      "branches": [
+        "UpdatePartTimeWorkerInfoResult"
+      ],
+      "members": [
+        "UpdatePartTimeWorkerInfoResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-07",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "getPartTimeDetail",
+      "kind": "조회",
+      "label": "근로자 연월별 일별 근무·주별 수당·월 급여 정산 통합 조회",
+      "branches": [
+        "GetPartTimeDetailResult"
+      ],
+      "members": [
+        "GetPartTimeDetailResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-08",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "getDailyBreakdowns",
+      "kind": "조회",
+      "label": "근무 기록 → 일별 상세(총·기본·연장·야간 시간) 계산",
+      "branches": [
+        "GetDailyBreakdownsResult"
+      ],
+      "members": [
+        "GetDailyBreakdownsResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-09",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "calculateWeeklyHoliday",
+      "kind": "조회",
+      "label": "일별 근무 + 시급 → 주차별 주휴수당 계산",
+      "branches": [
+        "CalculateWeeklyHolidayResult"
+      ],
+      "members": [
+        "CalculateWeeklyHolidayResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "11-10",
+      "domainId": "11-part-time",
+      "domain": "알바 급여 계산",
+      "field": "updatePayCalculate",
+      "kind": "변경",
+      "label": "주휴·연장수당·일별 근무 저장 + 월 급여 정산",
+      "branches": [
+        "UpdatePayCalculateResult"
+      ],
+      "members": [
+        "UpdatePayCalculateResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "12-01",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "getYearEndTaxOrgs",
+      "kind": "조회",
+      "label": "연말정산 대상 사업장 조회(사업자번호·연도)",
+      "branches": [
+        "GetYearEndTaxOrgsResult"
+      ],
+      "members": [
+        "GetYearEndTaxOrgsResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "12-02",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "getYearEndTaxEmployees",
+      "kind": "조회",
+      "label": "연말정산 대상 근로자 조회(사업자번호·연도)",
+      "branches": [
+        "GetYearEndTaxEmployeesResult"
+      ],
+      "members": [
+        "GetYearEndTaxEmployeesResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "12-03",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "getYearEndTaxFiles",
+      "kind": "조회",
+      "label": "연말정산 대상 근로자의 업로드된 파일 목록을 조회합니다.",
+      "branches": [
+        "GetYearEndTaxFilesResult"
+      ],
+      "members": [
+        "GetYearEndTaxFilesResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "12-04",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "uploadYearEndTaxFile",
+      "kind": "변경",
+      "label": "연말정산에 필요한 서류 파일을 업로드합니다.",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "12-05",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "deleteYearEndTaxFile",
+      "kind": "변경",
+      "label": "업로드된 연말정산 서류 파일을 삭제합니다.",
+      "branches": [],
+      "members": []
+    },
+    {
+      "id": "12-06",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "updateYearEndTaxEmployeePrgrStat",
+      "kind": "변경",
+      "label": "연말정산 대상 근로자의 진행상태를 변경합니다.",
+      "branches": [
+        "UpdateYearEndTaxEmployeePrgrStatResult"
+      ],
+      "members": [
+        "UpdateYearEndTaxEmployeePrgrStatResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "12-07",
+      "domainId": "12-year-end-tax",
+      "domain": "연말정산",
+      "field": "getYearEndTaxCalcSummary",
+      "kind": "조회",
+      "label": "연말정산 대상 근로자의 계산 결과 요약을 조회합니다.",
+      "branches": [
+        "YearEndTaxCalcSummaryNotFoundError",
+        "YearEndTaxCalcSummaryResult"
+      ],
+      "members": [
+        "YearEndTaxCalcSummaryResult",
+        "YearEndTaxCalcSummaryNotFoundError",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-01",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "bkpAddXpsPrfList",
+      "kind": "조회",
+      "label": "추가경비증빙 목록 조회",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "BkpAddXpsSummary",
+        "UnknownDelegateAt"
+      ]
+    },
+    {
+      "id": "13-02",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "bkpAddXpsPrfInfo",
+      "kind": "조회",
+      "label": "추가경비증빙 단건 조회",
+      "branches": [],
+      "members": [
+        "TemporaryError",
+        "BkpAddXpsPrfInfo"
+      ]
+    },
+    {
+      "id": "13-03",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "bkpAddXpsPrfParsingMultiple",
+      "kind": "변경",
+      "label": "추가경비증빙 파일 다중 파싱 (최대 10개)",
+      "branches": [
+        "BkpAddXpsPrfUploadParsingMultipleSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "BkpAddXpsPrfUploadParsingMultipleSucceed"
+      ]
+    },
+    {
+      "id": "13-04",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "insertBkpAddXpsPrfInfo",
+      "kind": "변경",
+      "label": "추가경비증빙 등록",
+      "branches": [
+        "BkpAddXpsPrfInsertSucceed",
+        "BsnoInvalid",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "BsnoInvalid",
+        "BkpAddXpsPrfInsertSucceed"
+      ]
+    },
+    {
+      "id": "13-05",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "updateBkpAddXpsPrfInfo",
+      "kind": "변경",
+      "label": "추가경비증빙 수정",
+      "branches": [
+        "BsnoInvalid",
+        "UpdateBkpAddXpsPrfSucceed",
+        "UpdateNotAllowedStatus"
+      ],
+      "members": [
+        "TemporaryError",
+        "BsnoInvalid",
+        "UpdateNotAllowedStatus",
+        "UpdateBkpAddXpsPrfSucceed"
+      ]
+    },
+    {
+      "id": "13-06",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "deleteBkpAddXpsPrfInfo",
+      "kind": "변경",
+      "label": "추가경비증빙 삭제",
+      "branches": [
+        "DeleteBkpAddXpsPrfSucceed"
+      ],
+      "members": [
+        "TemporaryError",
+        "DeleteBkpAddXpsPrfSucceed"
+      ]
+    },
+    {
+      "id": "13-07",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "getXpsPrfSbmsBrkds",
+      "kind": "조회",
+      "label": "경비증빙제출내역 목록 조회",
+      "branches": [
+        "GetXpsPrfSbmsBrkdsResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "TemporaryError",
+        "GetXpsPrfSbmsBrkdsResult"
+      ]
+    },
+    {
+      "id": "13-08",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "getXpsPrfSbmsBrkd",
+      "kind": "조회",
+      "label": "경비증빙제출내역 단건 조회",
+      "branches": [],
+      "members": [
+        "GetXpsPrfSbmsBrkdResult",
+        "NotFound",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-09",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "getCardCompanies",
+      "kind": "조회",
+      "label": "카드사 목록 조회",
+      "branches": [],
+      "members": [
+        "CardCompanyResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-10",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "listCards",
+      "kind": "조회",
+      "label": "카드 리스트 or 새로고침",
+      "branches": [
+        "ListCardsResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "ListCardsResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-11",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "registerCard",
+      "kind": "변경",
+      "label": "카드 등록",
+      "branches": [
+        "RegisterCardResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "RegisterCardResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-12",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "updateCard",
+      "kind": "변경",
+      "label": "카드 수정",
+      "branches": [
+        "UpdateCardResult"
+      ],
+      "members": [
+        "UpdateCardResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "13-13",
+      "domainId": "13-expense-card",
+      "domain": "추가경비 증빙·사업용 카드",
+      "field": "removeCard",
+      "kind": "변경",
+      "label": "카드 삭제",
+      "branches": [
+        "RemoveCardResult"
+      ],
+      "members": [
+        "RemoveCardResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "14-01",
+      "domainId": "14-startup-check",
+      "domain": "창업 점검(세액공제·감면 진단)",
+      "field": "startupConversation",
+      "kind": "변경",
+      "label": "사업자 등록 체크 대화형 분석",
+      "branches": [
+        "StartupConversationResult"
+      ],
+      "members": [
+        "StartupConversationResult",
+        "InvalidInput",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "14-02",
+      "domainId": "14-startup-check",
+      "domain": "창업 점검(세액공제·감면 진단)",
+      "field": "startupConversationResult",
+      "kind": "변경",
+      "label": "자연어 기반 세액공제감면 대화 결과",
+      "branches": [
+        "DeductionResult",
+        "InvalidInput",
+        "TemporaryError"
+      ],
+      "members": [
+        "DeductionResult",
+        "InvalidInput",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "14-03",
+      "domainId": "14-startup-check",
+      "domain": "창업 점검(세액공제·감면 진단)",
+      "field": "saveStartupCheck",
+      "kind": "변경",
+      "label": "자연어 기반 세액공제감면 분석 저장",
+      "branches": [
+        "StartupCheckIdResult"
+      ],
+      "members": [
+        "StartupCheckIdResult",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "14-04",
+      "domainId": "14-startup-check",
+      "domain": "창업 점검(세액공제·감면 진단)",
+      "field": "startupCheck",
+      "kind": "조회",
+      "label": "자연어 기반 세액공제감면 분석결과 조회",
+      "branches": [
+        "InvalidInput",
+        "StartupCheckResult",
+        "TemporaryError"
+      ],
+      "members": [
+        "StartupCheckResult",
+        "InvalidInput",
+        "TemporaryError"
+      ]
+    },
+    {
+      "id": "14-05",
+      "domainId": "14-startup-check",
+      "domain": "창업 점검(세액공제·감면 진단)",
+      "field": "sendHookForStartupCheck",
+      "kind": "변경",
+      "label": "창업전 세무진단 상담 훅",
+      "branches": [
+        "SendHookForStartupCheckSucceed"
+      ],
+      "members": [
+        "SendHookForStartupCheckSucceed",
+        "TemporaryError"
+      ]
+    }
+  ],
+  "missingDescriptions": []
+}
