@@ -72,6 +72,9 @@
   .dlg-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: baseline; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
   .dlg-head h3 { margin: 0; font-size: 15px; flex: 1; word-break: break-all; }
   .dlg-head button { font: inherit; font-size: 12.5px; border: 1px solid var(--line); background: var(--bg); color: var(--text); border-radius: 6px; padding: 4px 12px; cursor: pointer; }
+  /* 닫기 — 오른쪽 끝 × (현황판 팝업과 같은 모양) */
+  .dlg-head .dlg-x { align-self: center; margin-left: auto; width: 30px; height: 30px; padding: 0; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; }
+  .dlg-head .dlg-x:hover { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); }
   .dlg-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 14px 16px 18px; }
   .dlg-body h4 { margin: 0 0 6px; font-size: 13px; }
   .dlg-body .test-steps { font-size: 12.5px; gap: 8px; }
@@ -221,11 +224,11 @@
   </section>
 </main>
 <dialog id="report" aria-labelledby="report-title">
-  <div class="dlg-head"><h3 id="report-title">실패 리포트</h3><button type="button" id="report-close">닫기</button></div>
+  <div class="dlg-head"><h3 id="report-title">실패 리포트</h3><button type="button" id="report-close" class="dlg-x" aria-label="닫기" title="닫기 (Esc)">×</button></div>
   <div class="rep-body" id="report-body"></div>
 </dialog>
 <dialog id="detail" aria-labelledby="detail-title">
-  <div class="dlg-head"><h3 id="detail-title"></h3><button type="button" id="detail-ask" hidden>🔎 이 건 조사 맡기기</button><button type="button" id="detail-calls">오른쪽 목록에서 보기</button><button type="button" id="detail-close">닫기</button></div>
+  <div class="dlg-head"><h3 id="detail-title"></h3><button type="button" id="detail-ask" hidden>🔎 이 건 조사 맡기기</button><button type="button" id="detail-calls">오른쪽 목록에서 보기</button><button type="button" id="detail-close" class="dlg-x" aria-label="닫기" title="닫기 (Esc)">×</button></div>
   <div class="dlg-body" id="detail-body"></div>
 </dialog>
 <script>
@@ -980,6 +983,15 @@
     };
     tick();
   }
+
+  // 팝업 바깥(배경)을 누르면 닫는다
+  document.querySelectorAll('dialog').forEach((dialog) => {
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const box = dialog.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
+    });
+  });
 </script>
 </body>
 </html>

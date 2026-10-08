@@ -6,6 +6,7 @@ source: plans/task/20261006-bznav-refund-fe-bznav-refund-fe-작업-pane-에서-�
 signal: review
 basis: run
 applied: 2026-10-09
+approved_by: Mason
 ---
 
 ## 무엇을 배웠나

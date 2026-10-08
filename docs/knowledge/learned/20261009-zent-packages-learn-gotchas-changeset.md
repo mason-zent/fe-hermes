@@ -6,6 +6,7 @@ source: plans/refactor/20260930-bznav-packages-sync-with-history.md (배우기 �
 signal: review
 basis: code
 applied: 2026-10-09
+approved_by: Mason
 ---
 
 ## 무엇을 배웠나

@@ -6,6 +6,7 @@ source: plans/task/20261001-packages-fe-bznav-fe-project-config-eslint-no-intern
 signal: review
 basis: code
 applied: 2026-10-09
+approved_by: Mason
 ---
 
 ## 무엇을 배웠나

@@ -134,6 +134,11 @@
   dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--text); width: min(640px, calc(100vw - 32px)); padding: 16px; }
   dialog::backdrop { background: rgba(0,0,0,.35); }
   dialog h3 { margin: 0 0 6px; font-size: 15px; }
+  /* 팝업 닫기 — 오른쪽 위 × */
+  .dialog-x { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 22px; line-height: 1; cursor: pointer; }
+  .dialog-x:hover { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); }
+  .dialog-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  dialog:has(.dialog-x) h3 { padding-right: 36px; outline: none; }
   dialog textarea { width: 100%; min-height: 130px; padding: 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); line-height: 1.5; }
   dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
   .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
@@ -168,10 +173,6 @@
   .h-sum { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-tags { display: flex; flex-wrap: wrap; gap: 4px; }
   /* 학습 탭 */
-  .learn-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
-  .learn-stats .stat { padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
-  .learn-stats .stat b { color: var(--text); }
-  .learn-stats .stat.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
   .learn-h { font-size: 13.5px; margin: 18px 0 8px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
   .learn-h .n { color: var(--muted); font-weight: 500; }
   .learn-h .hint { color: var(--muted); font-weight: 400; font-size: 12px; }
@@ -188,18 +189,33 @@
   .learn-card .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .learn-card textarea, .learn-card input { font: inherit; width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); line-height: 1.5; font-size: 13px; }
   .learn-card textarea { min-height: 64px; resize: vertical; }
+  /* 클로드 학습 상세 팝업 — 구역 카드 */
+  .lc-block { border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; background: var(--bg); }
+  .lc-block h5 { margin: 0 0 4px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+  .lc-block .text { font-size: 13px; line-height: 1.65; }
+  .lc-block.warn { background: color-mix(in srgb, var(--warn) 7%, var(--panel)); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+  .lc-block.warn .text { color: var(--text); }
+  .lc-block.warn h5 { color: var(--warn); }
+  .lc-block.note { background: color-mix(in srgb, var(--accent) 5%, var(--panel)); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .lc-block.note h5 { color: var(--accent); }
+  .lc-block.bad { background: color-mix(in srgb, var(--bad) 6%, var(--panel)); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+  .lc-block.bad h5 { color: var(--bad); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0 12px; }
+  .chip { font-size: 11.5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--bg); }
+  .md-sections { display: grid; gap: 10px; }
+  .md-sections details.more { margin-top: 6px; font-size: 12.5px; }
+  .md-sections details.more > summary { cursor: pointer; color: var(--accent); }
+  .md-sections ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13px; line-height: 1.6; }
+  a.chip { text-decoration: none; color: var(--accent); }
+  .learned-pop textarea, .learned-pop input { font: inherit; width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); line-height: 1.5; font-size: 13px; }
+  .learned-pop textarea { min-height: 64px; resize: vertical; }
+  .learned-pop .label { font-size: 11.5px; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+  .learned-pop .actions { display: flex; gap: 6px; align-items: center; }
+  .md-sections ul { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 5px; font-size: 13px; line-height: 1.6; }
+  .md-sections .text p { margin: 0 0 6px; }
   .pill.learn-area { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
   .pill.learn-skill { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
   .learn-group { font-size: 12px; color: var(--muted); font-weight: 600; margin: 6px 0 -2px; }
-  .learn-row { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
-  .learn-row > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; }
-  .learn-row > summary::-webkit-details-marker { display: none; }
-  .learn-row > summary .date { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .learn-row > summary .t { font-weight: 600; font-size: 13.5px; }
-  .learn-row > summary .s { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .learn-row[open] > summary { border-bottom: 1px solid var(--line); }
-  .learn-row .learn-card { border: 0; border-radius: 0 0 10px 10px; }
-  @media (max-width: 720px) { .learn-row > summary { grid-template-columns: 1fr; gap: 4px; } }
   /* 히스토리·메모리 행 — 날짜·작업자·종류 배지는 행 세로 가운데, 메모리 배지는 오른쪽 끝 칸. 칸이 행 높이만큼 늘어나지 않게 align-self 로 */
   .h-row > .h-tags { justify-content: flex-end; align-self: center; }
   .h-row > .h-date, .h-row > .h-owner { align-self: center; padding-top: 0; }
@@ -431,7 +447,6 @@
     </div>
     <div id="learn-view-hermes">
     <h2>헤르메스 학습 — 작업하며 알게 된 <b>레포 함정</b>을 서비스별 공책(gotchas)에 넣는다. 에이전트가 작업 전에 읽고, git 으로 팀과 공유된다 (기준: docs/knowledge/common/learning.md)</h2>
-    <div id="learn-stats" class="learn-stats"></div>
     <h3 class="learn-h">학습 후보 <span class="n" id="learn-candidate-count"></span> <span class="hint">넣을지 골라 주세요 — 넣은 것만 공책에 들어갑니다</span></h3>
     <div id="learn-candidates" class="learn-list"><div class="empty-history">불러오는 중이에요…</div></div>
     <h3 class="learn-h">학습한 내용 <span class="n" id="learn-learned-count"></span> <span class="hint">누르면 펼쳐지고 고치거나 지울 수 있어요</span></h3>
@@ -458,7 +473,8 @@
   <div class="row"><button class="btn" id="confirm-no">취소</button><button class="btn primary" id="confirm-yes"></button></div>
 </dialog>
 <dialog id="tc-guide" class="tc-guide" aria-labelledby="tc-guide-title">
-  <h3 id="tc-guide-title">📖 TC 목록 보는 법</h3>
+  <button type="button" class="dialog-x" id="tc-guide-close" aria-label="닫기" title="닫기 (Esc)">×</button>
+  <h3 id="tc-guide-title" tabindex="-1" autofocus>📖 TC 목록 보는 법</h3>
         <div class="body">
     <div><h4>우선 — 깨지면 얼마나 큰일인가</h4><dl>
       <dt class="tc-prio P0">P0</dt><dd>핵심. 깨지면 서비스가 안 된다(가입·로그인·신청·결제·질문·계산 결과). 배포 전에 반드시 본다</dd>
@@ -490,10 +506,10 @@
     </dl></div>
     <p class="note">ID 는 앱 접두사 + 번호(RF 환급 · SN 세나 · CR 케어 · BR 브랜드 · PL 플러스). 행을 누르면 사전 조건·단계·기대 결과·근거(코드 위치)가 펼쳐진다. 정본: docs/qa/tc/README.md "용어"</p>
   </div>
-  <div class="row"><button class="btn" id="tc-guide-close">닫기</button></div>
 </dialog>
 <dialog id="memory-guide" class="tc-guide" aria-labelledby="memory-guide-title">
-  <h3 id="memory-guide-title">📖 메모리 보는 법</h3>
+  <button type="button" class="dialog-x" id="memory-guide-close" aria-label="닫기" title="닫기 (Esc)">×</button>
+  <h3 id="memory-guide-title" tabindex="-1" autofocus>📖 메모리 보는 법</h3>
   <div class="body">
     <div><h4>종류 — 무엇을 기억해 두었나</h4><dl>
       <dt><span class="pill mem-user">👤 사용자</span></dt><dd>사용자에 대한 것 — 역할, 잘 아는 분야, 쓰는 도구, 선호하는 방식</dd>
@@ -508,13 +524,12 @@
     </dl></div>
     <p class="note">진행 중인 작업·브랜치·구현 결정은 메모리에 남기지 않는다 — 계획서·knowledge 가 맡는다(AGENTS.md 2.5). 행을 누르면 본문이 열린다</p>
   </div>
-  <div class="row"><button class="btn" id="memory-guide-close">닫기</button></div>
 </dialog>
 <dialog id="detail">
-  <h3 id="detail-title"></h3>
+  <button type="button" class="dialog-x" id="detail-close" aria-label="닫기" title="닫기 (Esc)">×</button>
+  <h3 id="detail-title" tabindex="-1" autofocus></h3>
   <div class="line" id="detail-meta" style="font-size:12px;color:var(--muted)"></div>
   <div class="body" id="detail-body"></div>
-  <div class="row"><button class="btn" id="detail-close">닫기</button></div>
 </dialog>
 <div class="toast" id="toast"></div>
 <script>
@@ -646,12 +661,6 @@
     if (!blocks.length) return '<p style="color:var(--muted)">아직 요청이 없어요</p>';
     return `<ol>${blocks.map((block) => `<li>${inline(block)}</li>`).join('')}</ol>`;
   };
-  const planBlocks = (text) => `
-      <h4>요청한 것</h4>${requests(text)}
-      <h4>진행</h4>${markdown(section(text, 'Progress'))}
-      <h4>결과</h4>${markdown(section(text, '결과'))}
-      <h4>검증</h4>${markdown(section(text, 'Validation'))}
-      <h4>다음</h4>${markdown(section(text, 'Next'))}`;
   const openDetail = async (id) => {
     const dialog = document.getElementById('detail');
     document.getElementById('detail-title').textContent = '불러오는 중이에요…';
@@ -664,19 +673,29 @@
       if (!response.ok) throw new Error(data.error || response.status);
       const title = data.text.match(/^title:\s*"?(.+?)"?\s*$/m)?.[1] || data.text.match(/^#\s+(.+)$/m)?.[1] || id;
       document.getElementById('detail-title').textContent = title;
-      if (id.startsWith('issues/')) {
-        const body = data.text.replace(/^---[\s\S]*?---\s*/, '');
-        document.getElementById('detail-meta').textContent = `${id}${data.plan ? ` · 계획 ${data.plan.id}` : ''}`;
-        document.getElementById('detail-body').innerHTML = `<h4>이슈</h4>${markdown(body)}${data.plan ? planBlocks(data.plan.text) : ''}`;
-      } else {
-        document.getElementById('detail-body').innerHTML = planBlocks(data.text);
-      }
+      const isIssue = id.startsWith('issues/');
+      const plan = isIssue ? data.plan?.text || '' : data.text;
+      const active = !/^- Status:\s*done/m.test(plan);
+      document.getElementById('detail-meta').innerHTML = `<div class="chips">${isIssue ? issueChips(data.text) : ''}${plan ? planChips(plan) : ''}</div>`;
+      document.getElementById('detail-body').innerHTML = workBlocks({ issue: isIssue ? data.text : '', plan, active });
     } catch (error) {
       document.getElementById('detail-title').textContent = '불러오지 못했어요';
       document.getElementById('detail-body').innerHTML = `<p>${esc(error.message)}</p>`;
     }
   };
   document.getElementById('detail-close').onclick = () => document.getElementById('detail').close();
+  // 팝업 바깥(배경)을 누르면 닫는다 — × 가 있는 팝업만. 학습 팝업에서 고치는 중이면 한 번 묻는다
+  document.querySelectorAll('dialog').forEach((dialog) => {
+    if (!dialog.querySelector('.dialog-x')) return;
+    dialog.addEventListener('click', (event) => {
+      if (event.target !== dialog) return;
+      const box = dialog.getBoundingClientRect();
+      const inside = event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      if (inside) return;
+      if (dialog.querySelector('.learned-pop textarea') && !confirm('고치던 내용이 저장되지 않아요. 닫을까요?')) return;
+      dialog.close();
+    });
+  });
 
   // ── 히스토리 ──────────────────────────────────────────────────────────
   let historyItems = [];
@@ -684,19 +703,85 @@
   let historyPick = '';
   const historyOpen = new Set();
   const historyFolded = new Set(); // 목록에서 접은 날짜(YYYY-MM-DD)
-  const commitsBlock = (text) => {
-    const lines = section(text, 'Commits');
-    return lines ? `<h4>커밋</h4>${markdown(lines)}` : '';
+  // 템플릿 자리표시("(…)") · "없음"뿐인 절은 보여 주지 않는다
+  // 경량 계획서 템플릿(docs/plan-template-light.md)이 미리 넣어 두는 줄 — 아직 안 채운 것으로 본다
+  const TEMPLATE_LINES = new Set(['담당 레포 브랜치·미커밋 상태 확인', '표준 검증 + 동작 확인 결과 기록 — 실행 못 한 것은 이유', '담당 레포 브랜치·미커밋 상태를 확인해 보고한다'])
+  // 괄호 자리표시를 지우고 남는 글이 있는 줄만 진짜 내용("📚 배운 것: (…)" 처럼 이름표만 남은 줄도 빈 것)
+  const realLine = (line) => {
+    const text = line.replace(/^\s*(?:[-*]|\d+\.)\s*(\[[ x—]\]\s*)?/, '').trim();
+    if (!text || TEMPLATE_LINES.has(text) || /^없음\.?$/.test(text)) return false;
+    const rest = text.replace(/\([^()]*\)/g, '').replace(/[→·—:\s]/g, '').replace(/^📚배운것$/, '').replace(/^(작업|확인|성공조건)+$/, '');
+    return rest.length > 0;
   };
-  // 히스토리 한 묶음 — 확정한 결정 · 리뷰 뒤 결정 · 리뷰 결론(계획서에 쌓인 '- Review result:' 줄, 적힌 순서대로)
-  const decisionsBlock = (text) => {
-    const decided = section(text, 'Decisions');
-    const afterReview = section(text, '리뷰 뒤 결정');
-    return (decided ? `<h4>결정</h4>${markdown(decided)}` : '') + (afterReview ? `<h4>리뷰 뒤 결정</h4>${markdown(afterReview)}` : '');
+  const filled = (text) => String(text || '').split('\n').some(realLine);
+  const archiveCard = (icon, label, html, kind = '') => (html ? `<div class="lc-block ${kind}"><h5>${icon} ${label}</h5><div class="text">${html}</div></div>` : '');
+  // 이슈·계획서 → 구역 카드. 서비스·정비 카드 상세와 아카이브가 같이 쓴다. active 면 다음 할 일·막힌 것을 위에
+  const workBlocks = ({ issue = '', plan = '', active = false }) => {
+    const pick = (heading) => { const text = section(plan, heading).split('\n').filter((line) => !line.trim() || realLine(line) || /^\s{2,}/.test(line)).join('\n'); return filled(text) ? markdown(text) : ''; };
+    const issueText = issue ? issue.replace(/^---[\s\S]*?---\s*/, '') : '';
+    const issueLead = issueText.split(/\n\s*\n/).find((block) => block.trim() && !block.trim().startsWith('#')) || '';
+    // 계획서가 붙은 이슈는 요약만, 이슈만 있으면 본문 전체
+    // 계획서가 붙은 이슈는 요약 + 전체 보기, 이슈만 있으면 절(## …)마다 카드
+    const ISSUE_ICON = { 근거: '🔎', '할 일': '📝', 후속: '➡️', '확인 결과': '🧾', '현재 항목': '📋', 덧붙임: '➕', 원인: '🧩', 재현: '🔁' };
+    const issueSections = () => {
+      const parts = issueText.split(/^## /m);
+      const lead = parts.shift().trim();
+      const cards = parts.map((part) => {
+        const [heading, ...rest] = part.split('\n');
+        const body = rest.join('\n').trim();
+        const name = heading.trim();
+        const icon = ISSUE_ICON[name] || ISSUE_ICON[Object.keys(ISSUE_ICON).find((key) => name.startsWith(key))] || '•';
+        return filled(body) ? archiveCard(icon, esc(name), markdown(body), name.startsWith('후속') || name.startsWith('할 일') ? 'note' : '') : '';
+      });
+      return archiveCard('📄', '이슈', lead ? markdown(lead) : '', 'warn') + cards.join('');
+    };
+    const issueCard = !issueText ? '' : plan
+      ? archiveCard('📄', '이슈', `${inline(issueLead.trim())}${issueText.trim() !== issueLead.trim() ? `<details class="more"><summary>이슈 전체 보기</summary>${markdown(issueText)}</details>` : ''}`)
+      : issueSections();
+    const reviewLines = plan.split('\n').filter((line) => /^\s*-\s*Review result:/.test(line)).map((line) => line.replace(/^\s*-\s*Review result:\s*/, '- '));
+    const decided = [section(plan, 'Decisions'), section(plan, '리뷰 뒤 결정')].filter(filled).join('\n');
+    const blocked = section(plan, 'Blocked');
+    return `<div class="md-sections">
+      ${issueCard}
+      ${plan ? archiveCard('🎯', '요청한 것', filled(section(plan, '지시').replace(/^>\s?/gm, '')) ? requests(plan) : '', 'note') : ''}
+      ${active ? archiveCard('➡️', '다음 할 일', pick('Next'), 'note') : ''}
+      ${active && filled(blocked) ? archiveCard('⛔', '막힌 것', markdown(blocked), 'bad') : ''}
+      ${archiveCard('✅', '진행', pick('Progress'))}
+      ${archiveCard('📦', '결과', pick('결과'))}
+      ${archiveCard('⚖️', '결정', decided ? markdown(decided) : '', 'warn')}
+      ${archiveCard('🧪', '검증', pick('Validation'))}
+      ${archiveCard('🔍', '리뷰', reviewLines.length ? markdown(reviewLines.join('\n')) : '')}
+      ${archiveCard('🔗', '커밋', pick('Commits'))}
+    </div>`.replace(/<div class="md-sections">\s*<\/div>/, '<p style="color:var(--muted);margin:4px 0">아직 채워진 내용이 없어요 — 작업을 시작하면 요청·진행이 여기에 쌓여요</p>');
   };
-  const reviewsBlock = (text) => {
-    const lines = text.split('\n').filter((line) => /^\s*-\s*Review result:/.test(line)).map((line) => line.replace(/^\s*-\s*Review result:\s*/, '- '));
-    return lines.length ? `<h4>리뷰</h4>${markdown(lines.join('\n'))}` : '';
+  const archiveBlocks = (dir, data) => workBlocks({ issue: data.issue || '', plan: data.plan || '' });
+  // 계획서 Checkpoint · 이슈 front matter 에서 칩
+  const checkpoint = (text, key) => (text.match(new RegExp(`^- ${key}:\\s*(.+)$`, 'm')) || [])[1]?.trim() || '';
+  const CHIP_STATUS = { planned: '📝 계획', in_progress: '🔨 진행 중', blocked: '⛔ 막힘', ready_for_review: '👀 리뷰', done: '✅ 완료', open: '📌 할 일', wontfix: '🚫 안 함' };
+  const planChips = (text) => {
+    const status = checkpoint(text, 'Status').split(/\s/)[0];
+    const ref = checkpoint(text, 'Work ref');
+    // 🌿 뒤 브랜치 이름 — 띄어쓰기가 있으면("브랜치 선택 중") 아직 안 정한 것
+    const named = (ref.match(/🌿\s*([^·]+?)\s*(?:·|$)/) || [])[1] || '';
+    const branch = ref.startsWith('(') ? '' : (named && !/\s/.test(named) ? named : '') || (/^hermes\b/.test(ref) ? 'hermes · main' : '');
+    const prs = [...new Set([...text.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)].map((match) => `${match[1]}#${match[2]}`))];
+    return [
+      status ? `<span class="chip">${esc(CHIP_STATUS[status] || status)}</span>` : '',
+      checkpoint(text, 'Agent') ? `<span class="chip">🤖 ${esc(checkpoint(text, 'Agent'))}</span>` : '',
+      checkpoint(text, 'Owner') ? `<span class="chip">👤 ${esc(checkpoint(text, 'Owner'))}</span>` : '',
+      branch ? `<span class="chip">🌿 ${esc(branch)}</span>` : '',
+      ...prs.map((pr) => `<span class="chip">🔀 ${esc(pr)}</span>`),
+      checkpoint(text, 'Updated') ? `<span class="chip">🕒 ${esc(checkpoint(text, 'Updated').split(' / ')[0])}</span>` : '',
+    ].join('');
+  };
+  const issueChips = (text) => {
+    const front = (key) => (text.match(new RegExp(`^${key}:\\s*(.+)$`, 'm')) || [])[1]?.replace(/\s+#.*$/, '').trim() || '';
+    return [
+      front('status') ? `<span class="chip">${esc(CHIP_STATUS[front('status')] || front('status'))}</span>` : '',
+      front('repo') ? `<span class="chip">📦 ${esc(front('repo'))}</span>` : '',
+      front('kind') ? `<span class="chip">${esc(front('kind'))}</span>` : '',
+      front('severity') ? `<span class="chip">${esc(front('severity'))}</span>` : '',
+    ].join('');
   };
   const openHistory = async (dir) => {
     const dialog = document.getElementById('detail');
@@ -710,13 +795,17 @@
       if (!response.ok) throw new Error(data.error || response.status);
       const item = historyItems.find((entry) => entry.dir === dir);
       document.getElementById('detail-title').textContent = item?.title || data.meta?.title || dir;
-      document.getElementById('detail-meta').textContent = `보관 ${data.meta?.archivedAt || '?'}`;
-      const issueBody = data.issue ? `<div class="part issue" id="part-issue"><div class="p-head">📄 이슈 <small>${esc(dir)}/issue.md</small></div>${markdown(data.issue.replace(/^---[\s\S]*?---\s*/, ''))}</div>` : '';
-      // 결정 콘솔(plan.html)이 묶여 있으면 읽기 전용으로 연다 — 토큰을 넣지 않아 보낼 수 없다. dir 은 이미 archive/<이름>
-      const consoleLink = data.html ? ` <a href="/${dir.split('/').map(encodeURIComponent).join('/')}/plan.html" target="_blank">결정 콘솔 열기 ↗</a>` : '';
-      const planBody = data.plan ? `<div class="part plan" id="part-plan"><div class="p-head">📋 계획서 <small>${esc(dir)}/plan.md</small>${consoleLink}</div>${planBlocks(data.plan)}${decisionsBlock(data.plan)}${reviewsBlock(data.plan)}${commitsBlock(data.plan)}</div>` : '';
-      const body = document.getElementById('detail-body');
-      body.innerHTML = issueBody + planBody;
+      const chips = [
+        item ? bundlePill(item) : '',
+        item?.repo ? `<span class="chip">📦 ${esc(item.repo)}</span>` : '',
+        item?.owner ? `<span class="chip">👤 ${esc(item.owner)}</span>` : '',
+        `<span class="chip">🗄 보관 ${esc(data.meta?.archivedAt || '?')}</span>`,
+        item?.pr ? `<span class="chip">🔀 ${esc(item.pr)}</span>` : '',
+        data.html ? `<a class="chip" href="/${dir.split('/').map(encodeURIComponent).join('/')}/plan.html" target="_blank">결정 콘솔 열기 ↗</a>` : '',
+      ].join('');
+      document.getElementById('detail-meta').innerHTML = `<div class="chips">${chips}</div>`;
+      // 결정 콘솔(plan.html)은 칩으로 — 읽기 전용(토큰을 넣지 않아 보낼 수 없다)
+      document.getElementById('detail-body').innerHTML = archiveBlocks(dir, data);
     } catch (error) {
       document.getElementById('detail-title').textContent = '불러오지 못했어요';
       document.getElementById('detail-body').innerHTML = `<p>${esc(error.message)}</p>`;
@@ -1277,12 +1366,30 @@
   const MEMORY_TYPE = { user: '👤 사용자', feedback: '💬 피드백', project: '📁 프로젝트', reference: '🔗 참고' };
   const memoryPill = (type) => `<span class="pill mem-${esc(type || 'none')}">${esc(MEMORY_TYPE[type] || type || '?')}</span>`;
   let memoryItems = [];
+  // 메모리 본문을 구역으로 — "**Why:**" · "**How to apply:**" · "관련: [[…]]" 을 찾아 카드로. 꼴이 다르면 그대로 마크다운
+  const memoryDetail = (item) => {
+    const body = item.body || '';
+    const why = body.search(/^\*\*Why:\*\*/m);
+    const how = body.search(/^\*\*How to apply:\*\*/m);
+    const rel = body.search(/^관련:/m);
+    const cut = (start, ends) => { const end = Math.min(...ends.filter((value) => value > start), body.length); return body.slice(start, end).trim(); };
+    const links = (html) => html.replace(/\[\[([^\]]+)\]\]/g, '<span class="chip">🔗 $1</span>');
+    const block = (icon, label, text, kind = '') => (text ? `<div class="lc-block ${kind}"><h5>${icon} ${label}</h5><div class="text">${links(markdown(text))}</div></div>` : '');
+    const summary = `<div class="lc-block note"><h5>✨ 한 줄 요약</h5><div class="text">${inline(item.description)}</div></div>`;
+    if (why < 0 && how < 0) return `<div class="md-sections">${summary}${block('📌', '내용', body)}</div>`;
+    const marks = [why, how, rel].filter((value) => value >= 0);
+    const main = body.slice(0, Math.min(...marks)).trim();
+    const whyText = why >= 0 ? cut(why, [how, rel]).replace(/^\*\*Why:\*\*\s*/, '') : '';
+    const howText = how >= 0 ? cut(how, [why, rel]).replace(/^\*\*How to apply:\*\*\s*/, '') : '';
+    const related = rel >= 0 ? [...body.slice(rel).matchAll(/\[\[([^\]]+)\]\]/g)].map((match) => `<span class="chip">🔗 ${esc(match[1])}</span>`).join('') : '';
+    return `<div class="md-sections">${summary}${block('📌', '내용', main)}${block('💡', '왜', whyText, 'warn')}${block('🛠', '이렇게 적용', howText)}${related ? `<div><h5 style="margin:0 0 4px;font-size:11.5px;color:var(--muted)">관련 기억</h5><div class="chips">${related}</div></div>` : ''}</div>`;
+  };
   const openMemory = (file) => {
     const item = memoryItems.find((entry) => entry.file === file);
     if (!item) return;
     document.getElementById('detail-title').textContent = item.title;
-    document.getElementById('detail-meta').textContent = `${MEMORY_TYPE[item.type] || item.type || '?'} · 수정 ${item.updated} · ${item.file}`;
-    document.getElementById('detail-body').innerHTML = `<p style="color:var(--muted)">${inline(item.description)}</p>${markdown(item.body)}`;
+    document.getElementById('detail-meta').innerHTML = `<div class="chips">${memoryPill(item.type)}<span class="chip">수정 ${esc(item.updated)}</span><span class="chip">${esc(item.file)}</span></div>`;
+    document.getElementById('detail-body').innerHTML = memoryDetail(item);
     document.getElementById('detail').showModal();
   };
   const loadMemory = async () => {
@@ -1335,14 +1442,56 @@
     </div>`;
   };
   let learnEditing = '';
+  // 학습한 내용 팝업 — 클로드 학습 팝업과 같은 꼴(칩 + 구역 카드). 수정하면 같은 팝업 안에서 입력칸으로 바뀐다
+  const bareLine = (line) => String(line || '').replace(/^[-*]\s+/, '').replace(/\s*<!-- learn:[^>]+ -->\s*$/, '');
+  const learnedDetail = (item, editing) => {
+    const card = (icon, label, text, kind = '') => `<div class="lc-block ${kind}"><h5>${icon} ${label}</h5><div class="text">${text}</div></div>`;
+    if (editing) return `<div class="md-sections learned-pop" data-id="${esc(item.id)}">
+      ${learnField('title', '제목', item.title, true)}${learnField('explain', '📖 무엇을 배웠나', item.explain, true, 4)}${learnField('why', '⚠️ 모르면', item.why, true, 2)}${learnField('rule', '📝 공책에 들어가는 한 줄 (에이전트가 읽는다)', item.rule, true, 3)}
+      <div class="actions"><button class="btn primary" data-act="save">저장</button><button class="btn" data-act="cancel">취소</button></div></div>`;
+    const changed = item.original || item.strengthen;
+    const rule = changed
+      ? `<div style="display:grid;gap:6px"><div><span class="chip">고치기 전</span> <span style="color:var(--muted);text-decoration:line-through">${inline(bareLine(changed))}</span></div><div><span class="chip">고친 뒤</span> ${inline(item.rule)}</div></div>`
+      : inline(item.rule);
+    return `<div class="md-sections learned-pop" data-id="${esc(item.id)}">
+      ${card('📖', '무엇을 배웠나', esc(item.explain || '—'))}
+      ${card('⚠️', '모르면', esc(item.why || '—'), 'warn')}
+      ${card('📝', `공책(${esc(item.notebook.replace(/^docs\/knowledge\//, '') || '?')})에 들어가는 한 줄`, rule, 'note')}
+      ${item.where ? card('📍', '어디서 배웠나', `<span style="font-size:12.5px;color:var(--muted)">${esc(item.where.replace(/^- /gm, ''))}</span>`) : ''}
+      <div class="actions"><button class="btn" data-act="edit">수정</button><button class="btn danger" data-act="remove">삭제</button></div></div>`;
+  };
+  const openLearned = (id, editing = false) => {
+    const item = (learnData.learned || []).find((entry) => entry.id === id);
+    if (!item) return;
+    document.getElementById('detail-title').textContent = item.title;
+    document.getElementById('detail-meta').innerHTML = `<div class="chips"><span class="pill learn-area">📚 ${esc(areaOf(item))}</span>${signalOf(item) ? `<span class="chip">${esc(signalOf(item))}</span>` : ''}${item.basis ? `<span class="chip">${esc(BASIS[item.basis] || item.basis)}</span>` : ''}<span class="chip">넣은 날 ${esc(item.applied)}</span><span class="chip">👤 ${esc(item.by || '?')}</span></div>`;
+    document.getElementById('detail-body').innerHTML = learnedDetail(item, editing);
+    const dialog = document.getElementById('detail');
+    if (!dialog.open) dialog.showModal();
+  };
+  document.getElementById('detail-body').addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-act]');
+    const card = button?.closest('.learned-pop');
+    if (!card) return;
+    const id = card.dataset.id;
+    const act = button.dataset.act;
+    if (act === 'edit') return openLearned(id, true);
+    if (act === 'cancel') return openLearned(id, false);
+    if (act === 'remove' && !confirm('이 학습을 공책에서 뺄까요? (기록은 휴지통으로 — 되살릴 수 있어요)')) return;
+    const edits = Object.fromEntries([...card.querySelectorAll('[data-k]')].map((field) => [field.dataset.k, field.value]));
+    button.disabled = true;
+    try {
+      const result = await api(act === 'save' ? '/api/learn-edit' : '/api/learn-remove', { id, edits });
+      if (result.notebookUpdated === false) alert('기록은 처리했지만 공책에서 해당 줄을 찾지 못했어요 — 공책 파일을 직접 확인해 주세요');
+      toast(act === 'save' ? '고쳤어요' : '공책에서 뺐어요');
+    } catch (error) {
+      alert(error.message || String(error));
+    }
+    await loadLearn();
+    if (act === 'save') openLearned(id, false); else document.getElementById('detail').close();
+  });
   const renderLearn = () => {
-    const { candidates, learned, stats = {}, uncommitted = 0 } = learnData;
-    const decided = (stats.applied || 0) + (stats.discarded || 0);
-    document.getElementById('learn-stats').innerHTML = [
-      `<span class="stat">넣기 <b>${stats.applied || 0}</b> · 버리기 <b>${stats.discarded || 0}</b>${decided ? ` · 넣은 비율 <b>${Math.round(((stats.applied || 0) / decided) * 100)}%</b>` : ''}</span>`,
-      `<span class="stat">학습한 내용 <b>${learned.length}</b></span>`,
-      uncommitted ? `<span class="stat warn">팀에 공유 안 된 변경 <b>${uncommitted}</b> — 헤르메스에게 "커밋해줘"</span>` : '',
-    ].join('');
+    const { candidates, learned } = learnData;
     document.getElementById('learn-candidate-count').textContent = candidates.length;
     document.getElementById('learn-learned-count').textContent = learned.length;
     document.getElementById('learn-candidates').innerHTML = candidates.length
@@ -1351,9 +1500,14 @@
     const groups = new Map();
     for (const item of learned) groups.set(areaOf(item), [...(groups.get(areaOf(item)) || []), item]);
     document.getElementById('learn-learned').innerHTML = learned.length
-      ? [...groups].map(([area, items]) => `<div class="learn-group">📚 ${esc(area)} · ${items.length}개</div>` + items.map((item) => `
-        <details class="learn-row" ${learnEditing === item.id ? 'open' : ''} data-row="${esc(item.id)}"><summary><span class="date">${esc(item.applied)}</span><span><span class="t">${esc(item.title)}</span><span class="s">${esc(item.why || item.rule)}</span></span><span class="pill">${esc(signalOf(item) || '학습')}</span></summary>${learnCard(item, 'learned', learnEditing === item.id)}</details>`).join('')).join('')
+      ? `<div class="history">${[...groups].map(([area, items]) => `<div class="month">📚 ${esc(area)} <span class="n">· ${items.length}개</span></div>` + items.map((item) => `
+        <button type="button" class="h-row" data-learned="${esc(item.id)}">
+          <span class="h-date">${esc(item.applied)}</span>
+          <span class="h-main"><span class="h-title">${esc(item.title)}</span><span class="h-sum">${esc(item.why || item.rule)}</span></span>
+          <span class="h-tags"><span class="pill" title="이 학습을 [넣기]한 사람">👤 ${esc(item.by || '?')}</span></span>
+        </button>`).join('')).join('')}</div>`
       : '<div class="empty-history">아직 학습한 내용이 없어요</div>';
+    document.querySelectorAll('[data-learned]').forEach((row) => { row.onclick = () => openLearned(row.dataset.learned); });
   };
   const loadLearn = async () => {
     try {

@@ -100,7 +100,7 @@ export const listLearn = () => {
       .map((file) => {
         const text = readFileSync(join(LEARNED, file), 'utf8')
         const { meta } = parse(text)
-        return view(`docs/knowledge/learned/${file}`, text, { applied: meta.applied || '', original: (parse(text).sections['원래 줄'] || '') })
+        return view(`docs/knowledge/learned/${file}`, text, { applied: meta.applied || '', by: meta.approved_by || '', original: (parse(text).sections['원래 줄'] || '') })
       })
       .sort((left, right) => right.applied.localeCompare(left.applied))
     : []
@@ -174,7 +174,11 @@ const removeLine = (path, id, original) => {
   return true
 }
 
-const ledgerText = (item, { applied, original }) => `---
+// 누가 넣었나 — 이 컴퓨터의 git 사용자 이름(학습한 내용 목록 오른쪽에 보인다)
+const gitUser = () => {
+  try { return execFileSync('git', ['config', 'user.name'], { cwd: ROOT, encoding: 'utf8' }).trim() } catch { return '' }
+}
+const ledgerText = (item, { applied, original, by }) => `---
 id: ${item.lid}
 title: ${oneLine(item.title)}
 target: ${item.target}
@@ -182,6 +186,7 @@ source: ${item.source}
 signal: ${item.signal}
 basis: ${item.basis || ''}
 applied: ${applied}
+approved_by: ${by || ''}
 ---
 
 ## 무엇을 배웠나
@@ -230,7 +235,7 @@ export const applyLearn = (id, edits = {}) => {
   item.lid = lid
   const original = insertLine(notebook, item.lid, item.rule, found)
   mkdirSync(LEARNED, { recursive: true })
-  writeFileSync(join(LEARNED, `${item.lid}.md`), ledgerText(item, { applied: today(), original }))
+  writeFileSync(join(LEARNED, `${item.lid}.md`), ledgerText(item, { applied: today(), original, by: gitUser() }))
   toTrash(path)
   bumpStat('applied')
   return { ok: true, notebook: relative(ROOT, notebook), strengthened: Boolean(original) }
@@ -254,7 +259,7 @@ export const editLearned = (id, edits = {}) => {
   item.lid = meta.id || basename(path, '.md')
   const notebook = notebookPath(item.target)
   const moved = notebook ? replaceLine(notebook, item.lid, item.rule) : false
-  writeFileSync(path, ledgerText(item, { applied: meta.applied || today(), original: sections['원래 줄'] || '' }))
+  writeFileSync(path, ledgerText(item, { applied: meta.applied || today(), original: sections['원래 줄'] || '', by: meta.approved_by || gitUser() }))
   return { ok: true, notebookUpdated: moved }
 }
 
