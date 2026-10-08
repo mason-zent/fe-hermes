@@ -1140,8 +1140,13 @@
     const noScene = picked.filter((item) => !(item.runFiles || item.scenarioFiles || []).length);
     const target = document.getElementById('qa-target').value;
     const server = document.getElementById('qa-server').value.trim();
+    // 버튼이 꺼지는 이유 — 글자로 보이게
+    const smokeOnly = picked.filter((item) => tcStatus(item) === 'smoke').length;
+    const blocked = apps.length !== 1 ? `한 앱의 TC 만 골라 주세요 — 지금 ${apps.map((app) => TC_APP_NAME[app] || app).join('·')} 가 섞여 있어요`
+      : !scenes.length ? (smokeOnly ? '고른 TC 는 🖥 화면 검사 TC 라 흐름 씬이 없어요 — [런] 탭 전체 검수의 화면 검사가 확인해요' : '고른 TC 를 검사하는 흐름 씬이 없어요(✋ 수동 확인) — 사람이 직접 확인하거나 씬을 만들어야 해요')
+      : '';
     bar.innerHTML = `<b>선택 ${picked.length}개</b><span class="sub">${esc(apps.map((app) => TC_APP_NAME[app] || app).join('·'))} · 흐름 씬 ${scenes.length}개${scenes.length ? ` (${esc(scenes.map((name) => name.slice(0, 2)).join(', '))})` : ''}${noScene.length ? ` · 씬 없는 TC ${noScene.length}개는 건너뜀(${esc(noScene.slice(0, 5).map((item) => item.id).join(', '))}${noScene.length > 5 ? ' …' : ''})` : ''} · 대상 ${target === 'server' ? `☁️ ${esc(server || '서버 주소 없음')}` : '🖥 로컬 서버'}</span>
-      <button type="button" class="btn primary" id="tc-run-picked" ${apps.length !== 1 || !scenes.length ? 'disabled' : ''} title="${apps.length !== 1 ? '한 앱의 TC 만 골라 주세요' : !scenes.length ? '고른 TC 를 검사하는 흐름 씬이 없어요' : '고른 TC 의 흐름 씬만 돌려요(화면 검사 없이)'}">▶ 선택한 TC만 검수</button>
+      <button type="button" class="btn primary" id="tc-run-picked" ${blocked ? 'disabled' : ''} title="${blocked ? esc(blocked) : '고른 TC 의 흐름 씬만 돌려요(화면 검사 없이)'}">▶ 선택한 TC만 검수</button>${blocked ? `<span class="sub" style="color:var(--warn)">⚠ ${esc(blocked)}</span>` : ''}
       <button type="button" class="btn" id="tc-clear-picked">선택 해제</button>`;
     document.getElementById('tc-clear-picked').onclick = () => { tcState.picked.clear(); renderTc(); };
     document.getElementById('tc-run-picked').onclick = async () => {
