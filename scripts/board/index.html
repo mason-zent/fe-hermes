@@ -1031,9 +1031,9 @@
   const tcInline = (text) => esc(text).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
   // 자동화됨 = 이 TC 를 검사하는 흐름 씬(작은 씬·여정)이 실제로 있다 — 문서 자동화 칸의 '(있음 NN)' 표기도 같이 본다
   const tcDone = (item) => (item.scenarioFiles || []).length > 0 || /있음/.test(item.auto || '');
-  // 자동 검사 상태 — scene: 흐름 씬·여정이 검사 · smoke: 전체 검수의 화면 검사(모든 화면을 열어 깨짐·가드·오류)가 검사 · todo: 아직(사람이 보거나 씬을 만들 것)
+  // 자동 검사 상태 — scene: 흐름 씬·여정이 검사 · smoke: 전체 검수의 화면 검사(모든 화면을 열어 깨짐·가드·오류)가 검사 · todo: 수동 확인(사람이 보거나 씬을 만들 것)
   const tcStatus = (item) => tcDone(item) ? 'scene' : /^스모크/.test(item.auto || '') ? 'smoke' : 'todo';
-  const TC_STATUS = { scene: ['✅', '씬으로 검사', '흐름 씬·여정이 누르고 입력하며 자동으로 확인'], smoke: ['🖥', '화면 검사', '전체 검수에서 화면을 열어 깨짐·가드·오류를 자동으로 확인(누르지는 않음)'], todo: ['✋', '아직', '자동 검사 없음 — 사람이 보거나 씬을 만들 후보'] };
+  const TC_STATUS = { scene: ['✅', '씬으로 검사', '흐름 씬·여정이 누르고 입력하며 자동으로 확인'], smoke: ['🖥', '화면 검사', '전체 검수에서 화면을 열어 깨짐·가드·오류를 자동으로 확인(누르지는 않음)'], todo: ['✋', '수동 확인', '자동 검사가 없어 사람이 직접 확인 — 씬으로 만들 후보'] };
   tcState.status = tcState.status || '';
   const tcCases = () => (tcState.apps || []).filter((entry) => !tcState.app || entry.app === tcState.app).flatMap((entry) => entry.cases.map((item) => ({ ...item, app: entry.app })));
   // 이 TC 를 지나가는 여정 씬(부품 씬을 include 하는 씬)
@@ -1076,7 +1076,7 @@
       ? `<span class="tc-auto done" title="${esc((item.scenarioFiles || []).join(', '))}">✅ ${parts.length ? `씬 ${esc(parts.map((name) => name.slice(0, 2)).join('·'))}` : '씬'}</span>${journeys}`
       : `<span class="tc-auto done" title="${esc(tcJourneys(item).join(', '))}">✅ 🧭 여정 ${esc(tcJourneys(item).map((name) => name.slice(0, 2)).join('·'))}</span>`;
     if (status === 'smoke') return `<span class="tc-auto smoke" title="전체 검수의 화면 검사가 이 화면들을 열어 확인해요">🖥 화면 검사</span>${journeys}`;
-    return `<span class="tc-auto todo">✋ 아직</span>${item.auto ? ` <span class="tc-plan" title="TC 문서 자동화 칸 — 자동화할 방법(계획)">계획: ${tcInline(item.auto)}</span>` : ''}`;
+    return `<span class="tc-auto todo">✋ 수동 확인</span>${item.auto ? ` <span class="tc-plan" title="TC 문서 자동화 칸 — 자동화할 방법(계획)">계획: ${tcInline(item.auto)}</span>` : ''}`;
   };
   const renderTc = () => {
     const apps = tcState.apps || [];
@@ -1094,7 +1094,7 @@
     const base = tcCases();
     document.getElementById('tc-status').innerHTML = [['', '전체', '모든 TC']].concat(Object.entries(TC_STATUS).map(([key, [icon, label, why]]) => [key, `${icon} ${label}`, why]))
       .map(([key, label, why]) => `<button type="button" data-tcstatus="${key}" aria-pressed="${tcState.status === key}" title="${esc(why)}">${esc(label)}<span class="n">${key ? base.filter((item) => tcStatus(item) === key).length : base.length}</span></button>`).join('')
-      + '<span class="hint">✅ 씬·여정이 자동으로 누르며 확인 · 🖥 전체 검수가 화면만 열어 확인 · ✋ 아직 자동 검사 없음</span>';
+      + '<span class="hint">✅ 씬·여정이 자동으로 누르며 확인 · 🖥 전체 검수가 화면만 열어 확인 · ✋ 사람이 직접 확인(씬으로 만들 후보)</span>';
     document.querySelectorAll('[data-tcstatus]').forEach((button) => { button.onclick = () => { tcState.status = button.dataset.tcstatus; renderTc(); }; });
     const query = document.getElementById('tc-search').value.trim().toLowerCase();
     const rows = tcCases().filter((item) => (!prio || item.prio === prio) && (!kindSelect.value || item.kind === kindSelect.value)
