@@ -29,7 +29,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const QUEUE_DIR = process.env.HERMES_LEARN_QUEUE || '/tmp/hermes-learn-queue'
 const WATCHER_PID = join(QUEUE_DIR, '.watcher.pid')
 const MAX_TRANSCRIPT_CHARS = 60_000
-const today = new Date().toISOString().slice(0, 10)
+// 날짜는 한국 시간 — UTC 로 쓰면 아침 9시 전 작업이 어제 날짜가 된다
+const today = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Seoul' }).slice(0, 10)
 
 const argv = process.argv.slice(2)
 const option = (name) => {
@@ -331,7 +332,8 @@ export const writeIssue = (item, planFile, dryRun) => {
   const { masked: rule } = maskSecrets(item.rule)
   const { masked: evidence } = maskSecrets(item.evidence)
   const { masked: strengthen } = maskSecrets(item.strengthen ?? '')
-  const existing = openLearnIssues().find(({ text }) => (text.match(/^target:\s*(.*)$/m) ?? [])[1]?.trim() === target)
+  // 합치는 건 스킬 후보(반복 +1)만 — 함정은 절 이름이 같아도 내용이 다를 수 있다. 같은 내용인지는 검토자가 이미 판단해 내지 않는다
+  const existing = item.kind === 'skill' ? openLearnIssues().find(({ text }) => (text.match(/^target:\s*(.*)$/m) ?? [])[1]?.trim() === target) : null
   if (existing) {
     const path = join(ROOT, 'issues', existing.file)
     let text = existing.text
@@ -444,6 +446,12 @@ const enqueue = (planArg, head) => {
   const id = `${Date.now()}-${createHash('sha1').update(planArg + head).digest('hex').slice(0, 6)}`
   writeFileSync(join(QUEUE_DIR, `${id}.json`), JSON.stringify({ plan: planArg, head }))
   if (watcherAlive()) return console.log('📚 배우기 검토 대기열에 넣었다 — "📚 배우기 검토" pane 이 차례로 처리한다')
+  // 방금(30초 안) 다른 요청이 pane 을 띄우는 중이면 또 띄우지 않는다 — 여러 개가 한꺼번에 들어올 때 pid 파일이 생기기 전 틈
+  const launching = join(QUEUE_DIR, '.launching')
+  try {
+    if (Date.now() - Number(readFileSync(launching, 'utf8')) < 30_000) return console.log('📚 배우기 검토 대기열에 넣었다 — pane 이 뜨는 중')
+  } catch { /* 없으면 띄운다 */ }
+  writeFileSync(launching, String(Date.now()))
   // pane 하나 — 이미 있으면 그 pane 에서 다시 돌리고, 없으면 띄운다(herdr 밖이면 뒤에서)
   const launched = spawnSync(join(ROOT, 'scripts/learn-review-pane.sh'), { encoding: 'utf8' })
   if (launched.status === 0) return console.log(`📚 배우기 검토 대기열에 넣었다 — pane ${launched.stdout.trim()}`)
