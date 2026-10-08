@@ -5,8 +5,8 @@
  *
  *   node scripts/learn-review.mjs --plan <plans/…md> [--head <sha>] [--dry-run] [--force]
  *        한 계획서를 검토한다. --dry-run 은 줄인 기록 크기·LLM 답·만들 이슈만 보여 주고 파일은 쓰지 않는다
- *   node scripts/learn-review.mjs --enqueue --plan <plans/…md> [--head <sha>]
- *        대기열에 넣고 "📚 배우기 검토" pane 이 돌고 있게 한다(ship.sh 미리보기가 부른다). 바로 끝난다
+ *   node scripts/learn-review.mjs --enqueue --plan <plans/…md> [--head <표시>]
+ *        대기열에 넣고 "📚 배우기 검토" pane 이 돌고 있게 한다(현황판이 내 계획서의 PR 이 모두 머지된 걸 보면 부른다 — 표시는 merged-<PR번호들>). 바로 끝난다
  *   node scripts/learn-review.mjs --watch
  *        그 pane 에서 돈다 — 대기열을 차례로 꺼내 검토한다. pane 은 하나만(작업마다 늘리지 않는다)
  *
@@ -221,24 +221,53 @@ const openLearnIssues = () => {
     .filter(({ text }) => !/^status:\s*(done|wontfix)/m.test(text))
 }
 
-const buildPrompt = (planFile, knowledgeDirs, transcript) => {
+// ── 계획서 · 머지된 PR(바뀐 코드 · 리뷰 댓글) — 5단계: PR 이 머지된 뒤 배운다 ─────────────
+const MAX_PLAN_CHARS = 6000
+const MAX_DIFF_CHARS = 15000
+const MAX_REVIEW_CHARS = 6000
+const gh = (args) => {
+  const result = spawnSync('gh', args, { encoding: 'utf8', maxBuffer: 30 * 1024 * 1024, timeout: 60_000 })
+  return result.status === 0 ? result.stdout : ''
+}
+// 계획서의 "- PR:" 줄에 있는 PR 들(zenterprise-inc/<레포>/pull/<번호>)
+export const planPullRequests = (planText) => [...new Set([...planText.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)].map((match) => `${match[1]}#${match[2]}`))]
+  .map((link) => { const [repo, number] = link.split('#'); return { repo, number } })
+const pullRequestMaterial = (planText) => {
+  const parts = []
+  for (const { repo, number } of planPullRequests(planText)) {
+    const view = gh(['pr', 'view', number, '--repo', `zenterprise-inc/${repo}`, '--json', 'title,state,baseRefName,mergedAt,body'])
+    if (!view) continue
+    const info = JSON.parse(view)
+    if (info.state !== 'MERGED') continue   // 머지된 것만 — 버려진 시도는 배우지 않는다
+    const diff = gh(['pr', 'diff', number, '--repo', `zenterprise-inc/${repo}`])
+    // 리뷰 댓글 — 사람 이름은 빼고 위치와 내용만(코드 줄 댓글 + 리뷰 본문)
+    const lineComments = gh(['api', `repos/zenterprise-inc/${repo}/pulls/${number}/comments`, '--paginate', '--jq', '.[] | "- " + .path + ":" + ((.line // .original_line) | tostring) + " — " + (.body | gsub("\\n"; " "))'])
+    const reviews = gh(['api', `repos/zenterprise-inc/${repo}/pulls/${number}/reviews`, '--paginate', '--jq', '.[] | select(.body != "") | "- (" + .state + ") " + (.body | gsub("\\n"; " "))'])
+    parts.push([
+      `### ${repo}#${number} → ${info.baseRefName} (머지 ${String(info.mergedAt).slice(0, 10)}) — ${info.title}`,
+      `#### 리뷰 댓글\n${clip(`${reviews}${lineComments}`.trim() || '(없음)', MAX_REVIEW_CHARS)}`,
+      `#### 바뀐 코드(diff, 길면 앞부분)\n${clip(diff.trim() || '(없음)', MAX_DIFF_CHARS)}`,
+    ].join('\n'))
+  }
+  return parts.join('\n\n')
+}
+
+const buildPrompt = (planFile, knowledgeDirs, transcript, planText = '', prMaterial = '') => {
   // 기준은 정본 한 곳 — 에이전트와 같은 문서를 읽는다
   const criteria = readFileSync(join(ROOT, 'docs/knowledge/common/learning.md'), 'utf8')
   const knowledge = knowledgeDirs.map((dir) => `### ${dir}/gotchas.md\n${readIf(join(ROOT, 'docs/knowledge', dir, 'gotchas.md'), 8000)}\n### ${dir}/patterns.md (앞부분)\n${readIf(join(ROOT, 'docs/knowledge', dir, 'patterns.md'), 2500)}`).join('\n\n')
   const skills = readdirSync(join(ROOT, '.claude/skills')).filter((name) => !name.startsWith('.')).join(', ')
   const issues = openLearnIssues().map(({ file, text }) => `- ${file}: ${(text.match(/^title:\s*(.*)$/m) ?? [])[1] ?? ''}`).join('\n') || '(없음)'
-  return `너는 FE 팀 워크스페이스 "헤르메스"의 배우기 전용 검토자다. 아래 작업 대화 기록(줄인 것)을 읽고, 학습 기준을 **모두** 만족하는 것만 최대 3개 뽑아 JSON 으로 답한다. 없으면 items 를 빈 배열로 — 대부분의 작업은 0개가 정상이다.
-title·explain·ifUnknown 은 **사용자가 읽는 글**이다. 대화 문장을 그대로 옮기지 말고, 그 작업을 모르는 사람도 알게 쉬운 한국어로 다시 쓴다. rule 은 에이전트가 읽는 공책 한 줄이다.
+  // 역할은 에이전트 프로필과 같은 꼴의 문서 한 곳 — .claude/agents/learn-reviewer.md (front matter 는 빼고 본문만)
+  const role = readFileSync(join(ROOT, '.claude/agents/learn-reviewer.md'), 'utf8').replace(/^---\n[\s\S]*?\n---\n/, '').trim()
+  return `${role}
+
+---
+
+아래는 이번 검토에 받은 것이다(역할 문서 "받는 것" 표 순서).
 
 ## 학습 기준 (정본 — docs/knowledge/common/learning.md)
 ${criteria}
-
-## 판단 순서
-1. 사용자가 바로잡은 곳(👤 "아니", "그거 말고", "이렇게 해")을 가장 먼저 본다 — signal: correction. 그 요청에만 해당하는 지시는 제외
-2. 같은 오류(❌)가 반복되다 해결된 곳 — 원인이 레포 고유 함정이면 signal: repeat-error. 환경 탓(네트워크·권한·로컬 설정)은 제외
-3. 작업을 끝내며 드러난 함정·문서와 코드가 다른 곳 — signal: done
-4. 같은 절차를 손으로 여러 번 했으면 kind: skill (기존 스킬로 할 수 있으면 제외)
-5. 아래 기존 knowledge·열린 learn 이슈에 이미 있으면 새로 내지 않는다. 기존 줄을 더 정확하게 고치는 것이면 strengthen 에 기존 줄을 적는다
 
 ## 기존 스킬
 ${skills}
@@ -248,6 +277,12 @@ ${knowledge || '(대상 레포를 알 수 없음)'}
 
 ## 열린 learn 이슈 (중복 판단용)
 ${issues}
+
+## 계획서 — 요청 내용 · 결정 · 진행 · 검증 · 리뷰 결론 (${planFile})
+${clip(maskSecrets(planText).masked, MAX_PLAN_CHARS)}
+
+## 머지된 PR — 팀이 받아들인 최종 변경과 리뷰 지적
+${maskSecrets(prMaterial).masked || '(머지된 PR 없음 — 대화와 계획서만 본다)'}
 
 ## 작업 대화 기록 — 계획서 ${planFile}
 (👤 사용자 · 🤖 에이전트 · 🔧 도구 호출 · ❌ 도구 오류 첫 줄. 비밀값은 *** 로 가려져 있다)
@@ -347,9 +382,17 @@ ${item.kind === 'skill' ? `\n## 절차\n- (검토자가 본 반복 절차 — �
 
 // ── 한 계획서 검토 ──────────────────────────────────────────────────────
 const reviewPlan = async (planArg, { head = '', dryRun = false, force = false } = {}) => {
-  const planPath = resolve(ROOT, planArg)
-  const planFile = relative(ROOT, planPath)
-  if (!planFile.startsWith('plans/') || !existsSync(planPath)) throw new Error(`plans/ 안의 계획서가 아니거나 없다: ${planArg}`)
+  let planPath = resolve(ROOT, planArg)
+  let planFile = relative(ROOT, planPath)
+  // 보관본(archive/<이름>) — 읽기만 한다(--dry-run 만). 대화는 보관 전 계획서 경로(meta.json from.plan)로 찾는다
+  if (planFile.startsWith('archive/')) {
+    const bundle = planFile.split('/').slice(0, 2).join('/')
+    const meta = JSON.parse(readFileSync(join(ROOT, bundle, 'meta.json'), 'utf8'))
+    if (!dryRun) throw new Error('보관본은 --dry-run 으로만 검토한다(archive/ 는 git 기록이라 쓰지 않는다)')
+    planPath = join(ROOT, bundle, 'plan.md')
+    planFile = meta.from?.plan || ''
+    if (!planFile || !existsSync(planPath)) throw new Error(`보관본에 계획서가 없다: ${bundle}`)
+  } else if (!planFile.startsWith('plans/') || !existsSync(planPath)) throw new Error(`plans/ 안의 계획서가 아니거나 없다: ${planArg}`)
   const planText = readFileSync(planPath, 'utf8')
   const mark = head ? `@${head}` : ''
   if (!force && mark && planText.includes(`- Learn review:`) && planText.match(/^- Learn review:.*$/m)?.[0].includes(mark)) {
@@ -358,16 +401,19 @@ const reviewPlan = async (planArg, { head = '', dryRun = false, force = false } 
   }
   console.log(`📚 ${planFile}${mark ? ` ${mark}` : ''}`)
   const transcripts = await findTranscripts(planFile)
-  if (!transcripts.length) {
-    console.log('  대화 기록을 찾지 못했다(계획서 경로로 시작한 세션 없음) — 건너뜀')
+  // 대화가 없어도 머지된 PR 이 있으면 계획서·PR 로 배운다. 둘 다 없으면 건너뛴다
+  if (!transcripts.length && !planPullRequests(planText).length) {
+    console.log('  대화 기록도 PR 도 없다 — 건너뜀')
     return
   }
-  const condensed = (await Promise.all(transcripts.map(condense))).map((text, index) => `### 세션 ${index + 1}\n${text}`).join('\n\n')
+  const condensed = (await Promise.all(transcripts.map(condense))).map((text, index) => `### 세션 ${index + 1}\n${text}`).join('\n\n') || '(대화 기록 없음)'
   const { masked, count: maskedCount } = maskSecrets(condensed)
   const transcript = fitBudget(masked)
   const knowledgeDirs = planKnowledge(planText)
   console.log(`  세션 ${transcripts.length}개 · 줄인 기록 ${condensed.length}자 → ${transcript.length}자 · 가린 비밀값 ${maskedCount}개 · knowledge ${knowledgeDirs.join(', ') || '없음'}`)
-  const { items, cost } = askReviewer(buildPrompt(planFile, knowledgeDirs, transcript))
+  const prMaterial = pullRequestMaterial(planText)
+  console.log(`  계획서 ${planText.length}자 · 머지된 PR 재료 ${prMaterial.length}자`)
+  const { items, cost } = askReviewer(buildPrompt(planFile, knowledgeDirs, transcript, planText, prMaterial))
   console.log(`  검토자 답 ${items.length}건 · 비용 $${Number(cost).toFixed(3)}`)
   const results = items.map((item) => `  - [${item.signal}·${item.kind}] ${maskSecrets(item.title ?? '').masked}\n    무엇을 배웠나: ${maskSecrets(item.explain ?? '').masked}\n    왜 중요한가: ${maskSecrets(item.ifUnknown ?? '').masked}\n    공책 문장: ${maskSecrets(item.rule).masked}\n    근거(${item.basis}): ${maskSecrets(item.evidence ?? '').masked}\n    ${writeIssue(item, planFile, dryRun)}`)
   if (results.length) console.log(results.join('\n'))
@@ -424,7 +470,7 @@ const watch = async () => {
   for (const file of readdirSync(QUEUE_DIR).filter((name) => name.endsWith('.json.working'))) {
     try { renameSync(join(QUEUE_DIR, file), join(QUEUE_DIR, file.replace(/\.working$/, ''))) } catch { /* 다른 쪽이 먼저 옮겼다 */ }
   }
-  console.log('📚 배우기 검토 — 대기열을 기다린다(PR 미리보기 때 들어온다). 끄려면 Ctrl-C')
+  console.log('📚 배우기 검토 — 대기열을 기다린다(내 작업의 PR 이 머지되면 현황판이 넣는다). 끄려면 Ctrl-C')
   for (;;) {
     const next = readdirSync(QUEUE_DIR).filter((file) => file.endsWith('.json')).sort()[0]
     if (!next) {

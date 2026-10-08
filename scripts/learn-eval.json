@@ -1,0 +1,30 @@
+{
+  "$comment": "학습 품질 정답지 — scripts/learn-eval.sh 가 이 작업들을 --dry-run 으로 다시 돌리고 아래 기대와 나란히 보여 준다. 기준을 바꾸면 다시 돌려 좋아졌는지 본다. 2026-10-09 사용자 확정(헤르메스 판단 기준 채택). docs/knowledge/common/learning.md",
+  "cases": [
+    { "plan": "plans/feature/20261001-bznav-web-앱-repo-패키지-zent-전환.md", "expect": [
+      { "about": "PR 미리보기는 <앱>-preview 라벨이 있어야 빌드된다", "learn": true },
+      { "about": "옛 @repo lint 설정의 내부 경로 금지 규칙이 사실상 꺼져 있다", "learn": false, "why": "옮기는 중에만 맞는다" } ] },
+    { "plan": "plans/task/20261001-packages-fe-bznav-fe-project-config-eslint-no-intern.md", "expect": [
+      { "about": "bznav 패키지에 새 공개 경로를 열면 project-config lint 허용 목록도 고친다", "learn": true } ] },
+    { "plan": "plans/task/20261001-brics-refund-fe-brics-refund-fe-작업-pane-에서-지시.md", "expect": [] },
+    { "plan": "plans/task/20261006-brics-refund-fe-brics-refund-fe-작업-pane-에서-지시.md", "expect": [] },
+    { "plan": "plans/task/20261006-bznav-refund-fe-bznav-refund-fe-작업-pane-에서-지시.md", "expect": [] },
+    { "plan": "plans/task/20261006-brics-hub-fe-brics-hub-fe-작업-brics-refund-fe-에서-이관-리소스센터-REF-3810.md", "expect": [
+      { "about": "리소스센터 이미지가 옛것으로 보이는 문의는 브라우저 캐시", "learn": false, "why": "한 번 있었던 문의 · 원인이 서버/CDN" } ] },
+    { "plan": "plans/task/20261007-bznav-refund-fe-QA-TC-전체-refund-web.md", "expect": [
+      { "about": "QA 씬 fill 은 입력칸 클릭(onClick) 추적 이벤트를 보내지 않는다", "learn": true } ] },
+    { "plan": "plans/task/20261007-bznav-sena-fe-QA-TC-전체-sena-web.md", "expect": [
+      { "about": "채팅 점검은 주소에 /chat 이 들어간 다른 화면(/search-chat)도 막는다", "learn": true } ] },
+    { "plan": "plans/task/20261007-bznav-sena-fe-QA-흐름-씬-채우기-sena-web.md", "expect": [
+      { "about": "세나 QA 씬은 실제 REST 요청을 씬 안에서 mock 으로 막아야 한다(러너는 GraphQL 만 막음)", "learn": true },
+      { "about": "질문 직후 새 채팅을 누르면 질문이 빈 채로 전송된다", "learn": false, "why": "앱 버그 — 이슈로" } ] },
+    { "plan": "plans/task/20261008-bznav-refund-fe-bznav-refund-fe-작업-pane-에서-지시.md", "expect": [] },
+    { "plan": "archive/20260929-bznav-plus-fe-bznav-plus-fe-작업-pane-에서-지시", "expect": [
+      { "about": "운영 브랜치(prd-plus)에서 딴 작업 브랜치는 dev PR 에 운영 전용 커밋이 딸려 간다", "learn": true },
+      { "about": "목록에 없는 페이지로 바로 들어오면 헤더 로고 자리가 빈칸", "learn": false, "why": "설계 문제 — 이슈로" },
+      { "about": "웹에서 앱으로 나가기 뒤로가기가 반응하지 않는다", "learn": false, "why": "버그 — 이슈로" } ] },
+    { "plan": "archive/20260929-bznav-rn-app-실전-시험-rn-app-prd-검증-commit-sh-커밋해줘-test-", "expect": [] },
+    { "plan": "archive/20260930-packages-fe-packages-fe-작업-pane-에서-지시", "expect": [
+      { "about": "이미 머지된 changeset 파일을 고치면 changeset 검사를 통과하지 못한다(새 파일만 인정)", "learn": true } ] }
+  ]
+}

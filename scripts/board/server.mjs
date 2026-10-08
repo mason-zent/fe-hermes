@@ -259,6 +259,22 @@ const prInfo = async (repoName, number) => {
 // 계획서의 PR 이 전부 머지되면(GitHub state MERGED — 어느 base 든) 계획서를 자동으로 완료로. 하나라도 열려 있으면(OPEN·확인 실패) 그대로 둔다.
 // 머지 없이 닫힌 것(CLOSED — 취소·다른 PR 로 대체)은 판정에서 빼고, 머지된 PR 이 하나도 없으면 옮기지 않는다.
 // 진행 중·리뷰 계획서만, Status 줄만 바꾼다(정식이면 html 사본도)
+// 학습 루프 5단계 — 내 계획서의 PR 이 모두 머지되면 배우기 검토자 대기열에 넣는다(scripts/learn-review.mjs).
+// 표시는 PR 번호 묶음(merged-<번호들>) — 계획서 "- Learn review:" 줄에 같은 표시가 있으면 learn-review 가 건너뛴다
+// 이 날짜 이후에 머지된 PR 만 — 기능을 켠 날보다 전에 끝난 작업은 자동으로 돌리지 않는다(지난 작업은 "배운 거 정리해줘"로 수동)
+const LEARN_SINCE = '2026-10-09'
+const learnQueued = new Set()
+const enqueueLearn = (planId, mark, infos = []) => {
+  if (infos.length && infos.every((info) => String(info.mergedAt).slice(0, 10) < LEARN_SINCE)) return
+  const key = `${planId}@${mark}`
+  if (learnQueued.has(key)) return
+  learnQueued.add(key)
+  const child = spawn(process.execPath, [join(ROOT, 'scripts/learn-review.mjs'), '--enqueue', '--plan', planId, '--head', mark], { cwd: ROOT, detached: true, stdio: 'ignore' })
+  child.unref()
+  console.log(`📚 배우기 검토 대기열 ${planId} (${mark})`)
+}
+const mergedMark = (infos) => `merged-${infos.map((info) => info.number).sort().join('-')}`
+
 const autoDonePlans = async (plans) => {
   const targets = plans.filter((plan) => !plan.archived && (plan.status === 'ready_for_review' || plan.status === 'in_progress') && /\/pull\/\d+/.test(plan.pr))
   await Promise.all(targets.map(async (plan) => {
@@ -278,6 +294,17 @@ const autoDonePlans = async (plans) => {
     console.log(`✅ 자동 완료 ${plan.id} — ${reason}`)
     plan.status = 'done'
     plan.column = 'done'
+    enqueueLearn(plan.id, mergedMark(counted), counted)
+  }))
+  // 사람이 직접 완료로 옮긴 계획서도 — PR 이 모두 머지됐는데 아직 배우지 않았으면(Learn review 줄 없음) 넣는다
+  const learned = plans.filter((plan) => !plan.archived && plan.status === 'done' && /\/pull\/\d+/.test(plan.pr) && !/^- Learn review:/m.test(readText(join(ROOT, plan.id)) || ''))
+  await Promise.all(learned.map(async (plan) => {
+    const links = [...new Set([...plan.pr.matchAll(/github\.com\/zenterprise-inc\/([\w.-]+)\/pull\/(\d+)/g)].map((match) => `${match[1]}#${match[2]}`))]
+    const infos = (await Promise.all(links.map(async (link) => {
+      const [repoName, number] = link.split('#')
+      return { number, ...(await prInfo(repoName, number)) }
+    }))).filter((info) => info.state !== 'CLOSED')
+    if (infos.length && infos.every((info) => info.state === 'MERGED')) enqueueLearn(plan.id, mergedMark(infos), infos)
   }))
 }
 

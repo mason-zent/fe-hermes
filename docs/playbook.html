@@ -286,6 +286,8 @@
   .faq summary::after { content: '+'; color: var(--ink-3); font-family: var(--mono); }
   .faq details[open] summary::after { content: '−'; }
   .faq .a { padding: 0 18px 16px; color: var(--ink-2); font-size: 14.5px; }
+  .faq .a p { margin: 0 0 10px; }
+  .faq .a .table-wrap { margin: 4px 0 12px; }
 
   footer { margin-top: 24px; color: var(--ink-3); font-size: 13px; font-family: var(--mono); }
 </style>
@@ -297,7 +299,7 @@
     <div class="meta">
       <span>path repos/hermes</span>
       <span>updated 2026-10-01</span>
-      <span>agents 13 · skills 8</span>
+      <span>agents 14 · skills 8</span>
 <!-- BEGIN:generated:last-sync  (scripts/build-derived.mjs 가 생성 — 직접 고치지 마세요) -->
       <span>last sync 2026-10-08</span>
 <!-- END:generated:last-sync -->
@@ -309,6 +311,7 @@
     <a href="#start">시작하기</a>
     <a href="#team">팀 구성</a>
     <a href="#routing">라우팅</a>
+    <a href="#knows">헤르메스가 아는 것</a>
     <a href="#skills">슬래시 커맨드</a>
     <a href="#baseline">문서 기준 커밋</a>
     <a href="#flow">작업 흐름</a>
@@ -338,7 +341,7 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
 
     <section id="team">
       <h2>팀 구성</h2>
-      <p>서브에이전트 13개가 <code>.claude/agents/</code>에 정의되어 있습니다. 단일 레포는 에이전트 하나가 전담하고, bznav-web 모노레포는 <strong>앱마다 에이전트 하나</strong>(+ packages 담당), zent-packages는 <code>frontend/</code>만 맡는 에이전트가 있으며, reviewer는 읽기 전용으로 전체를 봅니다. 레포 목록 정본은 <code>hermes.config.json</code>, 경로는 <code>repos/&lt;레포&gt;</code> 링크입니다. 아래 표의 스택·포트는 각 레포의 <strong>운영 기준 브랜치</strong>(콘솔 <code>prd</code> · bznav 앱별 <code>prd-&lt;앱&gt;</code> · zent-packages <code>main</code>, 정본은 <code>hermes.config.json</code>) 기준이며 <code>/sync</code>로 갱신됩니다.</p>
+      <p>서브에이전트 14개가 <code>.claude/agents/</code>에 정의되어 있습니다(그중 <code>learn-reviewer</code> 는 스크립트 전용). 단일 레포는 에이전트 하나가 전담하고, bznav-web 모노레포는 <strong>앱마다 에이전트 하나</strong>(+ packages 담당), zent-packages는 <code>frontend/</code>만 맡는 에이전트가 있으며, reviewer는 읽기 전용으로 전체를 봅니다. 레포 목록 정본은 <code>hermes.config.json</code>, 경로는 <code>repos/&lt;레포&gt;</code> 링크입니다. 아래 표의 스택·포트는 각 레포의 <strong>운영 기준 브랜치</strong>(콘솔 <code>prd</code> · bznav 앱별 <code>prd-&lt;앱&gt;</code> · zent-packages <code>main</code>, 정본은 <code>hermes.config.json</code>) 기준이며 <code>/sync</code>로 갱신됩니다.</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -436,6 +439,13 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
               <td>—</td>
               <td>각 레포 명령 실행 후 결과 보고</td>
             </tr>
+            <tr>
+              <td class="name">learn-reviewer<span class="ro">read-only</span></td>
+              <td>끝난 작업의 대화 기록</td>
+              <td>배우기 검토자 — 다음 작업이 다시 밟을 레포 함정만 학습 후보로 뽑는다<span class="sub">직접 부르지 않음. 내 작업의 PR 이 머지되면 scripts/learn-review.mjs 가 이 문서를 역할로 도구 없이 한 번 실행</span></td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -446,11 +456,11 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
 
     <section id="routing">
       <h2>라우팅</h2>
-      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. 판단이 안 서면 <code>repos/*</code>에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다. "케어"·"환급"만 나오면 운영 콘솔(brics-care-fe/brics-refund-fe)인지 사용자 웹(bznav-care-fe/bznav-refund-fe)인지 반드시 확인합니다. bznav 앱 작업에 필요한 루트 변경(<code>package.json</code>·lock)은 그 앱 에이전트가 하고, <code>packages/**</code>가 함께 바뀔 때만 bznav-packages-fe를 먼저, 발행 패키지와 소비 레포가 함께 바뀌면 packages-fe를 먼저 보냅니다.</p>
+      <p>요청에 이런 말이 들어 있으면 헤르메스가 해당 에이전트로 보냅니다. <strong>"브릭스(BRICS) ○○" 은 운영 콘솔(<code>brics-*-fe</code>), "비즈넵 ○○" 은 사용자 웹(<code>bznav-*-fe</code>)</strong> — 예: "브릭스 환급" → brics-refund-fe, "비즈넵 환급" → bznav-refund-fe. 둘 다 없이 "케어"·"환급"만 나오면 어느 쪽인지 묻습니다. 판단이 안 서면 <code>repos/*</code>에서 키워드를 검색해 정하고, 그래도 모호하면 사용자에게 묻습니다.</p>
       <div class="route">
-        <div class="kw">환급 콘솔, refund-service, 랜딩 SEO 어드민, 파트너·광고·간편신청 관리</div><div class="to">brics-refund-fe</div>
-        <div class="kw">권한·역할·기능·메뉴 관리, 사이드바·brics-menus, 리소스 센터, 감사 로그, 접근 요청, 메시지 플랫폼, 알림톡 제어, hub</div><div class="to">brics-hub-fe</div>
-        <div class="kw">케어 콘솔·케어 운영, 구독/결제/납세자/비즈맨, 프로모션·마케팅 페이지, 케어 QA</div><div class="to">brics-care-fe</div>
+        <div class="kw">브릭스 환급, 환급 콘솔, refund-service, 랜딩 SEO 어드민, 파트너·광고·간편신청 관리</div><div class="to">brics-refund-fe</div>
+        <div class="kw">브릭스 허브, 권한·역할·기능·메뉴 관리, 사이드바·brics-menus, 리소스 센터, 감사 로그, 접근 요청, 메시지 플랫폼, 알림톡 제어, hub</div><div class="to">brics-hub-fe</div>
+        <div class="kw">브릭스 케어, 케어 콘솔·케어 운영, 구독/결제/납세자/비즈맨, 프로모션·마케팅 페이지, 케어 QA</div><div class="to">brics-care-fe</div>
         <div class="kw">비즈넵 환급 랜딩·SEO·이벤트·UTM·홈택스·설문·TRP (refund.bznav.com)</div><div class="to">bznav-refund-fe</div>
         <div class="kw">비즈넵 케어 사용자 웹, 세무기장 구독, CARE_PATHS</div><div class="to">bznav-care-fe</div>
         <div class="kw">비즈넵 브랜드 사이트, 약관, 브랜드 리소스</div><div class="to">bznav-brand-fe</div>
@@ -460,6 +470,29 @@ hub 메시지 템플릿 목록에 미리보기 컬럼 추가해줘</code></pre>
         <div class="kw">brics-fe-ui, zent-auth, bznav-fe-ui, 공유 패키지 발행·changeset·스냅샷, zent-packages</div><div class="to">packages-fe</div>
         <div class="kw">비즈넵 모바일 앱, RN·Expo, 웹뷰 브릿지, 푸시·딥링크, 코드 푸시(EAS Update)</div><div class="to">bznav-rn-app</div>
         <div class="kw">web-op, 영업(sales), 영업사원, 서류(documents), 직원(employee), 파이프드라이브</div><div class="to">op-fe</div>
+      </div>
+    </section>
+
+    <section id="knows">
+      <h2>헤르메스가 아는 것</h2>
+      <p>헤르메스는 일할 때마다 레포 코드를 처음부터 다 읽지 않습니다. <strong>레포마다 미리 정리해 둔 지식 노트를 먼저 보고, 필요한 코드만 골라 읽습니다.</strong> 노트가 정확할수록 빠르고 정확해집니다.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>아는 것</th><th>적혀 있는 곳</th><th>누가·언제 채우나</th><th>팀 공유</th></tr></thead>
+          <tbody>
+            <tr><td>레포 폴더·화면(라우트) 지도</td><td><code>docs/knowledge/&lt;레포&gt;/structure.md</code></td><td><code>/sync</code> — 운영에 배포된 코드 기준</td><td>✅</td></tr>
+            <tr><td>레포 규칙("이건 꼭 지켜")</td><td><code>…/rules.md</code></td><td><code>/sync</code> — 레포 안 규칙 문서가 바뀔 때</td><td>✅</td></tr>
+            <tr><td>함정("모르면 당한다")</td><td><code>…/gotchas.md</code></td><td><strong>학습</strong> — 작업하다 알게 된 걸 현황판 [학습] 탭에서 [넣기] + <code>/sync</code></td><td>✅</td></tr>
+            <tr><td>따라 할 예시 파일·작업 절차</td><td><code>…/patterns.md</code> · <code>workflows.md</code></td><td>처음 만들 때 + <code>/sync</code></td><td>✅</td></tr>
+            <tr><td>나의 일하는 방식("표로 보여 줘")</td><td>Claude 메모리(<code>~/.claude/…</code>)</td><td>Claude 가 대화에서 알아서</td><td>❌ 나만</td></tr>
+            <tr><td>진행 중인 일</td><td>계획서(<code>plans/</code>)·이슈(<code>issues/</code>)</td><td>작업하면서</td><td>❌ 나만 (끝나면 [아카이브]로 팀에)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>어떻게 꺼내 쓰나</strong> — "브릭스 환급 프로모션 페이지 고쳐줘"라고 하면 ① "브릭스"라서 운영 콘솔 <code>client-brics-refund</code>(<code>brics-refund-fe</code>) ② <code>structure.md</code> 화면 지도 → 실제 코드 → 화면 문구 검색으로 파일을 찾고(후보가 여럿이면 되묻습니다) ③ 그 경로를 계획서에 적어 담당 에이전트에게 맡깁니다. 에이전트는 시작 전에 그 레포의 <code>rules.md</code> 필수 절과 <code>gotchas.md</code> 를 전부 읽습니다. <strong>문서와 코드가 다르면 코드를 믿습니다</strong> — 노트는 길잡이이고 정답은 지금 코드입니다.</p>
+      <p><strong>언제 최신이 되나</strong> — <code>/sync</code> 가 <strong>운영에 배포된 코드</strong>를 읽어 지난번 이후 바뀐 것만 반영합니다. 자동으로 돌지 않고 누군가 돌릴 때만이며, 확인되는 사실(새 화면·버전·명령)만 고치고 판단이 필요한 문장은 "확인 필요" 이슈로 묻습니다. 그래서 아직 배포 안 된 화면은 노트에 없고, 작업할 때 코드에서 직접 찾습니다.</p>
+      <div class="note">
+        <strong>헤르메스가 혼자서는 알 수 없는 것 — 사람이 채워 줍니다.</strong> 화면의 업무 용도("이 페이지는 영업팀이 제휴사 고객 번호를 한꺼번에 조회할 때 쓴다"), 어느 팀이 쓰는지·언제 쓰면 안 되는지 같은 코드 밖의 운영 규칙은 코드에 없습니다. 헤르메스에게 <strong>"○○ 페이지는 △△ 용도야. 지식 문서에 적어줘"</strong>라고 하면 <code>structure.md</code> 화면 설명에 "사용자 확인" 표시와 함께 들어가고, 커밋하면 팀 전체가 압니다. 학습 기능은 근거가 "사용자가 말했다"뿐인 후보를 취향일 수 있다고 보고 거르므로, 업무 지식은 이렇게 직접 적어 달라고 하는 게 확실합니다.
       </div>
     </section>
 
@@ -728,7 +761,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
             <li>끝난 카드는 현황판 완료 칸의 <strong>[아카이브]</strong> — 이슈와 계획서를 <code>archive/&lt;이름&gt;/</code> 한 폴더로 묶어 보관하고 git 에 커밋합니다. git 에 올라가는 건 이 <code>archive/</code> 뿐이고, 진행 중·리뷰·완료의 이슈·계획서는 각자 로컬에 갖습니다. 이슈 워크트리도 정리합니다(미커밋·push 안 된 커밋이 있으면 남김). 지나간 일은 현황판 <strong>[아카이브]</strong> 탭에서 검색합니다.</li>
             <li>계획서 <code>PR:</code> 줄의 PR 이 <strong>모두</strong> 머지되면(어느 base 든 — GitHub <code>MERGED</code>) 현황판이 그 계획서를 <strong>자동으로 완료</strong>로 옮깁니다(진행 중·리뷰 계획서만, 5분마다 확인). 머지 없이 닫힌 PR(<code>CLOSED</code>)은 셈에서 빼고, 그것만 있으면 옮기지 않습니다.</li>
             <li>이슈는 완료 기준이 채워지면 <code>완료 가능</code> 배지가 붙고 헤르메스가 완료로 옮깁니다. 안전망: <code>scripts/archive-plans.sh</code>(30일 이상 + 최근 git log 미언급).</li>
-            <li><strong>📚 학습</strong> — 에이전트는 작업을 끝낼 때(PR 미리보기)·사용자가 바로잡을 때·같은 오류가 3번 날 때 "다음에도 밟을 코드 함정"을 학습 후보로 올리고, PR 미리보기 때는 배우기 검토자(별도 Claude, "📚 배우기 검토" pane)가 그 대화를 다시 읽어 보탭니다. 사용자가 현황판 [학습] 탭에서 [넣기]를 고른 것만 서비스별 공책(<code>gotchas.md</code>)에 들어가고, 다음 작업이 읽습니다. 일하는 취향은 넣지 않습니다(근거가 코드·실행 결과일 때만). 기준 <code>docs/knowledge/common/learning.md</code></li>
+            <li><strong>📚 학습</strong> — 에이전트는 작업을 끝낼 때(PR 미리보기)·사용자가 바로잡을 때·같은 오류가 3번 날 때 "다음에도 밟을 코드 함정"을 학습 후보로 올리고, PR 이 머지되면 배우기 검토자(별도 Claude, "📚 배우기 검토" pane)가 계획서·대화·바뀐 코드·리뷰 댓글을 읽어 보탭니다. 사용자가 현황판 [학습] 탭에서 [넣기]를 고른 것만 서비스별 공책(<code>gotchas.md</code>)에 들어가고, 다음 작업이 읽습니다. 일하는 취향은 넣지 않습니다(근거가 코드·실행 결과일 때만). 기준 <code>docs/knowledge/common/learning.md</code></li>
           </ul>
         </div>
       </div>
@@ -810,7 +843,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
     ├── agent-monitor.py       <span class="c">서브에이전트·pane 에이전트 로그 실시간 모니터 (렌더러)</span>
     ├── monitor-pane.sh        <span class="c">모니터를 pane 에 띄움·재사용 (/monitor)</span>
     ├── board.sh               <span class="c">현황판 서버를 pane 에 띄우고 브라우저로 (/board) — 서버·화면은 board/</span>
-    ├── learn-review.mjs       <span class="c">배우기 검토자 — PR 미리보기 때 작업 대화를 별도 Claude 가 읽고 학습 후보를 올린다 (📚 배우기 검토 pane)</span>
+    ├── learn-review.mjs       <span class="c">배우기 검토자 — 내 PR 이 머지되면 계획서·대화·바뀐 코드·리뷰 댓글을 별도 Claude 가 읽고 학습 후보를 올린다 (📚 배우기 검토 pane)</span>
     ├── learn-curator.mjs      <span class="c">30일 넘게 안 쓴 스킬을 정리 후보로 (/sync 끝에)</span>
     ├── archive-plans.sh
     ├── seo-feedback.sh        <span class="c">/seo-feedback 헤드리스 실행 · 매주 월 08:15 launchd 등록</span>
@@ -871,7 +904,26 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
         </details>
         <details>
           <summary>헤르메스는 스스로 배우나요?</summary>
-          <div class="a">네, 다만 <strong>승인한 것만</strong> 배웁니다. 작업에서 알게 된 코드 함정을 에이전트와 배우기 검토자가 학습 후보로 올리면, 현황판 [학습] 탭에서 [넣기]를 고른 것만 서비스별 공책에 들어가고 다음 작업이 읽습니다. 일하는 스타일·취향은 공용 공책에 넣지 않고 Claude Code 가 각자 기억합니다(클로드 학습). Nous Research 의 Hermes Agent 처럼 자동으로 바로 바꾸지 않는 이유는, 공책은 모든 작업이 읽는 팀 공용 문서라 잘못 배운 한 줄의 비용이 크기 때문입니다.</div>
+          <div class="a">
+            <p>네, 다만 <strong>사람이 고른 것만</strong> 배웁니다. 작업에서 알게 된 코드 함정이 서비스별 공책(<code>gotchas.md</code>)에 쌓이고, 에이전트는 작업 전에 이 공책을 읽습니다.</p>
+            <p><strong>누가</strong> — ① <strong>작업한 에이전트</strong>가 작업을 끝낼 때(PR 미리보기)·사용자가 바로잡을 때·같은 오류가 3번 날 때 학습 후보를 올리고 ② <strong>배우기 검토자</strong>(별도 Claude)가 PR 이 머지된 뒤 계획서·대화·바뀐 코드·리뷰 댓글를 다시 읽어 빠진 것을 보탭니다 ③ <strong>사람</strong>이 현황판 [학습] 탭에서 [넣기]·[고쳐서 넣기]·[버리기] — 넣은 것만 공책에 들어갑니다.</p>
+            <p><strong>기준</strong> — 다시 마주치고 · 모르면 실제로 잘못되고 · 코드만 봐서는 바로 알기 어려운 것만. 근거가 코드나 실행 결과로 확인돼야 하고, "사용자가 그렇게 말했다"뿐이면 취향일 수 있어 스크립트가 거릅니다(취향은 각자 Claude 메모리 몫). 이미 코드로 고친 버그·한 번 있었던 일·원인이 서버인 것은 넣지 않습니다. 대부분의 작업은 0개가 정상입니다. 정본 <code>docs/knowledge/common/learning.md</code>.</p>
+            <p><strong>Nous Research Hermes Agent 와의 차이</strong> — 학습 구조 아이디어만 가져와 직접 만들었습니다.</p>
+            <div class="table-wrap"><table>
+              <thead><tr><th></th><th>Hermes Agent</th><th>우리 헤르메스</th></tr></thead>
+              <tbody>
+                <tr><td>누가 배우나</td><td>배우기 전용 에이전트가 뒤에서</td><td>작업한 에이전트 + 배우기 검토자, 최종은 사람</td></tr>
+                <tr><td>언제</td><td>대화 10번·도구 10번마다 자동</td><td>작업 끝 · 사용자 교정 · 같은 오류 3회 · PR 머지 뒤(리뷰 댓글까지)</td></tr>
+                <tr><td>저장</td><td>바로 저장(사람 확인 없음)</td><td>[넣기]를 누른 것만</td></tr>
+                <tr><td>무엇을</td><td>스킬·기억</td><td>레포 함정(공책). 반복 절차는 "스킬로 만들까요?"라고 묻는다</td></tr>
+                <tr><td>취향</td><td>같이 기억</td><td>공용 공책엔 안 넣고 각자 Claude 메모리로</td></tr>
+                <tr><td>근거 확인</td><td>LLM 이 판단</td><td>코드·실행 결과로 확인된 것만(스크립트가 거른다)</td></tr>
+                <tr><td>공유</td><td>내 컴퓨터</td><td>git 으로 팀 전체</td></tr>
+                <tr><td>지난 대화 검색</td><td>있음</td><td>없음</td></tr>
+              </tbody>
+            </table></div>
+            <p><strong>왜 사람이 승인하나</strong> — 공책은 모든 작업이 매번 다 읽는 팀 공용 문서라, 잘못 배운 한 줄의 비용이 큽니다. 넣기·버리기 비율을 세고 있어서, 믿을 만하다는 숫자가 나오면 자동으로 넣는 쪽으로 다시 정할 수 있습니다.</p>
+          </div>
         </details>
         <details>
           <summary>급한 수정은 어떻게 하나요?</summary>

@@ -23,7 +23,7 @@
 | `op-fe` | web-op | `bznav-sena-fe` | bznav `apps/sena-web` |
 | `packages-fe` | zent-packages `frontend/` | `bznav-plus-fe` | bznav `apps/plus-web` |
 | `reviewer` | 전체 (읽기 전용) | `bznav-packages-fe` | bznav `packages/*` |
-| `bznav-rn-app` | bznav-rn-app (모바일 앱) | | |
+| `bznav-rn-app` | bznav-rn-app (모바일 앱) | `learn-reviewer` | 배우기 검토자 — 직접 부르지 않음(내 작업 PR 이 머지되면 `learn-review.mjs` 가) |
 
 상세 프로필은 `.claude/agents/*.md`. 담당 범위·기준 브랜치·라우팅 기준은 공통 문서 1절을 따른다.
 
@@ -64,7 +64,7 @@
 - 사용자는 pane 에서 여러 번 요청한다. 에이전트는 요청마다 시작할 때 Status `in_progress`, 끝나면 `ready_for_review` 로 바꾸고 계획서 `## 지시`·Progress·결과를 쌓는다 → 현황판 카드가 **진행 중 ↔ 리뷰** 를 오간다(에이전트가 working 이면 진행 중)
 - 에이전트는 작업한 뒤 **같은 검증 스크립트**(`scripts/verify/*.sh`, 워크트리면 `HERMES_VERIFY_DIR`)를 돌리고 출력 표를 그대로 보고한다
 - **커밋은 사용자가 "커밋해줘" 라고 할 때만, `scripts/commit.sh` 로만.** 지정 파일만 스테이징 → 엄격 검증 → 검증 전후가 같을 때만 커밋 → 계획서 `## Commits` 기록. 메인 체크아웃·보호 브랜치·남의 스테이징·검증 실패면 **거부**하고 이유를 전해 사용자에게 묻는다
-- **레포 하나짜리 작업은(경량·정식 무관) pane 에서 끝까지 간다** — 순서는 작업 → 자동 리뷰 → 커밋 → PR. 리뷰는 커밋 전 변경까지 포함한 내용을 기록하므로 커밋 전후 어느 쪽이어도 되고, 승인이 없어도 커밋·PR 이 막히지는 않는다(PR 전에 한 번 더 묻는다). **에이전트는 코드를 바꾼 요청을 보고하면 묻지 않고 바로 리뷰를 띄운다**(자동 리뷰 — 조사만 했거나 승인 뒤 바뀐 게 없으면 생략). **리뷰에서 선택지가 갈리는 "결정 필요" 가 나오면 그 에이전트가 같은 계획서에 덧붙여 결정 콘솔로 보여 준다**(`plan-html.mjs --add` → `board.sh open`, [이대로 진행] 은 그 에이전트 pane 으로 — 경량 계획서도 이때 html 이 생긴다). 단순 수정만이면 고칠지 묻는다. 자동 리뷰·"리뷰해줘" → 에이전트가 옆에 reviewer pane(`delegate.sh reviewer --cwd <워크트리> --here`, 결론은 `review-result.sh` 로 계획서에), "PR 올려줘" → 에이전트가 `scripts/ship.sh` 미리보기(끝에 **📚 배운 것** — `AGENTS.md` 6절, learn 이슈로 등록. 미리보기가 배우기 검토자 대기열에도 넣는다 — "📚 배우기 검토" pane) → 사용자 확인 → draft PR(`docs/knowledge/common/git.md` "PR 올리기"·"PR 제목·본문"). 헤르메스로 돌아오지 않는다
+- **레포 하나짜리 작업은(경량·정식 무관) pane 에서 끝까지 간다** — 순서는 작업 → 자동 리뷰 → 커밋 → PR. 리뷰는 커밋 전 변경까지 포함한 내용을 기록하므로 커밋 전후 어느 쪽이어도 되고, 승인이 없어도 커밋·PR 이 막히지는 않는다(PR 전에 한 번 더 묻는다). **에이전트는 코드를 바꾼 요청을 보고하면 묻지 않고 바로 리뷰를 띄운다**(자동 리뷰 — 조사만 했거나 승인 뒤 바뀐 게 없으면 생략). **리뷰에서 선택지가 갈리는 "결정 필요" 가 나오면 그 에이전트가 같은 계획서에 덧붙여 결정 콘솔로 보여 준다**(`plan-html.mjs --add` → `board.sh open`, [이대로 진행] 은 그 에이전트 pane 으로 — 경량 계획서도 이때 html 이 생긴다). 단순 수정만이면 고칠지 묻는다. 자동 리뷰·"리뷰해줘" → 에이전트가 옆에 reviewer pane(`delegate.sh reviewer --cwd <워크트리> --here`, 결론은 `review-result.sh` 로 계획서에), "PR 올려줘" → 에이전트가 `scripts/ship.sh` 미리보기(끝에 **📚 배운 것** — `AGENTS.md` 6절, learn 이슈로 등록.) → 사용자 확인 → draft PR(`docs/knowledge/common/git.md` "PR 올리기"·"PR 제목·본문"). 헤르메스로 돌아오지 않는다
 
 ### 5단계: 검증 · 보고 · push/PR
 - (여러 레포 작업 · 헤르메스가 맡은 작업) `reviewer` 에게 계획서 경로 + 대상 레포(워크트리면 `--cwd <워크트리>`)를 넘겨 리뷰. 수정 필요 항목은 사용자에게 보여 주고 확인받은 뒤, 그 작업을 하던 FE 에이전트 pane 에서 이어서 지시한다. 선택지가 갈리는 **결정 필요** 가 나오면 헤르메스가 같은 정식 계획서에 덧붙여 결정 콘솔로 보여 준다(`plan-html.mjs --add` → `board.sh open`)
@@ -77,7 +77,7 @@
 - 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 이슈·계획서를 **`archive/<이름>/` 한 폴더**(`issue.md` · `plan.md` · `meta.json`)로 묶어 보관하고 **git 에 커밋**한다. **git 에 올라가는 건 `archive/` 뿐** — 진행 중·리뷰·완료의 이슈(`issues/*.md`)·계획서(`plans/**`)는 각자 로컬에 갖는다(`.gitignore`). 이슈 워크트리도 정리(미커밋·push 안 된 커밋이 있으면 남긴다). 지나간 일은 현황판 **[히스토리]** 탭에서 찾는다
 - **계획서 `PR:` 줄의 PR 이 모두 머지되면(어느 base 든 — GitHub `MERGED`) 현황판이 그 계획서를 자동으로 완료(`Status: done — 자동 — PR #N 이 <base> 에 머지됨`)로 옮긴다**(진행 중·리뷰 계획서만, 5분마다 `gh pr view` 로 확인). 머지 없이 닫힌 PR(`CLOSED` — 취소·다른 PR 로 대체)은 판정에서 빼고, 머지된 PR 이 하나도 없으면 옮기지 않는다
 - 이슈는 `issues/README.md` "완료 기준"(확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
-- **학습** — 에이전트·배우기 검토자가 올린 학습 후보는 현황판 **[학습] 탭**에 뜬다(기준 `docs/knowledge/common/learning.md`). 사용자가 [넣기]·[고쳐서 넣기]·[버리기] — 넣으면 그 공책(`gotchas.md`) 끝 `## 학습` 절에 한 줄, 쉬운 설명은 `docs/knowledge/learned/`. 학습한 내용도 그 탭에서 수정·삭제. 스킬 후보는 [헤르메스에게 맡기기] → 헤르메스가 스킬을 만든다(`docs/extending.md` "학습으로 스킬 만들기"). 팀 공유는 사용자가 "커밋해줘" 할 때 main 에. `/sync` 끝에 `scripts/learn-curator.mjs --write` 가 30일 넘게 안 쓴 스킬을 정리 후보로 올린다(지우지 않는다)
+- **학습** — 에이전트(작업 끝·교정·같은 오류 3회)와 배우기 검토자(내 작업의 PR 이 머지되면 현황판이 감지해 계획서·대화·바뀐 코드·리뷰 댓글로)가 올린 학습 후보는 현황판 **[학습] 탭**에 뜬다(기준 `docs/knowledge/common/learning.md`). 사용자가 [넣기]·[고쳐서 넣기]·[버리기] — 넣으면 그 공책(`gotchas.md`) 끝 `## 학습` 절에 한 줄, 쉬운 설명은 `docs/knowledge/learned/`. 학습한 내용도 그 탭에서 수정·삭제. 스킬 후보는 [헤르메스에게 맡기기] → 헤르메스가 스킬을 만든다(`docs/extending.md` "학습으로 스킬 만들기"). 팀 공유는 사용자가 "커밋해줘" 할 때 main 에. `/sync` 끝에 `scripts/learn-curator.mjs --write` 가 30일 넘게 안 쓴 스킬을 정리 후보로 올린다(지우지 않는다)
 - 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
 ---

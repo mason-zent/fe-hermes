@@ -15,6 +15,7 @@ Claude Code 기반 **프론트엔드 멀티 서비스 에이전트 팀**. 이 �
 | `packages-fe` | zent-packages `frontend/` | 발행 공유 패키지 `@zenterprise-inc/*-fe-*` (기준 브랜치 main) |
 | `bznav-rn-app` | bznav-rn-app | 비즈넵 모바일 앱 (Expo · React Native, 기준 브랜치 prd) |
 | `reviewer` | 전체 (읽기 전용) | 계획서 대비 검증, 교차 정합성 |
+| `learn-reviewer` | 끝난 작업 대화 (읽기 전용) | 배우기 검토자 — 학습 후보를 뽑는다. 직접 부르지 않고 내 작업의 PR 이 머지되면 `scripts/learn-review.mjs` 가 돌린다 |
 
 담당 레포는 `hermes.config.json`에 목록이 있고, 문서·스크립트는 모두 `repos/<레포>` 심볼릭 링크로 접근한다. 링크는 `scripts/setup.sh`가 만든다(기본: hermes 상위 폴더에 레포들이 나란히 있다고 가정, 다르면 `--root <경로>`). `repos/`는 gitignore라 팀원마다 배치가 달라도 문서는 그대로 쓴다. **직접 돌릴 필요는 없다** — `claude` 를 켤 때 SessionStart 훅(`scripts/hooks/setup-check.py`)이 빠진 링크를 찾아 기본 위치에서 알아서 연결하고, 거기에도 없는 레포가 있을 때만 헤르메스가 위치를 묻는다.
 
@@ -46,7 +47,7 @@ AGENTS.md                 **공통 규칙·지식 진입점 (도구 무관 — C
 CLAUDE.md                 @AGENTS.md import + Claude Code 전용(서브에이전트·스킬·Plan-First)
 hermes.config.json        담당 레포 목록·브랜치·에이전트 매핑 (정본)
 repos/                    레포 심볼릭 링크 (scripts/setup.sh 생성, gitignore)
-.claude/agents/           서브에이전트 13개
+.claude/agents/           서브에이전트 14개 (learn-reviewer 는 스크립트 전용)
 .claude/rules/            언어·코드·Git·디스패치 규칙
 .claude/skills/           /call /board /sync /diagram /guide /monitor /seo-feedback /qa-tc
 .sync/snapshots/          레포별 기준 브랜치 지문 baseline (/sync 가 비교 기준으로 사용)
@@ -63,7 +64,7 @@ scripts/delegate.sh       위임을 herdr pane 에서 보이게 실행 (claude -
 scripts/agent-monitor.py  서브에이전트·pane 에이전트 로그 실시간 모니터 (렌더러)
 scripts/monitor-pane.sh   모니터를 pane 에 띄움·재사용 (/monitor)
 scripts/board.sh          현황판 서버를 pane 에 띄우고 브라우저로 연다 (/board). 서버·화면은 scripts/board/
-scripts/learn-review.mjs  배우기 검토자 — PR 미리보기 때 작업 대화를 별도 Claude 가 읽고 학습 후보를 올린다(📚 배우기 검토 pane)
+scripts/learn-review.mjs  배우기 검토자 — 내 작업의 PR 이 머지되면(현황판이 감지) 계획서·대화·바뀐 코드·리뷰 댓글을 별도 Claude 가 읽고 학습 후보를 올린다(📚 배우기 검토 pane)
 scripts/learn-curator.mjs 30일 넘게 안 쓴 스킬을 정리 후보로 (/sync 끝에)
 scripts/archive-plans.sh  오래된 계획서 정리
 scripts/seo-feedback.sh   /seo-feedback 헤드리스 실행 · 매주 월 08:15 launchd 등록(install/uninstall/status)

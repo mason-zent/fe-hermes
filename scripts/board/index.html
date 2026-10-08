@@ -1347,7 +1347,7 @@
     document.getElementById('learn-learned-count').textContent = learned.length;
     document.getElementById('learn-candidates').innerHTML = candidates.length
       ? candidates.map((item) => learnCard(item, 'candidate', learnEditing === item.id)).join('')
-      : '<div class="empty-history">학습 후보가 없어요 — 작업을 끝낼 때(PR 미리보기) 에이전트와 배우기 검토자가 올립니다</div>';
+      : '<div class="empty-history">학습 후보가 없어요 — 에이전트가 작업을 끝낼 때, 배우기 검토자가 내 PR 이 머지됐을 때 올립니다</div>';
     const groups = new Map();
     for (const item of learned) groups.set(areaOf(item), [...(groups.get(areaOf(item)) || []), item]);
     document.getElementById('learn-learned').innerHTML = learned.length

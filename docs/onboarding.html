@@ -77,8 +77,8 @@
   p { margin: 0 0 12px; }
   .sub { color: var(--ink-2); margin-bottom: 18px; }
   a { color: var(--accent); }
-  ul.plain { margin: 0 0 12px; padding-left: 20px; }
-  ul.plain li + li { margin-top: 4px; }
+  ul.plain, ol.plain { margin: 0 0 12px; padding-left: 20px; }
+  ul.plain li + li, ol.plain li + li { margin-top: 4px; }
 
   code { font: 13px var(--mono); background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
   .code {
@@ -161,6 +161,7 @@
       <li><a href="#install">설치</a></li>
       <li><a href="#first">처음 써 보기</a></li>
       <li><a href="#board">현황판</a></li>
+      <li><a href="#knows">헤르메스가 아는 것</a></li>
       <li><a href="#learn">학습</a></li>
       <li><a href="#cmds">자주 쓰는 명령</a></li>
       <li><a href="#rules">꼭 지킬 것</a></li>
@@ -173,7 +174,7 @@
       <div class="eyebrow">hermes · 팀원용</div>
       <h1>헤르메스 시작 가이드</h1>
       <p class="lede">헤르메스는 프론트엔드 레포 여러 개를 한 곳에서 다루는 <b>Claude Code 워크스페이스</b>입니다. 이 폴더에서 <code>claude</code> 를 켜면 팀 리드 <b>헤르메스</b>가 되어, 요청을 받아 어느 레포 일인지 고르고 계획서를 쓴 뒤 담당 FE 에이전트에게 맡기고 리뷰까지 받아 보고합니다.</p>
-      <p class="lede" style="margin-top:10px">작업하면서 알게 된 레포 함정은 <b>학습</b>해서 다음 작업에 씁니다. 이 문서는 <b>받아서 쓰기 시작할 때까지</b>만 다룹니다.</p>
+      <p class="lede" style="margin-top:10px">레포마다 정리해 둔 지식 노트로 일하고, 작업하면서 알게 된 레포 함정은 <b>학습</b>해서 다음 작업에 씁니다. 이 문서는 <b>받아서 쓰기 시작할 때까지</b>만 다룹니다.</p>
       <div class="note">Nous Research 의 오픈소스 <b>Hermes Agent</b> 와는 이름만 같은 다른 것입니다. 따로 설치하지 않습니다 — Claude Code 위에 우리가 만든 규칙·스크립트 묶음입니다.</div>
     </header>
 
@@ -288,24 +289,90 @@ claude</pre></div>
       </table></div>
     </section>
 
-    <section id="learn">
-      <h2><span class="no">05</span>학습 — 헤르메스가 배우는 방법</h2>
-      <p>작업하다 밟은 함정을 다음 작업이 또 밟지 않게, 헤르메스가 <b>배운 것을 서비스별 공책(<code>gotchas.md</code>)에 적어 둡니다.</b> 에이전트는 작업 전에 이 공책을 읽습니다.</p>
-      <div class="flow"><span>작업 중·작업 끝</span><i>→</i><span>학습 후보</span><i>→</i><span>[학습] 탭에서 고르기</span><i>→</i><span>공책에 한 줄</span><i>→</i><span>다음 작업이 읽음</span></div>
+    <section id="knows">
+      <h2><span class="no">05</span>헤르메스가 아는 것</h2>
+      <p>헤르메스는 일할 때마다 레포 코드를 처음부터 다 읽지 않습니다. <b>레포마다 미리 정리해 둔 지식 노트를 먼저 보고, 필요한 코드만 골라 읽습니다.</b> 노트가 정확할수록 빠르고 정확해집니다.</p>
+      <h3>무엇을 어디에 알고 있나</h3>
       <div class="tbl"><table>
-        <thead><tr><th>궁금한 것</th><th>답</th></tr></thead>
+        <thead><tr><th>아는 것</th><th>적혀 있는 곳</th><th>누가·언제 채우나</th><th>팀 공유</th></tr></thead>
         <tbody>
-          <tr><td>무엇을 배우나</td><td>그 레포에서 다음에도 마주칠 <b>코드 함정</b>만. 예) "세나 QA 씬은 실제 요청을 직접 막아야 한다", "zent 패키지로 옮긴 앱엔 레포 안 공통 패키지 수정이 안 들어간다"</td></tr>
-          <tr><td>배우지 않는 것</td><td>일하는 스타일·취향("표로 보여 줘" 등)은 공용 공책에 넣지 않습니다. 그건 Claude Code 가 각자 컴퓨터에서 기억합니다(<b>클로드 학습</b>). 근거가 코드·실행 결과가 아니라 "사용자가 그렇게 말했다"뿐이면 학습하지 않습니다</td></tr>
-          <tr><td>언제 생기나</td><td>에이전트가 작업을 끝낼 때(PR 미리보기)·사용자가 바로잡을 때·같은 오류가 3번 날 때. PR 미리보기 때는 <b>배우기 검토자</b>(별도 Claude)가 그 작업 대화를 다시 읽고 빠진 것을 보탭니다 — "📚 배우기 검토" pane 이 하나 뜹니다(끝나면 닫아도 됩니다. 한 번에 약 $0.1~0.4, 구독이면 사용량에서)</td></tr>
-          <tr><td>내가 할 일</td><td>현황판 <b>[학습] 탭 → 🧭 헤르메스 학습</b>에서 후보를 읽고 <b>[넣기]·[고쳐서 넣기]·[버리기]</b>. 넣은 것은 "학습한 내용"에서 언제든 고치거나 지웁니다. 팀과 나누려면 헤르메스에게 "커밋해줘"</td></tr>
+          <tr><td>레포 폴더·화면(라우트) 지도</td><td><code>docs/knowledge/&lt;레포&gt;/structure.md</code></td><td><code>/sync</code> — 운영에 배포된 코드 기준</td><td>✅</td></tr>
+          <tr><td>레포 규칙("이건 꼭 지켜")</td><td><code>…/rules.md</code></td><td><code>/sync</code> — 레포 안 규칙 문서가 바뀔 때</td><td>✅</td></tr>
+          <tr><td>함정("모르면 당한다")</td><td><code>…/gotchas.md</code></td><td><b>학습</b> — 작업하다 알게 된 걸 [학습] 탭에서 [넣기] + <code>/sync</code></td><td>✅</td></tr>
+          <tr><td>따라 할 예시 파일·작업 절차</td><td><code>…/patterns.md</code> · <code>workflows.md</code></td><td>처음 만들 때 + <code>/sync</code></td><td>✅</td></tr>
+          <tr><td>나의 일하는 방식("표로 보여 줘")</td><td>Claude 메모리(<code>~/.claude/…</code>)</td><td>Claude 가 대화에서 알아서</td><td>❌ 나만</td></tr>
+          <tr><td>진행 중인 일</td><td>계획서(<code>plans/</code>)·이슈(<code>issues/</code>)</td><td>작업하면서</td><td>❌ 나만<br>(끝나면 [아카이브]로 팀에)</td></tr>
         </tbody>
       </table></div>
-      <div class="note">대부분의 작업은 학습할 게 0개입니다. 후보가 적은 게 정상입니다. 기준 전체는 <code>docs/knowledge/common/learning.md</code></div>
+      <h3>어떻게 꺼내 쓰나 — 예: "브릭스 환급 프로모션 페이지 고쳐줘"</h3>
+      <div class="flow"><span>어느 레포인지</span><i>→</i><span>어느 화면인지</span><i>→</i><span>담당 에이전트에게</span></div>
+      <ol class="plain">
+        <li><b>어느 레포인지</b> — "브릭스"가 붙었으니 운영 콘솔 → <code>client-brics-refund</code>(<code>brics-refund-fe</code>). "비즈넵"이면 사용자 웹, 둘 다 없으면 되묻습니다</li>
+        <li><b>어느 화면인지</b> — <code>structure.md</code> 의 화면 지도 → 실제 코드 → 화면 문구로 검색. 후보가 여럿이면 되묻습니다</li>
+        <li><b>맡깁니다</b> — 찾은 파일 경로를 계획서에 적어 담당 에이전트에게. 에이전트는 시작 전에 그 레포의 <code>rules.md</code> 필수 절과 <code>gotchas.md</code> 를 전부 읽습니다</li>
+      </ol>
+      <div class="note"><b>문서와 코드가 다르면 코드를 믿습니다.</b> 노트는 길잡이이고, 정답은 언제나 지금 코드입니다.</div>
+      <h3>언제 최신이 되나 — <code>/sync</code></h3>
+      <ul class="plain">
+        <li><b>운영에 배포된 코드</b>(콘솔 <code>prd</code> · 비즈넵 앱 <code>prd-&lt;앱&gt;</code>)를 읽어 <b>지난번 이후 바뀐 것만</b> 노트에 반영합니다</li>
+        <li>자동으로 돌지 않습니다 — 누군가 <code>/sync</code> 를 돌릴 때(가끔, 한 사람이)</li>
+        <li><b>확인되는 사실만 고치고</b>(새 화면·버전·명령), 판단이 필요한 문장은 고치지 않고 "확인 필요" 이슈로 묻습니다</li>
+        <li>그래서 <b>아직 배포 안 된 화면은 노트에 없습니다</b> — 그런 화면은 작업할 때 코드에서 직접 찾습니다</li>
+      </ul>
+      <h3>헤르메스가 혼자서는 알 수 없는 것 — 사람이 채워 줍니다</h3>
+      <ul class="plain">
+        <li><b>화면의 업무 용도</b> — "이 페이지는 영업팀이 제휴사 고객 번호를 한꺼번에 조회할 때 쓴다" 같은 건 코드에 없습니다</li>
+        <li><b>코드 밖의 운영 규칙</b> — 어느 팀이 쓰는지, 언제 쓰면 안 되는지 같은 것</li>
+      </ul>
+      <div class="note">알려 주는 법: 헤르메스에게 <b>"○○ 페이지는 △△ 용도야. 지식 문서에 적어줘"</b> — <code>structure.md</code> 화면 설명에 "사용자 확인" 표시와 함께 들어가고, 커밋하면 팀 전체가 압니다. 학습 기능은 근거가 "사용자가 말했다"뿐인 후보를 취향일 수 있다고 보고 거르므로, 이런 업무 지식은 이렇게 직접 적어 달라고 하는 게 확실합니다.</div>
+    </section>
+
+    <section id="learn">
+      <h2><span class="no">06</span>학습 — 헤르메스가 배우는 방법</h2>
+      <p>작업하다 밟은 함정을 다음 작업이 또 밟지 않게, 헤르메스가 <b>배운 것을 서비스별 공책(<code>gotchas.md</code>)에 적어 둡니다.</b> 에이전트는 작업 전에 이 공책을 읽습니다.</p>
+      <div class="flow"><span>작업 중·작업 끝</span><i>→</i><span>학습 후보</span><i>→</i><span>[학습] 탭에서 고르기</span><i>→</i><span>공책에 한 줄</span><i>→</i><span>다음 작업이 읽음</span></div>
+
+      <h3>누가 배우나 — 셋이 나눠 맡습니다</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>누가</th><th>언제</th><th>하는 일</th></tr></thead>
+        <tbody>
+          <tr><td>작업한 에이전트</td><td>작업을 끝낼 때(PR 미리보기) · 사용자가 바로잡을 때 · 같은 오류가 3번 날 때</td><td>그 자리에서 "다음에도 밟을 것"을 학습 후보로 올립니다. 맥락을 가장 잘 압니다</td></tr>
+          <tr><td>배우기 검토자<br>(별도 Claude · 역할 문서 <code>.claude/agents/learn-reviewer.md</code>)</td><td><b>내 작업의 PR 이 머지되면</b> 자동으로(어느 브랜치로든)</td><td>그 작업의 <b>계획서(요청·결정·결과) · 대화 · 최종으로 바뀐 코드 · PR 리뷰 댓글</b>을 읽고 에이전트가 빠뜨린 것을 보탭니다. 팀이 받아들인 결과로 배우고, 머지 안 된 시도는 배우지 않습니다. "📚 배우기 검토" pane 이 하나 뜹니다(끝나면 닫아도 됩니다 · 한 번에 약 $0.1~0.4, 구독이면 사용량에서)</td></tr>
+          <tr><td><b>사람(나)</b></td><td>아무 때나</td><td>현황판 <b>[학습] 탭 → 🧭 헤르메스 학습</b>에서 후보를 읽고 <b>[넣기]·[고쳐서 넣기]·[버리기]</b>. 넣어야만 공책에 들어갑니다</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>무엇을 기준으로 고르나 — 셋을 모두 만족할 때만</h3>
+      <ol class="plain">
+        <li><b>다시 마주친다</b> — 그 레포에서 평범한 다음 작업을 하다가 또 만날 것</li>
+        <li><b>모르면 실제로 잘못된다</b> — 잘못 고치거나, 사고를 내거나, 시간을 크게 버린다. "모르면 무엇이 잘못되나"를 구체적으로 쓸 수 있어야 합니다</li>
+        <li><b>코드만 봐서는 바로 알기 어렵다</b></li>
+      </ol>
+      <p>그리고 <b>근거가 코드나 실행 결과로 확인돼야 합니다.</b> "사용자가 그렇게 말했다"뿐이면 취향일 수 있으니 공용 공책에 넣지 않습니다 — 이건 사람의 판단이 아니라 스크립트가 기계적으로 거릅니다.</p>
+      <p><b>학습하지 않는 것</b>: 이번 작업에서 이미 코드로 고친 버그 · 한 번 있었던 문의·장애 · 원인이 서버·인프라인 것 · 일하는 스타일·취향(→ 각자 Claude 메모리, <b>클로드 학습</b>) · 일반 상식</p>
+      <p>예: ✅ "세나 QA 씬은 실제 요청을 직접 막아야 한다"(근거: QA 러너 코드가 GraphQL 만 막는다) / ❌ "결정은 표로 보여 줘"(근거: 사용자 말뿐 — 취향)</p>
+      <div class="note">대부분의 작업은 학습할 게 0개입니다. 후보가 적은 게 정상입니다. 후보에는 무엇을 배웠나 · 왜 중요한가 · 공책에 들어갈 문장 · 어디서 배웠나가 <b>쉬운 말로</b> 적혀 옵니다. 넣은 것은 [학습] 탭 "학습한 내용"에서 언제든 고치거나 지웁니다. 팀과 나누려면 헤르메스에게 "커밋해줘". 기준 전체: <code>docs/knowledge/common/learning.md</code></div>
+
+      <h3>Nous Research 의 Hermes Agent 와 무엇이 다른가</h3>
+      <p>"스스로 배우는" 아이디어는 오픈소스 Hermes Agent 의 학습 구조를 조사해 가져왔습니다. 코드는 가져오지 않았고, 팀이 같이 쓰는 공책이라는 점에 맞춰 다르게 만들었습니다.</p>
+      <div class="tbl"><table>
+        <thead><tr><th></th><th>Hermes Agent</th><th>우리 헤르메스</th></tr></thead>
+        <tbody>
+          <tr><td>누가 배우나</td><td>배우기 전용 에이전트가 뒤에서</td><td>작업한 에이전트 + 배우기 검토자, <b>최종은 사람</b></td></tr>
+          <tr><td>언제</td><td>대화 10번·도구 10번마다 자동</td><td>작업 끝 · 사용자 교정 · 같은 오류 3회 · <b>PR 머지 뒤</b>(리뷰 댓글까지 보고)</td></tr>
+          <tr><td>저장</td><td><b>바로 저장</b>(사람 확인 없음)</td><td><b>[넣기]를 누른 것만</b></td></tr>
+          <tr><td>무엇을</td><td>스킬·기억</td><td>레포 함정(공책). 반복 절차는 "스킬로 만들까요?"라고 묻습니다</td></tr>
+          <tr><td>취향</td><td>같이 기억</td><td>공용 공책엔 안 넣고 각자 Claude 메모리로</td></tr>
+          <tr><td>근거 확인</td><td>LLM 이 판단</td><td>코드·실행 결과로 확인된 것만(스크립트가 거릅니다)</td></tr>
+          <tr><td>공유</td><td>내 컴퓨터</td><td>git 으로 팀 전체</td></tr>
+          <tr><td>지난 대화 검색</td><td>있음</td><td>없음</td></tr>
+        </tbody>
+      </table></div>
+      <p><b>왜 사람이 승인하나</b> — 공책(<code>gotchas.md</code>)은 모든 작업이 매번 다 읽는 팀 공용 문서입니다. 잘못 배운 한 줄이 들어가면 그 뒤 모든 작업이 그걸 믿고, 쓸데없는 줄이 쌓이면 정말 중요한 함정이 묻힙니다. 넣기·버리기 비율을 세고 있으니, 믿을 만하다는 숫자가 나오면 자동으로 넣는 쪽으로 다시 정할 수 있습니다.</p>
     </section>
 
     <section id="cmds">
-      <h2><span class="no">06</span>자주 쓰는 명령</h2>
+      <h2><span class="no">07</span>자주 쓰는 명령</h2>
       <div class="tbl"><table>
         <thead><tr><th>명령</th><th>용도</th></tr></thead>
         <tbody>
@@ -322,7 +389,7 @@ claude</pre></div>
     </section>
 
     <section id="rules">
-      <h2><span class="no">07</span>꼭 지킬 것</h2>
+      <h2><span class="no">08</span>꼭 지킬 것</h2>
       <div class="rules">
         <div class="rule"><b>비밀값은 출력하지 않습니다</b><span><code>.npmrc</code>·<code>.env*</code> 내용, <code>printenv</code>, <code>ps aux</code> 결과를 보여 달라고 하지 마세요. 실수로 노출되면 바로 폐기하고 재발급합니다.</span></div>
         <div class="rule"><b>무거운 명령은 한 번에 하나</b><span>install·build·dev·tsc·test 는 <code>scripts/heavy.sh</code> 로 줄을 섭니다. 에이전트는 알아서 씁니다. 직접 돌릴 때도 앞에 붙이세요. 동시 빌드로 컴퓨터가 멈춘 적이 있습니다.</span></div>
@@ -334,7 +401,7 @@ claude</pre></div>
     </section>
 
     <section id="trouble">
-      <h2><span class="no">08</span>막힐 때</h2>
+      <h2><span class="no">09</span>막힐 때</h2>
       <div class="tbl"><table>
         <thead><tr><th>증상</th><th>확인할 것</th></tr></thead>
         <tbody>
@@ -346,7 +413,7 @@ claude</pre></div>
           <tr><td>"PR 올려줘" 거부</td><td><code>gh auth status</code>. 여러 레포에 걸친 작업이면 헤르메스에게 맡깁니다</td></tr>
           <tr><td>명령이 137 로 끝남</td><td>프로세스·메모리 폭주로 감시가 끊은 것. 다시 돌리기 전에 원인부터</td></tr>
           <tr><td>세션이 끊김</td><td>다시 켜고 "○○ 작업 이어서". 진행 상황은 계획서 Checkpoint 에 남아 있습니다</td></tr>
-          <tr><td>"📚 배우기 검토" pane 이 떠 있음</td><td>PR 미리보기 때 배운 것을 뽑는 중입니다. 끝나면 닫아도 됩니다(다음 PR 미리보기 때 다시 뜹니다)</td></tr>
+          <tr><td>"📚 배우기 검토" pane 이 떠 있음</td><td>머지된 내 PR 에서 배운 것을 뽑는 중입니다. 끝나면 닫아도 됩니다(다음에 PR 이 머지되면 다시 뜹니다)</td></tr>
           <tr><td>[학습] 탭 "팀에 공유 안 된 변경"</td><td>넣은 학습이 아직 커밋 전입니다. 헤르메스에게 "커밋해줘"</td></tr>
         </tbody>
       </table></div>

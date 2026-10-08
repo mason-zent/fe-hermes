@@ -24,7 +24,7 @@ scripts/ship.sh --plan <계획서> --dir <워크트리> --base dev \
 ```
 
 - **미리보기에 나오는 것**: 브랜치 · base 후보(`prBase` + 최근 30일 안에 움직인 원격 `release/*`, rn-app 은 `dev` 도) · 올라갈 커밋 · 검증 기록 · reviewer 기록 · 제목 제안 · 본문 초안 파일
-- 미리보기를 보고할 때 끝에 **📚 배운 것**(`AGENTS.md` 6절)을 붙인다 — 이게 작업을 끝내는 보고다. 미리보기는 끝에 그 계획서를 배우기 검토자 대기열에 넣는다(`scripts/learn-review.mjs --enqueue`, 같은 HEAD 는 한 번만 · 실패해도 미리보기 결과는 그대로)
+- 미리보기를 보고할 때 끝에 **📚 배운 것**(`AGENTS.md` 6절)을 붙인다 — 이게 작업을 끝내는 보고다. PR 이 머지되면 현황판이 그 작업을 배우기 검토자 대기열에 넣는다(`AGENTS.md` 6절 `review`)
 - 에이전트는 미리보기를 그대로 보여 주고 AskUserQuestion 으로 **base(여러 개 가능 — rn-app prd·dev 양쪽은 `--base prd --base dev`)·제목(제안 그대로/수정)** 을 받는다. **리뷰는 선택이다.** reviewer 결론(`- Review result: 승인 @<SHA> · tree <내용>`)은 **리뷰한 파일 내용**에 묶인다 — 리뷰 → 커밋 순서든 커밋 → 리뷰 순서든 커밋된 내용(`HEAD^{tree}`)이 리뷰한 내용과 같으면 승인이다. 승인이 아니면(reviewer 기록 없음 · 띄웠지만 결론 미기록 · 수정 필요 · 승인 뒤 내용이 바뀜 — 리뷰 뒤 수정이나 리뷰 때 워크트리에만 있던 파일 포함) 미리보기에 ⚠️ 가 뜬다 — **이대로 올릴지 한 번 더 묻고**, 올리라면 `--no-review-ok`
 - **거부하는 경우**(아무것도 보내지 않는다): 메인 체크아웃 · detached · 보호 브랜치(`frz` 포함) · 추적 파일 미커밋 · 여러 에이전트가 붙은 계획서(헤르메스로) · HEAD 가 계획서 Commits 에 없음(= `commit.sh` 를 안 거친 커밋) · base 가 원격에 없음 · 올릴 커밋 없음 · 제목 형식·범위·티켓 불일치 · 본문 필수 절 누락 · 본문에 로컬 경로(`plans/`·`/Users/`·`.worktrees/`)·내부 주소·비밀값 흔적
 - 보내면: `git push -u origin <브랜치>` → base 마다 **draft PR**(이미 열린 PR 이 있으면 push 만) → 계획서 Commits 의 "push 안 함" 을 PR 링크로 바꾸고 Checkpoint 에 `- PR:` 줄. 리뷰어 지정·Ready 전환은 사용자가 GitHub 에서
