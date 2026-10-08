@@ -1,7 +1,7 @@
 ---
 name: call
 description: 담당 에이전트를 그 레포 workspace 에 pane 으로 바로 띄웁니다. 브랜치는 에이전트가 떠서 사용자에게 묻고 워크트리를 만들며, 요청도 그 pane 에서 직접 합니다. 대화하며 범위를 좁혀 가는 작업에 씁니다.
-argument-hint: "<에이전트> — 예: bznav-plus-fe · refund-fe"
+argument-hint: "<에이전트> — 예: bznav-plus-fe · brics-refund-fe"
 ---
 
 # 에이전트 띄우기 (브랜치·요청은 pane 에서)

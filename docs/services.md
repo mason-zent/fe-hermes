@@ -9,7 +9,7 @@
 <!-- BEGIN:generated:stack-table  (scripts/build-derived.mjs 가 지문에서 생성 — 직접 고치지 마세요) -->
 | 항목 | client-brics-refund | client-brics-hub | client-brics-care | bznav-web | web-op |
 |---|---|---|---|---|---|
-| 에이전트 | refund-fe | hub-fe | care-fe | bznav-refund-fe, bznav-care-fe, bznav-brand-fe, bznav-sena-fe, bznav-plus-fe, bznav-packages-fe | op-fe |
+| 에이전트 | brics-refund-fe | brics-hub-fe | brics-care-fe | bznav-refund-fe, bznav-care-fe, bznav-brand-fe, bznav-sena-fe, bznav-plus-fe, bznav-packages-fe | op-fe |
 | 기준 브랜치 | `prd` | `prd` | `prd` | 앱별 brand `prd-brand` · care `prd-care` · plus `prd-plus` · refund `prd-refund` · sena `prd-sena` · packages `dev` | `prd` |
 | 기준 커밋 | `e37421a` (2026-10-01) | `fb5c7e3` (2026-09-03) | `8ed10df` (2026-08-20) | brand `7f052c0` · care `4eae065` · plus `8d10810` · refund `75ad3ae` · sena `9b60d12` | `4ac5be7` (2026-09-16) |
 | Next.js | 15.5.22 | 15.5.22 | 15.5.22 | 16.2.5 (app / pages) | 16.2.9 |

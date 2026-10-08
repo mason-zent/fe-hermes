@@ -31,6 +31,7 @@ repos/
 
 # 현황판 AI 사용량 (scripts/board/statusline.sh 가 쓴다)
 .board-usage.json
+.board-learn-stats.json
 .board-usage.json.*
 
 # QA 시뮬레이션 (scripts/qa) — 의존성·런 결과·로그인 세션(쿠키, 절대 커밋 금지)

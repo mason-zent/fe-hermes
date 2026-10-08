@@ -25,9 +25,9 @@
 
 | 대상 레포 | subagent_type |
 |-----------|---------------|
-| client-brics-refund | `refund-fe` |
-| client-brics-hub | `hub-fe` |
-| client-brics-care | `care-fe` |
+| client-brics-refund | `brics-refund-fe` |
+| client-brics-hub | `brics-hub-fe` |
+| client-brics-care | `brics-care-fe` |
 | web-op | `op-fe` |
 | bznav-web `apps/refund-web` | `bznav-refund-fe` |
 | bznav-web `apps/care-web` | `bznav-care-fe` |

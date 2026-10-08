@@ -55,7 +55,7 @@
 ## 1. 개요
 - 작업 유형: feature / bugfix / refactor
 - 요청 사항: (사용자 요청 요약)
-- 대상 서비스(에이전트): refund-fe / hub-fe / care-fe / op-fe / bznav-{refund,care,brand,sena,plus}-fe / bznav-packages-fe / packages-fe (복수 가능)
+- 대상 서비스(에이전트): brics-refund-fe / brics-hub-fe / brics-care-fe / op-fe / bznav-{refund,care,brand,sena,plus}-fe / bznav-packages-fe / packages-fe (복수 가능)
 - 사용자 결정 사항: (선택지가 갈리는 항목 — 이 목록이 `.html` 의 `decisions[]` 가 된다)
   - 결정 항목 1: **선택값** (옵션 후보 나열)
 
@@ -73,7 +73,7 @@
 - 백엔드가 준비되지 않았을 때의 처리 방식 (임시 훅 / mock / 대기)
 
 ## 4. 화면 설계 (서비스별)
-### refund-fe (예)
+### brics-refund-fe (예)
 - 라우트: /path, 권한: PAGE_XXX (가드 위치)
 - 컴포넌트 구조 (간략), 상태 관리 방식, 데이터 페칭
 - 네비게이션/메뉴 위치
@@ -86,8 +86,8 @@
 
 | 담당 | 작업 내용 | 의존성 |
 |------|----------|--------|
-| refund-fe | ... | 없음 |
-| hub-fe | ... | 없음 |
+| brics-refund-fe | ... | 없음 |
+| brics-hub-fe | ... | 없음 |
 | reviewer | 계획서 대비 검증 + 교차 정합성 | FE 완료 후 |
 
 ## 7. 병렬 작업 근거 / 검증 방법

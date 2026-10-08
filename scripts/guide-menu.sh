@@ -157,6 +157,7 @@ act_status() {
   } | less -R
 }
 
+act_onboarding() { open docs/onboarding.html && echo "브라우저에서 docs/onboarding.html(시작하기 가이드)을 열었습니다."; pause; }
 act_playbook()  { open docs/playbook.html && echo "브라우저에서 docs/playbook.html 을 열었습니다."; pause; }
 act_diagram()   { open docs/diagrams/index.html && echo "브라우저에서 다이어그램 목록을 열었습니다."; pause; }
 act_services()  { view_md docs/services.md; }
@@ -164,13 +165,14 @@ act_extending() { view_md docs/extending.md; }
 
 # ---------- 메뉴 ----------
 # 항목: 아이콘 | 제목 | 설명 | 동작
-ICONS=( "⚡" "👥" "📊" "🌐" "🔀" "🗺️ " "📘" )
+ICONS=( "⚡" "👥" "📊" "🚀" "🌐" "🔀" "🗺️ " "📘" )
 TITLES=(
   "스킬 목록 · 실행"
   "에이전트 · 담당 레포 · 라우팅"
   "git 현황 · 진행 중 계획서"
-  "플레이북을 브라우저로 열기"
-  "다이어그램 (작업 흐름 · 서비스별 3종)"
+  "시작하기"
+  "플레이북"
+  "서비스 다이어그램"
   "서비스 맵"
   "확장 가이드"
 )
@@ -178,6 +180,7 @@ DESCS=(
   ".claude/skills/*"
   ".claude/agents/* · AGENTS.md"
   "로컬 실행"
+  "docs/onboarding.html"
   "docs/playbook.html"
   "docs/diagrams/index.html"
   "docs/services.md"
@@ -187,12 +190,13 @@ HELPS=(
   "헤르메스에게 시킬 수 있는 슬래시 커맨드 목록. 이름·인자·설명을 .claude/skills 에서 그때그때 읽어오니 스킬을 추가하면 여기에도 바로 나온다. 번호를 고르면 새 pane 에 별도 헤르메스 세션을 띄워 실행하거나(⏎) SKILL.md 본문을 볼 수 있다(v)"
   "FE 에이전트 전원의 담당 레포·포트와 라우팅 문장을 .claude/agents 에서 읽어 보여주고, 그 아래에 AGENTS.md 의 '어느 레포인지 고르기' 기준을 붙인다. 어떤 요청이 어느 서비스인지 헷갈릴 때"
   "repos/ 에 연결된 모든 담당 레포의 브랜치, 미커밋 변경, 최근 커밋 3개와 진행 중 계획서 목록을 한 화면에. 로컬에서 바로 돌아 빠르다"
+  "처음 받는 팀원용 시작하기 가이드(준비물 · 설치 · 처음 써 보기 · 현황판 · 학습 · 꼭 지킬 것 · 막힐 때)를 기본 브라우저에서 연다. 원본은 ONBOARDING.md"
   "공유용 플레이북 HTML 을 기본 브라우저에서 연다. 같은 내용이 claude.ai 아티팩트로도 공유돼 있다"
   "다이어그램 목록을 브라우저로 연다. 헤르메스 작업 흐름 두 장(경량 — 대부분의 작업 / 정식 — 여러 레포·결정 콘솔, 단계별 규칙이 카드에 들어 있다)과 담당 서비스 10개를 세 각도로 본 다이어그램이 있다 — 구조 / 화면 맵 / 요청 흐름(비즈넵 웹 5개와 모바일 앱은 화면 전수를 담은 심층 추가). 노드를 클릭하면 상세가 뜨고 SRC 배지가 붙은 노드는 실제 파일 경로를 가리킨다. Archify 로 만들며 원본은 docs/diagrams/*.json (브라우저)"
   "담당 서비스의 포트·스택·검증 명령·생성물 비교표 (docs/services.md)"
   "스킬·에이전트를 추가하는 방법과 같이 갱신할 문서 목록. docs/extending.md 를 마크다운 뷰어로 연다 (q 로 닫기)"
 )
-ACTIONS=(act_skills act_agents act_status act_playbook act_diagram act_services act_extending)
+ACTIONS=(act_skills act_agents act_status act_onboarding act_playbook act_diagram act_services act_extending)
 # 그룹: "시작인덱스|제목"
 MENU_GROUPS=( "0|⚡  실행 · 확인" "3|📘  문서" )
 sel=0; n=${#TITLES[@]}

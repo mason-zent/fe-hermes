@@ -1,7 +1,7 @@
 {
   "repo": "client-brics-care",
   "agents": [
-    "care-fe"
+    "brics-care-fe"
   ],
   "branch": "origin/prd",
   "sha": "8ed10df9ec28",

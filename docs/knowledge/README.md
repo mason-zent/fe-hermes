@@ -36,6 +36,7 @@ docs/knowledge/
     <앱>/                        refund-web · care-web · brand-web · sena-web · plus-web — structure · patterns · workflows · gotchas
     packages/                    @repo/* 공유 패키지 — 같은 4종
   bznav-rn-app/                 같은 5종 (Expo · React Native 앱)
+  hermes/                       gotchas — 헤르메스 자체(스크립트·현황판·규칙) 작업의 함정. 학습 루프 learn 이슈로만 채운다
 ```
 레포마다 패턴은 다르다. hub의 항목을 복제하지 않고 **각 레포 코드에서 반복되는 것**만 patterns.md 에 적는다. "설치만 되어 있고 사용처가 없는" 라이브러리는 관례로 적지 않고 gotchas 에 기록한다.
 

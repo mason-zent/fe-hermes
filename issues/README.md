@@ -8,10 +8,10 @@ sync·다이어그램 작업·리뷰 중에 찾았지만 **그 자리에서 고�
 - 고치기로 하면 계획서를 쓰고 `plan:` 에 경로를 적은 뒤 `status: planned`. 끝나면 `done`(또는 안 하기로 하면 `wontfix`)
 - 현황판 [처리 시작]은 **기본으로 헤르메스 pane 에 보낸다** — 헤르메스가 판단(📋 경량/정식) → 계획서 → `prBase` 에서 작업 브랜치 → 담당 에이전트 디스패치까지 이어서 한다
 - 팝업에서 **"담당 에이전트로 바로(조사만)"** 를 고르면 `agent`(없으면 repo 의 담당)를 그 레포 workspace 에 새 pane 으로 띄운다. 이슈마다 워크트리(`.worktrees/<레포>/issue-<이슈>`, 운영 기준 ref · detached)를 만들고 **코드는 수정하지 않는다** — 원인·범위를 보고하고, 확인 이슈면 결과를 이 파일 끝 "## 확인 결과" 에 적는다. 고치기로 하면 헤르메스가 브랜치를 만들어 다시 맡긴다
-- 끝난 이슈는 현황판 완료 칸의 [아카이브] 로 연결 계획서와 함께 `archive/<이름>/`(`issue.md` · `plan.md` · `meta.json`)에 묶여 보관되고 git 에 커밋된다. 지나간 이슈는 현황판 [히스토리] 탭에서 찾는다. 잘못 만든 이슈는 [삭제] — 휴지통 `.board-trash/` 로 옮겨져 되살릴 수 있다
-- **hermes 자체 이슈**(`repo: hermes` — 스크립트·현황판·문서·규칙)는 서비스 칸반이 아니라 현황판 헤더의 **[헤르메스] 탭**(할 일 · 진행 중 · 완료)에 뜬다. 담당 에이전트·워크트리·PR 이 없다 — [처리 시작]을 누르면 헤르메스가 경량 계획서로 직접 고치고, 사용자가 커밋하라고 하면 고친 코드만 hermes `main` 에 커밋·push 한 뒤 이슈 파일(로컬)에 `fix: <sha>` · `status: done` 을 적는다. `kind` 와 무관하게 완료 기준은 `fix:` 커밋이 `origin/main` 에 있는 것. `Agent: hermes` 이거나 `Work ref` 가 `hermes` 로 시작하는(hermes 체크아웃) 계획서도 같은 탭에 뜬다
+- 끝난 이슈는 현황판 완료 칸의 [아카이브] 로 연결 계획서와 함께 `archive/<이름>/`(`issue.md` · `plan.md` · `meta.json`)에 묶여 보관되고 git 에 커밋된다. 지나간 이슈는 현황판 [아카이브] 탭에서 찾는다. 잘못 만든 이슈는 [삭제] — 휴지통 `.board-trash/` 로 옮겨져 되살릴 수 있다
+- **hermes 자체 이슈**(`repo: hermes` — 스크립트·현황판·문서·규칙)는 서비스 칸반이 아니라 현황판 헤더의 **[정비] 탭**(할 일 · 진행 중 · 완료)에 뜬다. 담당 에이전트·워크트리·PR 이 없다 — [처리 시작]을 누르면 헤르메스가 경량 계획서로 직접 고치고, 사용자가 커밋하라고 하면 고친 코드만 hermes `main` 에 커밋·push 한 뒤 이슈 파일(로컬)에 `fix: <sha>` · `status: done` 을 적는다. `kind` 와 무관하게 완료 기준은 `fix:` 커밋이 `origin/main` 에 있는 것. `Agent: hermes` 이거나 `Work ref` 가 `hermes` 로 시작하는(hermes 체크아웃) 계획서도 같은 탭에 뜬다
 - 대화에서만 말하고 끝내지 않는다. 다음 세션에서도 보이게 여기 남긴다
-- **learn 이슈**(`<날짜>-<레포>-learn-<제목>.md`) — 에이전트가 작업을 끝낼 때 보고하는 "📚 배운 것"(`AGENTS.md` 6절)이다. `repo: hermes`(현황판 [헤르메스] 탭 — 고칠 곳이 hermes knowledge 다. 서비스는 파일명 `<레포>`·`target` 으로 안다) · `kind: knowledge` · `source:` 작업 계획서 · `target:` 고칠 knowledge 파일#절. [처리 시작]하면 헤르메스가 `target` 절만 고치고 사용자가 말하면 hermes `main` 에 커밋·push → `fix:` 에 sha. 쓸모없으면 [아카이브]
+- **learn 이슈**(`<날짜>-<영역>-learn-<이름>.md`) — 학습 후보다(`AGENTS.md` 6절 "📚 배운 것", 기준 `docs/knowledge/common/learning.md`). 칸반에는 뜨지 않고 현황판 **[학습] 탭**에만 뜬다 — [넣기]·[고쳐서 넣기]·[버리기](넣으면 공책에 한 줄 + `docs/knowledge/learned/` 기록, 후보 파일은 휴지통으로). `target: skill:<이름>` 이면 스킬 후보 — [헤르메스에게 맡기기]. 본문은 `## 무엇을 배웠나`·`## 왜 중요한가`·`## 공책에 넣을 문장`·`## 어디서 배웠나`. `scripts/learn-curator.mjs` 가 만드는 `…-hermes-learn-curator.md` 는 이름에 `-learn-` 이 있지만 후보가 아니라 정리 후보 목록이다
 
 ```markdown
 ---
@@ -25,7 +25,8 @@ source: sync 2026-09-28 # 어디서 찾았나
 plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
 pr:                     # code: PR 번호 (담당 레포)
 fix:                    # knowledge·diagram·repo: hermes: 수정 커밋 sha (여러 개면 쉼표)
-target:                 # learn 이슈: 고칠 knowledge 파일#절 (예 docs/knowledge/bznav-web/refund-web/gotchas.md#날짜)
+target:                 # learn 이슈: 고칠 knowledge 파일#절 (예 docs/knowledge/bznav-web/refund-web/gotchas.md#날짜) 또는 skill:<이름>
+signal:                 # learn 이슈: done(작업 끝) | correction(사용자 교정) | repeat-error(같은 오류 3회) | review(배우기 검토자 — scripts/learn-review.mjs)
 reason:                 # wontfix: 하지 않는 이유
 ---
 

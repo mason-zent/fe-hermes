@@ -249,6 +249,9 @@ if [ $YES = 0 ]; then
   echo "본문 초안 $DRAFT  (고치려면 이 파일을 편집하거나 --body-file — --yes 때 다시 만들지 않는다)"
   echo "──"
   echo "사용자에게 base(후보 중 선택, 여러 개 가능)·제목(그대로/수정)을 확인받은 뒤 --base … --title \"…\" --yes 로 다시 실행한다"
+  # 학습 루프 3단계 — 배우기 검토자에게 이 작업 대화를 넘긴다(대기열에 넣기만 하고 바로 돌아온다. 같은 HEAD 는 한 번만).
+  # 실패해도 미리보기 결과는 그대로다
+  node "$HERMES_DIR/scripts/learn-review.mjs" --enqueue --plan "$PLAN" --head "$HEAD_SHA" 2>/dev/null | sed 's/^/         /' || true
   exit 0
 fi
 

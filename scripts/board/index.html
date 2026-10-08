@@ -167,6 +167,39 @@
   .h-title { font-weight: 600; font-size: 13.5px; }
   .h-sum { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .h-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  /* 학습 탭 */
+  .learn-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; font-size: 12.5px; color: var(--muted); }
+  .learn-stats .stat { padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .learn-stats .stat b { color: var(--text); }
+  .learn-stats .stat.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+  .learn-h { font-size: 13.5px; margin: 18px 0 8px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .learn-h .n { color: var(--muted); font-weight: 500; }
+  .learn-h .hint { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .learn-list { display: grid; gap: 10px; }
+  .learn-card { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 14px 16px; display: grid; gap: 8px; }
+  .learn-card .top { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+  .learn-card .title { font-weight: 600; font-size: 14px; flex: 1 1 320px; line-height: 1.45; }
+  .learn-card .top .grow { flex: 1 1 100%; }
+  .learn-card .label { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+  .learn-card .text { font-size: 13px; line-height: 1.6; white-space: pre-wrap; }
+  .learn-card .why .text { color: var(--warn); }
+  .learn-card .rule { border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); padding: 6px 10px; border-radius: 0 6px 6px 0; font-size: 12.5px; line-height: 1.55; }
+  .learn-card .where { font-size: 11.5px; color: var(--muted); white-space: pre-wrap; }
+  .learn-card .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .learn-card textarea, .learn-card input { font: inherit; width: 100%; padding: 7px 9px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); line-height: 1.5; font-size: 13px; }
+  .learn-card textarea { min-height: 64px; resize: vertical; }
+  .pill.learn-area { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, transparent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .pill.learn-skill { color: var(--col-plan); border-color: color-mix(in srgb, var(--col-plan) 40%, transparent); }
+  .learn-group { font-size: 12px; color: var(--muted); font-weight: 600; margin: 6px 0 -2px; }
+  .learn-row { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  .learn-row > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 14px; }
+  .learn-row > summary::-webkit-details-marker { display: none; }
+  .learn-row > summary .date { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .learn-row > summary .t { font-weight: 600; font-size: 13.5px; }
+  .learn-row > summary .s { display: block; font-size: 12.5px; color: var(--muted); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .learn-row[open] > summary { border-bottom: 1px solid var(--line); }
+  .learn-row .learn-card { border: 0; border-radius: 0 0 10px 10px; }
+  @media (max-width: 720px) { .learn-row > summary { grid-template-columns: 1fr; gap: 4px; } }
   /* 히스토리·메모리 행 — 날짜·작업자·종류 배지는 행 세로 가운데, 메모리 배지는 오른쪽 끝 칸. 칸이 행 높이만큼 늘어나지 않게 align-self 로 */
   .h-row > .h-tags { justify-content: flex-end; align-self: center; }
   .h-row > .h-date, .h-row > .h-owner { align-self: center; padding-top: 0; }
@@ -304,11 +337,11 @@
   <h1 class="live" tabindex="0"><span id="live-dot" class="dot"></span>현황판
     <span class="tip" role="tooltip"><span id="live-state"></span><span id="updated"></span><span id="sync"></span></span></h1>
   <nav class="tabs" role="tablist" aria-label="보기">
-    <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true">현황</button>
-    <button type="button" role="tab" id="tab-hermes" data-tab="hermes" aria-selected="false">헤르메스</button>
-    <button type="button" role="tab" id="tab-qa" data-tab="qa" aria-selected="false">QA</button>
-    <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false">히스토리</button>
-    <button type="button" role="tab" id="tab-memory" data-tab="memory" aria-selected="false">메모리</button>
+    <button type="button" role="tab" id="tab-now" data-tab="now" aria-selected="true" title="서비스 레포 작업 — 지금 도는 에이전트와 이슈·계획서 칸반">서비스</button>
+    <button type="button" role="tab" id="tab-hermes" data-tab="hermes" aria-selected="false" title="헤르메스 자체(스크립트·현황판·규칙)를 고치는 일">정비</button>
+    <button type="button" role="tab" id="tab-qa" data-tab="qa" aria-selected="false" title="QA 시뮬레이션 런 · TC 목록">QA</button>
+    <button type="button" role="tab" id="tab-learn" data-tab="learn" aria-selected="false" title="헤르메스 학습(레포 함정 공책) · 클로드 학습(메모리)">학습</button>
+    <button type="button" role="tab" id="tab-history" data-tab="history" aria-selected="false" title="끝나서 보관한 일">아카이브</button>
   </nav>
   <span class="live-note" id="live-text">연결 중…</span>
   <div class="usage" id="usage" hidden></div>
@@ -329,7 +362,7 @@
 </main>
 <main id="view-hermes" hidden>
   <section class="board-section">
-    <h2>헤르메스 — hermes 자체 이슈·작업 (담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝)</h2>
+    <h2>정비 — 헤르메스 자체(스크립트·현황판·규칙 문서)를 고치는 일. 담당 에이전트·PR 없이 헤르메스가 고치고 main 에 커밋·push 하면 끝</h2>
     <div id="hermes-board" class="board hermes-board"></div>
   </section>
 </main>
@@ -374,7 +407,7 @@
 </main>
 <main id="view-history" hidden>
   <section>
-    <h2>히스토리 — 보관한 일 (archive/, git 에 남아요)</h2>
+    <h2>아카이브 — 끝나서 보관한 일 (archive/, git 에 남아요)</h2>
     <div class="history-bar">
       <select id="history-kind" aria-label="종류"><option value="">전체</option><option value="issue">이슈</option><option value="plan">계획서만</option></select>
       <select id="history-repo" aria-label="레포"><option value="">모든 레포</option></select>
@@ -390,11 +423,25 @@
     </div>
   </section>
 </main>
-<main id="view-memory" hidden>
+<main id="view-learn" hidden>
   <section>
-    <h2>메모리 — 헤르메스가 대화에서 남긴 작업 규칙 (<span id="memory-dir">~/.claude/projects/…/memory</span>, 읽기 전용)
+    <div class="qa-switch" role="tablist" aria-label="학습 보기">
+      <button type="button" role="tab" data-learnview="hermes" aria-selected="true">🧭 헤르메스 학습</button>
+      <button type="button" role="tab" data-learnview="claude" aria-selected="false">🤖 클로드 학습</button>
+    </div>
+    <div id="learn-view-hermes">
+    <h2>헤르메스 학습 — 작업하며 알게 된 <b>레포 함정</b>을 서비스별 공책(gotchas)에 넣는다. 에이전트가 작업 전에 읽고, git 으로 팀과 공유된다 (기준: docs/knowledge/common/learning.md)</h2>
+    <div id="learn-stats" class="learn-stats"></div>
+    <h3 class="learn-h">학습 후보 <span class="n" id="learn-candidate-count"></span> <span class="hint">넣을지 골라 주세요 — 넣은 것만 공책에 들어갑니다</span></h3>
+    <div id="learn-candidates" class="learn-list"><div class="empty-history">불러오는 중이에요…</div></div>
+    <h3 class="learn-h">학습한 내용 <span class="n" id="learn-learned-count"></span> <span class="hint">누르면 펼쳐지고 고치거나 지울 수 있어요</span></h3>
+    <div id="learn-learned" class="learn-list"></div>
+    </div>
+    <div id="learn-view-claude" hidden>
+    <h2>클로드 학습 — Claude Code 가 대화에서 기억한 <b>일하는 방식·피드백</b>(메모리). 이 컴퓨터에서 나만 보고 레포에는 안 올라간다 (<span id="memory-dir">~/.claude/projects/…/memory</span>, 읽기 전용)
       <button type="button" class="btn" id="memory-guide-open" title="메모리 보는 법 — 사용자 · 피드백 · 프로젝트 · 참고 뜻" aria-label="메모리 보는 법">📖</button></h2>
     <div id="memory" class="history"><div class="empty-history">불러오는 중이에요…</div></div>
+  </div>
   </section>
 </main>
 <dialog id="ask">
@@ -1259,19 +1306,119 @@
     box.querySelectorAll('.h-row').forEach((row) => { row.onclick = () => openMemory(row.dataset.file); });
   };
 
-  const TABS = ['now', 'hermes', 'qa', 'history', 'memory'];
+  // ── 학습 탭 — 학습 후보(넣기·고쳐서 넣기·버리기)와 학습한 내용(수정·삭제). 누를 때만 읽는다
+  const BASIS = { code: '근거: 코드', run: '근거: 실행 결과', 'user-said': '근거: 사용자 말' };
+  const SIGNAL = { done: '작업 끝', correction: '사용자 교정', 'repeat-error': '반복 오류', review: '배우기 검토자' };
+  const areaOf = (item) => item.skill ? `스킬 ${item.target.slice(6)}` : (item.notebook.replace(/^docs\/knowledge\//, '').replace(/\/gotchas\.md$/, '').replace(/\.md$/, '') || '?');
+  const signalOf = (item) => SIGNAL[item.signal] || SIGNAL[(item.source.match(/·\s*([\w-]+)\)\s*$/) || [])[1]] || '';
+  let learnData = { candidates: [], learned: [] };
+  const learnField = (key, label, value, editing, rows) => editing
+    ? `<div class="${key === 'title' ? 'grow' : ''}"><div class="label">${label}</div>${rows ? `<textarea data-k="${key}" rows="${rows}">${esc(value)}</textarea>` : `<input data-k="${key}" value="${esc(value)}">`}</div>`
+    : (value ? `<div class="${key === 'why' ? 'why' : ''}"><div class="label">${label}</div><div class="text">${esc(value)}</div></div>` : '');
+  const learnCard = (item, mode, editing) => {
+    const pills = `<span class="pill ${item.skill ? 'learn-skill' : 'learn-area'}">${item.skill ? '🛠' : '📚'} ${esc(areaOf(item))}</span>${signalOf(item) ? `<span class="pill">${esc(signalOf(item))}</span>` : ''}${item.basis ? `<span class="pill" title="근거 종류">${esc(BASIS[item.basis] || item.basis)}</span>` : ''}<span class="pill">${esc(item.applied || item.created || '')}</span>`;
+    const ruleBox = editing
+      ? learnField('rule', '공책에 넣을 문장 (에이전트가 읽는 한 줄)', item.rule, true, 2)
+      : `<div><div class="label">공책에 들어갈 문장 ${item.strengthen ? '— 기존 줄을 고친다' : ''}</div><div class="rule">${esc(item.rule)}</div>${item.strengthen ? `<div class="where">원래 줄: ${esc(item.strengthen)}</div>` : ''}${item.original ? `<div class="where">고치기 전 줄: ${esc(item.original)}</div>` : ''}</div>`;
+    let buttons;
+    if (editing) buttons = `<button class="btn primary" data-act="${mode === 'candidate' ? 'apply' : 'save'}">${mode === 'candidate' ? '고친 대로 넣기' : '저장'}</button><button class="btn" data-act="cancel">취소</button>`;
+    else if (mode === 'candidate' && item.skill) buttons = `<button class="btn primary" data-act="skill">🛠 헤르메스에게 스킬 만들기 맡기기</button><button class="btn danger" data-act="discard">버리기</button>`;
+    else if (mode === 'candidate') buttons = `<button class="btn primary" data-act="apply">넣기</button><button class="btn" data-act="edit">고쳐서 넣기</button><button class="btn danger" data-act="discard">버리기</button>`;
+    else buttons = `<button class="btn" data-act="edit">수정</button><button class="btn danger" data-act="remove">삭제</button>`;
+    return `<div class="learn-card" data-id="${esc(item.id)}" data-mode="${mode}">
+      <div class="top">${editing ? learnField('title', '제목', item.title, true) : `<div class="title">${esc(item.title)}</div>`}<span class="h-tags">${pills}</span></div>
+      ${learnField('explain', '무엇을 배웠나', item.explain, editing, 4)}
+      ${learnField('why', '왜 중요한가 — 모르면', item.why, editing, 2)}
+      ${ruleBox}
+      ${item.where ? `<div class="where">어디서 배웠나 · ${esc(item.where.replace(/^- /gm, ''))}</div>` : ''}
+      <div class="actions">${buttons}</div>
+    </div>`;
+  };
+  let learnEditing = '';
+  const renderLearn = () => {
+    const { candidates, learned, stats = {}, uncommitted = 0 } = learnData;
+    const decided = (stats.applied || 0) + (stats.discarded || 0);
+    document.getElementById('learn-stats').innerHTML = [
+      `<span class="stat">넣기 <b>${stats.applied || 0}</b> · 버리기 <b>${stats.discarded || 0}</b>${decided ? ` · 넣은 비율 <b>${Math.round(((stats.applied || 0) / decided) * 100)}%</b>` : ''}</span>`,
+      `<span class="stat">학습한 내용 <b>${learned.length}</b></span>`,
+      uncommitted ? `<span class="stat warn">팀에 공유 안 된 변경 <b>${uncommitted}</b> — 헤르메스에게 "커밋해줘"</span>` : '',
+    ].join('');
+    document.getElementById('learn-candidate-count').textContent = candidates.length;
+    document.getElementById('learn-learned-count').textContent = learned.length;
+    document.getElementById('learn-candidates').innerHTML = candidates.length
+      ? candidates.map((item) => learnCard(item, 'candidate', learnEditing === item.id)).join('')
+      : '<div class="empty-history">학습 후보가 없어요 — 작업을 끝낼 때(PR 미리보기) 에이전트와 배우기 검토자가 올립니다</div>';
+    const groups = new Map();
+    for (const item of learned) groups.set(areaOf(item), [...(groups.get(areaOf(item)) || []), item]);
+    document.getElementById('learn-learned').innerHTML = learned.length
+      ? [...groups].map(([area, items]) => `<div class="learn-group">📚 ${esc(area)} · ${items.length}개</div>` + items.map((item) => `
+        <details class="learn-row" ${learnEditing === item.id ? 'open' : ''} data-row="${esc(item.id)}"><summary><span class="date">${esc(item.applied)}</span><span><span class="t">${esc(item.title)}</span><span class="s">${esc(item.why || item.rule)}</span></span><span class="pill">${esc(signalOf(item) || '학습')}</span></summary>${learnCard(item, 'learned', learnEditing === item.id)}</details>`).join('')).join('')
+      : '<div class="empty-history">아직 학습한 내용이 없어요</div>';
+  };
+  const loadLearn = async () => {
+    try {
+      const response = await fetch('/api/learn');
+      learnData = await response.json();
+    } catch (error) {
+      document.getElementById('learn-candidates').innerHTML = `<div class="empty-history">불러오지 못했어요 — ${esc(error.message)}</div>`;
+      return;
+    }
+    renderLearn();
+  };
+  document.getElementById('view-learn').addEventListener('click', async (event) => {
+    const button = event.target.closest('button[data-act]');
+    if (!button) return;
+    const card = button.closest('.learn-card');
+    const id = card.dataset.id;
+    const act = button.dataset.act;
+    const edits = () => Object.fromEntries([...card.querySelectorAll('[data-k]')].map((field) => [field.dataset.k, field.value]));
+    if (act === 'edit') { learnEditing = id; renderLearn(); return; }
+    if (act === 'cancel') { learnEditing = ''; renderLearn(); return; }
+    if (act === 'discard' && !confirm('이 학습 후보를 버릴까요? (휴지통으로 — 되살릴 수 있어요)')) return;
+    if (act === 'remove' && !confirm('이 학습을 공책에서 뺄까요? (기록은 휴지통으로 — 되살릴 수 있어요)')) return;
+    const path = { apply: '/api/learn-apply', save: '/api/learn-edit', discard: '/api/learn-discard', remove: '/api/learn-remove', skill: '/api/hermes-new' }[act];
+    const body = act === 'skill'
+      ? { id, text: `학습 후보 ${id} 의 스킬 후보로 스킬을 만들어 주세요 — docs/extending.md "학습으로 스킬 만들기" 틀, 기존 스킬에 넣을 수 있으면 그쪽으로` }
+      : { id, edits: card.querySelector('[data-k]') ? edits() : {} };
+    button.disabled = true;
+    try {
+      const result = await api(path, body);
+      learnEditing = '';
+      if (result.inherited) toast(`이미 학습된 줄을 고쳤어요 — 기존 학습(${result.inherited})에 이어 붙였어요`);
+      else if (result.strengthened) toast('공책의 기존 줄을 고쳤어요');
+      else if (act === 'apply') toast(`공책(${result.notebook || ''})에 넣었어요`);
+      if ((act === 'save' || act === 'remove') && result.notebookUpdated === false) alert('기록은 처리했지만 공책에서 해당 줄을 찾지 못했어요 — 공책 파일을 직접 확인해 주세요');
+    } catch (error) {
+      alert(error.message || String(error));
+    }
+    await loadLearn();
+  });
+
+  // 학습 탭 안 — 헤르메스 학습(공책) / 클로드 학습(메모리)
+  let learnView = 'hermes';
+  const showLearnView = (view) => {
+    learnView = view;
+    document.querySelectorAll('[data-learnview]').forEach((button) => button.setAttribute('aria-selected', String(button.dataset.learnview === view)));
+    document.getElementById('learn-view-hermes').hidden = view !== 'hermes';
+    document.getElementById('learn-view-claude').hidden = view !== 'claude';
+    if (view === 'claude') loadMemory(); else loadLearn();
+  };
+  document.querySelectorAll('[data-learnview]').forEach((button) => { button.onclick = () => showLearnView(button.dataset.learnview); });
+
+  const TABS = ['now', 'hermes', 'qa', 'learn', 'history'];
   const showTab = (tab) => {
     for (const name of TABS) {
       document.getElementById(`view-${name}`).hidden = name !== tab;
       document.getElementById(`tab-${name}`).setAttribute('aria-selected', String(name === tab));
     }
     if (tab === 'history') loadHistory();
-    if (tab === 'memory') loadMemory();
+    if (tab === 'learn') showLearnView(learnView);
     if (tab === 'qa') loadQa(); else stopQa();
     try { history.replaceState(null, '', tab === 'now' ? location.pathname : `#${tab}`); } catch (error) { /* 무시 */ }
   };
   document.querySelectorAll('.tabs [data-tab]').forEach((button) => { button.onclick = () => showTab(button.dataset.tab); });
-  if (TABS.includes(location.hash.slice(1))) showTab(location.hash.slice(1));
+  if (location.hash === '#memory') { learnView = 'claude'; showTab('learn'); }  // 예전 주소
+  else if (TABS.includes(location.hash.slice(1))) showTab(location.hash.slice(1));
 
   // 팝업 바깥(배경)을 누르면 그 팝업의 취소·닫기 버튼을 누른 것과 같게 — 안에서 드래그하다 밖에서 뗀 건 무시
   document.querySelectorAll('dialog').forEach((dialog) => {

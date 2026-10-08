@@ -1,7 +1,7 @@
 {
   "repo": "client-brics-refund",
   "agents": [
-    "refund-fe"
+    "brics-refund-fe"
   ],
   "branch": "origin/prd",
   "sha": "e37421a3045e",

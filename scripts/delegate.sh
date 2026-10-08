@@ -20,7 +20,7 @@
 #   scripts/delegate.sh <에이전트명> --cwd <경로>          # 워크트리 등 다른 디렉터리에서 연다
 #   scripts/delegate.sh <에이전트명> "<프롬프트>" --down    # 오른쪽 대신 아래로 분할
 #
-# 에이전트명은 .claude/agents/<이름>.md 의 name 이다 (hub-fe, reviewer 등).
+# 에이전트명은 .claude/agents/<이름>.md 의 name 이다 (brics-hub-fe, reviewer 등).
 # 결과는 pane 에서 보고, 헤르메스는 `herdr pane read <id>` 로 읽는다.
 set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -48,6 +48,10 @@ if [ -z "$PLAN" ] && [ -z "$PLAN_NEW" ]; then
 fi
 
 # 에이전트 이름 검증 — 오타로 엉뚱한 세션이 뜨는 것을 막는다
+# 옛 이름(2026-10-09 brics- 접두사로 바꿈) — 손에 익은 이름·예전 계획서로 불러도 새 이름으로 띄운다
+case "$AGENT" in
+  refund-fe|hub-fe|care-fe) echo "ℹ️  $AGENT → brics-$AGENT (이름이 바뀌었다)" >&2; AGENT="brics-$AGENT" ;;
+esac
 if [ ! -f "$HERMES_DIR/.claude/agents/$AGENT.md" ]; then
   echo "그런 에이전트가 없다: $AGENT"
   echo "가능한 이름: $(ls "$HERMES_DIR/.claude/agents" | sed 's/\.md$//' | tr '\n' ' ')"

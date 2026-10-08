@@ -27,6 +27,7 @@
  *   - POST /api/qa-start     계획서 카드 [QA 실행] — Work ref 워크트리로 scripts/qa/run.mjs 를 뒤에서 돌린다(한 번에 하나)
  *   - GET  /api/history      보관된 일 목록 · /api/history/item?dir= 한 건의 이슈·계획서 원문
  *   - GET  /api/memory       헤르메스 메모리(~/.claude/projects/<워크스페이스>/memory) 목록·본문 — 읽기 전용
+ *   - GET  /api/learn        [학습] 탭 — 학습 후보·학습한 내용·넣기/버리기 수 · POST /api/learn-{apply,discard,edit,remove}(learn.mjs)
  *   - POST /api/hermes-new 이슈 [처리 시작] → 헤르메스: 새 헤르메스 pane(🧭 헤르메스 · <이슈>)을 열어 그 안에서 처리한다 — 떠 있는 헤르메스 대화에 섞지 않는다
  *   - POST /api/action 이미 떠 있는 헤르메스·에이전트 pane 에 지시문을 입력한다(herdr pane send-text + Enter)
  *     정식 계획서 결정 콘솔(/plans/*.html)의 [이대로 진행] 도 이걸로 PLAN.hermesPane 에 보낸다
@@ -41,6 +42,7 @@ import { fileURLToPath } from 'node:url'
 import { execFile, execFileSync, spawn } from 'node:child_process'
 import { homedir, tmpdir } from 'node:os'
 import { archiveBundle, commitArchive, listHistory, readHistoryItem } from './archive.mjs'
+import { applyLearn, discardLearn, editLearned, isLearnIssue, listLearn, removeLearned } from './learn.mjs'
 import { listRuns as listQaRuns, RUNS_DIR as QA_RUNS_DIR } from '../qa/report.mjs'
 import { checkServerUrl, sessionFileOf } from '../qa/targets.mjs'
 import { approveRun as approveQaRun } from '../qa/baseline.mjs'
@@ -131,7 +133,7 @@ const readPlan = (path) => {
     // 정식 = feature·bugfix·refactor (md + html 결정 콘솔) · 경량 = plans/task
     grade: path.split('/').at(-2) === 'task' ? 'light' : 'formal',
     owner: plain(field(checkpoint, 'Owner')),
-    // hermes 자체 작업 — 서비스 칸반과 따로 [헤르메스] 탭에 보인다. 경량은 Agent: hermes,
+    // hermes 자체 작업 — 서비스 칸반과 따로 [정비] 탭에 보인다. 경량은 Agent: hermes,
     // 정식은 Agent 줄이 없으니 Work ref 가 hermes 체크아웃("hermes 메인 체크아웃 · main …")인 것으로 본다(FE 워크트리는 절대 경로라 안 걸린다)
     scope: plain(field(checkpoint, 'Agent')) === 'hermes' || /^hermes\b/.test(plain(field(checkpoint, 'Work ref'))) ? 'hermes' : 'service',
     status,
@@ -578,7 +580,7 @@ const collect = async () => {
     .map(readPlan)
     .filter(Boolean)
     .filter((plan) => plan.column !== 'done' || now - plan.mtime < DONE_KEEP_DAYS * 86_400_000)
-  const issues = listFiles(join(ROOT, 'issues'), (path) => path.endsWith('.md') && !path.endsWith('README.md') && !path.includes('/issues/archive/'))
+  const issues = listFiles(join(ROOT, 'issues'), (path) => path.endsWith('.md') && !path.endsWith('README.md') && !path.includes('/issues/archive/') && !isLearnIssue(path))
     .map(readIssue)
     .filter(Boolean)
     .filter((issue) => issue.column !== 'done' || now - issue.mtime < DONE_KEEP_DAYS * 86_400_000)
@@ -1433,6 +1435,10 @@ createServer(async (request, response) => {
     response.writeHead(item ? 200 : 404, { 'Content-Type': 'application/json; charset=utf-8' })
     return response.end(JSON.stringify(item ?? { error: '보관된 일을 찾지 못했어요' }))
   }
+  if (url.pathname === '/api/learn') {
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+    return response.end(JSON.stringify(listLearn()))
+  }
   if (url.pathname === '/api/memory') {
     response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
     return response.end(JSON.stringify({ dir: memoryDir.replace(homedir(), '~'), items: listMemory() }))
@@ -1447,7 +1453,7 @@ createServer(async (request, response) => {
     response.end(JSON.stringify({ ...snapshot, updatedAt, boot: BOOT }))
     return
   }
-  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve', '/api/qa-logout', '/api/qa-login', '/api/qa-stop'].includes(url.pathname)) {
+  if (request.method === 'POST' && ['/api/move', '/api/action', '/api/dispatch', '/api/review', '/api/worktree-remove', '/api/delete', '/api/archive', '/api/hermes-new', '/api/qa-start', '/api/qa-suite', '/api/qa-approve', '/api/qa-logout', '/api/qa-login', '/api/qa-stop', '/api/learn-apply', '/api/learn-discard', '/api/learn-edit', '/api/learn-remove'].includes(url.pathname)) {
     const reply = (code, body) => {
       response.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
       response.end(JSON.stringify(body))
@@ -1491,6 +1497,18 @@ createServer(async (request, response) => {
     if (url.pathname === '/api/qa-start') {
       const result = startQaRun(String(body.id ?? ''))
       return reply(result.error ? 400 : 202, result)
+    }
+    if (url.pathname.startsWith('/api/learn-')) {
+      const id = String(body.id ?? '')
+      const edits = typeof body.edits === 'object' && body.edits ? body.edits : {}
+      const action = { '/api/learn-apply': () => applyLearn(id, edits), '/api/learn-discard': () => discardLearn(id), '/api/learn-edit': () => editLearned(id, edits), '/api/learn-remove': () => removeLearned(id) }[url.pathname]
+      let result
+      try {
+        result = action()
+      } catch (error) {
+        return reply(500, { error: `학습 처리 중 오류: ${error.message}` })
+      }
+      return reply(result.error ? 400 : 200, result)
     }
     if (url.pathname === '/api/hermes-new') {
       const result = await openHermesPane(String(body.id ?? ''), String(body.text ?? ''))

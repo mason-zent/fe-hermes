@@ -6,9 +6,9 @@
     "include": [".env", ".env.*", ".aws/*", ".claude/settings.local.json"]
   },
   "repos": [
-    { "name": "client-brics-refund", "agents": ["refund-fe"], "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
-    { "name": "client-brics-hub",    "agents": ["hub-fe"],    "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
-    { "name": "client-brics-care",   "agents": ["care-fe"],   "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
+    { "name": "client-brics-refund", "agents": ["brics-refund-fe"], "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
+    { "name": "client-brics-hub",    "agents": ["brics-hub-fe"],    "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
+    { "name": "client-brics-care",   "agents": ["brics-care-fe"],   "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app" },
     { "name": "web-op",              "agents": ["op-fe"],     "branch": "prd", "prBase": "dev", "kind": "single", "appDir": "app", "srcDir": "src" },
     { "name": "bznav-web", "kind": "monorepo", "branch": "dev",
       "$branchNote": "앱은 각자 prd-<앱>. packages/* 는 모든 앱이 공유하므로 통합 브랜치 dev 를 기준으로 둔다",
