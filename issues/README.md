@@ -21,7 +21,7 @@ repo: web-op            # 레포 (bznav 는 bznav-web/<앱>, 공통 패키지는
 agent:                  # 담당 에이전트. 비우면 repo 로 hermes.config.json 에서 찾는다
 kind: code              # code | diagram | knowledge | check(확인만 필요) | seo(/seo-feedback 가 서비스당 하나로 매주 갱신)
 severity: medium        # high | medium | low
-source: sync 2026-09-28 # 어디서 찾았나
+source: sync 2026-09-28 # 어디서 찾았나 — "누가·무엇을 하다·날짜(· 계획서)": "사용자 요청 2026-10-09" · "brics-refund-fe 작업 중 2026-10-09 · plans/…md" · "/sync 2026-10-09" · "QA 전체 검수 <런>" · "리뷰 2026-10-09" — 현황판 카드에 '등록 · …' 으로 보인다
 plan:                   # 이 이슈를 고치는 계획서. 다른 작업 중 발견했으면 그 계획서는 여기가 아니라 source: 에 적는다
 pr:                     # code: PR 번호 (담당 레포)
 fix:                    # knowledge·diagram·repo: hermes: 수정 커밋 sha (여러 개면 쉼표)

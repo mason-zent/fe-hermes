@@ -111,6 +111,18 @@ const section = (text, heading) => {
 const field = (text, name) => text.match(new RegExp(`^-\\s*${name}:\\s*(.+)$`, 'm'))?.[1].trim() ?? ''
 const plain = (value) => value.replace(/\*\*/g, '').replace(/`/g, '').trim()
 
+// 이 계획서가 어떻게 시작됐나 — 이슈 [처리 시작] · /call · /qa-tc · 헤르메스 대화(정식·경량). 카드·팝업에 한 줄로
+const planOrigin = (path, text, rawAgent, issueField) => {
+  const title = text.match(/^#\s+(.+)$/m)?.[1] ?? ''
+  const agent = rawAgent.startsWith('(') ? '' : rawAgent   // "(정해지지 않음)" 같은 자리표시는 없는 것으로
+  if (/issues\/\S+\.md/.test(issueField)) return '📌 이슈 [처리 시작]'
+  if (/QA TC/.test(title)) return `🧪 /qa-tc${agent ? ` · ${agent}` : ''}`
+  // /call 이 만든 계획서 — 제목은 에이전트가 작업을 시작하며 바꾸므로 파일 이름(…-작업-pane-에서-지시)으로 본다
+  if (/작업 \(pane 에서 지시\)\s*$/.test(title) || /-작업-pane-에서-지시\.md$/.test(path)) return `📞 /call ${agent}`.trim()
+  if (path.split('/').at(-2) !== 'task') return '🧭 헤르메스 · 정식 계획'
+  if (agent === 'hermes') return '🧭 헤르메스 대화 (정비)'
+  return `🧭 헤르메스 대화${agent ? ` → ${agent}` : ''}`
+}
 const readPlan = (path) => {
   const text = readText(path)
   if (!text) return null
@@ -146,6 +158,7 @@ const readPlan = (path) => {
     // PR 줄은 여러 개일 수 있다(레포·앱마다 하나) — 전부 모은다
     pr: [...checkpoint.matchAll(/^-\s*PR:\s*(.+)$/gm)].map((match) => plain(match[1])).join('\n'),
     issue: plain(field(checkpoint, 'Issue')).match(/issues\/\S+\.md/)?.[0] ?? '',
+    origin: planOrigin(path, text, plain(field(checkpoint, 'Agent')), plain(field(checkpoint, 'Issue'))),
     updated: plain(field(checkpoint, 'Updated')),
     progress: total ? { checked, total } : null,
     archived,

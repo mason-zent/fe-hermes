@@ -203,6 +203,7 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 2px 0 12px; }
   .chip { font-size: 11.5px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); background: var(--bg); }
   .md-sections { display: grid; gap: 10px; }
+  .card .line.origin { font-size: 11.5px; color: var(--muted); }
   .md-sections details.more { margin-top: 6px; font-size: 12.5px; }
   .md-sections details.more > summary { cursor: pointer; color: var(--accent); }
   .md-sections ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13px; line-height: 1.6; }
@@ -676,7 +677,9 @@
       const isIssue = id.startsWith('issues/');
       const plan = isIssue ? data.plan?.text || '' : data.text;
       const active = !/^- Status:\s*done/m.test(plan);
-      document.getElementById('detail-meta').innerHTML = `<div class="chips">${isIssue ? issueChips(data.text) : ''}${plan ? planChips(plan) : ''}</div>`;
+      const cardInfo = (lastState?.cards || []).find((entry) => entry.id === (isIssue ? data.plan?.id : id));
+      const startChip = !isIssue && cardInfo?.origin ? `<span class="chip">${esc(cardInfo.origin)}</span>` : '';
+      document.getElementById('detail-meta').innerHTML = `<div class="chips">${isIssue ? issueChips(data.text) : startChip}${plan ? planChips(plan) : ''}</div>`;
       document.getElementById('detail-body').innerHTML = workBlocks({ issue: isIssue ? data.text : '', plan, active });
     } catch (error) {
       document.getElementById('detail-title').textContent = '불러오지 못했어요';
@@ -733,7 +736,10 @@
         const icon = ISSUE_ICON[name] || ISSUE_ICON[Object.keys(ISSUE_ICON).find((key) => name.startsWith(key))] || '•';
         return filled(body) ? archiveCard(icon, esc(name), markdown(body), name.startsWith('후속') || name.startsWith('할 일') ? 'note' : '') : '';
       });
-      return archiveCard('📄', '이슈', lead ? markdown(lead) : '', 'warn') + cards.join('');
+      const source = (issue.match(/^source:\s*(.+)$/m) || [])[1]?.trim() || '';
+      const origin = issueOrigin(source);
+      const where = origin ? archiveCard('📍', '등록 경로', `<b>${origin.icon} ${esc(origin.label)}</b><div style="font-size:12.5px;color:var(--muted);margin-top:3px">${esc(source)}</div>`) : '';
+      return archiveCard('📄', '이슈', lead ? markdown(lead) : '', 'warn') + cards.join('') + where;
     };
     const issueCard = !issueText ? '' : plan
       ? archiveCard('📄', '이슈', `${inline(issueLead.trim())}${issueText.trim() !== issueLead.trim() ? `<details class="more"><summary>이슈 전체 보기</summary>${markdown(issueText)}</details>` : ''}`)
@@ -777,6 +783,7 @@
   const issueChips = (text) => {
     const front = (key) => (text.match(new RegExp(`^${key}:\\s*(.+)$`, 'm')) || [])[1]?.replace(/\s+#.*$/, '').trim() || '';
     return [
+      originChip(front('source')),
       front('status') ? `<span class="chip">${esc(CHIP_STATUS[front('status')] || front('status'))}</span>` : '',
       front('repo') ? `<span class="chip">📦 ${esc(front('repo'))}</span>` : '',
       front('kind') ? `<span class="chip">${esc(front('kind'))}</span>` : '',
@@ -1812,6 +1819,7 @@
     return `<div class="card" data-key="${esc(card.id)}" draggable="${!card.archived}">
       <div class="title" title="${esc(card.id)}">${formalMark(card)}${esc(card.title)}</div>
       ${when(card)}
+      ${card.origin ? `<div class="line origin">등록 · ${esc(card.origin)}</div>` : ''}
       <div class="tags">${tags.join('')}</div>
       ${card.statusNote ? `<div class="line">${esc(card.statusNote)}</div>` : ''}
       ${progress}
@@ -1834,6 +1842,25 @@
       ${plan.blocked ? `<div class="line"><b>막힘</b> ${esc(plan.blocked)}</div>` : ''}`;
   };
 
+  // 이슈 등록 경로 — front matter source: 글을 보고 누가·무엇을 하다 올렸는지 한 줄로(원문은 팝업에)
+  const AGENT_NAME = /(?<![\w-])((?:brics-(?:refund|hub|care)|bznav-(?:refund|care|brand|sena|plus|packages)|packages|op)-fe|bznav-rn-app|learn-reviewer|reviewer)(?![\w-])/;
+  const issueOrigin = (source = '') => {
+    const text = String(source);
+    const agent = (text.match(AGENT_NAME) || [])[1] || '';
+    if (/^사용자 요청|사용자가|사용자 지시/.test(text)) return { icon: '👤', label: '사용자 요청' };
+    if (/seo-health|SEO Health|seo-feedback/i.test(text)) return { icon: '📈', label: 'SEO 리포트 자동(매주)' };
+    if (/learn-curator/.test(text)) return { icon: '🧹', label: '학습 정리 자동(/sync 끝)' };
+    if (/배우기 검토자|learn-review/.test(text)) return { icon: '📚', label: '배우기 검토자' };
+    if (/^\/?sync\b|\/sync|check-diagrams/.test(text)) return { icon: '🔄', label: '/sync 점검' };
+    if (/다이어그램/.test(text)) return { icon: '🗺', label: agent ? `다이어그램 작성 · ${agent}` : '다이어그램 작성' };
+    if (/QA|씬|검수/.test(text)) return { icon: '🧪', label: agent ? `QA · ${agent}` : 'QA 실행 중 발견' };
+    if (/리뷰/.test(text)) return { icon: '🔍', label: agent && agent !== 'reviewer' ? `리뷰 · ${agent}` : '리뷰 중 발견' };
+    if (/지식 문서|온보딩/.test(text)) return { icon: '📚', label: agent ? `지식 문서 작성 · ${agent}` : '지식 문서 점검' };
+    if (agent) return { icon: '🤖', label: `${agent} 작업 중 발견` };
+    if (/plans\//.test(text)) return { icon: '🧭', label: '작업 중 발견' };
+    return text ? { icon: '📍', label: '기타' } : null;
+  };
+  const originChip = (source) => { const origin = issueOrigin(source); return origin ? `<span class="chip" title="${esc(source)}">${origin.icon} ${esc(origin.label)}</span>` : ''; };
   const issueCard = (card, panes = []) => {
     const tags = [];
     if (card.repo) tags.push(`<span class="pill">${esc(card.repo)}</span>`);
@@ -1846,6 +1873,7 @@
     return `<div class="card" data-key="${esc(card.id)}" draggable="true">
       <div class="title" title="${esc([card.summary, card.source && `출처 ${card.source}`, card.id, card.linkedPlan && `계획 ${card.linkedPlan.id}`].filter(Boolean).join('\n'))}">${formalMark(card.linkedPlan)}${esc(card.title)}</div>
       ${when(card)}
+      ${issueOrigin(card.source) ? `<div class="line origin" title="${esc(card.source)}">등록 · ${issueOrigin(card.source).icon} ${esc(issueOrigin(card.source).label)}</div>` : ''}
       <div class="tags">${tags.join('')}</div>
       ${card.linkedPlan ? branchLine(card.linkedPlan.workRef, card.linkedPlan.id) : ''}
       ${linkedPlan(card, panes)}
