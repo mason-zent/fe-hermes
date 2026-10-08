@@ -3,7 +3,7 @@
 # 사용: scripts/monitor-pane.sh [분]   → 최근 N분(기본 120) 안에 수정된 로그를 tail
 #
 # 같은 워크스페이스에 "🛰 에이전트 모니터" pane 이 이미 있으면 새로 만들지 않고 그 pane 에서 다시 실행한다.
-# 늘 켜 두는 용도(--stay) — 로그가 없어도 닫지 않고 기다리다 에이전트가 뜨면 붙는다. 10분 조용하면 알림(MONITOR_IDLE_ALERT_SEC).
+# 늘 켜 두는 용도(--stay) — 로그가 없어도 닫지 않고 기다리다 에이전트가 뜨면 붙는다. 10분 조용해지면 pane 에 한 줄(MONITOR_IDLE_ALERT_SEC).
 # 표준출력은 pane id 한 줄 (재사용이면 " (재사용)" 이 붙는다).
 set -uo pipefail
 HERMES_DIR="$(cd "$(dirname "$0")/.." && pwd)"

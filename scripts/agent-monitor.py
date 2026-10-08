@@ -4,7 +4,7 @@
       scripts/agent-monitor.py --recent [분]      최근 N분(기본 120) 안에 수정된 로그 자동 선택 — 10초마다 새 로그도 찾는다
         · 백그라운드 서브에이전트(subagents/agent-*.jsonl)
         · pane 세션(delegate.sh·/call) — 워크트리(.worktrees/)에서 연 세션 로그. 헤르메스 폴더에서 연 세션은 넣지 않는다
-      scripts/agent-monitor.py --stay --recent [분] 로그가 없어도 기다리고, 분 넘게 조용한 세션은 빼고, 10분(MONITOR_IDLE_ALERT_SEC) 조용하면 알림
+      scripts/agent-monitor.py --stay --recent [분] 로그가 없어도 기다리고, 분 넘게 조용한 세션은 빼고, 10분(MONITOR_IDLE_ALERT_SEC) 조용해지면 한 줄 표시
 한 줄 = [라벨] 도구 · 요약. 라벨은 서브에이전트면 첫 user 프롬프트의 대상 레포/앱, pane 세션이면 워크트리의 레포·브랜치.
 """
 import sys, os, json, time, glob, re, unicodedata, shutil
@@ -123,14 +123,7 @@ def open_tail(path, pane, idx):
     for row in rows: print(row)
     return t
 
-IDLE_ALERT_SEC=int(os.environ.get("MONITOR_IDLE_ALERT_SEC","600"))   # --stay: 이만큼 아무 로그도 안 바뀌면 알림, 계속 조용하면 같은 간격으로 다시(0 이면 끔)
-
-def notify(text):
-    """macOS 알림 — 실패해도 모니터는 계속 돈다"""
-    try:
-        import subprocess
-        subprocess.run(["osascript","-e",f'display notification "{text}" with title "🛰 에이전트 모니터"'], timeout=5, capture_output=True)
-    except Exception: pass
+IDLE_ALERT_SEC=int(os.environ.get("MONITOR_IDLE_ALERT_SEC","600"))   # --stay: 이만큼 아무 로그도 안 바뀌면 pane 에 한 줄 표시(macOS 알림은 보내지 않는다) — 다시 움직였다 조용해질 때까지 또 알리지 않는다(0 이면 끔)
 
 def main():
     args=sys.argv[1:]
@@ -143,7 +136,7 @@ def main():
     else:
         files=[(p,False) for p in args]
     if not files and not stay: print("모니터할 로그가 없습니다."); return 3   # 3 = 모니터할 것 없음
-    alert=f" · {IDLE_ALERT_SEC//60}분 조용하면 알림" if stay and IDLE_ALERT_SEC else ""
+    alert=f" · {IDLE_ALERT_SEC//60}분 조용하면 표시" if stay and IDLE_ALERT_SEC else ""
     print(f"{BOLD}🛰  에이전트 모니터{RESET} {DIM}— {len(files)}개 로그(pane 세션 {sum(1 for _,pane in files if pane)}){alert} · Ctrl+C 로 종료{RESET}\n")
     if not files: print(f"{DIM}{time.strftime('%H:%M')} 돌고 있는 에이전트 없음 — 뜨면 붙습니다{RESET}")
     tails=[open_tail(p,pane,i) for i,(p,pane) in enumerate(files)]
@@ -168,12 +161,12 @@ def main():
                         t.f.close(); tails.remove(t); print(f"{DIM}{time.strftime('%H:%M')} [{t.label}] {mins}분 조용해서 뺐습니다{RESET}")
             if any_new: last_activity=time.time(); last_alert=0.0
             if stay:
-                # 조용하면 알린다 — 마지막 로그 뒤 IDLE_ALERT_SEC 마다
+                # 조용해지면 한 번만 알린다 — 계속 조용하면(퇴근 뒤 등) 되풀이하지 않고, 에이전트가 다시 움직이면 초기화
                 idle=time.time()-last_activity
-                if IDLE_ALERT_SEC and idle >= IDLE_ALERT_SEC and time.time()-max(last_alert,last_activity) >= IDLE_ALERT_SEC:
+                if IDLE_ALERT_SEC and idle >= IDLE_ALERT_SEC and not last_alert:
                     last_alert=time.time()
                     text=f"{int(idle//60)}분째 돌고 있는 에이전트가 없습니다" + (f" (붙어 있는 세션 {len(tails)}개 — 입력을 기다리는지 확인)" if tails else "")
-                    print(f"{BOLD}🔔 {time.strftime('%H:%M')} {text}{RESET}"); notify(text)
+                    print(f"{BOLD}🔔 {time.strftime('%H:%M')} {text}{RESET}")
             # 서브에이전트만 있고 모두 끝나면 끝낸다(--stay 면 계속 기다린다). pane 세션은 사용자가 계속 지시하므로 끝나지 않는다
             elif tails and all(t.done for t in tails) and not any(t.pane for t in tails):
                 print(f"\n{BOLD}✅ 모두 완료{RESET} " + " · ".join(f"{t.color}{t.label}{RESET}({t.tools}개 도구)" for t in tails)); break
