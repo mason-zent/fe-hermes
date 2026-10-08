@@ -1,5 +1,5 @@
 {
-  "name": "중복 계정 안내 — dupKey 없음 빈 화면·있으면 기존 계정 안내 (응답 흉내)",
+  "name": "중복 계정 안내 — dupKey 없음 빈 화면·있으면 기존 계정 안내 (더미 응답)",
   "tc": ["SN-037"],
   "profile": "logout",
   "why": "/duplicate-account 는 dupKey 가 없으면 빈 화면, 있으면 SSO …/internal/duplicate-user 결과로 \"비즈넵 세나에 가입된 계정이 있어요\" / \"비즈넵 통합 계정에 가입되어 있어요\" + 이메일·가입일·가입 수단 + [기존 계정으로 로그인](DuplicateAccountContent.tsx:30-48,60-90,210). 그 버튼은 통합 계정이면 실제 로그인 시도라 누르지 않는다",
@@ -7,14 +7,14 @@
     {"goto":"/duplicate-account"},
     {"wait":1500,"label":"dupKey 없음 — 빈 화면(스크린샷)"},
     {"screenshot":"empty"},
-    {"mock":{"url":"**/internal/duplicate-user**","method":"GET","json":{"result":true,"user":{"email":"qa-dup@example.com","createdAt":"2026-01-02T03:04:05Z","lastLoginType":"kakao","accountContext":"APP","appId":"bznav-sena"},"code":"qa-code","grant_type":"qa"}},"label":"응답 흉내 — 세나 앱 계정 있음"},
+    {"mock":{"url":"**/internal/duplicate-user**","method":"GET","json":{"result":true,"user":{"email":"qa-dup@example.com","createdAt":"2026-01-02T03:04:05Z","lastLoginType":"kakao","accountContext":"APP","appId":"bznav-sena"},"code":"qa-code","grant_type":"qa"}},"label":"더미 응답 — 세나 앱 계정 있음"},
     {"goto":"/duplicate-account?dupKey=qa-dup-key"},
     {"expectText":"비즈넵 세나에 가입된 계정이 있어요"},
     {"expectText":"qa-dup@example.com"},
     {"expectText":"카카오","label":"가입 수단"},
     {"expectText":"기존 계정으로 로그인"},
     {"screenshot":"app-account"},
-    {"mock":{"url":"**/internal/duplicate-user**","method":"GET","json":{"result":true,"user":{"email":"qa-dup2@example.com","createdAt":"2026-01-02T03:04:05Z","lastLoginType":"email","accountContext":"INTEGRATED","appId":null},"code":"qa-code","grant_type":"qa"}},"label":"응답 흉내 — 통합 계정"},
+    {"mock":{"url":"**/internal/duplicate-user**","method":"GET","json":{"result":true,"user":{"email":"qa-dup2@example.com","createdAt":"2026-01-02T03:04:05Z","lastLoginType":"email","accountContext":"INTEGRATED","appId":null},"code":"qa-code","grant_type":"qa"}},"label":"더미 응답 — 통합 계정"},
     {"goto":"/duplicate-account?dupKey=qa-dup-key2"},
     {"expectText":"비즈넵 통합 계정에 가입되어 있어요"},
     {"expectText":"qa-dup2@example.com"}

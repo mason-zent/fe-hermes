@@ -21,10 +21,10 @@
  *   { "click": { "role": "button", "name": "확인" } }        역할·이름으로
  *   { "fill": { "label": "이메일", "value": "qa@example.com" } }   (비밀번호 등 비밀 값은 씬에 적지 않는다)
  *   { "mock": { "url": "**\/ci/v2/prepare", "method": "POST", "status": 200, "json": {…} } }
- *                                                            ② 응답 흉내 — 이후 그 요청은 서버에 가지 않고 이 응답을 받는다.
+ *                                                            ② 더미 응답 — 이후 그 요청은 서버에 가지 않고 이 응답을 받는다.
  *                                                            json 안의 "{{origin}}" 은 이 서버 주소로 바뀐다
  *   { "mock": { "url": "**\/chat/guest/completions", "method": "POST", "contentType": "text/event-stream", "body": "data: {…}\n\n" } }
- *                                                            json 대신 body(글자 그대로) — SSE 스트림 답변 흉내 등. contentType 기본은 json 이면 application/json, body 면 text/plain
+ *                                                            json 대신 body(글자 그대로) — SSE 스트림 답변 더미 등. contentType 기본은 json 이면 application/json, body 면 text/plain
  *   { "mock": { "operation": "RefundApplyMutation", "json": { "data": {…} } } }
  *                                                            GraphQL 연산 이름으로 고른다(본문 query 의 `mutation RefundApplyMutation`). method 는 POST 로 본다.
  *                                                            브라우저가 보내는 요청만 잡힌다 — getServerSideProps 등 서버에서 보내는 요청은 못 잡는다
@@ -40,14 +40,14 @@
  *   { "section": "2. 로그인" }                                여정의 구간 표시(동작 없음) — 뒤 단계에 구간 이름이 붙는다
  *   { "session": "verified" }                                 여정 중간에 그 세션(저장된 로그인)으로 이어 가기 — 쿠키를 넣고 다음 goto 부터
  *   { "include": "13-" }                                       다른 씬(파일 이름 앞부분, _draft/ 도 가능)의 단계를 그 자리에 — run.mjs 가 읽을 때 펼친다
- *   "only": "auto" | "real"   (어느 단계·include 에나)          --mode 가 그것일 때만(기본 auto — 응답 흉내, real — 사람이 실제 인증)
+ *   "only": "auto" | "real"   (어느 단계·include 에나)          --mode 가 그것일 때만(기본 auto — 더미 응답, real — 사람이 실제 인증)
  *   "when": { "url": "/auth/ci-request" }                      지금 경로가 이것으로 시작할 때만 · { "text": "…" } 그 글자가 보일 때만 · { "noText": "…" } 안 보일 때만
  *   { "wait": 1000 }                                         기다림(ms)
  *   { "screenshot": "after" }                                스크린샷 한 장(shots/<씬>.<이름>.png)
  *
  * "timeout" 은 goto 를 뺀 모든 단계에 줄 수 있다(기본 15초) — AI 답변처럼 오래 걸리는 단계에만
  *
- * 안전장치: 씬에서 흉내로 지정하지 않은 GraphQL mutation 은 서버로 보내지 않고 오류 응답으로 막는다(문제 목록에 "막은 mutation" 으로 남는다).
+ * 안전장치: 씬에서 더미로 지정하지 않은 GraphQL mutation 은 서버로 보내지 않고 오류 응답으로 막는다(문제 목록에 "막은 mutation" 으로 남는다).
  *          꼭 실제로 보내야 하면 씬에 "allowMutations": ["연산 이름"]
  *
  * 판정: 모든 단계 통과 ✅ pass · 실패한 단계에서 멈춤 ❌ fail · 사람 단계에서 멈춤 🙋 human
@@ -71,7 +71,7 @@ export const describe = (step) => {
   if (kind === 'fill') return `입력 ${value.label ?? value.placeholder}`
   if (kind === 'press') return `키 ${value}`
   if (kind === 'offline') return value ? '네트워크 끊기' : '네트워크 다시 연결'
-  if (kind === 'mock') return value.operation ? `응답 흉내 GraphQL ${value.operation} → ${value.status ?? 200}` : `응답 흉내 ${value.method ?? '*'} ${value.url} → ${value.status ?? 200}`
+  if (kind === 'mock') return value.operation ? `더미 응답 GraphQL ${value.operation} → ${value.status ?? 200}` : `더미 응답 ${value.method ?? '*'} ${value.url} → ${value.status ?? 200}`
   if (kind === 'human') return `🙋 ${value}`
   if (kind === 'expectEvent') return `📊 이벤트 ${value}${step.props ? ` (${Object.entries(step.props).map(([key, inner]) => `${key}=${inner}`).join(', ')})` : ''}`
   return `${kind} ${typeof value === 'string' || typeof value === 'number' ? value : ''}`.trim()
@@ -104,8 +104,8 @@ function graphqlQueryOf(request) {
   }
 }
 
-// 흉내로 지정하지 않은 GraphQL mutation 을 서버에 보내지 않고 오류 응답으로 막는다 — page 또는 context 에 건다.
-// 나중에 등록한 route(씬의 mock)가 먼저 잡으므로, 여기에는 흉내가 없는 것만 온다
+// 더미로 지정하지 않은 GraphQL mutation 을 서버에 보내지 않고 오류 응답으로 막는다 — page 또는 context 에 건다.
+// 나중에 등록한 route(씬의 mock)가 먼저 잡으므로, 여기에는 더미가 없는 것만 온다
 export async function guardMutations(target, onBlocked, allowList = []) {
   const allowed = new Set(allowList)
   await target.route('**/*', (route) => {
@@ -146,9 +146,9 @@ export async function runScenario(context, scenario, options) {
   page.on('pageerror', (error) => problems.push({ kind: 'pageerror', text: String(error.message).slice(0, 300) }))
   const steps = []
   const shots = []
-  // 안전장치 — 흉내로 지정하지 않은 GraphQL mutation 은 서버에 보내지 않는다(신청·인증 요청·알림톡이 실제로 나가지 않게).
+  // 안전장치 — 더미로 지정하지 않은 GraphQL mutation 은 서버에 보내지 않는다(신청·인증 요청·알림톡이 실제로 나가지 않게).
   // 뒤에 등록한 mock 이 먼저 잡고, 못 잡은 것만 여기로 온다. 씬에 "allowMutations": ["이름"] 이면 그것만 통과
-  await guardMutations(page, (operation) => problems.push({ kind: 'blocked', text: `막은 mutation ${operation} — 흉내(mock operation)가 없어 서버에 보내지 않았다` }), scenario.allowMutations)
+  await guardMutations(page, (operation) => problems.push({ kind: 'blocked', text: `막은 mutation ${operation} — 더미(mock operation)가 없어 서버에 보내지 않았다` }), scenario.allowMutations)
   let status = 'pass'
   let currentSection = ''
 
@@ -237,7 +237,7 @@ export async function runScenario(context, scenario, options) {
           const request = route.request()
           if ((mock.method ?? (operationPattern ? 'POST' : null)) && request.method() !== (mock.method ?? 'POST')) return route.fallback()
           if (operationPattern && !operationPattern.test(String(graphqlQueryOf(request)))) return route.fallback()
-          requestTags.set(request, '흉내')
+          requestTags.set(request, '더미')
           return route.fulfill({ status: mock.status ?? 200, contentType, body })
         })
       } else if (kind === 'human') {

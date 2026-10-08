@@ -1,10 +1,10 @@
 {
-  "name": "간편인증 [인증 완료] — 앱에서 아직 승인 안 함 안내 (응답 흉내)",
+  "name": "간편인증 입력 → 인증 요청 → [인증 완료] → 환급 조회 (더미 응답)",
   "tc": [
-    "RF-048"
+    "RF-023"
   ],
   "profile": "verified",
-  "why": "인증 요청 뒤 네이버앱에서 승인하지 않고 [인증 완료] 를 누르면 '네이버앱에서 인증을 완료해 주세요.' 안내가 뜨고 확인 화면에 머물러야 한다. 홈택스 인증 확인 응답을 '미완료(오류·토큰 없음)' 로 흉내",
+  "why": "개인 간편인증(네이버앱)을 입력하고 인증 요청 → 앱에서 승인했다고 치고 [인증 완료] → 환급 조회 화면으로 가야 한다. 홈택스 응답(인증 요청·인증 확인·환급 토큰)은 모두 더미 — 실제 홈택스·휴대폰 승인 없이 화면 흐름만 본다",
   "steps": [
     {
       "mock": {
@@ -45,12 +45,39 @@
         "json": {
           "data": {
             "hometaxSimpleAuthConfirm": {
-              "result": false,
-              "token": null,
-              "errors": {
-                "code": "ERR_HOMETAX_SIMPLE_AUTH",
-                "message": "QA 흉내 — 간편인증 미완료"
-              }
+              "result": true,
+              "token": "qa-auth-token",
+              "errors": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestRefundTokenMutation",
+        "json": {
+          "data": {
+            "requestRefundTokenMutation": {
+              "result": true,
+              "errors": null,
+              "refundToken": "qa-refund-token"
+            }
+          }
+        }
+      }
+    },
+    {
+      "mock": {
+        "operation": "simpleAuthRequestRefundTokenForLookupMutation",
+        "json": {
+          "data": {
+            "requestRefundTokenMutation": {
+              "result": true,
+              "errors": null,
+              "refundToken": "qa-refund-token",
+              "email": null,
+              "lastLoginType": null
             }
           }
         }
@@ -90,7 +117,7 @@
         "role": "button",
         "name": "다음"
       },
-      "label": "인증 요청(흉내 — 실제 요청 안 감)"
+      "label": "인증 요청(더미 — 실제 요청 안 감)"
     },
     {
       "expectUrl": "/hometax-auth/simple-auth/confirm",
@@ -108,18 +135,14 @@
         "role": "button",
         "name": "인증 완료"
       },
-      "label": "[인증 완료] — 아직 승인 안 함"
+      "label": "[인증 완료] — 승인했다고 더미"
     },
     {
-      "expectText": "인증을 완료해 주세요",
-      "label": "승인 안내 토스트"
+      "expectUrl": "/tax/refund/lookup",
+      "label": "환급 조회 화면으로 이동"
     },
     {
-      "expectUrl": "/hometax-auth/simple-auth/confirm",
-      "label": "확인 화면에 머묾"
-    },
-    {
-      "screenshot": "not-approved"
+      "screenshot": "lookup"
     }
   ]
 }

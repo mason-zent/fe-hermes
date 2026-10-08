@@ -1,10 +1,10 @@
 {
-  "name": "탈퇴 사유 선택·자유 입력 500자 (제출하고 계속 안 누름, 사유 목록 흉내)",
+  "name": "탈퇴 사유 선택·자유 입력 500자 (제출하고 계속 안 누름, 사유 목록 더미)",
   "tc": ["SN-054"],
   "profile": "login",
-  "why": "/withdraw \"탈퇴하면 세나와의 채팅 기록들이 모두 삭제돼요.\" → \"이유를 선택해주세요\" → 드로어 \"탈퇴 사유를 선택해주세요\" → 입력칸이 붙는 사유(id 1·5, withdraw.ts:9) → \"어떤 점이 아쉬우셨는지 알려주세요.\" + \"자유롭게 입력해주세요\"(maxLength 500, WithdrawView.tsx:37,72-98). 사유 목록은 흉내(문구 고정). \"제출하고 계속\" 은 누르지 않는다",
+  "why": "/withdraw \"탈퇴하면 세나와의 채팅 기록들이 모두 삭제돼요.\" → \"이유를 선택해주세요\" → 드로어 \"탈퇴 사유를 선택해주세요\" → 입력칸이 붙는 사유(id 1·5, withdraw.ts:9) → \"어떤 점이 아쉬우셨는지 알려주세요.\" + \"자유롭게 입력해주세요\"(maxLength 500, WithdrawView.tsx:37,72-98). 사유 목록은 더미(문구 고정). \"제출하고 계속\" 은 누르지 않는다",
   "steps": [
-    {"mock":{"url":"**/api/bznav/v1/withdraw/reasons","method":"GET","json":[{"withdrawReasonId":1,"withdrawReasonName":"QA AI 답변이 아쉬워요","withdrawDefenseContent":null},{"withdrawReasonId":2,"withdrawReasonName":"QA 자주 안 써요","withdrawDefenseContent":null},{"withdrawReasonId":5,"withdrawReasonName":"QA 기타 사유","withdrawDefenseContent":null}]},"label":"응답 흉내 — 탈퇴 사유 목록"},
+    {"mock":{"url":"**/api/bznav/v1/withdraw/reasons","method":"GET","json":[{"withdrawReasonId":1,"withdrawReasonName":"QA AI 답변이 아쉬워요","withdrawDefenseContent":null},{"withdrawReasonId":2,"withdrawReasonName":"QA 자주 안 써요","withdrawDefenseContent":null},{"withdrawReasonId":5,"withdrawReasonName":"QA 기타 사유","withdrawDefenseContent":null}]},"label":"더미 응답 — 탈퇴 사유 목록"},
     {"goto":"/withdraw"},
     {"expectText":"탈퇴하면 세나와의 채팅 기록들이 모두 삭제돼요."},
     {"expectEvent":"withdraw_viewed"},

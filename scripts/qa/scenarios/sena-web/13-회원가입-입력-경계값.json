@@ -1,8 +1,8 @@
 {
-  "name": "회원가입 입력 — 이름·휴대폰·비밀번호 경계값, 가입된 이메일·정상 → 약관 (이메일 확인 흉내)",
+  "name": "회원가입 입력 — 이름·휴대폰·비밀번호 경계값, 가입된 이메일·정상 → 약관 (이메일 확인 더미)",
   "tc": ["SN-051","SN-034"],
   "profile": "logout",
-  "why": "회원가입 입력(@repo/user-sign SignUpInput.tsx:16-62, utils.ts:1-84)은 칸을 떠날 때 검사한다. 이름 2~20자 한글·영문·공백 없음, 휴대폰 01x 10~11자리, 비밀번호 6자 이상·확인 일치. [이메일로 가입하기] 는 이메일 중복 확인(POST …/check/email/v2)만 하고 계정은 안 만든다 — 흉내로 \"가입됨\"(result true) → \"이미 가입된 이메일이에요\" / \"없음\"(false) → /signup/terms?state=(SignUpInput.tsx:64-105). 약관 화면의 [동의 완료] 는 누르지 않는다(state 가 있으면 실제 가입). 비밀번호 칸 안내 \"8자 이상\" 과 실제 검사(6자)가 다른 것은 문제 후보라 판정에 넣지 않았다",
+  "why": "회원가입 입력(@repo/user-sign SignUpInput.tsx:16-62, utils.ts:1-84)은 칸을 떠날 때 검사한다. 이름 2~20자 한글·영문·공백 없음, 휴대폰 01x 10~11자리, 비밀번호 6자 이상·확인 일치. [이메일로 가입하기] 는 이메일 중복 확인(POST …/check/email/v2)만 하고 계정은 안 만든다 — 더미로 \"가입됨\"(result true) → \"이미 가입된 이메일이에요\" / \"없음\"(false) → /signup/terms?state=(SignUpInput.tsx:64-105). 약관 화면의 [동의 완료] 는 누르지 않는다(state 가 있으면 실제 가입). 비밀번호 칸 안내 \"8자 이상\" 과 실제 검사(6자)가 다른 것은 문제 후보라 판정에 넣지 않았다",
   "steps": [
     {"goto":"/signup/input"},
     {"expectEvent":"sign-up-input_viewed"},
@@ -30,7 +30,7 @@
     {"fill":{"placeholder":"비밀번호를 다시 한 번 입력해주세요","value":"qa1234"}},
     {"fill":{"placeholder":"010-1234-5678","value":"010123456789"},"label":"휴대폰 12자리 → 13글자 제한으로 11자리(통과)"},
     {"click":{"text":"필수 정보를 입력해주세요"},"label":"바깥 눌러 마지막 칸 검사"},
-    {"mock":{"url":"**/check/email/v2","method":"POST","json":{"result":true}},"label":"응답 흉내 — 이메일 이미 가입됨"},
+    {"mock":{"url":"**/check/email/v2","method":"POST","json":{"result":true}},"label":"더미 응답 — 이메일 이미 가입됨"},
     {"click":{"role":"button","name":"이메일로 가입하기"}},
     {"expectText":"이미 가입된 이메일이에요"},
     {"expectText":"사용할 수 없는 이메일 입니다."},
@@ -38,7 +38,7 @@
     {"click":{"role":"button","name":"확인","optional":true},"label":"다이얼로그 닫기(버튼 이름이 다르면 건너뜀)"},
     {"fill":{"placeholder":"example@email.com","value":"qa-sena-signup@example.com"}},
     {"click":{"text":"필수 정보를 입력해주세요"}},
-    {"mock":{"url":"**/check/email/v2","method":"POST","json":{"result":false}},"label":"응답 흉내 — 가입 안 된 이메일"},
+    {"mock":{"url":"**/check/email/v2","method":"POST","json":{"result":false}},"label":"더미 응답 — 가입 안 된 이메일"},
     {"click":{"role":"button","name":"이메일로 가입하기"}},
     {"expectUrl":"/signup/terms?state=","label":"약관 화면(state 암호문 · 계정은 아직 안 생김)"},
     {"expectText":"약관에 동의해주세요","label":"[동의 완료] 는 누르지 않는다"}

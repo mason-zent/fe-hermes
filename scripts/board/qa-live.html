@@ -278,7 +278,7 @@
     redirected: ['↪️', '이동됨', 'warn'], login: ['🔒', '로그인 필요', 'warn'], ci: ['🪪', '본인인증 필요', 'warn'], sample: ['🧩', '샘플 필요', 'warn'],
     new: ['🆕', '기준 없음', 'warn'], human: ['🙋', '사람 필요', 'warn'], skip: ['⛔', '건너뜀', ''], running: ['⏳', '검사 중', 'run'], queued: ['·', '대기', '']
   };
-  const FILTERS = [['all', '전체'], ['gql', 'GraphQL'], ['http', 'REST'], ['event', 'Mixpanel'], ['mock', '흉내·막음'], ['bad', '오류']];
+  const FILTERS = [['all', '전체'], ['gql', 'GraphQL'], ['http', 'REST'], ['event', 'Mixpanel'], ['mock', '더미·막음'], ['bad', '오류']];
   const state = { lines: [], since: 0, filter: 'all', pagePath: '', callTag: {}, paused: false, open: new Set(), done: false, frameAt: {}, scenarioStatus: {} };
   const time = (at) => new Date(at).toTimeString().slice(0, 8);
   // pagePath — 체크리스트 [이 화면 호출 보기] 로 고른 화면. 그 화면에서 나간 호출만
@@ -712,7 +712,7 @@
   const CAUSES = [
     ['app', '🐞 앱 의심', '코드 확인이 필요한 것 — 깨진 화면·에러·응답 오류'],
     ['guard', '↪️ 이동이 기대와 다름', '로그인·본인인증 가드나 리다이렉트가 설정한 기대와 달라요'],
-    ['data', '🗂 계정 데이터 없음', '테스트 계정에 신청 건·환급 이력 등이 없어서 — 흐름 씬·응답 흉내로 다룰 것'],
+    ['data', '🗂 계정 데이터 없음', '테스트 계정에 신청 건·환급 이력 등이 없어서 — 흐름 씬·더미 응답으로 다룰 것'],
     ['env', '🧪 QA 환경', 'dev 서버 시간 초과·로컬 프로그램 없음 등 환경 탓일 수 있어요'],
     ['scenario', '🎬 흐름 씬 실패', '씬 단계에서 멈춘 것']
   ];

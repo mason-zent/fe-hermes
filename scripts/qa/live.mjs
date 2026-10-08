@@ -5,7 +5,7 @@
  *   const live = createLiveLog(runDir)
  *   live.attach(context, 'desktop')     그 컨텍스트의 호출을 기록
  *   live.write({ kind: 'event', … })    직접 한 줄
- *   requestTags.set(request, '흉내')     route 로 흉내·막은 요청에 꼬리표(scenario.mjs)
+ *   requestTags.set(request, '더미')     route 로 더미·막은 요청에 꼬리표(scenario.mjs)
  *   await startScreencast(page, runDir, 'desktop')   창 없이 도는 페이지의 화면을 live/<칸>.jpg(+ .json 주소)로 계속 덮어쓴다 — /qa-live 가 그린다
  *
  * 헤더(토큰)는 기록하지 않는다. 보낸 값 중 비밀번호·토큰·주민번호 같은 키는 *** 로 가린다.

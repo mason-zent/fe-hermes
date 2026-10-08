@@ -4,7 +4,7 @@
 > 묶음 안내·자동화 방식 뜻: [README.md](README.md)
 
 ## 먼저 알아둘 것
-1. **DatoCMS 는 서버에서만 부른다** (`lib/utils/dato-cms.ts` `requestDatoCms` → `graphql.datocms.com`). 브라우저 `page.route` 로는 응답 흉내가 안 된다 — 약관 장애 흉내는 서버 쪽 장치가 필요
+1. **DatoCMS 는 서버에서만 부른다** (`lib/utils/dato-cms.ts` `requestDatoCms` → `graphql.datocms.com`). 브라우저 `page.route` 로는 더미 응답이 안 된다 — 약관 장애 더미는 서버 쪽 장치가 필요
 2. **약관을 못 불러오면 에러 화면이 아니라 404** — `getTermsDetail` 이 오류를 삼키고 `{term:null}` → `notFound()` (`dato-cms.ts:48-67`, `terms/[...terms]/page.tsx:14-16`). `GlobalErrorBoundary` 는 브라우저 렌더 오류만, `error.tsx`·`global-error.tsx` 없음
 3. **앱 다운로드 버튼은 폭이 아니라 UA 로 갈린다** — `IS_MOBILE` 은 UA(mobile·tablet) 기준(`packages/common-utils/constants/session.ts:8`). 모바일 TC 는 **모바일 UA 를 줘야** "앱 다운로드" 가 나온다(`MainSection.tsx:24,86`)
 4. **문제 후보 3개** (TC 로 확인)
@@ -54,7 +54,7 @@
 | BR-018 | 흐름 | 약관 표 가로 스크롤 그림자 | mobile | 표가 있는 약관(privacy 추측) | 표 가로 스크롤 | `.table-container > .table-wrap` · `left-shadow`/`right-shadow` 토글 | 씬 | P2 | ArticleView.tsx:19-65 |
 | BR-019 | 에러 | 없는 경로 404 | 둘다 | - | `/qa-404` → "홈으로 돌아가기" | 404 · "페이지를 찾을 수 없어요" · `/` 이동 · 이벤트 `go-to-home` · pageview `page-not-found` | 스모크 | P1 | not-found.tsx:8-29 |
 | BR-020 | 에러 | 없는 약관 키·버전 | 둘다 | - | `/terms/qa-unknown`, `/terms/service/1900-01-01`, `/popup/terms/qa-unknown` | 모두 404 (팝업도 헤더 있는 404, 추측) | 스모크 | P1 | dato-cms.ts:56-58 |
-| BR-021 | 에러 | DatoCMS 장애 | 둘다 | 토큰 무효·서버 흉내(브라우저 route 불가) | 캐시 안 된 `/terms/qa-new-key` | 에러 화면이 아니라 404 · 미리 만든 페이지는 revalidate 3600 동안 유지(추측) · `generateStaticParams` 실패 시 빌드 실패(추측) | 수동 | P1 | dato-cms.ts:17-20,30-38,64-67 |
+| BR-021 | 에러 | DatoCMS 장애 | 둘다 | 토큰 무효·서버 더미(브라우저 route 불가) | 캐시 안 된 `/terms/qa-new-key` | 에러 화면이 아니라 404 · 미리 만든 페이지는 revalidate 3600 동안 유지(추측) · `generateStaticParams` 실패 시 빌드 실패(추측) | 수동 | P1 | dato-cms.ts:17-20,30-38,64-67 |
 | BR-022 | 에러 | 브라우저 렌더 오류 ErrorBoundary | 둘다 | 일부러 throw 하는 개발 빌드 | 오류 유발 | "에러가 발생했어요" + message · "홈으로 돌아가기" → `/` replace · 경로 바뀌면 초기화 | 수동 | P2 | GlobalErrorBoundary.tsx:11-53 |
 | BR-023 | SEO | 메타데이터·JSON-LD | desktop | - | `/`, `/brand-resource`, `/terms/service` head | `/` title "비즈넵 - 쉬운 세무의 시작" · `/brand-resource` title "비즈넵 브랜드 리소스", og:image · google·naver 인증 meta · Organization JSON-LD 1개 · **canonical 이 모두 `https://bznav.com/` 인지**(문제 후보) | 스모크 (DOM) | P1 | layout.tsx:14-120,136-156 |
 | BR-024 | SEO | sitemap.xml · robots.txt | - | 운영 또는 빌드 산출물 | `GET /sitemap.xml`, `/robots.txt` | `/`·`/brand-resource` 있음 · `/home` 없음 · `/terms/*` 포함 여부 기록 · robots 에 Sitemap 줄 | 응답 확인 (request) | P1 | next-sitemap.config.mjs:4-45 |

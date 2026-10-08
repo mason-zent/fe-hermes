@@ -3,7 +3,7 @@
   "tc": ["SN-041"],
   "profile": "login",
   "viewports": ["desktop"],
-  "why": "⚠ 초안 — 2026-10-07 dev: 설문 응답을 not_started 로 흉내 내도 / 에 머물렀다. 조건이 localStorage BZNAV_SENA_SURVEY_VISITED 없음 + 가입 24시간 지남(SurveyGuard.tsx:26-43)이라, 세션 파일에 방문 표시가 있거나 계정 가입일이 맞지 않으면 안 움직인다(세션 값은 읽지 않아 어느 쪽인지 확인 못 함 — 추측). localStorage 지우기 단계와 프로필(signUpAt) 흉내가 필요하다",
+  "why": "⚠ 초안 — 2026-10-07 dev: 설문 응답을 not_started 로 더미 내도 / 에 머물렀다. 조건이 localStorage BZNAV_SENA_SURVEY_VISITED 없음 + 가입 24시간 지남(SurveyGuard.tsx:26-43)이라, 세션 파일에 방문 표시가 있거나 계정 가입일이 맞지 않으면 안 움직인다(세션 값은 읽지 않아 어느 쪽인지 확인 못 함 — 추측). localStorage 지우기 단계와 프로필(signUpAt) 더미가 필요하다",
   "steps": [
     {"mock":{"url":"**/api/bznav/v1/surveys/onboarding/response","method":"GET","json":{"status":"not_started","completedAt":null,"answers":{}}}},
     {"goto":"/"},

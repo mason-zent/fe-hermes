@@ -19,7 +19,7 @@
  *   --slow <ms>         --headed 의 속도(기본 700 — 클수록 느리다, 0 이면 멈춤 없이)
  *   --watch             창은 띄우되 빠르게(= --headed --slow 0) — 전체 검수를 지켜볼 때
  *   --target server --server <주소>  배포된 서버(dev·stg·dev-1~3·PR 미리보기)로 — 운영 주소는 거부. --server 만 줘도 된다
- *   --mode auto|real    흐름 씬·여정의 "only" 단계를 고른다(기본 auto — 응답 흉내, real — 사람이 실제 본인인증·간편인증·수집)
+ *   --mode auto|real    흐름 씬·여정의 "only" 단계를 고른다(기본 auto — 더미 응답, real — 사람이 실제 본인인증·간편인증·수집)
  *   --scenarios-only    화면 검사 없이 흐름 씬만(--suite 와 함께) — 예: --suite --app refund-web --profile login --scenarios 05- --scenarios-only --live --headed
  *   --flow              QA 세션 흐름(D18~D20) — 비로그인 검수 → 로그인 상태 전부 차례로(세션 없으면 그 차례에 로그인 창) → 실패 리포트 모달. --live 와 함께
  *   --profiles a,b      세션 상태 여럿을 동시에(dev 서버 하나 공유)

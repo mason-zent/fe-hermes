@@ -1,12 +1,12 @@
 {
-  "name": "콘텐츠 상세 — 관련 질문·최근 질문 카드·더보기·관련 질문 → 새 질문 (응답 흉내)",
+  "name": "콘텐츠 상세 — 관련 질문·최근 질문 카드·더보기·관련 질문 → 새 질문 (더미 응답)",
   "tc": ["SN-030"],
   "profile": "logout",
-  "why": "콘텐츠 상세(/contents/1658484)는 contents_viewed{id}, \"관련 질문들을 찾아봤어요\", \"이런 질문은 궁금하지 않으세요?\" 카드 + [더보기 →] → 홈(question_recent_more, MoreQuestion.tsx:79-131), 관련 질문을 누르면 /chat 새 질문(MoreQuestion.tsx:37-52, use-submit-question.ts:41-44). 스티키 입력창은 처음부터 보인다(contentVerifier). 카드 개수(SN-056)는 스크린샷으로 본다. 질문은 흉내",
+  "why": "콘텐츠 상세(/contents/1658484)는 contents_viewed{id}, \"관련 질문들을 찾아봤어요\", \"이런 질문은 궁금하지 않으세요?\" 카드 + [더보기 →] → 홈(question_recent_more, MoreQuestion.tsx:79-131), 관련 질문을 누르면 /chat 새 질문(MoreQuestion.tsx:37-52, use-submit-question.ts:41-44). 스티키 입력창은 처음부터 보인다(contentVerifier). 카드 개수(SN-056)는 스크린샷으로 본다. 질문은 더미",
   "steps": [
-    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"응답 흉내 — 점검 꺼짐"},
-    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"응답 흉내 — 게스트 남은 질문 5"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-contents\"}<ENDLINE>\ndata: {\"answer\":\"QA 콘텐츠 관련 질문 답변\",\"requestUuid\":\"qa-req-contents\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"응답 흉내 — 게스트 질문 짧은 답변"},
+    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"더미 응답 — 점검 꺼짐"},
+    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"더미 응답 — 게스트 남은 질문 5"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-contents\"}<ENDLINE>\ndata: {\"answer\":\"QA 콘텐츠 관련 질문 답변\",\"requestUuid\":\"qa-req-contents\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"더미 응답 — 게스트 질문 짧은 답변"},
     {"goto":"/contents/1658484"},
     {"expectEvent":"contents_viewed","props":{"id":"1658484"}},
     {"expectText":"관련 질문들을 찾아봤어요"},
@@ -21,7 +21,7 @@
     {"expectEvent":"question_related_clicked","props":{"index":1}},
     {"expectUrl":"/chat","label":"/chat 새 질문으로"},
     {"expectText":"초단시간 근로자의 유급휴일수당은 어떻게 계산되나요?","label":"질문 말풍선"},
-    {"expectText":"QA 콘텐츠 관련 질문 답변","label":"흉내 답변"},
+    {"expectText":"QA 콘텐츠 관련 질문 답변","label":"더미 답변"},
     {"expectText":"세나의 답변","label":"답변 완료(세나의 답변)"}
   ]
 }

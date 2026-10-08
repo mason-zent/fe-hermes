@@ -1,15 +1,15 @@
 {
-  "name": "오프라인 — 답변 대기 중 끊김 안내 → 다시 연결되면 답변 (응답 흉내)",
+  "name": "오프라인 — 답변 대기 중 끊김 안내 → 다시 연결되면 답변 (더미 응답)",
   "tc": ["SN-019"],
   "profile": "logout",
   "viewports": ["mobile"],
-  "why": "① 답변을 기다리는 중(/status 진행 중) 네트워크가 끊기면 \"인터넷 연결이 끊겼어요. 다시 연결되면 답변을 자동으로 불러올게요.\"(use-chat-message.ts:688-693, ChatAnswerHeader.tsx:101-104) → 다시 연결되고 완료되면 답변 ② 오프라인 전송 → 재전송은 _draft/09b 에 있다(흉내 응답이 오프라인에서도 돌아와 러너로 판정 불가)",
+  "why": "① 답변을 기다리는 중(/status 진행 중) 네트워크가 끊기면 \"인터넷 연결이 끊겼어요. 다시 연결되면 답변을 자동으로 불러올게요.\"(use-chat-message.ts:688-693, ChatAnswerHeader.tsx:101-104) → 다시 연결되고 완료되면 답변 ② 오프라인 전송 → 재전송은 _draft/09b 에 있다(더미 응답이 오프라인에서도 돌아와 러너로 판정 불가)",
   "steps": [
-    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"응답 흉내 — 점검 꺼짐"},
-    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"응답 흉내 — 게스트 남은 질문 5"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-off1\"}<ENDLINE>\n"},"label":"응답 흉내 — 게스트 질문 meta 뒤 끊김"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/live","method":"GET","status":500,"json":{}},"label":"응답 흉내 — /live 500"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/status","method":"GET","json":{"status":"in_progress","requestUuid":"qa-req-off1"}},"label":"응답 흉내 — /status 진행 중"},
+    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"더미 응답 — 점검 꺼짐"},
+    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"더미 응답 — 게스트 남은 질문 5"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-off1\"}<ENDLINE>\n"},"label":"더미 응답 — 게스트 질문 meta 뒤 끊김"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/live","method":"GET","status":500,"json":{}},"label":"더미 응답 — /live 500"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/status","method":"GET","json":{"status":"in_progress","requestUuid":"qa-req-off1"}},"label":"더미 응답 — /status 진행 중"},
     {"goto":"/chat"},
     {"fill":{"placeholder":"세나에게 질문해보세요","value":"QA 오프라인 대기 질문"}},
     {"click":{"role":"button","name":"전송하기"}},
@@ -17,7 +17,7 @@
     {"offline":true},
     {"expectText":"인터넷 연결이 끊겼어요. 다시 연결되면 답변을 자동으로 불러올게요.","label":"① 끊김 안내"},
     {"screenshot":"offline-waiting"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/status","method":"GET","json":{"status":"completed","requestUuid":"qa-req-off1","qaHistoryId":990020,"answer":{"answer":"QA 오프라인 복구 답변","accuracy":"QA 정확도"}}},"label":"응답 흉내 — /status 완료"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/streams/*/status","method":"GET","json":{"status":"completed","requestUuid":"qa-req-off1","qaHistoryId":990020,"answer":{"answer":"QA 오프라인 복구 답변","accuracy":"QA 정확도"}}},"label":"더미 응답 — /status 완료"},
     {"offline":false},
     {"expectText":"QA 오프라인 복구 답변","timeout":20000,"label":"① 다시 연결 → 답변"}
   ]

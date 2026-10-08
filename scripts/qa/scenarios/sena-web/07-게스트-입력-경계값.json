@@ -1,12 +1,12 @@
 {
-  "name": "채팅 입력 경계값 — 빈 값·공백·Shift+Enter·앞뒤 공백·긴 붙여넣기 (응답 흉내)",
+  "name": "채팅 입력 경계값 — 빈 값·공백·Shift+Enter·앞뒤 공백·긴 붙여넣기 (더미 응답)",
   "tc": ["SN-047"],
   "profile": "logout",
-  "why": "Enter 전송·Shift+Enter 줄바꿈(use-enter-submit-events.ts:8-26 — keyup 에서 전송), 공백만이면 전송 안 함(ChatTextarea.tsx:85), 앞뒤 공백은 뺀 채 말풍선(trim), 글자 수 제한 없음(maxLength 없음). 빈 값·공백 Enter 가 \"안 보냈다\" 는 것은 러너에 없음 확인 단계가 없어 첫 말풍선이 앞뒤 공백 질문인지로만 본다. 한글 조합 중 Enter 는 러너 키 입력으로 흉내 낼 수 없다",
+  "why": "Enter 전송·Shift+Enter 줄바꿈(use-enter-submit-events.ts:8-26 — keyup 에서 전송), 공백만이면 전송 안 함(ChatTextarea.tsx:85), 앞뒤 공백은 뺀 채 말풍선(trim), 글자 수 제한 없음(maxLength 없음). 빈 값·공백 Enter 가 \"안 보냈다\" 는 것은 러너에 없음 확인 단계가 없어 첫 말풍선이 앞뒤 공백 질문인지로만 본다. 한글 조합 중 Enter 는 러너 키 입력으로 더미 낼 수 없다",
   "steps": [
-    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"응답 흉내 — 점검 꺼짐"},
-    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"응답 흉내 — 게스트 남은 질문 5"},
-    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-input\"}<ENDLINE>\ndata: {\"answer\":\"QA 입력 경계 답변\",\"requestUuid\":\"qa-req-input\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"응답 흉내 — 게스트 질문 짧은 답변"},
+    {"mock":{"url":"**/api/maintenance","method":"GET","json":{"status":false}},"label":"더미 응답 — 점검 꺼짐"},
+    {"mock":{"url":"**/api/bznav/v1/guest/chat/limit**","method":"GET","json":{"limit":5,"used":0,"remaining":5}},"label":"더미 응답 — 게스트 남은 질문 5"},
+    {"mock":{"url":"**/api/bznav/v2/chat/guest/completions","method":"POST","contentType":"text/event-stream","body":"data: {\"event\":\"meta\",\"requestUuid\":\"qa-req-input\"}<ENDLINE>\ndata: {\"answer\":\"QA 입력 경계 답변\",\"requestUuid\":\"qa-req-input\",\"accuracy\":\"QA 정확도\",\"qaHistoryId\":990002}<ENDLINE>\ndata: {\"event\":\"done\"}<ENDLINE>\n"},"label":"더미 응답 — 게스트 질문 짧은 답변"},
     {"goto":"/chat"},
     {"press":"Enter","on":{"placeholder":"세나에게 질문해보세요"},"label":"① 빈 값 Enter(보내지 않아야)"},
     {"fill":{"placeholder":"세나에게 질문해보세요","value":"   \n  "},"label":"② 공백·줄바꿈만"},

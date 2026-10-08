@@ -413,7 +413,7 @@
     <div><h4>자동화 — 어떻게 돌리나</h4><dl>
       <dt>스모크</dt><dd>주소만 바로 열어 본다</dd>
       <dt>씬</dt><dd>scripts/qa/scenarios 의 단계대로 누르고 입력한다</dd>
-      <dt>응답 흉내</dt><dd>API 응답을 가짜로 넣어 본다(GQL·REST) — 실제 신청·결제 없이</dd>
+      <dt>더미 응답</dt><dd>API 응답을 가짜로 넣어 본다(GQL·REST) — 실제 신청·결제 없이</dd>
       <dt>사람 단계</dt><dd>보이는 창에서 사람이 한 단계 진행(본인인증 등)</dd>
       <dt>수동</dt><dd>서버 설정·계정 상태가 필요해 자동화 밖</dd>
       <dt>(있음 NN)</dt><dd>씬 NN 으로 이미 자동화됨 — 필터 "자동화됨"</dd>
@@ -1045,7 +1045,7 @@
     const cards = entries.flatMap((entry) => (entry.journeyCards || []).map((card) => ({ ...card, app: entry.app })));
     const open = tcState.journeysOpen ?? false;
     box.innerHTML = cards.length ? `<details class="tc-journey-box"${open ? ' open' : ''}><summary>🧭 여정 ${cards.length}개 — 사용자 흐름을 따라 이어서 검사(구간·실행)</summary>${cards.map((card) => `<div class="tc-journey"><div class="head"><b>🧭 ${esc(card.name)}</b><span class="sub">${esc(TC_APP_NAME[card.app] || card.app)} · ${esc(card.file)}</span>
-        <button type="button" class="btn" data-journey="${esc(card.app)}|${esc(card.file)}|auto" title="본인인증·간편인증·수집을 응답 흉내로 — 사람 없이">▶ 자동</button>
+        <button type="button" class="btn" data-journey="${esc(card.app)}|${esc(card.file)}|auto" title="본인인증·간편인증·수집을 더미 응답으로 — 사람 없이">▶ 자동</button>
         <button type="button" class="btn" data-journey="${esc(card.app)}|${esc(card.file)}|real" title="간편인증·수집 구간을 사람이 직접(실제 개인정보·실제 홈택스 수집) — 크롬 창이 따로 떠요">▶ 실제</button></div>
       ${card.why ? `<div class="why">${esc(card.why)}</div>` : ''}
       <ol>${card.sections.map((section) => `<li><div class="title">${esc(section.title)}${section.modes.map((mode) => `<span class="mode">${mode === 'real' ? '실제' : '자동'} 갈래</span>`).join('')}</div>
@@ -1059,7 +1059,7 @@
         const target = document.getElementById('qa-target').value;
         const server = document.getElementById('qa-server').value.trim();
         if (target === 'server' && !server) return toast('서버 주소를 [런] 의 전체 검수 칸에 넣어 주세요');
-        if (!confirm(`${app} 여정 ${file.slice(0, 2)} 을 ${mode === 'real' ? '실제 모드(간편인증·수집을 직접 — 크롬 창이 따로 떠요)' : '자동 모드(응답 흉내)'} 로 돌릴까요?\n${target === 'server' ? `☁️ 서버 ${server}` : '🖥 로컬 서버'} · 라이브 화면이 새 탭으로 열려요`)) return;
+        if (!confirm(`${app} 여정 ${file.slice(0, 2)} 을 ${mode === 'real' ? '실제 모드(간편인증·수집을 직접 — 크롬 창이 따로 떠요)' : '자동 모드(더미 응답)'} 로 돌릴까요?\n${target === 'server' ? `☁️ 서버 ${server}` : '🖥 로컬 서버'} · 라이브 화면이 새 탭으로 열려요`)) return;
         try {
           await api('/api/qa-suite', { app, profile: document.getElementById('qa-profile').value || 'verified', target, flow: false, server, journey: { file, mode } });
           toast(`여정 ${file.slice(0, 2)} 을 시작했어요(${mode === 'real' ? '실제' : '자동'})`);

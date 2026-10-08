@@ -49,14 +49,14 @@ node scripts/qa/run.mjs --suite --app refund-web [--profile login] [--headed]   
 node scripts/qa/approve.mjs <런 id> [--key <화면>]                              # 결과를 기준 사진으로 승인 (현황판 QA 탭 [기준으로 승인])
 ```
 - 판정 추가: 🆕 기준 없음(처음 검수 — 승인하면 다음부터 기준) · 🙋 사람 필요(흐름 씬의 사람 단계 — `--headed` 로 돌리면 창에서 진행). 실패·이동 화면은 전체 승인에 올리지 않는다(콕 집으면 올림). 승인할 때 그 화면의 문제 목록도 함께 저장해 다음 검수에서 "알려진 문제"로 뺀다
-- **흐름 씬** `scripts/qa/scenarios/<앱>/*.json` — 단계(`goto`·`expectUrl`·`expectText`·`click`·`fill`·`mock`(응답 흉내)·`human`(사람 단계)·`wait`·`screenshot`), 형식은 `scripts/qa/scenario.mjs` 머리말. 비밀 값(비밀번호 등)은 씬에 적지 않는다. refund-web 은 로그인 가드 · 본인인증 가드 · 본인인증 성공/실패(응답 흉내) · 실제 본인인증(사람) 5개
+- **흐름 씬** `scripts/qa/scenarios/<앱>/*.json` — 단계(`goto`·`expectUrl`·`expectText`·`click`·`fill`·`mock`(더미 응답)·`human`(사람 단계)·`wait`·`screenshot`), 형식은 `scripts/qa/scenario.mjs` 머리말. 비밀 값(비밀번호 등)은 씬에 적지 않는다. refund-web 은 로그인 가드 · 본인인증 가드 · 본인인증 성공/실패(더미 응답) · 실제 본인인증(사람) 5개
 - 요청: 대화("환급 웹 전체 검수 돌려줘") 또는 현황판 QA 탭 [전체 검수 시작]. 화면 전부라 수십 분 걸릴 수 있고(추측) `heavy.sh` 차례를 기다린다
 - **실행 전에 고른다(D21)** — 대화로 요청받으면 대상·진행 방식을 먼저 묻는다
   - 대상: 🖥 로컬 서버(내 브랜치·qa-base 코드, 이메일 로그인) · ☁️ 서버 `--server <주소>`(dev·stg·dev-1~3·PR 미리보기 — 배포본, 간편인증 가능. **운영 주소는 거부**). 세션은 `.qa-auth/<앱>@<호스트>.<프로필>.json`, 기준 사진은 `.qa-baselines/<앱>@server/`
   - 진행 방식: `--flow` 🧭 비로그인 → (세션이 없거나 만료면 라이브 화면이 로그인 요청 + 로그인 창) → 로그인 상태 전부 차례로(routes profiles 순서 — 예: login → verified, `flowTargets` 로 고를 수 있다. 단계마다 세션이 없거나 만료면 로그인 창, 안 하면 그 단계만 건너뜀) → 끝나면 실패 리포트 모달(D18~D20). 단계마다 그 세션의 씬만 돈다 · `--profiles a,b` 동시 · 한 세션만 `--profile`
 - **라이브 화면** `--live` → 현황판 `/qa-live?id=<런>` (흐름·동시는 `?group=<묶음>`): 체크리스트(화면·씬, 누르면 검사 단계·스크린샷·호출 팝업) · 화면 영상(데스크톱·모바일) · 실시간 호출(GraphQL 보낸 값·errors·REST·Mixpanel, 태그로 거르기) · 제목 옆 완료 여부 · 실패 리포트(원인별 묶음, [자세히] 펼침, [담당 에이전트에게 조사 맡기기])
 - **검사 단계**(화면마다): 열기 · 도착 경로 · 콘솔·페이지 에러(📍 앱 소스 위치) · API 응답 · 이미지(img·CSS 배경·CDN·지연 로딩) · 눈으로 보이는 깨짐(CSS 미적용·아이콘 □·가로 넘침·깨진 글자·값) · 스크린샷 비교 · 트래킹(필수 화면 보기 이벤트 `<PageViewEventLogger pageName>` 누락은 ❌). 잘린 글자·가려진·화면 밖·이름 없는 버튼·찌그러진·흐린 이미지·alt 는 ⚠ 확인 필요(실패 아님)
-- **안전장치**: 흉내로 지정하지 않은 GraphQL mutation 은 보내지 않는다(막음) · Mixpanel 은 가로채 기록만(전송 안 함) · 외부 수집기(GA·광고·Clarity·Datadog RUM·픽셀)는 막는다 · 검사 중 로그인 토큰이 사라지면 멈추고 로그인을 요청한 뒤 그 화면부터 다시
+- **안전장치**: 더미로 지정하지 않은 GraphQL mutation 은 보내지 않는다(막음) · Mixpanel 은 가로채 기록만(전송 안 함) · 외부 수집기(GA·광고·Clarity·Datadog RUM·픽셀)는 막는다 · 검사 중 로그인 토큰이 사라지면 멈추고 로그인을 요청한 뒤 그 화면부터 다시
 - 씬 단계 추가: `mock` 의 `operation`(GraphQL 연산 이름) · `expectEvent`(Mixpanel 이벤트·props) · 씬 `viewports`(없으면 데스크톱·모바일 둘 다 동시에)
 - routes 설정 추가: `devUrl` · `samplesFrom: "sitemap"`(CMS 동적 화면 주소를 그 서버 `/sitemap.xml` 에서) · `expect`(프로필별 정상 이동) · `allowStatus` · `networkIdle: false` · 화면별 `ignoreConsole`
 
