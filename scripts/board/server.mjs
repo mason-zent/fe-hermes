@@ -281,10 +281,7 @@ const autoDonePlans = async (plans) => {
 
 const doneCheck = async (issue) => {
   const checks = []
-  // 공통: 이 이슈 파일이 커밋·push 됐다 = 작업 트리와 origin/main 사이에 차이가 없다
-  const pushed = (await run('git', ['-C', ROOT, 'diff', '--quiet', 'origin/main', '--', issue.id])) !== null
-    && (await run('git', ['-C', ROOT, 'cat-file', '-e', `origin/main:${issue.id}`])) !== null
-  checks.push({ label: '이슈 파일 커밋·push', ok: pushed })
+  // 이슈 파일은 로컬 전용(.gitignore) — 커밋·push 는 조건이 아니다. 끝나면 [아카이브]가 archive/ 로 묶어 커밋한다
 
   if (issue.status === 'wontfix') {
     checks.push({ label: 'reason: 하지 않는 이유', ok: Boolean(issue.reason) })

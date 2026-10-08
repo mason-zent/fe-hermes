@@ -74,9 +74,9 @@
 - **Checkpoint 를 갱신한다** — Status·Progress·Next·Validation. 시점은 단계 완료·차단 변화·리뷰 반영·세션 종료(`/new`) 직전(매 턴이 아니다). 정식이면 html `plan-md` 도 같은 턴에 맞춘다(`node scripts/plan-html.mjs <md>` · `commit.sh`·현황판도 맞춘다)
 
 ### 6단계: 정리
-- 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 이슈·계획서를 **`archive/<이름>/` 한 폴더**(`issue.md` · `plan.md` · `meta.json`)로 묶어 보관하고 **git 에 커밋**한다(진행 중 `plans/**` 는 로컬). 이슈 워크트리도 정리(미커밋·push 안 된 커밋이 있으면 남긴다). 지나간 일은 현황판 **[히스토리]** 탭에서 찾는다
+- 끝난 카드는 현황판 완료 칸의 **[아카이브]** — 이슈·계획서를 **`archive/<이름>/` 한 폴더**(`issue.md` · `plan.md` · `meta.json`)로 묶어 보관하고 **git 에 커밋**한다. **git 에 올라가는 건 `archive/` 뿐** — 진행 중·리뷰·완료의 이슈(`issues/*.md`)·계획서(`plans/**`)는 각자 로컬에 갖는다(`.gitignore`). 이슈 워크트리도 정리(미커밋·push 안 된 커밋이 있으면 남긴다). 지나간 일은 현황판 **[히스토리]** 탭에서 찾는다
 - **계획서 `PR:` 줄의 PR 이 머지되면(어느 base 든 — GitHub `MERGED`) 현황판이 그 계획서를 자동으로 완료(`Status: done — 자동 — PR #N 이 <base> 에 머지됨`)로 옮긴다**(진행 중·리뷰 계획서만, 5분마다 `gh pr view` 로 확인). 머지 없이 닫힌 PR(`CLOSED` — 취소·다른 PR 로 대체)은 옮기지 않는다
-- 이슈는 `issues/README.md` "완료 기준"(push·확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
+- 이슈는 `issues/README.md` "완료 기준"(확인 결과·후속 정리·fix 커밋·계획 done+PR MERGED)이 채워지면 `완료 가능` 배지 → **헤르메스가 완료로 옮긴다**(사용자에게 넘기지 않는다). 조건이 덜 찼으면 남은 것을 알린다
 - 후속 작업이 남았으면 그대로 둔다. 안전망: `scripts/archive-plans.sh`(30일 이상 + 최근 git log 미언급 plan 일괄 이동)
 
 ---

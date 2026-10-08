@@ -7,6 +7,10 @@
 .vscode/
 .DS_Store
 
+# 이슈 (로컬 산출물 — 각자 갖는다. 끝나면 [아카이브]로 archive/ 에 묶여 커밋된다)
+issues/*.md
+!issues/README.md
+
 # 작업계획서 (로컬 산출물)
 plans/**/*.md
 plans/**/*.html

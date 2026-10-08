@@ -723,7 +723,7 @@ node scripts/sync-fingerprint.mjs --no-fetch</code></pre>
           <h3>정리</h3>
           <div class="who">헤르메스</div>
           <ul>
-            <li>끝난 카드는 현황판 완료 칸의 <strong>[아카이브]</strong> — 이슈와 계획서를 <code>archive/&lt;이름&gt;/</code> 한 폴더로 묶어 보관하고 git 에 커밋합니다. 이슈 워크트리도 정리합니다(미커밋·push 안 된 커밋이 있으면 남김). 지나간 일은 현황판 <strong>[히스토리]</strong> 탭에서 검색합니다.</li>
+            <li>끝난 카드는 현황판 완료 칸의 <strong>[아카이브]</strong> — 이슈와 계획서를 <code>archive/&lt;이름&gt;/</code> 한 폴더로 묶어 보관하고 git 에 커밋합니다. git 에 올라가는 건 이 <code>archive/</code> 뿐이고, 진행 중·리뷰·완료의 이슈·계획서는 각자 로컬에 갖습니다. 이슈 워크트리도 정리합니다(미커밋·push 안 된 커밋이 있으면 남김). 지나간 일은 현황판 <strong>[히스토리]</strong> 탭에서 검색합니다.</li>
             <li>계획서 <code>PR:</code> 줄의 PR 이 <strong>모두</strong> 머지되면(어느 base 든 — GitHub <code>MERGED</code>) 현황판이 그 계획서를 <strong>자동으로 완료</strong>로 옮깁니다(진행 중·리뷰 계획서만, 5분마다 확인). 머지 없이 닫힌 PR(<code>CLOSED</code>)은 셈에서 빼고, 그것만 있으면 옮기지 않습니다.</li>
             <li>이슈는 완료 기준이 채워지면 <code>완료 가능</code> 배지가 붙고 헤르메스가 완료로 옮깁니다. 안전망: <code>scripts/archive-plans.sh</code>(30일 이상 + 최근 git log 미언급).</li>
           </ul>
