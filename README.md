@@ -19,6 +19,8 @@ Claude Code 기반 **프론트엔드 멀티 서비스 에이전트 팀**. 이 �
 담당 레포는 `hermes.config.json`에 목록이 있고, 문서·스크립트는 모두 `repos/<레포>` 심볼릭 링크로 접근한다. 링크는 `scripts/setup.sh`가 만든다(기본: hermes 상위 폴더에 레포들이 나란히 있다고 가정, 다르면 `--root <경로>`). `repos/`는 gitignore라 팀원마다 배치가 달라도 문서는 그대로 쓴다. **직접 돌릴 필요는 없다** — `claude` 를 켤 때 SessionStart 훅(`scripts/hooks/setup-check.py`)이 빠진 링크를 찾아 기본 위치에서 알아서 연결하고, 거기에도 없는 레포가 있을 때만 헤르메스가 위치를 묻는다.
 
 ## 시작하기
+> 처음 받는 팀원은 **`ONBOARDING.md`** (준비물 · 설치 · 첫 사용 · 막힐 때) 부터.
+
 ```bash
 git clone https://github.com/mason-zent/fe-hermes.git
 cd fe-hermes
