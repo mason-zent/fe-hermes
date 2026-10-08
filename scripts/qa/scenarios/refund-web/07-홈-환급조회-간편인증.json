@@ -1,17 +1,56 @@
 {
   "name": "홈 개인 [환급조회] → 간편인증 입력 (최초 조회)",
-  "tc": ["RF-019"],
+  "tc": [
+    "RF-019"
+  ],
   "profile": "verified",
-  "why": "조회 이력이 없는 계정이 홈에서 개인·개인사업자 [환급조회] 를 누르면 간편인증 입력 화면으로 가야 한다. 조회 상태(checkSearchStatusQuery)는 '이력 없음' 으로 흉내 낸다. 0~6시에는 홈택스 이용 불가 화면으로 가는 게 맞아서 이 씬이 실패한다(시계 조작은 아직 없음)",
+  "why": "조회 이력이 없는 계정이 홈에서 개인·개인사업자 [환급조회] 를 누르면 간편인증 입력 화면으로 가야 한다. 조회 상태(checkSearchStatusQuery)는 '이력 없음' 으로 흉내 낸다. 0~6시에는 홈택스 이용 불가 화면으로 가는 게 맞아서 이 씬이 실패한다(시계 조작은 아직 없음). ⚠ 조회 이력이 없는 계정이어야 한다 — 이미 한 번 수집한 계정은 홈에 이력 카드가 떠서 실패한다(새 계정으로 로그인)",
   "steps": [
-    { "mock": { "operation": "checkSearchStatusQuery", "json": { "data": { "checkSearchStatus": { "result": false, "progress": null, "errors": null, "refundInfo": null, "tritxRefundInfo": null } } } } },
-    { "goto": "/home" },
-    { "expectUrl": "/home", "label": "홈에 머묾" },
-    { "expectText": "어떤 숨은 환급금을" , "label": "조회 이력 없는 홈(개인·법인 카드)" },
-    { "screenshot": "home" },
-    { "click": "환급조회" },
-    { "expectEvent": "home_body_lookup-first_clicked", "props": { "business": "indis" } },
-    { "expectUrl": "/hometax-auth/simple-auth/input", "label": "간편인증 입력 화면으로 이동" },
-    { "screenshot": "simple-auth-input" }
+    {
+      "mock": {
+        "operation": "checkSearchStatusQuery",
+        "json": {
+          "data": {
+            "checkSearchStatus": {
+              "result": false,
+              "progress": null,
+              "errors": null,
+              "refundInfo": null,
+              "tritxRefundInfo": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "goto": "/home"
+    },
+    {
+      "expectUrl": "/home",
+      "label": "홈에 머묾"
+    },
+    {
+      "expectText": "어떤 숨은 환급금을",
+      "label": "조회 이력 없는 홈(개인·법인 카드) — 안 보이면 이 계정은 이미 조회 이력이 있다(처음 조회 씬은 조회 이력 없는 새 계정 필요)"
+    },
+    {
+      "screenshot": "home"
+    },
+    {
+      "click": "환급조회"
+    },
+    {
+      "expectEvent": "home_body_lookup-first_clicked",
+      "props": {
+        "business": "indis"
+      }
+    },
+    {
+      "expectUrl": "/hometax-auth/simple-auth/input",
+      "label": "간편인증 입력 화면으로 이동"
+    },
+    {
+      "screenshot": "simple-auth-input"
+    }
   ]
 }
